@@ -1,0 +1,10 @@
+export { HeroSection } from './heroSection';
+export { FeaturesSection } from './featuresSection';
+export { InvestappPrice } from './investappPrice';
+export { BeyondMarket } from './beyondMarket';
+export { default as BulkDeals } from './bulkDeals';
+export { MarketInsight } from './marketInsight';
+export { default as InvestorKnowledge } from './investorKnowledge';
+export { default as PrivateMarketTrends } from './privateMarketTrends';
+export { default as NewsletterCTA } from './newsletterCTA';
+export { default as MarketPortfolio } from './marketPortfolio';
