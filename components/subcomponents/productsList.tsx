@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { TrendingUp, TrendingDown, Heart, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
+import Link from "next/link";
 
 /* ---------- types ---------- */
 export type ProductItem = {
@@ -152,7 +153,9 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
 
           <div className="min-w-0 w-full">
             <h3 className="text-themeTeal font-semibold leading-tight truncate">
-              {item.name} <span className="text-themeTeal font-normal">({item.symbol})</span>
+              <Link href='/discover-details' className="text-themeTeal font-semibold transition duration-500 hover:text-themeSkyBlue">
+                {item.name} <span>({item.symbol})</span>
+              </Link>
             </h3>
             <div className="text-xs text-themeTealLighter">{item.sector}</div>
             <p className="mt-1 text-sm text-themeTealLight line-clamp-3 md:line-clamp-1">{item.description}</p>

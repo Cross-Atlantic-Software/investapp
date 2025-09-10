@@ -8,3 +8,4 @@ export { default as PlatformFeatures } from "./platformFeatures";
 export { default as ScrollToTop } from "./scrollToTop";
 export { default as FilterSidebar } from "./filterssidebar";
 export { ProductList } from "./productsList";
+export { default as Breadcrumbs } from "./breadcrumbs";
