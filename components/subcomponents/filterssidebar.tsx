@@ -65,7 +65,7 @@ export default function Filters() {
       className={[
         "rounded bg-themeTealWhite overflow-hidden transition-[width] duration-300",
         "w-full",
-        collapsed ? "lg:w-12" : "lg:w-[clamp(260px,28vw,300px)]",
+        collapsed ? "lg:w-16" : "lg:w-[clamp(260px,28vw,300px)]",
       ].join(" ")}
     >
       {/* header */}
