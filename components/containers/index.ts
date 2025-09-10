@@ -8,3 +8,4 @@ export { default as InvestorKnowledge } from './investorKnowledge';
 export { default as PrivateMarketTrends } from './privateMarketTrends';
 export { default as NewsletterCTA } from './newsletterCTA';
 export { default as MarketPortfolio } from './marketPortfolio';
+export { default as PageTitle } from './pageTitle';

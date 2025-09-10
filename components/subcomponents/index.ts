@@ -6,3 +6,5 @@ export { default as investmentCTA } from "./investmentCTA";
 export { default as PortfolioTable } from "./portfolioTable";
 export { default as PlatformFeatures } from "./platformFeatures";
 export { default as ScrollToTop } from "./scrollToTop";
+export { default as FilterSidebar } from "./filterssidebar";
+export { ProductList } from "./productsList";
