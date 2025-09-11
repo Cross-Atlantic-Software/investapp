@@ -1,13 +1,13 @@
 "use client";
 
 import { Heading } from "../ui";
-import { PortfolioTable } from "../subcomponents";
 import PlatformFeatures, { type Feature } from "../subcomponents/platformFeatures";
 import { Clipboard, TrendingUp } from "lucide-react";
+import { PortfolioTable } from "../dashboard";
 
 /* ---------- shared shell ---------- */
 const cardCls =
-  "rounded-xl bg-white ring-1 ring-black/5 shadow-sm p-5 sm:p-6";
+  "rounded bg-white p-5 sm:p-6";
 
 function CardHeader({
   title,

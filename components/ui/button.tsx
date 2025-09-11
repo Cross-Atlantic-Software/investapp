@@ -69,7 +69,7 @@ export default function Button({
 
   const content = (
     <>
-      {Icon && iconPosition === "left" && <Icon className="w-6 h-6" />}
+      {Icon && iconPosition === "left" && <Icon className="w-6 h-6 mr-2" />}
       {text ?? children}
       {Icon && iconPosition === "right" && <Icon className="w-6 h-6" />}
     </>

@@ -130,8 +130,8 @@ export default function Footer() {
 
         <div className="my-8 h-px w-full bg-white/20" />
 
-        <div className="flex justify-between">
-          <p className="mb-6 text-sm">&copy; Copyright Invest App, 2025. All rights reserved.</p>
+        <div className="md:flex justify-between">
+          <p className="md:mb-6 text-sm">&copy; Copyright Invest App, 2025. All rights reserved.</p>
           <p className="mb-6 text-sm">Developed by <Link href='https://www.crossatlanticsoftware.com/' target="_blank" className="transition duration-500 hover:text-themeTealLighter">Cross Atlantic Software</Link></p>
         </div>
 

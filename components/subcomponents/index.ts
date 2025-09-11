@@ -3,7 +3,6 @@ export { default as LowDemandStocks } from "./lowDemandStocks";
 export { default as NotableActivity } from "./notableActivity";
 export { default as PrivateMarketNews } from "./privateMarketNews";
 export { default as investmentCTA } from "./investmentCTA";
-export { default as PortfolioTable } from "./portfolioTable";
 export { default as PlatformFeatures } from "./platformFeatures";
 export { default as ScrollToTop } from "./scrollToTop";
 export { default as FilterSidebar } from "./filterssidebar";

@@ -51,7 +51,7 @@ export default function PortfolioTable({ rows, pageSize = 8 }: Props) {
   const go = (p: number) => setPage(Math.min(totalPages, Math.max(1, p)));
 
   return (
-    <div className="overflow-hidden rounded-lg bg-themeTealWhite">
+    <div className="overflow-hidden">
       {/* table */}
       <div className="overflow-x-auto">
         <table className="w-full text-md">
@@ -111,7 +111,7 @@ export default function PortfolioTable({ rows, pageSize = 8 }: Props) {
                   <td className="px-4 py-3 text-center">
                     <button
                       className={[
-                        "rounded-md px-3 py-1.5 text-xs font-medium",
+                        "rounded-md px-3 py-1.5 text-xs font-medium cursor-pointer transition duration-300",
                         r.action === "Buy"
                           ? "bg-green-600 text-white hover:bg-green-700"
                           : "bg-rose-600 text-white hover:bg-rose-700",
@@ -128,7 +128,7 @@ export default function PortfolioTable({ rows, pageSize = 8 }: Props) {
       </div>
 
       {/* pagination */}
-      <nav className="flex items-center justify-center gap-2 border-t border-themeTealLighter bg-themeTealWhite p-4">
+      <nav className="flex items-center justify-center gap-2  p-4">
         <button
           onClick={() => go(page - 1)}
           className="inline-flex items-center gap-1 rounded px-2 py-1 text-sm text-themeTeal hover:bg-themeTeal hover:text-themeTealWhite disabled:opacity-40 transition duration-500 cursor-pointer"
