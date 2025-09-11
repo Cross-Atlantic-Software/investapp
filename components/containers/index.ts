@@ -9,3 +9,5 @@ export { default as PrivateMarketTrends } from './privateMarketTrends';
 export { default as NewsletterCTA } from './newsletterCTA';
 export { default as MarketPortfolio } from './marketPortfolio';
 export { default as PageTitle } from './pageTitle';
+export { default as PartnerPrograms } from './partnerPrograms';
+export { default as PartnerCta } from './partnerCta';

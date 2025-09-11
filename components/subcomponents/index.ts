@@ -8,3 +8,8 @@ export { default as ScrollToTop } from "./scrollToTop";
 export { default as FilterSidebar } from "./filterssidebar";
 export { ProductList } from "./productsList";
 export { default as Breadcrumbs } from "./breadcrumbs";
+export { default as WhyBox } from "./whyBox";
+export { default as PricingWhy } from "./pricingPlans";
+export { default as HowItWorks } from "./howItWorks";
+export { default as ContactInfoBox } from "./contactInfoBox"
+export { default as GalleryCarousel} from "./galleryCarousel"

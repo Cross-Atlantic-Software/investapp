@@ -6,7 +6,7 @@ import { ButtonHTMLAttributes } from "react";
 
 type Variant = "solid" | "outline" | "link";
 type Size = "sm" | "md" | "nospace" | "nospacesm";
-type Tone = "themeTeal" | "skyblue";
+type Tone = "themeTeal" | "skyblue" | "themeTealWhite";
 type IconPosition = "left" | "right";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -34,6 +34,7 @@ const sizes: Record<Size, string> = {
 const solid: Record<Tone, string> = {
   themeTeal: "bg-themeTeal text-themeTealWhite hover:bg-themeTealWhite hover:text-themeTeal border border-themeTeal",
   skyblue: "bg-themeSkyBlue text-themeTealWhite hover:bg-themeTealLight",
+  themeTealWhite: "bg-themeTealWhite text-themeSkyBlue hover:bg-themeTeal hover:text-themeTealWhite border border-themeTealWhite hover:border-themeTeal",
 };
 
 const outline: Record<Tone, string> = {
@@ -41,11 +42,14 @@ const outline: Record<Tone, string> = {
     "border border-themeTeal text-themeTeal hover:bg-themeTeal hover:text-themeTealWhite",
   skyblue:
     "border border-themeSkyBlue text-themeSkyBlue hover:bg-themeSkyBlue hover:text-themeTealWhite",
+  themeTealWhite:
+    "border border-themeTealWhite text-themeTealWhite hover:bg-themeTealWhite hover:text-themeSkyBlue",
 };
 
 const link: Record<Tone, string> = {
   themeTeal: "text-themeTeal hover:text-themeTealLight flex items-center",
   skyblue: "text-themeSkyBlue hover:text-themeTealLighter flex items-center",
+  themeTealWhite:''
 };
 
 export default function Button({
