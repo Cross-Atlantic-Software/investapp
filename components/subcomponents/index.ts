@@ -13,3 +13,5 @@ export { default as PricingWhy } from "./pricingPlans";
 export { default as HowItWorks } from "./howItWorks";
 export { default as ContactInfoBox } from "./contactInfoBox"
 export { default as GalleryCarousel} from "./galleryCarousel"
+export { default as ContactInfo} from "./contactInfo"
+export { default as ContactForm } from "./contactForm"

@@ -24,8 +24,8 @@ export function Header() {
         <Logo href="/"/>
         <Navigation items={items} />
         <div className="hidden lg:flex space-x-4">
-          <Button text="Sign In" color="themeTeal" variant="outline" size="sm" href='/' />
-          <Button text="Get Started" color="themeTeal" variant="solid" size="sm" href='/' />
+          <Button text="Sign In" color="themeTeal" variant="outline" size="sm" href='/login' />
+          <Button text="Get Started" color="themeTeal" variant="solid" size="sm" href='/register/step-1' />
         </div>
     </header>
   )

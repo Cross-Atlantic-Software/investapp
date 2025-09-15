@@ -22,7 +22,7 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const base =
   "inline-flex items-center justify-center font-medium transition duration-300 " +
-  "rounded-xs";
+  "";
 
 const sizes: Record<Size, string> = {
   sm: "px-5 py-3 text-sm",

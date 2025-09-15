@@ -192,8 +192,8 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
 
             {/* bottom CTAs */}
             <div className="mt-auto space-y-3 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <Button text="Sign In" color="themeTeal" variant="outline" size="sm" href="/sign-in" className="w-full" />
-              <Button text="Get Started" color="themeTeal" variant="solid" size="sm" href="/get-started" className="w-full" />
+              <Button text="Sign In" color="themeTeal" variant="outline" size="sm" href="/login" className="w-full" />
+              <Button text="Get Started" color="themeTeal" variant="solid" size="sm" href="/register/step-1" className="w-full" />
             </div>
           </div>
         </aside>

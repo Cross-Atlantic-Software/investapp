@@ -69,7 +69,7 @@ export default function About() {
       />
 
       {/* Our Ethos */}
-      <section className="appContainer py-8 md:py-14">
+      <section className="appContainer py-8 md:py-16">
         <div className="md:flex md:gap-8">
             {/* left */}
             <div className="w-full md:w-1/3 mb-6 md:mb-0">
@@ -93,7 +93,7 @@ export default function About() {
 
 
       {/* Our Journey */}
-      <section className="appContainer pb-12">
+      <section className="appContainer pb-16">
         <div className="rounded bg-themeTealWhite p-6 md:p-10">
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_minmax(350px,70px)]">
             <div>
