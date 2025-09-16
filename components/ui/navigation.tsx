@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ChevronDown, Menu, X } from "lucide-react";
 import Logo from "./logo";
 import Button from "./button";
@@ -19,7 +19,29 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
   const [open, setOpen] = useState(false);
   const [openIdx, setOpenIdx] = useState<number | null>(null);
 
-  // lock scroll + ESC to close
+  // -------- active-state helpers (memoized to satisfy exhaustive-deps) --------
+  const normalize = (s?: string) => (s ? s.replace(/\/+$/, "") : "");
+
+  const isActive = useCallback(
+    (href?: string) => {
+      if (!href || !pathname) return false;
+      const p = normalize(pathname) || "/";
+      const h = normalize(href) || "/";
+      if (h === "/") return p === "/"; // don't match all routes
+      return p === h || p.startsWith(h + "/");
+    },
+    [pathname]
+  );
+
+  const parentActive = useCallback(
+    (kids?: { href: string }[]) => kids?.some((c) => isActive(c.href)) ?? false,
+    [isActive]
+  );
+
+  const linkClass = (href?: string) =>
+    `${isActive(href) ? "text-themeSkyBlue" : "text-themeTeal"} hover:text-themeSkyBlue`;
+
+  // -------- lock scroll + ESC --------
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     if (!open) return;
@@ -31,8 +53,11 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
     };
   }, [open]);
 
-  const active = (href?: string) =>
-    href && pathname?.startsWith(href) ? "text-themeTeal" : "text-ink-heading";
+  // -------- auto-open active parent when route changes --------
+  useEffect(() => {
+    const idx = items.findIndex((m) => parentActive(m.children) || isActive(m.href));
+    setOpenIdx(idx === -1 ? null : idx);
+  }, [items, isActive, parentActive]);
 
   return (
     <div className="relative">
@@ -44,7 +69,9 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
               <li key={i}>
                 <Link
                   href={it.href ?? "#"}
-                  className={`font-medium text-sm xl:text-base text-themeTeal hover:text-themeSkyBlue transition duration-300 ${active(it.href)}`}
+                  className={`font-medium text-sm xl:text-base transition duration-300 ${linkClass(
+                    it.href
+                  )}`}
                 >
                   {it.label}
                 </Link>
@@ -52,7 +79,11 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
             ) : (
               <li key={i} className="relative group">
                 <button
-                  className="flex items-center gap-1 font-medium text-sm xl:text-base text-themeTeal hover:text-themeSkyBlue transition duration-300"
+                  className={`flex items-center gap-1 font-medium text-sm xl:text-base transition duration-300 ${
+                    parentActive(it.children) || isActive(it.href)
+                      ? "text-themeSkyBlue"
+                      : "text-themeTeal"
+                  }`}
                   aria-haspopup="menu"
                 >
                   {it.label}
@@ -71,7 +102,11 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
                         <Link
                           role="menuitem"
                           href={c.href}
-                          className="block rounded-sm px-3 py-2 text-sm xl:text-base text-themeTeal hover:bg-themeTeal hover:text-themeTealWhite"
+                          className={`block rounded-sm px-3 py-2 text-sm xl:text-base ${
+                            isActive(c.href)
+                              ? "bg-themeTeal text-themeTealWhite"
+                              : "text-themeTeal hover:bg-themeTeal hover:text-themeTealWhite"
+                          }`}
                         >
                           {c.label}
                         </Link>
@@ -99,7 +134,9 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
 
       {/* Off-canvas (mobile) */}
       <div
-        className={`fixed inset-0 z-50 md:hidden transition-opacity ${open ? "opacity-100" : "pointer-events-none opacity-0"}`}
+        className={`fixed inset-0 z-50 md:hidden transition-opacity ${
+          open ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
         role="dialog"
         aria-modal="true"
       >
@@ -140,7 +177,7 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
                       <Link
                         href={it.href ?? "#"}
                         onClick={() => setOpen(false)}
-                        className={`block px-3 py-4 text-lg font-medium text-themeTeal hover:bg-themeTealWhite ${active(it.href)}`}
+                        className={`block px-3 py-4 text-lg font-medium ${linkClass(it.href)}`}
                       >
                         {it.label}
                       </Link>
@@ -148,7 +185,11 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
                   ) : (
                     <li key={i}>
                       <button
-                        className="flex w-full items-center justify-between px-3 py-4 text-left text-lg font-medium text-themeTeal"
+                        className={`flex w-full items-center justify-between px-3 py-4 text-left text-lg font-medium ${
+                          parentActive(it.children) || isActive(it.href)
+                            ? "text-themeSkyBlue"
+                            : "text-themeTeal"
+                        }`}
                         onClick={() => setOpenIdx((v) => (v === i ? null : i))}
                         aria-expanded={openIdx === i}
                         aria-controls={`mobile-sub-${i}`}
@@ -176,7 +217,11 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
                                   setOpen(false);
                                   setOpenIdx(null);
                                 }}
-                                className="block px-4 mx-2 py-2 text-lg font-medium text-themeTeal bg-themeTeal/10"
+                                className={`block px-4 mx-2 py-2 text-lg font-medium rounded-sm ${
+                                  isActive(c.href)
+                                    ? "bg-themeTeal text-themeTealWhite"
+                                    : "text-themeTeal hover:bg-themeTeal/10"
+                                }`}
                               >
                                 {c.label}
                               </Link>
@@ -192,8 +237,22 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
 
             {/* bottom CTAs */}
             <div className="mt-auto space-y-3 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <Button text="Sign In" color="themeTeal" variant="outline" size="sm" href="/login" className="w-full" />
-              <Button text="Get Started" color="themeTeal" variant="solid" size="sm" href="/register/step-1" className="w-full" />
+              <Button
+                text="Sign In"
+                color="themeTeal"
+                variant="outline"
+                size="sm"
+                href="/login"
+                className="w-full"
+              />
+              <Button
+                text="Get Started"
+                color="themeTeal"
+                variant="solid"
+                size="sm"
+                href="/register/step-1"
+                className="w-full"
+              />
             </div>
           </div>
         </aside>

@@ -5,13 +5,13 @@ import { Button, Logo, Navigation, type MenuItem } from "@/components/ui"
 const items: MenuItem[] = [
   { label: "Home", href: "/" },
   { label: "Invest", href: "/invest" },
-  {
-    label: "Market Insights",
-    children: [
-      { label: "Reports", href: "/market-insights/reports" },
-      { label: "News", href: "/market-insights/news" },
-    ],
-  },
+  { label: "Market Insights", href: "/market-insights" },
+  // {
+  //   label: "Market Insights",
+  //   children: [
+  //     { label: "Reports", href: "/market-insights" },
+  //   ],
+  // },
   { label: "Knowledge Center", href: "/knowledge-center" },
   { label: "Partner Program", href: "/partner-program" },
   { label: "About", href: "/about" },
