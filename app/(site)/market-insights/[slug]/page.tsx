@@ -25,6 +25,7 @@ export type Article = {
   dateISO: string; // YYYY-MM-DD
   hero: string;
   content: string[]; // simple paragraphs; replace with CMS rich text
+  adImage: string;
 };
 
 // ---------- Mock Data (replace with CMS/API) ----------
@@ -40,6 +41,7 @@ const ARTICLES: Article[] = [
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eget neque at enim fringilla varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin feugiat dolor in lacus accumsan, ac porta lectus dapibus. Donec nisi tellus, ultrices eu dui eget, mattis gravida ipsum. In non nibh at lacus cursus aliquam. Duis commodo feugiat nibh, in auctor ante fermentum ut. Fusce tincidunt in augue vitae tempus. Sed elementum ligula id posuere ullamcorper.", 
       "Sed eget mauris congue purus aliquet blandit. In imperdiet convallis nisl, in commodo magna mattis non. Nullam ac dolor quam. Nam tempus sapien diam, in tempor nisi gravida at. Ut ac convallis velit, sed tristique orci. Maecenas semper, magna eget mattis malesuada, orci tellus porta ipsum, sit amet hendrerit libero augue eget sem. Nunc non maximus est. Quisque nisl felis, ultricies pharetra eros sit amet, interdum auctor eros. Phasellus sed mi placerat, tempor diam nec, fermentum mi.",
     ],
+    adImage: '/images/1200x400.svg',
   },
   {
     slug: "investing-in-private-company-shares-a-guide-for-new-investors",
@@ -52,6 +54,7 @@ const ARTICLES: Article[] = [
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eget neque at enim fringilla varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin feugiat dolor in lacus accumsan, ac porta lectus dapibus. Donec nisi tellus, ultrices eu dui eget, mattis gravida ipsum. In non nibh at lacus cursus aliquam. Duis commodo feugiat nibh, in auctor ante fermentum ut. Fusce tincidunt in augue vitae tempus. Sed elementum ligula id posuere ullamcorper.", 
       "Sed eget mauris congue purus aliquet blandit. In imperdiet convallis nisl, in commodo magna mattis non. Nullam ac dolor quam. Nam tempus sapien diam, in tempor nisi gravida at. Ut ac convallis velit, sed tristique orci. Maecenas semper, magna eget mattis malesuada, orci tellus porta ipsum, sit amet hendrerit libero augue eget sem. Nunc non maximus est. Quisque nisl felis, ultricies pharetra eros sit amet, interdum auctor eros. Phasellus sed mi placerat, tempor diam nec, fermentum mi.",
     ],
+    adImage: '/images/1200x400.svg',
   },
   {
     slug: "an-introduction-to-the-role-of-a-investapps-private-market-specialist1",
@@ -64,6 +67,7 @@ const ARTICLES: Article[] = [
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eget neque at enim fringilla varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin feugiat dolor in lacus accumsan, ac porta lectus dapibus. Donec nisi tellus, ultrices eu dui eget, mattis gravida ipsum. In non nibh at lacus cursus aliquam. Duis commodo feugiat nibh, in auctor ante fermentum ut. Fusce tincidunt in augue vitae tempus. Sed elementum ligula id posuere ullamcorper.", 
       "Sed eget mauris congue purus aliquet blandit. In imperdiet convallis nisl, in commodo magna mattis non. Nullam ac dolor quam. Nam tempus sapien diam, in tempor nisi gravida at. Ut ac convallis velit, sed tristique orci. Maecenas semper, magna eget mattis malesuada, orci tellus porta ipsum, sit amet hendrerit libero augue eget sem. Nunc non maximus est. Quisque nisl felis, ultricies pharetra eros sit amet, interdum auctor eros. Phasellus sed mi placerat, tempor diam nec, fermentum mi.",
     ],
+    adImage: '/images/1200x400.svg',
   },
   {
     slug: "investing-in-private-company-shares-a-guide-for-new-investors2",
@@ -76,6 +80,7 @@ const ARTICLES: Article[] = [
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eget neque at enim fringilla varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin feugiat dolor in lacus accumsan, ac porta lectus dapibus. Donec nisi tellus, ultrices eu dui eget, mattis gravida ipsum. In non nibh at lacus cursus aliquam. Duis commodo feugiat nibh, in auctor ante fermentum ut. Fusce tincidunt in augue vitae tempus. Sed elementum ligula id posuere ullamcorper.", 
       "Sed eget mauris congue purus aliquet blandit. In imperdiet convallis nisl, in commodo magna mattis non. Nullam ac dolor quam. Nam tempus sapien diam, in tempor nisi gravida at. Ut ac convallis velit, sed tristique orci. Maecenas semper, magna eget mattis malesuada, orci tellus porta ipsum, sit amet hendrerit libero augue eget sem. Nunc non maximus est. Quisque nisl felis, ultricies pharetra eros sit amet, interdum auctor eros. Phasellus sed mi placerat, tempor diam nec, fermentum mi.",
     ],
+    adImage: '/images/1200x400.svg',
   },
   {
     slug: "an-introduction-to-the-role-of-a-investapps-private-market-specialist4",
@@ -88,6 +93,7 @@ const ARTICLES: Article[] = [
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eget neque at enim fringilla varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin feugiat dolor in lacus accumsan, ac porta lectus dapibus. Donec nisi tellus, ultrices eu dui eget, mattis gravida ipsum. In non nibh at lacus cursus aliquam. Duis commodo feugiat nibh, in auctor ante fermentum ut. Fusce tincidunt in augue vitae tempus. Sed elementum ligula id posuere ullamcorper.", 
       "Sed eget mauris congue purus aliquet blandit. In imperdiet convallis nisl, in commodo magna mattis non. Nullam ac dolor quam. Nam tempus sapien diam, in tempor nisi gravida at. Ut ac convallis velit, sed tristique orci. Maecenas semper, magna eget mattis malesuada, orci tellus porta ipsum, sit amet hendrerit libero augue eget sem. Nunc non maximus est. Quisque nisl felis, ultricies pharetra eros sit amet, interdum auctor eros. Phasellus sed mi placerat, tempor diam nec, fermentum mi.",
     ],
+    adImage: '/images/1200x400.svg',
   },
   {
     slug: "investing-in-private-company-shares-a-guide-for-new-investors3",
@@ -100,6 +106,7 @@ const ARTICLES: Article[] = [
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eget neque at enim fringilla varius. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Proin feugiat dolor in lacus accumsan, ac porta lectus dapibus. Donec nisi tellus, ultrices eu dui eget, mattis gravida ipsum. In non nibh at lacus cursus aliquam. Duis commodo feugiat nibh, in auctor ante fermentum ut. Fusce tincidunt in augue vitae tempus. Sed elementum ligula id posuere ullamcorper.", 
       "Sed eget mauris congue purus aliquet blandit. In imperdiet convallis nisl, in commodo magna mattis non. Nullam ac dolor quam. Nam tempus sapien diam, in tempor nisi gravida at. Ut ac convallis velit, sed tristique orci. Maecenas semper, magna eget mattis malesuada, orci tellus porta ipsum, sit amet hendrerit libero augue eget sem. Nunc non maximus est. Quisque nisl felis, ultricies pharetra eros sit amet, interdum auctor eros. Phasellus sed mi placerat, tempor diam nec, fermentum mi.",
     ],
+    adImage: '/images/1200x400.svg',
   },
 ];
 
@@ -233,6 +240,7 @@ export default function KnowledgeDetailPage() {
                 {article.content.map((p, i) => (
                     <p key={i} className="mb-4">{p}</p>
                 ))}
+                <Image src={article.adImage} alt={article.title} width={1200} height={400} className="object-cover rounded" />
             </div>
 
           </article>
