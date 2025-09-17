@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   CheckCircle2, Info, Landmark, CreditCard,
-  FileText, MapPin, UserRoundCheck, PenLine, Video
+  FileText, MapPin, UserRoundCheck, PenLine, Video,
 } from "lucide-react";
 
 export default function KYCStep1Documents({ onContinue }: { onContinue: () => void }) {
@@ -25,11 +25,10 @@ export default function KYCStep1Documents({ onContinue }: { onContinue: () => vo
         {/* Step Navigation with Icons */}
         <div className="-mx-4 px-4 mb-10 lg:mb-16 overflow-x-auto no-scrollbar">
           <div className="flex lg:justify-between gap-4 sm:gap-6 min-w-[680px] lg:min-w-0">
-            {steps.map((step, idx) => {
-              const Icon = step.icon as any;
-              const active = idx === 0; // set per current step
+            {steps.map(({ label, icon: Icon }, idx) => { // <-- no any
+              const active = idx === 0;
               return (
-                <div key={step.label} className="min-w-[88px] flex flex-col items-center text-center group">
+                <div key={label} className="min-w-[88px] flex flex-col items-center text-center group">
                   <div
                     className={[
                       "grid place-items-center rounded-full border-2 mb-2",
@@ -42,7 +41,7 @@ export default function KYCStep1Documents({ onContinue }: { onContinue: () => vo
                     <Icon className="h-5 w-5 sm:h-6 sm:w-6 md:h-7 md:w-7" />
                   </div>
                   <span className={active ? "text-themeTeal font-semibold text-md" : "text-themeTealLighter sm:text-md opacity-50"}>
-                    {step.label}
+                    {label}
                   </span>
                 </div>
               );
