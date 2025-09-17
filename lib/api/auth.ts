@@ -69,7 +69,15 @@ async function handleResponse<T>(response: Response): Promise<T> {
     }
     console.error('API Error:', errorData); // Log the full error for debugging
     console.error('Response status:', response.status);
-    console.error('Response headers:', Object.fromEntries(response.headers.entries()));
+    
+    // Safely log response headers
+    try {
+      const headersObj = Object.fromEntries(response.headers.entries());
+      console.error('Response headers:', headersObj);
+    } catch (headerError) {
+      console.error('Response headers (error reading):', response.headers);
+    }
+    
     throw new AuthApiError(errorData.message || 'Request failed', response.status);
   }
   
@@ -105,6 +113,9 @@ export const authApi = {
 
   async login(data: LoginRequest): Promise<AuthResponse> {
     try {
+      console.log('Sending login request to:', `${API_BASE_URL}/auth/login`);
+      console.log('Request data:', { email: data.email, password: '[REDACTED]' });
+      
       const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
@@ -113,8 +124,12 @@ export const authApi = {
         body: JSON.stringify(data),
       });
       
+      console.log('Login response status:', response.status);
+      console.log('Login response ok:', response.ok);
+      
       return handleResponse<AuthResponse>(response);
     } catch (error) {
+      console.error('Login request failed:', error);
       if (error instanceof AuthApiError) {
         throw error;
       }
