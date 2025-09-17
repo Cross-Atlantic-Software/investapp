@@ -1,19 +1,49 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Mail, Lock, Video, User, MoveLeft, Phone } from "lucide-react";
 import Image from "next/image";
 import { Button, Heading } from "@/components/ui";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function Page() {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  
+  const { register, error: authError, clearError, isAuthenticated } = useAuth();
+  const router = useRouter();
 
-  const onSubmit = (e: React.FormEvent) => {
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/dashboard");
+    }
+  }, [isAuthenticated, router]);
+
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ email, password });
+    setIsSubmitting(true);
+    setError("");
+    clearError();
+
+    try {
+      const response = await register({ email, password });
+      // Store email and token for verification step
+      localStorage.setItem('pending_email', email);
+      if (response.token) {
+        localStorage.setItem('pending_token', response.token);
+      }
+      router.push("/register/step-2");
+    } catch (err) {
+      setError("Registration failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -55,7 +85,7 @@ export default function Page() {
                 </span>
                 <div>
                   <p className="font-semibold">Welcome to InvestApp</p>
-                  <p className="text-sm text-themeTealWhite">Watch intro video and create your profile</p>
+                  <p className="text-sm text-themeTealWhite">Complete your profile setup</p>
                 </div>
               </Link>
             </li>
@@ -100,6 +130,13 @@ export default function Page() {
               </div>
 
               <form onSubmit={onSubmit} className="mt-8 sm:mt-10 space-y-5 sm:space-y-6">
+                {/* Error Message */}
+                {(error || authError) && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                    {error || authError}
+                  </div>
+                )}
+
                 {/* Email */}
                 <label className="block">
                   <span className="mb-2 block text-sm font-medium">Email / Username</span>
@@ -141,9 +178,14 @@ export default function Page() {
 
                 <button
                   type="submit"
-                  className="w-full rounded-full bg-themeSkyBlue px-6 py-4 text-white text-base font-semibold hover:bg-themeTeal transition duration-500 cursor-pointer"
+                  disabled={isSubmitting}
+                  className={`w-full rounded-full px-6 py-4 text-white text-base font-semibold transition duration-500 ${
+                    isSubmitting 
+                      ? 'bg-gray-400 cursor-not-allowed' 
+                      : 'bg-themeSkyBlue hover:bg-themeTeal cursor-pointer'
+                  }`}
                 >
-                  Register
+                  {isSubmitting ? 'Registering...' : 'Register'}
                 </button>
 
                 {/* Divider */}

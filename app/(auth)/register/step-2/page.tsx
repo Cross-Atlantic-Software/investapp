@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Mail, Video, User, MoveLeft } from "lucide-react";
 import { Button, Heading } from "@/components/ui";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 // Reusable OTP input group
 function OTPGroup({
@@ -79,19 +81,78 @@ function OTPGroup({
 }
 
 export default function Page() {
-  // Demo state
   const [emailOtp, setEmailOtp] = useState<string[]>(Array(6).fill(""));
-  const [phoneOtp, setPhoneOtp] = useState<string[]>(Array(6).fill(""));
   const [emailVerified, setEmailVerified] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [email, setEmail] = useState("");
+  const [token, setToken] = useState("");
+  
+  const { verifyEmail, error: authError, clearError } = useAuth();
+  const router = useRouter();
+
+  // Get email and token from localStorage
+  useEffect(() => {
+    const pendingEmail = localStorage.getItem('pending_email');
+    const pendingToken = localStorage.getItem('pending_token');
+    
+    if (pendingEmail) {
+      setEmail(pendingEmail);
+    } else {
+      // Redirect to step 1 if no email found
+      router.push('/register/step-1');
+    }
+    
+    if (pendingToken) {
+      setToken(pendingToken);
+    }
+  }, [router]);
 
   const emailFilled = emailOtp.join("").length === 6;
-  const phoneFilled = phoneOtp.join("").length === 6;
-  const canContinue = emailVerified && phoneVerified;
+  const canContinue = emailVerified; // Only email verification required
 
-  const onSubmit = (e: React.FormEvent) => {
+  const handleEmailVerification = async () => {
+    if (!emailFilled) return;
+    
+    setIsSubmitting(true);
+    setError("");
+    clearError();
+
+    try {
+      await verifyEmail({ 
+        email, 
+        code: emailOtp.join(""),
+        token: token 
+      });
+      setEmailVerified(true);
+      
+      // Store the token for profile completion
+      if (token) {
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify({
+          id: 'temp',
+          email: email,
+        }));
+      }
+      
+      // Clean up stored data after successful verification
+      localStorage.removeItem('pending_email');
+      localStorage.removeItem('pending_token');
+      
+      // Automatically proceed to step 3 after email verification
+      router.push("/register/step-3");
+    } catch (error) {
+      setError("Email verification failed. Please check your code and try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // noop; wire to API
+    if (canContinue) {
+      router.push("/register/step-3");
+    }
   };
 
   return (
@@ -133,7 +194,7 @@ export default function Page() {
                 </span>
                 <div>
                     <p className="font-semibold">Welcome to Invest App</p>
-                    <p className="text-sm text-themeTealWhite">Watch intro video and create your profile</p>
+                    <p className="text-sm text-themeTealWhite">Complete your profile setup</p>
                 </div>
               </Link>
             </li>
@@ -164,24 +225,31 @@ export default function Page() {
             </div>
             <div className="max-w-xl md:max-w-2xl mx-auto">
                 <form onSubmit={onSubmit} className="space-y-12">
+                {/* Error Message */}
+                {(error || authError) && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                    {error || authError}
+                  </div>
+                )}
+
                 {/* Email verify */}
                 <div className="text-center">
                     <Heading as="h2" className="mb-1 text-3xl sm:text-4xl">Verify your email</Heading>
                     <p className="text-sm text-themeTealLighter">
-                    We send a code to <span className="font-semibold text-themeSkyBlue">dineshsharma@gmail.com</span>
+                    We send a code to <span className="font-semibold text-themeSkyBlue">{email}</span>
                     </p>
 
                     <div className="mt-6 flex items-center justify-center gap-3">
                     <OTPGroup value={emailOtp} onChange={setEmailOtp} />
                     <button
                         type="button"
-                        disabled={!emailFilled}
-                        onClick={() => setEmailVerified(true)}
+                        disabled={!emailFilled || isSubmitting}
+                        onClick={handleEmailVerification}
                         className={`rounded px-5 py-3 text-white font-medium duration-500 transition ${
-                        emailFilled ? "bg-themeTeal cursor-pointer" : "bg-themeTealLighter cursor-not-allowed"
+                        emailFilled && !isSubmitting ? "bg-themeTeal cursor-pointer" : "bg-themeTealLighter cursor-not-allowed"
                         }`}
                     >
-                        Verify
+                        {isSubmitting ? 'Verifying...' : 'Verify'}
                     </button>
                     </div>
 
@@ -190,8 +258,8 @@ export default function Page() {
                     </p>
                 </div>
 
-                {/* Phone verify */}
-                <div className="text-center">
+                {/* Phone verify - Hidden for now */}
+                {/* <div className="text-center">
                     <Heading as="h2" className="mb-1 text-3xl sm:text-4xl">Verify your Phone Number</Heading>
                     <p className="text-sm text-themeTealLighter">
                     We send a code to <span className="font-semibold text-themeSkyBlue">+91 999 99 99999</span>
@@ -212,9 +280,9 @@ export default function Page() {
                     </div>
 
                     <p className="mt-4 text-sm text-themeTealLight">
-                    Didn’t get a code? <Link href="#" className="text-themeSkyBlue transition duration-500 hover:text-themeTeal">Click to resend</Link>
+                    Didn't get a code? <Link href="#" className="text-themeSkyBlue transition duration-500 hover:text-themeTeal">Click to resend</Link>
                     </p>
-                </div>
+                </div> */}
 
                 <div className="pt-2">
                     <button

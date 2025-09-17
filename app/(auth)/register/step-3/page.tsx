@@ -1,26 +1,93 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { Mail, Video, User, MoveLeft } from "lucide-react";
 import { Button, Heading } from "@/components/ui";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export default function Page() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [email, setEmail] = useState("dineshsharma@gmail.com");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [source, setSource] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [profileCompleted, setProfileCompleted] = useState(false);
+
+  const { completeProfile, error: authError, clearError, isAuthenticated } = useAuth();
+  const router = useRouter();
+
+  // Allow access to profile completion even if not fully authenticated
+  // This page is part of the registration flow
+
+  // Load email from stored user data
+  useEffect(() => {
+    const userData = localStorage.getItem('auth_user');
+    if (userData) {
+      const user = JSON.parse(userData);
+      setEmail(user.email || '');
+    }
+    
+    // Debug: Check what tokens are available
+    console.log('Available tokens in localStorage:');
+    console.log('auth_token:', localStorage.getItem('auth_token') ? 'Present' : 'Missing');
+    console.log('pending_token:', localStorage.getItem('pending_token') ? 'Present' : 'Missing');
+    console.log('auth_user:', localStorage.getItem('auth_user') ? 'Present' : 'Missing');
+  }, []);
 
   const emailOk = /[^@\s]+@[^@\s]+\.[^@\s]+/.test(email);
   const canSubmit = firstName && lastName && emailOk && phone && source;
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
-    // TODO: wire API
-    console.log({ firstName, lastName, email, phone, source });
+    
+    setIsSubmitting(true);
+    setError("");
+    clearError();
+
+    try {
+      const response = await completeProfile({
+        first_name: firstName,
+        last_name: lastName,
+        email: email,
+        phone: phone,
+        source: source,
+      });
+      
+      console.log('Complete profile response:', response);
+      
+      // If the response includes user data and token, update auth state
+      if (response && response.token && response.data) {
+        // Store the new token and user data
+        localStorage.setItem('auth_token', response.token);
+        localStorage.setItem('auth_user', JSON.stringify({
+          id: response.data.id.toString(),
+          email: response.data.email,
+          name: `${firstName} ${lastName}`,
+        }));
+        console.log('Updated auth state with new token and user data');
+      } else {
+        console.log('No token or data in response, using existing auth state');
+      }
+      
+      // Show welcome message instead of immediate redirect
+      setProfileCompleted(true);
+      
+      // Redirect to dashboard after 3 seconds
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 3000);
+    } catch (err) {
+      console.error('Profile completion error:', err);
+      setError("Profile completion failed. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -92,12 +159,48 @@ export default function Page() {
               />
             </div>
             <div className="max-w-xl md:max-w-2xl mx-auto">
-              <div className="text-center mb-8">
-                <Heading as="h2" className="mb-2 text-3xl sm:text-4xl">Create your profile</Heading>
-                <p className="text-sm text-themeTealLighter">Fill all the details to proceed</p>
-              </div>
+              {profileCompleted ? (
+                // Welcome Message
+                <div className="text-center">
+                  <div className="mb-6">
+                    <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-themeTeal text-white mb-4">
+                      <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <Heading as="h2" className="mb-2 text-3xl sm:text-4xl text-themeTeal">
+                      Welcome to InvestApp!
+                    </Heading>
+                    <p className="text-lg text-themeTealLighter mb-4">
+                      Your profile has been completed successfully
+                    </p>
+                    <p className="text-sm text-themeTealLighter">
+                      Redirecting you to your dashboard in a moment...
+                    </p>
+                    <div className="mt-6">
+                      <div className="inline-flex items-center gap-2 text-themeTeal">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-themeTeal"></div>
+                        <span className="text-sm">Loading dashboard...</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Profile Form
+                <>
+                  <div className="text-center mb-8">
+                    <Heading as="h2" className="mb-2 text-3xl sm:text-4xl">Create your profile</Heading>
+                    <p className="text-sm text-themeTealLighter">Fill all the details to proceed</p>
+                  </div>
 
               <form onSubmit={onSubmit} className="space-y-6">
+                {/* Error Message */}
+                {(error || authError) && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md text-sm">
+                    {error || authError}
+                  </div>
+                )}
+
                 {/* Row: First & Last name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <label className="block">
@@ -170,15 +273,17 @@ export default function Page() {
                 <div className="pt-2">
                   <button
                     type="submit"
-                    disabled={!canSubmit}
+                    disabled={!canSubmit || isSubmitting}
                     className={`w-full rounded-full px-6 py-4 text-white font-semibold duration-500 transition ${
-                      canSubmit ? "bg-themeSkyBlue hover:bg-themeTeal cursor-pointer" : "bg-themeTealLighter cursor-not-allowed"
+                      canSubmit && !isSubmitting ? "bg-themeSkyBlue hover:bg-themeTeal cursor-pointer" : "bg-themeTealLighter cursor-not-allowed"
                     }`}
                   >
-                    Submit Details
+                    {isSubmitting ? 'Submitting...' : 'Submit Details'}
                   </button>
                 </div>
               </form>
+                </>
+              )}
             </div>
           </div>
         </section>
