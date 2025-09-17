@@ -1,0 +1,17 @@
+{
+    "production": {
+        "host": "localhost",
+        "user": "root",
+        "password": "root",
+        "database": "invest_app",
+        "dialect": "mysql"
+    },
+     "development": {
+        "host": "localhost",
+        "user": "root",
+        "password": "root",
+        "database": "invest_app",
+        "dialect": "mysql"
+    },
+    "secret": "fnknwdfnnnfsdklnfslkfsdkfnslkfnksnfnsllsfkfsnfnklsnflnleoiw"
+}
