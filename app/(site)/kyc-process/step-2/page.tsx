@@ -3,8 +3,8 @@
 import { useMemo, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  CheckCircle2, Info, Landmark, CreditCard,
-  FileText, MapPin, UserRoundCheck, PenLine, Video
+  CheckCircle2, Landmark, CreditCard,
+  FileText, MapPin, UserRoundCheck, PenLine, Video,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -67,12 +67,11 @@ export default function KYCStep2PanProfile({ onContinue }: Props) {
         {/* Top steps (icon + label). Scrollable on mobile */}
         <div className="-mx-4 px-4 mb-10 lg:mb-16 overflow-x-auto no-scrollbar">
             <div className="flex lg:justify-between gap-4 sm:gap-6 min-w-[680px] lg:min-w-0">
-                {steps.map((s, i) => {
-                const Icon = s.icon as any;
-                const completed = i < current;
-                const active = i === current;
+                {steps.map(({ label, icon: Icon, href }, i) => {
+                    const completed = i < current;
+                    const active = i === current;
 
-                const item =
+                    const item = (
                     <div className="min-w-[88px] flex flex-col items-center text-center group">
                     <div
                         className={[
@@ -93,21 +92,20 @@ export default function KYCStep2PanProfile({ onContinue }: Props) {
                         completed ? "text-emerald-700 font-semibold" :
                         active ? "text-themeTeal font-semibold" : "text-themeTealLighter opacity-50"
                     ].join(" ")}>
-                        {s.label}
+                        {label}
                     </span>
-                    </div>;
+                  </div>
+                );
 
-                return completed
-                    ? (
-                    <Link key={s.label} href={s.href} className="focus:outline-none">
-                        {item}
+                return completed ? (
+                    <Link key={label} href={href} className="focus:outline-none">
+                      {item}
                     </Link>
-                    )
-                    : (
-                    <div key={s.label} aria-disabled className="pointer-events-none select-none">
-                        {item}
+                  ) : (
+                    <div key={label} aria-disabled className="pointer-events-none select-none">
+                      {item}
                     </div>
-                    );
+                  );
                 })}
             </div>
         </div>
