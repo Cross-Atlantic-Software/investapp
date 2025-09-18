@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import db, { sequelizePromise } from "../../utils/database";
 
 export class CompleteProfileService {
@@ -91,12 +92,36 @@ export class CompleteProfileService {
         return;
       }
 
+      // Generate a new JWT token for the user
+      const jwtPayload = { user_id: updatedUser.id, role: updatedUser.role };
+      const tokenSecret = process.env.TOKEN_SECRET;
+      if (!tokenSecret) {
+        res.status(500).json({
+          status: false,
+          error: {
+            code: 500,
+            message: "Server misconfigured: TOKEN_SECRET is missing",
+            details: "Authentication token generation failed"
+          }
+        });
+        return;
+      }
+      const token = jwt.sign(jwtPayload, tokenSecret, { expiresIn: "365d" });
+
       // Remove password from response
       const userResponse = { ...updatedUser.toJSON() } as any;
       delete userResponse.password;
 
       console.log('✅ Profile completed successfully for user:', userId);
-      return (res as any).success(`Welcome ${first_name} ${last_name}! Your profile has been completed successfully.`, userResponse);
+      console.log('🔍 Generated new token for user:', userId);
+      
+      // Return success response with user data and token
+      res.json({
+        status: true,
+        message: `Welcome ${first_name} ${last_name}! Your profile has been completed successfully.`,
+        data: userResponse,
+        token: token
+      });
     } catch (error: any) {
       console.log('❌ Complete profile error:', error.message);
       res.status(500).json({

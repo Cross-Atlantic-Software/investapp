@@ -96,20 +96,6 @@ export default function Page() {
       
       console.log('Complete profile response:', response);
       
-      // If the response includes user data and token, update auth state
-      if (response && response.token && response.data) {
-        // Store the new token and user data
-        localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('auth_user', JSON.stringify({
-          id: response.data.id.toString(),
-          email: response.data.email,
-          name: `${firstName} ${lastName}`,
-        }));
-        console.log('Updated auth state with new token and user data');
-      } else {
-        console.log('No token or data in response, using existing auth state');
-      }
-      
       // Show welcome message instead of immediate redirect
       setProfileCompleted(true);
       

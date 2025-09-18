@@ -27,8 +27,10 @@ export default function DashboardSidebar({ onNavigate }: { onNavigate?: () => vo
               <User className="h-4 w-4" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium text-themeTeal">{user.email}</p>
-              <p className="truncate text-xs text-themeTealLighter">Welcome back!</p>
+              <p className="truncate text-sm font-medium text-themeTeal">
+                {user.name || user.first_name || user.email.split('@')[0]}
+              </p>
+              <p className="truncate text-xs text-themeTealLighter">{user.email}</p>
             </div>
           </div>
         </div>
