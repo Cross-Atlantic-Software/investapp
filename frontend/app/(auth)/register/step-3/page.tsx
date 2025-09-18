@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Video, User, MoveLeft } from "lucide-react";
 import { Button, Heading } from "@/components/ui";
 import { useAuth } from "@/lib/contexts/AuthContext";
@@ -20,16 +20,51 @@ export default function Page() {
 
   const { completeProfile, error: authError, clearError, isAuthenticated } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Allow access to profile completion even if not fully authenticated
   // This page is part of the registration flow
 
-  // Load email from stored user data
+  // Load user data from Google OAuth or localStorage
   useEffect(() => {
-    const userData = localStorage.getItem('auth_user');
-    if (userData) {
-      const user = JSON.parse(userData);
-      setEmail(user.email || '');
+    // Check for Google OAuth data in URL parameters
+    const googleData = searchParams.get('data');
+    if (googleData) {
+      try {
+        const userData = JSON.parse(decodeURIComponent(googleData));
+        console.log('Google OAuth data received:', userData);
+        
+        // Pre-fill form with Google data
+        setFirstName(userData.first_name || '');
+        setLastName(userData.last_name || '');
+        setEmail(userData.email || '');
+        setPhone(userData.phone || '');
+        
+        // Store the token for authentication
+        if (userData.token) {
+          localStorage.setItem('auth_token', userData.token);
+          localStorage.setItem('auth_user', JSON.stringify({
+            id: userData.id || '',
+            email: userData.email || '',
+            name: `${userData.first_name || ''} ${userData.last_name || ''}`.trim(),
+          }));
+        }
+        
+        // Clear the URL parameters to clean up the URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete('data');
+        window.history.replaceState({}, '', url.toString());
+        
+      } catch (error) {
+        console.error('Error parsing Google OAuth data:', error);
+      }
+    } else {
+      // Fallback: Load email from stored user data (for regular registration flow)
+      const userData = localStorage.getItem('auth_user');
+      if (userData) {
+        const user = JSON.parse(userData);
+        setEmail(user.email || '');
+      }
     }
     
     // Debug: Check what tokens are available
@@ -37,7 +72,7 @@ export default function Page() {
     console.log('auth_token:', localStorage.getItem('auth_token') ? 'Present' : 'Missing');
     console.log('pending_token:', localStorage.getItem('pending_token') ? 'Present' : 'Missing');
     console.log('auth_user:', localStorage.getItem('auth_user') ? 'Present' : 'Missing');
-  }, []);
+  }, [searchParams]);
 
   const emailOk = /[^@\s]+@[^@\s]+\.[^@\s]+/.test(email);
   const canSubmit = firstName && lastName && emailOk && phone && source;
