@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 // Updated Roles
 import { UserRole } from "../utils/Roles";
 
-interface UserAttributes {
+interface CmsUserAttributes {
   id: number;
   first_name?: string;
   last_name?: string;
@@ -21,14 +21,14 @@ interface UserAttributes {
   updatedAt?: Date;
 }
 
-type UserCreationAttributes = Optional<
-  UserAttributes,
-  "id" | "status" | "role" | "email_verified" | "phone_verified" | "auth_provider"
+type CmsUserCreationAttributes = Optional<
+  CmsUserAttributes,
+  "id" | "status" | "email_verified" | "phone_verified" | "auth_provider"
 >;
 
-class User
-  extends Model<UserAttributes, UserCreationAttributes>
-  implements UserAttributes
+class CmsUser
+  extends Model<CmsUserAttributes, CmsUserCreationAttributes>
+  implements CmsUserAttributes
 {
   public id!: number;
   public first_name?: string;
@@ -53,8 +53,8 @@ class User
 }
 
 // Initialize the model
-export function initializeUserModel(sequelize: Sequelize) {
-  User.init(
+export function initializeCmsUserModel(sequelize: Sequelize) {
+  CmsUser.init(
     {
       id: {
         type: DataTypes.INTEGER.UNSIGNED,
@@ -75,20 +75,16 @@ export function initializeUserModel(sequelize: Sequelize) {
             UserRole.SuperAdmin,
             UserRole.Blogger,
             UserRole.SiteManager,
-            UserRole.RetailInvestor,
-            UserRole.HNIs_UHNIs,
-            UserRole.NRI,
-            UserRole.InstitutionalInvestor,
-            UserRole.Intermediary_Broker,
           ]],
         },
       },
       auth_provider: {
         type: DataTypes.STRING,
         allowNull: false,
-        defaultValue: "Email", // Default role set to Email (3)
+        defaultValue: "Admin", // Default for admin-created users
         validate: {
           isIn: [[
+            "Admin",
             "Email",
             "Google",
             "Phone",
@@ -98,21 +94,21 @@ export function initializeUserModel(sequelize: Sequelize) {
       phone: { type: DataTypes.STRING },
       status: { type: DataTypes.INTEGER, defaultValue: 1 },
       country_code: { type: DataTypes.STRING },
-      email_verified: { type: DataTypes.INTEGER, defaultValue: 0 },
+      email_verified: { type: DataTypes.INTEGER, defaultValue: 1 }, // Admin-created users are verified
       phone_verified: { type: DataTypes.INTEGER, defaultValue: 0 },
     },
     {
       sequelize,
-      modelName: "User",
-      tableName: "users",
+      modelName: "CmsUser",
+      tableName: "cms_users",
       timestamps: true,
       hooks: {
-        beforeCreate: async (user: User) => {
+        beforeCreate: async (user: CmsUser) => {
           if (user.password) {
             user.password = await bcrypt.hash(user.password, 10);
           }
         },
-        beforeUpdate: async (user: User) => {
+        beforeUpdate: async (user: CmsUser) => {
           if (user.changed("password")) {
             user.password = await bcrypt.hash(user.password, 10);
           }
@@ -121,7 +117,7 @@ export function initializeUserModel(sequelize: Sequelize) {
     }
   );
 
-  return User;
+  return CmsUser;
 }
 
-export default User;
+export default CmsUser;
