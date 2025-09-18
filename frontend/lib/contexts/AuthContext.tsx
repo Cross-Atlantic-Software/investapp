@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authApi, AuthApiError, RegisterRequest, LoginRequest, VerifyEmailRequest, CompleteProfileRequest, AuthResponse } from '@/lib/api/auth';
+import { authApi, AuthApiError, RegisterRequest, LoginRequest, VerifyEmailRequest, CompleteProfileRequest, AuthResponse, GoogleAuthRequest } from '@/lib/api/auth';
 
 interface User {
   id: string;
@@ -18,6 +18,8 @@ interface AuthContextType {
   register: (data: RegisterRequest) => Promise<AuthResponse>;
   verifyEmail: (data: VerifyEmailRequest) => Promise<void>;
   completeProfile: (data: CompleteProfileRequest) => Promise<AuthResponse>;
+  googleAuth: () => Promise<void>;
+  googleTokenVerify: (data: GoogleAuthRequest) => Promise<AuthResponse & { needsProfileCompletion?: boolean; isNewUser?: boolean }>;
   logout: () => void;
   error: string | null;
   clearError: () => void;
@@ -167,6 +169,67 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const googleAuth = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await authApi.googleAuth();
+      
+      if (response.authUrl) {
+        // Redirect to Google OAuth URL
+        window.location.href = response.authUrl;
+      } else {
+        throw new Error('Failed to get Google OAuth URL');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof AuthApiError 
+        ? error.message 
+        : 'An unexpected error occurred during Google authentication';
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const googleTokenVerify = async (data: GoogleAuthRequest) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await authApi.googleTokenVerify(data);
+      
+      if (response.status && response.token && response.data) {
+        setToken(response.token);
+        setUser({
+          id: response.data.id.toString(),
+          email: response.data.email,
+        });
+        
+        // Save to localStorage
+        localStorage.setItem('auth_token', response.token);
+        localStorage.setItem('auth_user', JSON.stringify({
+          id: response.data.id.toString(),
+          email: response.data.email,
+        }));
+
+        // Return the response with profile completion status
+        return response;
+      } else {
+        throw new Error(response.message || 'Google authentication failed');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof AuthApiError 
+        ? error.message 
+        : 'An unexpected error occurred during Google authentication';
+      setError(errorMessage);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const logout = () => {
     setUser(null);
     setToken(null);
@@ -183,6 +246,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     register,
     verifyEmail,
     completeProfile,
+    googleAuth,
+    googleTokenVerify,
     logout,
     error,
     clearError,
