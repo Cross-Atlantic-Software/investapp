@@ -1,4 +1,5 @@
-const API_BASE_URL = 'http://localhost:8888/api'; // Make sure this matches your backend port
+// Get API base URL from environment variables
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888/api';
 
 export interface AuthResponse {
   status: boolean;
