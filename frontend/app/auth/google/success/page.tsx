@@ -17,19 +17,24 @@ export default function GoogleAuthSuccess() {
       try {
         const user = JSON.parse(decodeURIComponent(userStr));
         
-        // Save to localStorage and context
-        localStorage.setItem('auth_token', token);
-        localStorage.setItem('auth_user', JSON.stringify({
+        // Prepare user data with name fields
+        const userData = {
           id: user.id.toString(),
           email: user.email,
-        }));
+          first_name: user.first_name,
+          last_name: user.last_name,
+          name: user.first_name && user.last_name 
+            ? `${user.first_name} ${user.last_name}`.trim()
+            : user.first_name || user.last_name || user.email.split('@')[0],
+        };
+
+        // Save to localStorage and context
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
 
         // Update context (if setToken and setUser are available)
         if (setToken) setToken(token);
-        if (setUser) setUser({
-          id: user.id.toString(),
-          email: user.email,
-        });
+        if (setUser) setUser(userData);
 
         // Redirect to dashboard
         router.push('/dashboard');

@@ -63,6 +63,7 @@ export class GoogleCallbackService {
         last_name: payload.family_name || '',
         google_id: payload.sub,
         profile_picture: payload.picture || '',
+        phone: '', // Phone number not available from Google OAuth
       };
 
       // Log the processed Google user data
@@ -97,6 +98,7 @@ export class GoogleCallbackService {
               auth_provider: 'Google',
               first_name: user.first_name || googleUser.first_name,
               last_name: user.last_name || googleUser.last_name,
+              phone: user.phone || googleUser.phone,
               email_verified: 1, // Google accounts are pre-verified
             },
             { where: { id: user.id } }
@@ -112,6 +114,7 @@ export class GoogleCallbackService {
             {
               first_name: user.first_name || googleUser.first_name,
               last_name: user.last_name || googleUser.last_name,
+              phone: user.phone || googleUser.phone,
             },
             { where: { id: user.id } }
           );
@@ -130,6 +133,7 @@ export class GoogleCallbackService {
           email: googleUser.email,
           first_name: googleUser.first_name,
           last_name: googleUser.last_name,
+          phone: '', // Phone number will be collected in step-3
           auth_provider: 'Google',
           email_verified: 1, // Google accounts are pre-verified
           password: randomstring.generate(32), // Generate random password for Google users
@@ -179,7 +183,14 @@ export class GoogleCallbackService {
       if (needsProfileCompletion) {
         // User needs to complete profile - redirect to step-3
         console.log('🔍 User needs profile completion - redirecting to step-3');
-        console.log('🔍 Data being sent to frontend:', JSON.stringify(userData, null, 2));
+        console.log('🔍 Data being sent to frontend:', JSON.stringify({
+          id: userData.id,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          email: userData.email,
+          phone: userData.phone,
+          token: '[REDACTED]'
+        }, null, 2));
         frontendUrl = `http://localhost:3000/register/step-3?data=${encodeURIComponent(JSON.stringify(userData))}`;
       } else {
         // User has complete profile - redirect to dashboard
@@ -189,7 +200,7 @@ export class GoogleCallbackService {
           email: user.email,
           first_name: user.first_name,
           last_name: user.last_name,
-          token: token
+          token: '[REDACTED]'
         }, null, 2));
         frontendUrl = `http://localhost:3000/auth/google/success?token=${token}&user=${encodeURIComponent(JSON.stringify({
           id: user.id,

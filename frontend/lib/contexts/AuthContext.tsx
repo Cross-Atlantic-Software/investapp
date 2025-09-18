@@ -6,7 +6,9 @@ import { authApi, AuthApiError, RegisterRequest, LoginRequest, VerifyEmailReques
 interface User {
   id: string;
   email: string;
-  name?: string;
+  first_name?: string;
+  last_name?: string;
+  name?: string; // Computed from first_name + last_name
 }
 
 interface AuthContextType {
@@ -77,17 +79,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.status && response.token && response.data) {
         setToken(response.token);
-        setUser({
+        const userData = {
           id: response.data.id.toString(),
           email: response.data.email,
-        });
+          first_name: response.data.first_name,
+          last_name: response.data.last_name,
+          name: response.data.first_name && response.data.last_name 
+            ? `${response.data.first_name} ${response.data.last_name}`.trim()
+            : response.data.first_name || response.data.last_name || response.data.email.split('@')[0],
+        };
+        
+        setUser(userData);
         
         // Save to localStorage
         localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('auth_user', JSON.stringify({
-          id: response.data.id.toString(),
-          email: response.data.email,
-        }));
+        localStorage.setItem('auth_user', JSON.stringify(userData));
       } else {
         throw new Error(response.message || 'Login failed');
       }
@@ -157,6 +163,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         throw new Error(response.message || 'Profile completion failed');
       }
       
+      // If the response includes user data and token, update auth state
+      if (response.token && response.data) {
+        setToken(response.token);
+        const userData = {
+          id: response.data.id.toString(),
+          email: response.data.email,
+          first_name: response.data.first_name,
+          last_name: response.data.last_name,
+          name: response.data.first_name && response.data.last_name 
+            ? `${response.data.first_name} ${response.data.last_name}`.trim()
+            : response.data.first_name || response.data.last_name || response.data.email.split('@')[0],
+        };
+        setUser(userData);
+        
+        // Save to localStorage
+        localStorage.setItem('auth_token', response.token);
+        localStorage.setItem('auth_user', JSON.stringify(userData));
+      }
+      
       return response;
     } catch (error) {
       const errorMessage = error instanceof AuthApiError 
@@ -202,17 +227,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.status && response.token && response.data) {
         setToken(response.token);
-        setUser({
+        const userData = {
           id: response.data.id.toString(),
           email: response.data.email,
-        });
+          first_name: response.data.first_name,
+          last_name: response.data.last_name,
+          name: response.data.first_name && response.data.last_name 
+            ? `${response.data.first_name} ${response.data.last_name}`.trim()
+            : response.data.first_name || response.data.last_name || response.data.email.split('@')[0],
+        };
+        
+        setUser(userData);
         
         // Save to localStorage
         localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('auth_user', JSON.stringify({
-          id: response.data.id.toString(),
-          email: response.data.email,
-        }));
+        localStorage.setItem('auth_user', JSON.stringify(userData));
 
         // Return the response with profile completion status
         return response;
