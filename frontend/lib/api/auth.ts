@@ -44,6 +44,10 @@ export interface CompleteProfileRequest {
   source: string;
 }
 
+export interface GoogleAuthRequest {
+  idToken: string;
+}
+
 export interface ApiError {
   message: string;
   status?: number;
@@ -219,6 +223,48 @@ export const authApi = {
         throw error;
       }
       throw new AuthApiError('Network error occurred');
+    }
+  },
+
+  async googleAuth(): Promise<{ authUrl: string }> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      return handleResponse<{ authUrl: string }>(response);
+    } catch (error) {
+      if (error instanceof AuthApiError) {
+        throw error;
+      }
+      throw new AuthApiError('Network error occurred');
+    }
+  },
+
+  async googleTokenVerify(data: GoogleAuthRequest): Promise<AuthResponse> {
+    try {
+      console.log('Sending Google token verification request to:', `${API_BASE_URL}/auth/google/verify`);
+      
+      const response = await fetch(`${API_BASE_URL}/auth/google/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      
+      console.log('Google token verification response status:', response.status);
+      
+      return handleResponse<AuthResponse>(response);
+    } catch (error) {
+      console.error('Google token verification error:', error);
+      if (error instanceof AuthApiError) {
+        throw error;
+      }
+      throw new AuthApiError('Google authentication failed');
     }
   },
 };

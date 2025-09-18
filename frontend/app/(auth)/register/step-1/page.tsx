@@ -15,7 +15,7 @@ export default function Page() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
   
-  const { register, error: authError, clearError, isAuthenticated } = useAuth();
+  const { register, googleAuth, error: authError, clearError, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   // Redirect if already authenticated
@@ -43,6 +43,16 @@ export default function Page() {
       setError("Registration failed. Please try again.");
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleAuth = async () => {
+    try {
+      setError("");
+      clearError();
+      await googleAuth();
+    } catch (err) {
+      setError("Google authentication failed. Please try again.");
     }
   };
 
@@ -199,11 +209,17 @@ export default function Page() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   <button
                     type="button"
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-themeTealLight px-4 py-3 sm:py-4 hover:bg-themeTealWhite cursor-pointer"
+                    onClick={handleGoogleAuth}
+                    disabled={isLoading}
+                    className={`inline-flex items-center justify-center gap-2 rounded-full border border-themeTealLight px-4 py-3 sm:py-4 hover:bg-themeTealWhite transition duration-300 ${
+                      isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                    }`}
                   >
                     {/* Google icon */}
                     <svg className="h-5 w-5" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.6 32.6 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.9 6.1 29.7 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16.1 18.9 12 24 12c3.1 0 5.9 1.2 8 3.1l5.7-5.7C34.9 6.1 29.7 4 24 4 16.3 4 9.6 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 10-2 13.6-5.4l-6.3-5.2C29.1 34.6 26.7 36 24 36c-5.3 0-9.6-3.4-11.3-7.9l-6.6 5.1C9.4 39.6 16.1 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.3 3.4-5.2 6-9.3 6-5.3 0-9.6-3.4-11.3-7.9l-6.6 5.1C9.4 39.6 16.1 44 24 44c8.5 0 19-6.2 19-20 0-1.3-.1-2.7-.4-3.5z"/></svg>
-                    <span className="font-medium">Register with Google</span>
+                    <span className="font-medium">
+                      {isLoading ? 'Connecting...' : 'Register with Google'}
+                    </span>
                   </button>
 
                   <button
