@@ -2,7 +2,6 @@ import express from 'express';
 import routes from "./routes";
 import cors from "cors";
 import dotenv from "dotenv";
-import fileUpload from 'express-fileupload';
 import morgan from "morgan"; // 📌 Added morgan
 import './utils/database'; // Import database to ensure initialization
 // import { poolMonitor } from './utils/pooling'; // Pool monitoring disabled
@@ -20,9 +19,9 @@ const app = express();
 const port = 8888;
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Add support for form data
 dotenv.config();
 app.use(apiResponse);
-app.use(fileUpload());
 app.use(morgan("dev"));
 // 📌 Use morgan for logging HTTP requests
 
