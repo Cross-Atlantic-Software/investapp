@@ -341,17 +341,49 @@
             "method": "POST",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
                 "value": "Bearer {{admin_token}}"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Microsoft Corporation\",\n  \"icon\": \"https://example.com/microsoft-icon.png\",\n  \"company_name\": \"Microsoft Corporation\",\n  \"price_per_share\": \"$300.00\",\n  \"valuation\": \"$2.2T\",\n  \"price_change\": \"+$5.20\",\n  \"percentage_change\": \"+1.76%\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Microsoft Corporation",
+                  "type": "text"
+                },
+                {
+                  "key": "company_name",
+                  "value": "Microsoft Corporation",
+                  "type": "text"
+                },
+                {
+                  "key": "price_per_share",
+                  "value": "$300.00",
+                  "type": "text"
+                },
+                {
+                  "key": "valuation",
+                  "value": "$2.2T",
+                  "type": "text"
+                },
+                {
+                  "key": "price_change",
+                  "value": "+$5.20",
+                  "type": "text"
+                },
+                {
+                  "key": "percentage_change",
+                  "value": "+1.76%",
+                  "type": "text"
+                },
+                {
+                  "key": "icon",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/admin/stocks",
@@ -366,17 +398,39 @@
             "method": "PUT",
             "header": [
               {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
                 "key": "Authorization",
                 "value": "Bearer {{admin_token}}"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Microsoft Corporation Updated\",\n  \"price_per_share\": \"$305.00\",\n  \"price_change\": \"+$10.20\",\n  \"percentage_change\": \"+3.46%\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "title",
+                  "value": "Microsoft Corporation Updated",
+                  "type": "text"
+                },
+                {
+                  "key": "price_per_share",
+                  "value": "$305.00",
+                  "type": "text"
+                },
+                {
+                  "key": "price_change",
+                  "value": "+$10.20",
+                  "type": "text"
+                },
+                {
+                  "key": "percentage_change",
+                  "value": "+3.46%",
+                  "type": "text"
+                },
+                {
+                  "key": "icon",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             },
             "url": {
               "raw": "{{base_url}}/admin/stocks/2",

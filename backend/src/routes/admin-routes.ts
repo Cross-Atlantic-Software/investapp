@@ -1,5 +1,6 @@
 import express from "express";
 import adminMiddleware from "../utils/middleware/admin-middleware";
+import { uploadIcon } from "../utils/middleware/s3Upload";
 
 // User Management Controllers
 import {
@@ -45,8 +46,8 @@ router.delete("/users/:id", deleteUser);
 router.get("/stocks", getAllStocks);
 router.get("/stocks/stats", getStockStats);
 router.get("/stocks/:id", getStockById);
-router.post("/stocks", createStock);
-router.put("/stocks/:id", updateStock);
+router.post("/stocks", uploadIcon.any(), createStock);
+router.put("/stocks/:id", uploadIcon.any(), updateStock);
 router.delete("/stocks/:id", deleteStock);
 router.delete("/stocks/bulk", bulkDeleteStocks);
 

@@ -474,22 +474,21 @@ Authorization: Bearer {{admin_token}}
 
 **Headers:**
 ```
-Content-Type: application/json
 Authorization: Bearer {{admin_token}}
 ```
 
-**Body:**
-```json
-{
-  "title": "Microsoft Corporation",
-  "icon": "https://example.com/microsoft-icon.png",
-  "company_name": "Microsoft Corporation",
-  "price_per_share": "$300.00",
-  "valuation": "$2.2T",
-  "price_change": "+$5.20",
-  "percentage_change": "+1.76%"
-}
+**Body (Form Data):**
 ```
+title: Microsoft Corporation
+company_name: Microsoft Corporation
+price_per_share: $300.00
+valuation: $2.2T
+price_change: +$5.20
+percentage_change: +1.76%
+icon: [FILE] (optional - upload image file)
+```
+
+**Note:** Use `form-data` in Postman, not `raw` JSON. The `icon` field should be a file upload.
 
 **Response:**
 ```json
@@ -516,19 +515,19 @@ Authorization: Bearer {{admin_token}}
 
 **Headers:**
 ```
-Content-Type: application/json
 Authorization: Bearer {{admin_token}}
 ```
 
-**Body:**
-```json
-{
-  "title": "Microsoft Corporation Updated",
-  "price_per_share": "$305.00",
-  "price_change": "+$10.20",
-  "percentage_change": "+3.46%"
-}
+**Body (Form Data):**
 ```
+title: Microsoft Corporation Updated
+price_per_share: $305.00
+price_change: +$10.20
+percentage_change: +3.46%
+icon: [FILE] (optional - upload new image file)
+```
+
+**Note:** Use `form-data` in Postman, not `raw` JSON. The `icon` field should be a file upload. If no file is provided, the existing icon will be kept.
 
 **Response:**
 ```json
@@ -700,6 +699,8 @@ You can also import this collection by copying the JSON structure and importing 
 4. **Environment Variables**: Set up Postman environment for easy testing
 5. **Error Handling**: All APIs return consistent error format
 6. **Pagination**: List endpoints support pagination with `page` and `limit` parameters
+7. **File Uploads**: Stock creation/update supports icon uploads to AWS S3
+8. **S3 Configuration**: Ensure AWS credentials are properly configured in environment variables
 
 ---
 

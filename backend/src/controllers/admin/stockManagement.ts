@@ -2,6 +2,11 @@ import { Request, Response } from "express";
 import { db } from "../../utils/database";
 import { Op } from "sequelize";
 
+// Extend Request interface to include files property from multer
+interface MulterRequest extends Request {
+  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+}
+
 // Get all stocks with pagination
 export const getAllStocks = async (req: Request, res: Response) => {
   try {
@@ -81,30 +86,65 @@ export const getStockById = async (req: Request, res: Response) => {
 };
 
 // Create new stock
-export const createStock = async (req: Request, res: Response) => {
+export const createStock = async (req: MulterRequest, res: Response) => {
   try {
+    // Debug: Log the request body and files
+    console.log("Request body:", req.body);
+    console.log("Request files:", req.files);
+    
+    // Clean up the request body by trimming field names and values
+    const cleanedBody: any = {};
+    Object.keys(req.body).forEach(key => {
+      const cleanKey = key.trim().replace(/[:]/g, ''); // Remove spaces and colons
+      cleanedBody[cleanKey] = req.body[key];
+    });
+    
     const {
       title,
-      icon,
       company_name,
       price_per_share,
       valuation,
       price_change,
       percentage_change
-    } = req.body;
+    } = cleanedBody;
 
     // Validate required fields
     if (!title) {
       return res.status(400).json({
         success: false,
-        message: "Title is required"
+        message: "Title is required",
+        debug: {
+          originalBody: req.body,
+          cleanedBody: cleanedBody,
+          receivedFiles: req.files
+        }
       });
+    }
+
+    // Handle icon upload to S3
+    let iconUrl: string | undefined = undefined;
+    if (req.files) {
+      let file: Express.Multer.File | undefined;
+      
+      // Handle both array and object formats
+      if (Array.isArray(req.files)) {
+        file = req.files[0];
+      } else {
+        // Get the first file from any field
+        const fileArrays = Object.values(req.files);
+        file = fileArrays.length > 0 ? fileArrays[0][0] : undefined;
+      }
+      
+      if (file) {
+        const s3File = file as any;
+        iconUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
+      }
     }
 
     // Create new stock
     const newStock = await db.Product.create({
       title,
-      icon,
+      icon: iconUrl,
       company_name,
       price_per_share,
       valuation,
@@ -121,18 +161,18 @@ export const createStock = async (req: Request, res: Response) => {
     console.error("Error creating stock:", error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
+      error: process.env.NODE_ENV === 'development' ? error : undefined
     });
   }
 };
 
 // Update stock
-export const updateStock = async (req: Request, res: Response) => {
+export const updateStock = async (req: MulterRequest, res: Response) => {
   try {
     const { id } = req.params;
     const {
       title,
-      icon,
       company_name,
       price_per_share,
       valuation,
@@ -148,10 +188,30 @@ export const updateStock = async (req: Request, res: Response) => {
       });
     }
 
+    // Handle icon upload to S3
+    let iconUrl = stock.icon; // Keep existing icon by default
+    if (req.files) {
+      let file: Express.Multer.File | undefined;
+      
+      // Handle both array and object formats
+      if (Array.isArray(req.files)) {
+        file = req.files[0];
+      } else {
+        // Get the first file from any field
+        const fileArrays = Object.values(req.files);
+        file = fileArrays.length > 0 ? fileArrays[0][0] : undefined;
+      }
+      
+      if (file) {
+        const s3File = file as any;
+        iconUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
+      }
+    }
+
     // Update stock
     await stock.update({
       title: title !== undefined ? title : stock.title,
-      icon: icon !== undefined ? icon : stock.icon,
+      icon: iconUrl,
       company_name: company_name !== undefined ? company_name : stock.company_name,
       price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,
       valuation: valuation !== undefined ? valuation : stock.valuation,
