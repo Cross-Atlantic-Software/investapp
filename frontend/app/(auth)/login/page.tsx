@@ -16,7 +16,7 @@ export default function Page() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   
-  const { login, googleAuth, error: authError, clearError, isAuthenticated, isLoading } = useAuth();
+  const { login, googleAuth, error: authError, clearError, isAuthenticated } = useAuth();
   const router = useRouter();
 
   // Redirect if already authenticated
@@ -49,7 +49,7 @@ export default function Page() {
       setError("");
       clearError();
       await googleAuth();
-    } catch (err) {
+    } catch {
       setError("Google authentication failed. Please try again.");
       setIsGoogleLoading(false);
     }
