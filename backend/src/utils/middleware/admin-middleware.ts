@@ -38,7 +38,11 @@ export default function adminMiddleware(req: Request, res: Response, next: NextF
     // Verify the token and decode it
     const decoded = jwt.verify(token, process.env.TOKEN_SECRET as string) as User 
     // Attach the decoded user to the request object
-     if(decoded.role !== UserRole.Admin && decoded.role !== UserRole.SuperAdmin){
+    // Allow all CMS users to access admin panel (Admin, SuperAdmin, Blogger, SiteManager)
+    if(decoded.role !== UserRole.Admin && 
+       decoded.role !== UserRole.SuperAdmin && 
+       decoded.role !== UserRole.Blogger && 
+       decoded.role !== UserRole.SiteManager){
         res.status(401).json({ message: "Auth Error", status: false });
         return;
     }

@@ -299,13 +299,22 @@ Authorization: Bearer {{admin_token}}
     "phone": "+1234567890",
     "status": 1,
     "country_code": "+1",
-    "email_verified": 0,
+    "email_verified": 1,
     "phone_verified": 0,
     "createdAt": "2025-01-18T10:00:00.000Z",
     "updatedAt": "2025-01-18T10:00:00.000Z"
   }
 }
 ```
+
+**Important Notes:**
+- **Auth Provider Logic**: The `auth_provider` field is automatically set based on the creator's role:
+  - If **SuperAdmin** creates the user → `auth_provider = "SuperAdmin"`
+  - If **Admin** creates the user → `auth_provider = "Admin"`
+- **Role Permissions**:
+  - **Admin users** can only create users with roles lower than Admin
+  - **SuperAdmin users** can create any role including Admin users
+- **Email Verification**: Admin-created users are automatically marked as `email_verified: 1`
 
 ### 4. Update CMS User
 **PUT** `{{base_url}}/admin/users/2`
@@ -342,13 +351,25 @@ Authorization: Bearer {{admin_token}}
     "phone": "+9876543210",
     "status": 1,
     "country_code": "+1",
-    "email_verified": 0,
+    "email_verified": 1,
     "phone_verified": 0,
     "createdAt": "2025-01-18T10:00:00.000Z",
     "updatedAt": "2025-01-18T10:01:00.000Z"
   }
 }
 ```
+
+**Role Update Permissions:**
+- **Admin users** cannot promote users to SuperAdmin or Admin roles
+- **Admin users** cannot promote users to higher roles than their own
+- **SuperAdmin users** can update any user's role
+- **Error Response** (403 Forbidden) if unauthorized role assignment is attempted:
+  ```json
+  {
+    "success": false,
+    "message": "Admin users cannot promote users to SuperAdmin"
+  }
+  ```
 
 ### 5. Delete CMS User
 **DELETE** `{{base_url}}/admin/users/2`
@@ -390,6 +411,52 @@ Authorization: Bearer {{admin_token}}
       "SiteManager": 1
     }
   }
+}
+```
+
+---
+
+## 🔐 User Role Hierarchy & Permissions
+
+### Role Hierarchy (Higher number = Higher privilege)
+```
+SuperAdmin (11) > Admin (10) > SiteManager (12) > Blogger (13)
+```
+
+### Permission Matrix
+
+| Action | SuperAdmin | Admin | SiteManager | Blogger |
+|--------|------------|-------|-------------|---------|
+| **Create Users** | ✅ Any role | ✅ Lower roles only | ❌ No | ❌ No |
+| **Update Users** | ✅ Any role | ✅ Lower roles only | ❌ No | ❌ No |
+| **Delete Users** | ✅ Any (except Admin/SuperAdmin) | ✅ Lower roles only | ❌ No | ❌ No |
+| **View Users** | ✅ All | ✅ All | ❌ No | ❌ No |
+| **Create Stocks** | ✅ Yes | ✅ Yes | ❌ No | ❌ No |
+| **Update Stocks** | ✅ Yes | ✅ Yes | ❌ No | ❌ No |
+| **Delete Stocks** | ✅ Yes | ✅ Yes | ❌ No | ❌ No |
+
+### Auth Provider Assignment
+- **SuperAdmin creates user** → `auth_provider = "SuperAdmin"`
+- **Admin creates user** → `auth_provider = "Admin"`
+
+### Common Error Responses
+```json
+// 403 Forbidden - Unauthorized role assignment
+{
+  "success": false,
+  "message": "Admin users cannot create SuperAdmin users"
+}
+
+// 403 Forbidden - Unauthorized role promotion
+{
+  "success": false,
+  "message": "Admin users cannot promote users to SuperAdmin"
+}
+
+// 403 Forbidden - Insufficient privileges
+{
+  "success": false,
+  "message": "Only Admin and SuperAdmin can create CMS users"
 }
 ```
 
@@ -696,11 +763,16 @@ You can also import this collection by copying the JSON structure and importing 
 1. **Separate Systems**: Frontend and Admin are completely separate
 2. **Different Tokens**: Use appropriate token for each system
 3. **Role-Based Access**: Admin routes require Admin/SuperAdmin roles
-4. **Environment Variables**: Set up Postman environment for easy testing
-5. **Error Handling**: All APIs return consistent error format
-6. **Pagination**: List endpoints support pagination with `page` and `limit` parameters
-7. **File Uploads**: Stock creation/update supports icon uploads to AWS S3
-8. **S3 Configuration**: Ensure AWS credentials are properly configured in environment variables
+4. **Dynamic Auth Provider**: Auth provider is automatically set based on creator's role
+5. **Role Hierarchy**: SuperAdmin (11) > Admin (10) > SiteManager (12) > Blogger (13)
+6. **Permission Restrictions**: Users cannot create/update users with higher roles than themselves
+7. **Email Verification**: Admin-created users are automatically verified
+8. **Environment Variables**: Set up Postman environment for easy testing
+9. **Error Handling**: All APIs return consistent error format with detailed messages
+10. **Pagination**: List endpoints support pagination with `page` and `limit` parameters
+11. **File Uploads**: Stock creation/update supports icon uploads to AWS S3
+12. **S3 Configuration**: Ensure AWS credentials are properly configured in environment variables
+13. **Audit Logging**: All user creation and updates are logged with creator information
 
 ---
 

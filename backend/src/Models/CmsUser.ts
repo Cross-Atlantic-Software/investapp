@@ -85,6 +85,7 @@ export function initializeCmsUserModel(sequelize: Sequelize) {
         validate: {
           isIn: [[
             "Admin",
+            "SuperAdmin",
             "Email",
             "Google",
             "Phone",
