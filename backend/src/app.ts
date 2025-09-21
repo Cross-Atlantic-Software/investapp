@@ -25,6 +25,10 @@ const corsOptions = {
 
 const app = express();
 const port = 8888;
+
+// Trust proxy for nginx reverse proxy
+app.set('trust proxy', 1);
+
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // Add support for form data
