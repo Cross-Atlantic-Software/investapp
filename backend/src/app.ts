@@ -11,6 +11,8 @@ import apiResponse from './utils/apiResponse';
 const corsOptions = {
   origin: [
     process.env.FRONTEND_URL || 'http://localhost:3000',
+    'https://investapp.click',
+    'https://www.investapp.click',
     'http://localhost:3001', 
     'http://127.0.0.1:3000', 
     'http://65.2.169.56:3000'
