@@ -19,10 +19,11 @@ interface SearchFilters {
   last_active_to: string;
 }
 
-interface FilterOptions {
-  roles: number[];
-  authProviders: string[];
-}
+// Commented out since FilterOptions is not currently being used
+// interface FilterOptions {
+//   roles: number[];
+//   authProviders: string[];
+// }
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -53,10 +54,10 @@ export default function UsersPage() {
     last_active_from: '',
     last_active_to: '',
   });
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    roles: [],
-    authProviders: []
-  });
+  // const [filterOptions, setFilterOptions] = useState<FilterOptions>({
+  //   roles: [],
+  //   authProviders: []
+  // });
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -66,12 +67,6 @@ export default function UsersPage() {
   });
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-  useEffect(() => {
-    fetchUsers();
-    fetchFilterOptions();
-    getCurrentUserRole();
-  }, []);
 
   const getCurrentUserRole = () => {
     try {
@@ -85,7 +80,7 @@ export default function UsersPage() {
     }
   };
 
-  const fetchFilterOptions = async () => {
+  const fetchFilterOptions = useCallback(async () => {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
 
@@ -94,12 +89,12 @@ export default function UsersPage() {
       });
       const data = await response.json();
       if (data.success) {
-        setFilterOptions(data.data);
+        // setFilterOptions(data.data); // Commented out since filterOptions is not being used
       }
     } catch (error) {
       console.error('Error fetching filter options:', error);
     }
-  };
+  }, []);
 
   const buildQueryString = useCallback((filters: SearchFilters, page: number = 1, sortBy?: string, sortOrder?: string) => {
     const params = new URLSearchParams();
@@ -123,7 +118,7 @@ export default function UsersPage() {
     return params.toString();
   }, []);
 
-  const fetchUsers = async (page: number = 1, showLoading: boolean = true) => {
+  const fetchUsers = useCallback(async (page: number = 1, showLoading: boolean = true) => {
     try {
       if (showLoading) setLoading(true);
       const token = sessionStorage.getItem('adminToken') || '';
@@ -146,7 +141,13 @@ export default function UsersPage() {
     } finally {
       if (showLoading) setLoading(false);
     }
-  };
+  }, [buildQueryString, searchFilters, sortBy, sortOrder]);
+
+  useEffect(() => {
+    fetchUsers();
+    fetchFilterOptions();
+    getCurrentUserRole();
+  }, [fetchUsers, fetchFilterOptions]);
 
   const handleSearchChange = (field: keyof SearchFilters, value: string) => {
     setSearchFilters(prev => ({
@@ -155,9 +156,10 @@ export default function UsersPage() {
     }));
   };
 
-  const handleSearch = () => {
-    fetchUsers(1);
-  };
+  // handleSearch is available but currently unused as we use real-time search
+  // const handleSearch = () => {
+  //   fetchUsers(1);
+  // };
 
   // Debounced search effect - faster and more responsive, no loading state
   useEffect(() => {
@@ -166,27 +168,29 @@ export default function UsersPage() {
     }, 300); // Reduced to 300ms for faster response
 
     return () => clearTimeout(timeoutId);
-  }, [searchFilters.search]);
+  }, [searchFilters.search, fetchUsers]);
 
-  const handleClearFilters = () => {
-    setSearchFilters({
-      search: '',
-      role: '',
-      auth_provider: '',
-      status: '',
-      email_verified: '',
-      phone_verified: '',
-      date_from: '',
-      date_to: '',
-      last_active_from: '',
-      last_active_to: '',
-    });
-    fetchUsers(1);
-  };
+  // handleClearFilters is available but currently unused
+  // const handleClearFilters = () => {
+  //   setSearchFilters({
+  //     search: '',
+  //     role: '',
+  //     auth_provider: '',
+  //     status: '',
+  //     email_verified: '',
+  //     phone_verified: '',
+  //     date_from: '',
+  //     date_to: '',
+  //     last_active_from: '',
+  //     last_active_to: '',
+  //   });
+  //   fetchUsers(1);
+  // };
 
-  const handlePageChange = (page: number) => {
-    fetchUsers(page);
-  };
+  // handlePageChange is available but currently unused
+  // const handlePageChange = (page: number) => {
+  //   fetchUsers(page);
+  // };
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -201,15 +205,16 @@ export default function UsersPage() {
   // Check if current user can create users (only Admin and SuperAdmin)
   const canCreateUsers = currentUserRole === 10 || currentUserRole === 11;
 
-  const getRoleName = (role: number) => {
-    switch (role) {
-      case 10: return 'Admin';
-      case 11: return 'SuperAdmin';
-      case 12: return 'Blogger';
-      case 13: return 'Site Manager';
-      default: return 'Unknown';
-    }
-  };
+  // getRoleName is available but currently unused
+  // const getRoleName = (role: number) => {
+  //   switch (role) {
+  //     case 10: return 'Admin';
+  //     case 11: return 'SuperAdmin';
+  //     case 12: return 'Blogger';
+  //     case 13: return 'Site Manager';
+  //     default: return 'Unknown';
+  //   }
+  // };
 
   return (
     <div className="space-y-6 overflow-x-hidden relative">

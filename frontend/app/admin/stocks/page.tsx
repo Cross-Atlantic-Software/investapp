@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import StockTable from '@/components/admin/StockTable';
 import AddStockModal from '@/components/admin/AddStockModal';
 import Loader from '@/components/admin/Loader';
@@ -26,11 +26,6 @@ export default function StocksPage() {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
-  useEffect(() => {
-    fetchStocks();
-    getCurrentUserRole();
-  }, []);
-
   const getCurrentUserRole = () => {
     try {
       const storedUser = sessionStorage.getItem('adminUser');
@@ -43,7 +38,7 @@ export default function StocksPage() {
     }
   };
 
-  const fetchStocks = async (searchQuery = '', showLoading: boolean = true) => {
+  const fetchStocks = useCallback(async (searchQuery = '', showLoading: boolean = true) => {
     try {
       if (showLoading) setLoading(true);
       const token = sessionStorage.getItem('adminToken') || '';
@@ -73,11 +68,17 @@ export default function StocksPage() {
     } finally {
       if (showLoading) setLoading(false);
     }
-  };
+  }, [sortBy, sortOrder]);
 
-  const handleSearch = () => {
-    fetchStocks(searchTerm);
-  };
+  useEffect(() => {
+    fetchStocks();
+    getCurrentUserRole();
+  }, [fetchStocks]);
+
+  // handleSearch is available but currently unused as we use real-time search
+  // const handleSearch = () => {
+  //   fetchStocks(searchTerm);
+  // };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -95,7 +96,7 @@ export default function StocksPage() {
     }, 300); // Reduced to 300ms for faster response
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, fetchStocks]);
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -107,17 +108,26 @@ export default function StocksPage() {
     fetchStocks(searchTerm);
   };
 
-  const handleAddStock = async (stockData: any) => {
+  const handleAddStock = async (stockData: {
+    title: string;
+    company_name: string;
+    price_per_share: string;
+    valuation: string;
+    price_change: string;
+    percentage_change: string;
+    icon: File | null;
+  }) => {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       const formData = new FormData();
       
       // Append all stock data to formData
       Object.keys(stockData).forEach(key => {
-        if (key === 'icon' && stockData[key]) {
-          formData.append(key, stockData[key]);
-        } else if (stockData[key] !== null && stockData[key] !== undefined) {
-          formData.append(key, stockData[key]);
+        const typedKey = key as keyof typeof stockData;
+        if (key === 'icon' && stockData[typedKey]) {
+          formData.append(key, stockData[typedKey] as File);
+        } else if (stockData[typedKey] !== null && stockData[typedKey] !== undefined) {
+          formData.append(key, String(stockData[typedKey]));
         }
       });
 

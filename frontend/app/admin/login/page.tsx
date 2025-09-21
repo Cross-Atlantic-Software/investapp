@@ -34,7 +34,7 @@ export default function AdminLogin() {
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
-        } catch (e) {
+        } catch {
           // If we can't parse JSON, use the status message
         }
         throw new Error(errorMessage);

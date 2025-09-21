@@ -2,20 +2,30 @@
 
 import React, { useState } from 'react';
 
+interface StockData {
+  title: string;
+  company_name: string;
+  price_per_share: string;
+  valuation: string;
+  price_change: string;
+  percentage_change: string;
+  icon: File | null;
+}
+
 interface AddStockModalProps {
   onClose: () => void;
-  onSubmit: (stockData: any) => void;
+  onSubmit: (stockData: StockData) => void;
 }
 
 const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<StockData>({
     title: '',
     company_name: '',
     price_per_share: '',
     valuation: '',
     price_change: '',
     percentage_change: '',
-    icon: null as File | null,
+    icon: null,
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

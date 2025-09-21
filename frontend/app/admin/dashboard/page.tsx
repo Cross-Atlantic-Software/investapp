@@ -64,7 +64,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-lg font-bold text-themeTeal">Dashboard overview</h1>
-        <p className="text-sm text-themeTealLight">Monitor your platform's key metrics and performance here.</p>
+        <p className="text-sm text-themeTealLight">Monitor your platform&apos;s key metrics and performance here.</p>
       </div>
 
       {loading ? (
