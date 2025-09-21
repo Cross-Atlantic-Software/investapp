@@ -17,6 +17,7 @@ interface CmsUserAttributes {
   auth_provider: string;
   email_verified?: number;
   phone_verified?: number;
+  last_active?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -44,6 +45,7 @@ class CmsUser
   public phone_verified_code?: number;
   public email_verified_code?: number;
   public auth_provider!: string;
+  public last_active?: Date;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -85,6 +87,7 @@ export function initializeCmsUserModel(sequelize: Sequelize) {
         validate: {
           isIn: [[
             "Admin",
+            "SuperAdmin",
             "Email",
             "Google",
             "Phone",
@@ -96,6 +99,7 @@ export function initializeCmsUserModel(sequelize: Sequelize) {
       country_code: { type: DataTypes.STRING },
       email_verified: { type: DataTypes.INTEGER, defaultValue: 1 }, // Admin-created users are verified
       phone_verified: { type: DataTypes.INTEGER, defaultValue: 0 },
+      last_active: { type: DataTypes.DATE, defaultValue: DataTypes.NOW },
     },
     {
       sequelize,

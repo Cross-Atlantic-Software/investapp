@@ -3,51 +3,39 @@ import { db } from "../../utils/database";
 import { UserRole } from "../../utils/Roles";
 import bcrypt from "bcryptjs";
 import { Op } from "sequelize";
+import { UserSearchService, SearchFilters, PaginationOptions } from "../../services/userSearchService";
 
-// Get all CMS users with pagination
+// Get all CMS users with advanced search and pagination
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 10;
-    const offset = (page - 1) * limit;
-    const search = req.query.search as string || "";
+    // Extract search filters from query parameters
+    const filters: SearchFilters = {
+      search: req.query.search as string,
+      role: req.query.role ? parseInt(req.query.role as string) : undefined,
+      auth_provider: req.query.auth_provider as string,
+      status: req.query.status ? parseInt(req.query.status as string) : undefined,
+      email_verified: req.query.email_verified ? parseInt(req.query.email_verified as string) : undefined,
+      phone_verified: req.query.phone_verified ? parseInt(req.query.phone_verified as string) : undefined,
+      date_from: req.query.date_from as string,
+      date_to: req.query.date_to as string,
+      last_active_from: req.query.last_active_from as string,
+      last_active_to: req.query.last_active_to as string,
+    };
 
-    let whereClause: any = {};
-    
-    // Add search functionality
-    if (search) {
-      whereClause = {
-        [Op.or]: [
-          { first_name: { [Op.iLike]: `%${search}%` } },
-          { last_name: { [Op.iLike]: `%${search}%` } },
-          { email: { [Op.iLike]: `%${search}%` } },
-          { phone: { [Op.iLike]: `%${search}%` } }
-        ]
-      };
-    }
+    // Extract pagination options
+    const pagination: PaginationOptions = {
+      page: req.query.page ? parseInt(req.query.page as string) : 1,
+      limit: req.query.limit ? parseInt(req.query.limit as string) : 10,
+      sort_by: req.query.sort_by as string,
+      sort_order: req.query.sort_order as 'ASC' | 'DESC',
+    };
 
-    const { count, rows: users } = await db.CmsUser.findAndCountAll({
-      where: whereClause,
-      limit,
-      offset,
-      order: [['createdAt', 'DESC']],
-      attributes: { exclude: ['password'] } // Exclude password from response
-    });
-
-    const totalPages = Math.ceil(count / limit);
+    // Use the search service to get users
+    const result = await UserSearchService.searchUsers(filters, pagination);
 
     return res.status(200).json({
       success: true,
-      data: {
-        users,
-        pagination: {
-          currentPage: page,
-          totalPages,
-          totalUsers: count,
-          hasNextPage: page < totalPages,
-          hasPrevPage: page > 1
-        }
-      }
+      data: result
     });
   } catch (error) {
     console.error("Error fetching users:", error);
@@ -100,8 +88,27 @@ export const createUser = async (req: Request, res: Response) => {
       country_code
     } = req.body;
 
-    // Admin-created users always have auth_provider as "Admin"
-    const auth_provider = "Admin";
+    // Get the creator's role from the JWT token
+    const creatorRole = (req.user as any)?.role;
+    const creatorId = (req.user as any)?.user_id;
+    
+    console.log(`🔍 Creating CMS user - Creator ID: ${creatorId}, Creator Role: ${creatorRole}`);
+    
+    // Determine auth_provider based on creator's role
+    let auth_provider = "Admin"; // Default fallback
+    if (creatorRole === UserRole.SuperAdmin) {
+      auth_provider = "SuperAdmin"; // SuperAdmin creates users with "SuperAdmin" auth_provider
+    } else if (creatorRole === UserRole.Admin) {
+      auth_provider = "Admin"; // Admin creates users with "Admin" auth_provider
+    } else {
+      console.log(`❌ Unauthorized user creation attempt - Role: ${creatorRole}`);
+      return res.status(403).json({
+        success: false,
+        message: "Only Admin and SuperAdmin can create CMS users"
+      });
+    }
+    
+    console.log(`✅ Auth provider set to: ${auth_provider} for creator role: ${creatorRole}`);
 
     // Validate required fields
     if (!email || !password) {
@@ -116,6 +123,21 @@ export const createUser = async (req: Request, res: Response) => {
       return res.status(400).json({
         success: false,
         message: "Role is required for CMS users"
+      });
+    }
+
+    // Validate role assignment permissions
+    if (creatorRole === UserRole.Admin && role === UserRole.SuperAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin users cannot create SuperAdmin users"
+      });
+    }
+
+    if (creatorRole === UserRole.Admin && role === UserRole.Admin) {
+      return res.status(403).json({
+        success: false,
+        message: "Admin users cannot create other Admin users"
       });
     }
 
@@ -141,6 +163,8 @@ export const createUser = async (req: Request, res: Response) => {
       status: 1,
       email_verified: 1 // Admin created users are considered verified
     });
+
+    console.log(`✅ CMS user created successfully - ID: ${newUser.id}, Email: ${email}, Auth Provider: ${auth_provider}, Role: ${role}`);
 
     // Return user without password
     const { password: _, ...userWithoutPassword } = newUser.toJSON();
@@ -176,12 +200,43 @@ export const updateUser = async (req: Request, res: Response) => {
       phone_verified
     } = req.body;
 
+    // Get the updater's role from the JWT token
+    const updaterRole = (req.user as any)?.role;
+    const updaterId = (req.user as any)?.user_id;
+    
+    console.log(`🔍 Updating CMS user - Updater ID: ${updaterId}, Updater Role: ${updaterRole}`);
+
     const user = await db.CmsUser.findByPk(id);
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found"
       });
+    }
+
+    // Validate role update permissions
+    if (role !== undefined) {
+      if (updaterRole === UserRole.Admin && role === UserRole.SuperAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: "Admin users cannot promote users to SuperAdmin"
+        });
+      }
+
+      if (updaterRole === UserRole.Admin && role === UserRole.Admin) {
+        return res.status(403).json({
+          success: false,
+          message: "Admin users cannot promote users to Admin"
+        });
+      }
+
+      // Prevent users from promoting themselves to higher roles
+      if (updaterRole === UserRole.Admin && role > updaterRole) {
+        return res.status(403).json({
+          success: false,
+          message: "Cannot promote users to a higher role than your own"
+        });
+      }
     }
 
     // Check if email is being changed and if it already exists
@@ -209,6 +264,8 @@ export const updateUser = async (req: Request, res: Response) => {
       phone_verified: phone_verified !== undefined ? phone_verified : user.phone_verified
     });
 
+    console.log(`✅ CMS user updated successfully - ID: ${id}, Email: ${user.email}, Role: ${user.role}`);
+
     // Return updated user without password
     const { password: _, ...userWithoutPassword } = user.toJSON();
 
@@ -231,6 +288,10 @@ export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
+    // Get the current user's role from the JWT token
+    const currentUserRole = (req.user as any)?.role;
+    const currentUserId = (req.user as any)?.user_id;
+
     const user = await db.CmsUser.findByPk(id);
     if (!user) {
       return res.status(404).json({
@@ -239,11 +300,27 @@ export const deleteUser = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if trying to delete admin user
-    if (user.role === UserRole.Admin || user.role === UserRole.SuperAdmin) {
+    // Prevent self-deletion
+    if (user.id === currentUserId) {
       return res.status(400).json({
         success: false,
-        message: "Cannot delete admin users"
+        message: "You cannot delete your own account"
+      });
+    }
+
+    // Role-based deletion restrictions
+    if (user.role === UserRole.SuperAdmin) {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot delete Super Admin users"
+      });
+    }
+
+    // Only SuperAdmin can delete Admin users
+    if (user.role === UserRole.Admin && currentUserRole !== UserRole.SuperAdmin) {
+      return res.status(403).json({
+        success: false,
+        message: "Only SuperAdmin can delete Admin users"
       });
     }
 
@@ -262,45 +339,49 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
-// Get CMS user statistics
+// Get CMS user statistics with optional filters
 export const getUserStats = async (req: Request, res: Response) => {
   try {
-    const totalUsers = await db.CmsUser.count();
-    const verifiedUsers = await db.CmsUser.count({ where: { email_verified: 1 } });
-    const activeUsers = await db.CmsUser.count({ where: { status: 1 } });
-    
-    // Count users by role
-    const usersByRole = await db.CmsUser.findAll({
-      attributes: [
-        'role',
-        [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'count']
-      ],
-      group: ['role'],
-      raw: true
-    });
+    // Extract filters from query parameters
+    const filters: SearchFilters = {
+      search: req.query.search as string,
+      role: req.query.role ? parseInt(req.query.role as string) : undefined,
+      auth_provider: req.query.auth_provider as string,
+      status: req.query.status ? parseInt(req.query.status as string) : undefined,
+      email_verified: req.query.email_verified ? parseInt(req.query.email_verified as string) : undefined,
+      phone_verified: req.query.phone_verified ? parseInt(req.query.phone_verified as string) : undefined,
+      date_from: req.query.date_from as string,
+      date_to: req.query.date_to as string,
+      last_active_from: req.query.last_active_from as string,
+      last_active_to: req.query.last_active_to as string,
+    };
 
-    // Count users by auth provider
-    const usersByProvider = await db.CmsUser.findAll({
-      attributes: [
-        'auth_provider',
-        [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'count']
-      ],
-      group: ['auth_provider'],
-      raw: true
-    });
+    const stats = await UserSearchService.getUserStats(filters);
 
     return res.status(200).json({
       success: true,
-      data: {
-        totalUsers,
-        verifiedUsers,
-        activeUsers,
-        usersByRole,
-        usersByProvider
-      }
+      data: stats
     });
   } catch (error) {
     console.error("Error fetching user stats:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+// Get filter options for user search
+export const getFilterOptions = async (req: Request, res: Response) => {
+  try {
+    const options = await UserSearchService.getFilterOptions();
+    
+    return res.status(200).json({
+      success: true,
+      data: options
+    });
+  } catch (error) {
+    console.error("Error fetching filter options:", error);
     return res.status(500).json({
       success: false,
       message: "Internal server error"

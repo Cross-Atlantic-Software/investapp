@@ -20,6 +20,7 @@ export const cmsLogin = async (req: Request, res: Response) => {
 
     // Find CMS user by email
     const user = await db.CmsUser.findOne({ where: { email } });
+    
     if (!user) {
       return res.status(401).json({
         success: false,

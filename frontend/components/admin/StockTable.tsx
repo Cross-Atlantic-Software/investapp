@@ -1,0 +1,518 @@
+'use client';
+
+import React, { useState } from 'react';
+import Image from 'next/image';
+
+interface Stock {
+  id: number;
+  title: string;
+  company_name: string;
+  price_per_share: string;
+  valuation: string;
+  price_change: string;
+  percentage_change: string;
+  icon: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface StockTableProps {
+  stocks: Stock[];
+  onRefresh: () => void;
+  onSort?: (field: string) => void;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+  onNotification?: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void;
+}
+
+const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification }) => {
+  const [editingStock, setEditingStock] = useState<Stock | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<Stock>>({});
+  const [editLoading, setEditLoading] = useState(false);
+  const [editIconFile, setEditIconFile] = useState<File | null>(null);
+
+  // Get current user's role to determine permissions
+  const getCurrentUserRole = () => {
+    try {
+      const storedUser = sessionStorage.getItem('adminUser');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        return user.role;
+      }
+    } catch (e) {
+      console.error('Error parsing stored user data:', e);
+    }
+    return null;
+  };
+
+  const currentUserRole = getCurrentUserRole();
+  const canManageStocks = currentUserRole === 10 || currentUserRole === 11; // Admin or SuperAdmin
+
+  const handleEditStock = (stock: Stock) => {
+    setEditingStock(stock);
+    setEditFormData({
+      title: stock.title,
+      company_name: stock.company_name,
+      price_per_share: stock.price_per_share,
+      valuation: stock.valuation,
+      price_change: stock.price_change,
+      percentage_change: stock.percentage_change
+    });
+    setEditIconFile(null); // Reset icon file
+  };
+
+  const handleUpdateStock = async () => {
+    if (!editingStock) return;
+    
+    setEditLoading(true);
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('title', editFormData.title || '');
+      formData.append('company_name', editFormData.company_name || '');
+      formData.append('price_per_share', editFormData.price_per_share || '');
+      formData.append('valuation', editFormData.valuation || '');
+      formData.append('price_change', editFormData.price_change || '');
+      formData.append('percentage_change', editFormData.percentage_change || '');
+      
+      // Add icon file if selected
+      if (editIconFile) {
+        formData.append('icon', editIconFile);
+      }
+
+      const response = await fetch(`http://localhost:8888/api/admin/stocks/${editingStock.id}`, {
+        method: 'PUT',
+        headers: {
+          'token': token,
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        onRefresh();
+        setEditingStock(null);
+        setEditFormData({});
+        setEditIconFile(null);
+        onNotification?.('success', 'Stock Updated', 'Stock has been updated successfully!');
+      } else {
+        onNotification?.('error', 'Update Failed', data.message || 'Failed to update stock');
+      }
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      onNotification?.('error', 'Update Failed', 'Error updating stock');
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (confirm('Are you sure you want to delete this stock?')) {
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+        const response = await fetch(`http://localhost:8888/api/admin/stocks/${id}`, {
+          method: 'DELETE',
+        headers: {
+          'token': token,
+        },
+      });
+        
+        const data = await response.json();
+        if (data.success) {
+          onRefresh();
+          onNotification?.('success', 'Stock Deleted', 'Stock has been deleted successfully!');
+        } else {
+          onNotification?.('error', 'Delete Failed', data.message || 'Failed to delete stock');
+        }
+      } catch (error) {
+        console.error('Error deleting stock:', error);
+        onNotification?.('error', 'Delete Failed', 'Error deleting stock');
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Modern Table */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        {/* Table Container */}
+        <div className="overflow-hidden">
+          <table className="w-full table-fixed">
+            <thead className="bg-white border-b border-gray-200">
+              <tr>
+                <th 
+                  className="w-1/3 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('title')}
+                >
+                  <div className="flex items-center">
+                    Stock name
+                    {sortBy === 'title' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('price_per_share')}
+                >
+                  <div className="flex items-center">
+                    Price
+                    {sortBy === 'price_per_share' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('valuation')}
+                >
+                  <div className="flex items-center">
+                    Valuation
+                    {sortBy === 'valuation' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Change
+                </th>
+                <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {stocks.map((stock, index) => (
+                <tr 
+                  key={stock.id}
+                  className={`hover:bg-gray-50 transition-colors duration-200 ${
+                    index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
+                  }`}
+                >
+                  {/* Stock Column with Name and Company */}
+                  <td className="px-4 py-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-themeTeal to-themeTealLight flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden">
+                        {stock.icon ? (
+                          <Image
+                            className="h-8 w-8 rounded-full object-cover"
+                            src={stock.icon}
+                            alt={stock.title}
+                            width={32}
+                            height={32}
+                          />
+                        ) : (
+                          <span className="text-xs font-bold text-white">
+                            {stock.title.charAt(0).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-medium text-gray-900">
+                          {stock.title}
+                        </div>
+                        <div className="text-xs text-gray-500 truncate">{stock.company_name}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  {/* Price Column */}
+                  <td className="px-4 py-3">
+                    <div className="text-xs font-medium text-gray-900">${stock.price_per_share}</div>
+                  </td>
+
+                  {/* Valuation Column */}
+                  <td className="px-4 py-3">
+                    <div className="text-xs text-gray-900">${stock.valuation}</div>
+                  </td>
+
+                  {/* Change Column */}
+                  <td className="px-4 py-3">
+                    <div className={`text-xs font-medium ${
+                      stock.percentage_change.startsWith('+') ? 'text-green-600' : 'text-red-600'
+                    }`}>
+                      {stock.percentage_change}
+                    </div>
+                  </td>
+
+                  {/* Actions Column */}
+                  <td className="px-4 py-3 text-sm font-medium">
+                    {canManageStocks ? (
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => handleEditStock(stock)}
+                          className="flex items-center space-x-1 text-themeTeal hover:text-themeTealLight transition-colors duration-200"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          <span className="text-sm">Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(stock.id)}
+                          className="flex items-center space-x-1 text-red-600 hover:text-red-800 transition-colors duration-200"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span className="text-sm">Delete</span>
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-gray-400 text-xs">View Only</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      {/* Empty State */}
+      {stocks.length === 0 && (
+        <div className="text-center py-12">
+          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+          <h3 className="mt-2 text-sm font-medium text-gray-900">No stocks found</h3>
+          <p className="mt-1 text-sm text-gray-500">Get started by adding a new stock.</p>
+        </div>
+      )}
+
+      {/* Edit Stock Modal */}
+      {editingStock && (
+        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-white">Edit Stock</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setEditingStock(null);
+                    setEditFormData({});
+                    setEditIconFile(null);
+                  }}
+                  className="text-white/80 hover:text-white transition-colors duration-200"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6">
+              <form id="edit-stock-form" className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Title Field */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Stock Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.title || ''}
+                      onChange={(e) => setEditFormData({...editFormData, title: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="Enter stock title"
+                    />
+                  </div>
+
+                  {/* Company Name Field */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Company Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.company_name || ''}
+                      onChange={(e) => setEditFormData({...editFormData, company_name: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="Enter company name"
+                    />
+                  </div>
+
+                  {/* Price Per Share Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Price Per Share <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 text-sm">$</span>
+                      </div>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editFormData.price_per_share || ''}
+                        onChange={(e) => setEditFormData({...editFormData, price_per_share: e.target.value})}
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Valuation Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Valuation <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 text-sm">$</span>
+                      </div>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editFormData.valuation || ''}
+                        onChange={(e) => setEditFormData({...editFormData, valuation: e.target.value})}
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Price Change Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Price Change
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 text-sm">$</span>
+                      </div>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editFormData.price_change || ''}
+                        onChange={(e) => setEditFormData({...editFormData, price_change: e.target.value})}
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Percentage Change Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Percentage Change
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editFormData.percentage_change || ''}
+                        onChange={(e) => setEditFormData({...editFormData, percentage_change: e.target.value})}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                        placeholder="0.00"
+                      />
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 text-sm">%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Stock Icon */}
+                  <div className="md:col-span-2">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Stock Icon
+                    </label>
+                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-themeTeal transition-colors duration-200">
+                      <div className="space-y-1 text-center">
+                        {editingStock?.icon && (
+                          <div className="flex-shrink-0 mx-auto mb-2">
+                            <Image
+                              src={editingStock.icon}
+                              alt="Current icon"
+                              width={60}
+                              height={60}
+                              className="h-15 w-15 rounded-lg object-cover border-2 border-gray-200"
+                            />
+                          </div>
+                        )}
+                        <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <div className="flex text-sm text-gray-600">
+                          <label htmlFor="edit-icon-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-themeTeal hover:text-themeTealLight focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-themeTeal">
+                            <span>Upload a file</span>
+                            <input
+                              id="edit-icon-upload"
+                              name="edit-icon-upload"
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => setEditIconFile(e.target.files?.[0] || null)}
+                              className="sr-only"
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <button
+                type="submit"
+                form="edit-stock-form"
+                onClick={handleUpdateStock}
+                disabled={editLoading}
+                className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium flex items-center"
+              >
+                {editLoading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Updating...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>Update Stock</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default StockTable;

@@ -1,5 +1,6 @@
 import express from 'express';
 import routes from "./routes";
+import migrationRoutes from "./routes/migration-routes";
 import cors from "cors";
 import dotenv from "dotenv";
 import morgan from "morgan"; // 📌 Added morgan
@@ -27,6 +28,7 @@ app.use(morgan("dev"));
 
 
 app.use('/api', routes);
+app.use('/api/migration', migrationRoutes);
 app.get('/', (req, res) => {
   res.send('Welcome to you');
 });

@@ -14,24 +14,28 @@ export const getAllStocks = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;
     const search = req.query.search as string || "";
+    const sortBy = req.query.sort_by as string || 'createdAt';
+    const sortOrder = req.query.sort_order as string || 'DESC';
 
     let whereClause: any = {};
     
-    // Add search functionality
+    // Add search functionality - search only by stock name (title)
     if (search) {
       whereClause = {
-        [Op.or]: [
-          { title: { [Op.iLike]: `%${search}%` } },
-          { company_name: { [Op.iLike]: `%${search}%` } }
-        ]
+        title: { [Op.like]: `%${search}%` }
       };
     }
+
+    // Validate sort fields to prevent SQL injection
+    const allowedSortFields = ['id', 'title', 'company_name', 'price_per_share', 'valuation', 'createdAt', 'updatedAt'];
+    const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
     const { count, rows: stocks } = await db.Product.findAndCountAll({
       where: whereClause,
       limit,
       offset,
-      order: [['createdAt', 'DESC']]
+      order: [[validSortBy, validSortOrder]]
     });
 
     const totalPages = Math.ceil(count / limit);
