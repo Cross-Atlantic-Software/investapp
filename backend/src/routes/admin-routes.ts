@@ -1,6 +1,7 @@
 import express from "express";
 import adminMiddleware from "../utils/middleware/admin-middleware";
 import { uploadIcon } from "../utils/middleware/s3Upload";
+import updateLastActive from "../utils/middleware/updateLastActive";
 
 // User Management Controllers
 import {
@@ -9,7 +10,8 @@ import {
   createUser,
   updateUser,
   deleteUser,
-  getUserStats
+  getUserStats,
+  getFilterOptions
 } from "../controllers/admin/userManagement";
 
 // Stock Management Controllers
@@ -34,9 +36,13 @@ router.post("/login", cmsLogin);        // CMS users login
 // Apply admin middleware to all other routes
 router.use(adminMiddleware);
 
+// Apply last active update middleware to all authenticated routes
+router.use(updateLastActive);
+
 // User Management Routes
 router.get("/users", getAllUsers);
 router.get("/users/stats", getUserStats);
+router.get("/users/filter-options", getFilterOptions);
 router.get("/users/:id", getUserById);
 router.post("/users", createUser);
 router.put("/users/:id", updateUser);

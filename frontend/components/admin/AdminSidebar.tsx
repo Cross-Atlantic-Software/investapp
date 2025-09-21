@@ -82,8 +82,8 @@ const AdminSidebar = () => {
                 href={item.href}
                 className={`flex items-center px-4 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
                   isActive
-                    ? 'bg-themeTealWhite text-themeTeal'
-                    : 'text-themeTealLight hover:bg-themeTealWhite hover:text-themeTeal'
+                    ? 'bg-gray-100 text-gray-700 border-l-4 border-themeTeal'
+                    : 'text-themeTealLight hover:bg-gray-50 hover:text-themeTeal'
                 }`}
               >
                 <span className="mr-3">{item.icon}</span>
