@@ -30,23 +30,24 @@ export default function AdminLayout({
   useEffect(() => {
     setMounted(true);
     
-    // Skip authentication for login page
-    if (isLoginPage) {
-      setIsAuthenticated(true);
-      return;
-    }
-
     // Check if user is authenticated (token exists in sessionStorage)
     const token = sessionStorage.getItem('adminToken');
     const storedUser = sessionStorage.getItem('adminUser');
     
     if (!token || !storedUser) {
-      // No session data, redirect to login
-      router.push('/admin/login');
-      return;
+      // No session data
+      if (isLoginPage) {
+        // Allow access to login page if not authenticated
+        setIsAuthenticated(true);
+        return;
+      } else {
+        // Redirect to login if trying to access protected pages
+        router.push('/admin/login');
+        return;
+      }
     }
 
-    // User is authenticated, set user info
+    // User has valid session data
     try {
       const user = JSON.parse(storedUser);
       setUserInfo({
@@ -57,11 +58,21 @@ export default function AdminLayout({
               user.role === 13 ? 'Site Manager' : 'User'
       });
       setIsAuthenticated(true);
+      
+      // If user is already authenticated and tries to access login page, redirect to dashboard
+      if (isLoginPage) {
+        router.push('/admin/dashboard');
+        return;
+      }
     } catch (e) {
       console.error('Error parsing stored user data:', e);
       sessionStorage.removeItem('adminToken');
       sessionStorage.removeItem('adminUser');
-      router.push('/admin/login');
+      if (isLoginPage) {
+        setIsAuthenticated(true);
+      } else {
+        router.push('/admin/login');
+      }
     }
   }, [isLoginPage, router]);
 
