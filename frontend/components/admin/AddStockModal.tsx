@@ -40,8 +40,8 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-8 max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4">
           <div className="flex items-center justify-between">
@@ -60,7 +60,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
         </div>
 
         {/* Modal Body */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto">
           
           <form id="stock-form" onSubmit={handleSubmit} className="space-y-6">
             {/* Stock Title */}

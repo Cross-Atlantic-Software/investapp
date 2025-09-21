@@ -292,19 +292,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Empty State */}
       {stocks.length === 0 && (
-        <div className="text-center py-12">
-          <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div className="text-center py-16 min-h-[400px] flex flex-col items-center justify-center">
+          <svg className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
-          <h3 className="mt-2 text-sm font-medium text-gray-900">No stocks found</h3>
-          <p className="mt-1 text-sm text-gray-500">Get started by adding a new stock.</p>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No stocks found</h3>
+          <p className="text-sm text-gray-500">Get started by adding a new stock.</p>
         </div>
       )}
 
       {/* Edit Stock Modal */}
       {editingStock && (
-        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-4 max-h-[95vh] overflow-y-auto">
             {/* Modal Header */}
             <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4">
               <div className="flex items-center justify-between">
@@ -327,8 +327,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             </div>
             
             {/* Modal Body */}
-            <div className="p-6">
-              <form id="edit-stock-form" className="space-y-6">
+            <div className="p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
+              <form id="edit-stock-form" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Title Field */}
                   <div className="md:col-span-2">
@@ -443,38 +443,62 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       Stock Icon
                     </label>
-                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-themeTeal transition-colors duration-200">
-                      <div className="space-y-1 text-center">
-                        {editingStock?.icon && (
-                          <div className="flex-shrink-0 mx-auto mb-2">
-                            <Image
-                              src={editingStock.icon}
-                              alt="Current icon"
-                              width={60}
-                              height={60}
-                              className="h-15 w-15 rounded-lg object-cover border-2 border-gray-200"
-                            />
+                    <div className="mt-1 border-2 border-gray-300 border-dashed rounded-lg hover:border-themeTeal transition-colors duration-200">
+                      {editingStock?.icon ? (
+                        <div className="p-4">
+                          <div className="flex items-center space-x-4">
+                            <div className="flex-shrink-0">
+                              <Image
+                                src={editingStock.icon}
+                                alt="Current icon"
+                                width={60}
+                                height={60}
+                                className="h-15 w-15 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+                              />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-700 mb-2">Current Icon</p>
+                              <div className="flex items-center space-x-3">
+                                <label htmlFor="edit-icon-upload" className="relative cursor-pointer bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-themeTeal transition-colors">
+                                  <span>Change Icon</span>
+                                  <input
+                                    id="edit-icon-upload"
+                                    name="edit-icon-upload"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setEditIconFile(e.target.files?.[0] || null)}
+                                    className="sr-only"
+                                  />
+                                </label>
+                                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                              </div>
+                            </div>
                           </div>
-                        )}
-                        <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <div className="flex text-sm text-gray-600">
-                          <label htmlFor="edit-icon-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-themeTeal hover:text-themeTealLight focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-themeTeal">
-                            <span>Upload a file</span>
-                            <input
-                              id="edit-icon-upload"
-                              name="edit-icon-upload"
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => setEditIconFile(e.target.files?.[0] || null)}
-                              className="sr-only"
-                            />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
                         </div>
-                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                      </div>
+                      ) : (
+                        <div className="p-4">
+                          <div className="space-y-1 text-center">
+                            <svg className="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                              <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <div className="flex text-sm text-gray-600 justify-center">
+                              <label htmlFor="edit-icon-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-themeTeal hover:text-themeTealLight focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-themeTeal">
+                                <span>Upload a file</span>
+                                <input
+                                  id="edit-icon-upload"
+                                  name="edit-icon-upload"
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => setEditIconFile(e.target.files?.[0] || null)}
+                                  className="sr-only"
+                                />
+                              </label>
+                              <p className="pl-1">or drag and drop</p>
+                            </div>
+                            <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
