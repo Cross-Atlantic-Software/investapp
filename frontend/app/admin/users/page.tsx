@@ -84,7 +84,7 @@ export default function UsersPage() {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/users/filter-options`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/filter-options`, {
         headers: { 'token': token },
       });
       const data = await response.json();
@@ -124,7 +124,7 @@ export default function UsersPage() {
       const token = sessionStorage.getItem('adminToken') || '';
 
       const queryString = buildQueryString(searchFilters, page, sortBy, sortOrder);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/users?${queryString}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users?${queryString}`, {
         headers: {
           'token': token,
         },

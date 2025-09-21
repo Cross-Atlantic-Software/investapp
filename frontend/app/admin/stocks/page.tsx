@@ -50,7 +50,7 @@ export default function StocksPage() {
       params.append('sort_by', sortBy);
       params.append('sort_order', sortOrder.toUpperCase());
       
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/stocks?${params.toString()}`;
+      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/stocks?${params.toString()}`;
         
       const response = await fetch(url, {
         headers: {
@@ -131,7 +131,7 @@ export default function StocksPage() {
         }
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/stocks`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/stocks`, {
         method: 'POST',
         headers: {
           'token': token,

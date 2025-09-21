@@ -82,7 +82,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         formData.append('icon', editIconFile);
       }
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/stocks/${editingStock.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/stocks/${editingStock.id}`, {
         method: 'PUT',
         headers: {
           'token': token,
@@ -112,7 +112,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     if (confirm('Are you sure you want to delete this stock?')) {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/api/admin/stocks/${id}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/stocks/${id}`, {
           method: 'DELETE',
         headers: {
           'token': token,

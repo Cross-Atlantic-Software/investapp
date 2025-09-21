@@ -9,7 +9,12 @@ import './utils/database'; // Import database to ensure initialization
 
 import apiResponse from './utils/apiResponse';
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000', 'http://65.2.169.56:3000'], // Allow specific origins
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'http://localhost:3001', 
+    'http://127.0.0.1:3000', 
+    'http://65.2.169.56:3000'
+  ], // Allow specific origins
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
   credentials: true, // Allow cookies and credentials
   allowedHeaders: ['Content-Type', 'Authorization', 'token'], // Allow specific headers

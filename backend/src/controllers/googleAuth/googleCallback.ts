@@ -191,7 +191,7 @@ export class GoogleCallbackService {
           phone: userData.phone,
           token: '[REDACTED]'
         }, null, 2));
-        frontendUrl = `http://localhost:3000/register/step-3?data=${encodeURIComponent(JSON.stringify(userData))}`;
+        frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/register/step-3?data=${encodeURIComponent(JSON.stringify(userData))}`;
       } else {
         // User has complete profile - redirect to dashboard
         console.log('🔍 User has complete profile - redirecting to dashboard');
@@ -202,7 +202,7 @@ export class GoogleCallbackService {
           last_name: user.last_name,
           token: '[REDACTED]'
         }, null, 2));
-        frontendUrl = `http://localhost:3000/login/auth/google/success?token=${token}&user=${encodeURIComponent(JSON.stringify({
+        frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login/auth/google/success?token=${token}&user=${encodeURIComponent(JSON.stringify({
           id: user.id,
           email: user.email,
           first_name: user.first_name,
@@ -215,7 +215,7 @@ export class GoogleCallbackService {
     } catch (error: any) {
       console.error('Google OAuth callback error:', error);
       // Redirect to frontend with error
-      const frontendUrl = `http://localhost:3000/login/auth/google/error?message=${encodeURIComponent(error.message || 'Authentication failed')}`;
+      const frontendUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/login/auth/google/error?message=${encodeURIComponent(error.message || 'Authentication failed')}`;
       res.redirect(frontendUrl);
     }
   };

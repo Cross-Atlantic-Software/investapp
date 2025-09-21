@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/stocks`, {
+    const response = await fetch(`${BACKEND_URL}/admin/stocks`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/stocks`, {
+    const response = await fetch(`${BACKEND_URL}/admin/stocks`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`,
