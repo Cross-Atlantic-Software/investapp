@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import StockTable from '@/components/admin/StockTable';
 import AddStockModal from '@/components/admin/AddStockModal';
 import Loader from '@/components/admin/Loader';
@@ -16,6 +16,19 @@ export default function StocksPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   
+  // Refs to store current values to avoid circular dependencies
+  const sortByRef = useRef(sortBy);
+  const sortOrderRef = useRef(sortOrder);
+  
+  // Update refs when values change
+  useEffect(() => {
+    sortByRef.current = sortBy;
+  }, [sortBy]);
+  
+  useEffect(() => {
+    sortOrderRef.current = sortOrder;
+  }, [sortOrder]);
+  
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
     const id = Date.now().toString();
@@ -25,11 +38,6 @@ export default function StocksPage() {
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
-
-  useEffect(() => {
-    fetchStocks();
-    getCurrentUserRole();
-  }, []);
 
   const getCurrentUserRole = () => {
     try {
@@ -43,7 +51,7 @@ export default function StocksPage() {
     }
   };
 
-  const fetchStocks = async (searchQuery = '', showLoading: boolean = true) => {
+  const fetchStocks = useCallback(async (searchQuery = '', showLoading: boolean = true) => {
     try {
       if (showLoading) setLoading(true);
       const token = sessionStorage.getItem('adminToken') || '';
@@ -52,8 +60,8 @@ export default function StocksPage() {
       if (searchQuery) {
         params.append('search', searchQuery);
       }
-      params.append('sort_by', sortBy);
-      params.append('sort_order', sortOrder.toUpperCase());
+      params.append('sort_by', sortByRef.current);
+      params.append('sort_order', sortOrderRef.current.toUpperCase());
       
       const url = `http://localhost:8888/api/admin/stocks?${params.toString()}`;
         
@@ -73,11 +81,13 @@ export default function StocksPage() {
     } finally {
       if (showLoading) setLoading(false);
     }
-  };
+  }, []); // No dependencies to prevent recreation
 
-  const handleSearch = () => {
-    fetchStocks(searchTerm);
-  };
+  // Initial load effect
+  useEffect(() => {
+    fetchStocks();
+    getCurrentUserRole();
+  }, []); // Only run on mount
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -91,11 +101,11 @@ export default function StocksPage() {
   // Debounced search effect - faster and more responsive, no loading state
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchStocks(searchTerm, false); // No loading state for dynamic search
+      fetchStocks(searchTerm, false); // Use stable function with refs
     }, 300); // Reduced to 300ms for faster response
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm]);
+  }, [searchTerm, sortBy, sortOrder, fetchStocks]); // Depend on the actual values and stable function
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -104,20 +114,21 @@ export default function StocksPage() {
       setSortBy(field);
       setSortOrder('asc');
     }
-    fetchStocks(searchTerm);
+    // The useEffect will handle the API call when sortBy or sortOrder changes
   };
 
-  const handleAddStock = async (stockData: any) => {
+  const handleAddStock = async (stockData: Record<string, unknown>) => {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       const formData = new FormData();
       
       // Append all stock data to formData
       Object.keys(stockData).forEach(key => {
-        if (key === 'icon' && stockData[key]) {
-          formData.append(key, stockData[key]);
-        } else if (stockData[key] !== null && stockData[key] !== undefined) {
-          formData.append(key, stockData[key]);
+        const value = stockData[key];
+        if (key === 'icon' && value instanceof File) {
+          formData.append(key, value);
+        } else if (value !== null && value !== undefined && typeof value === 'string') {
+          formData.append(key, value);
         }
       });
 
