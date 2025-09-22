@@ -28,6 +28,7 @@ interface SearchFilters {
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
@@ -120,7 +121,10 @@ export default function UsersPage() {
 
   const fetchUsers = useCallback(async (page: number = 1, showLoading: boolean = true) => {
     try {
-      if (showLoading) setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+        setIsInitialLoad(true);
+      }
       const token = sessionStorage.getItem('adminToken') || '';
 
       const queryString = buildQueryString(searchFilters, page, sortBy, sortOrder);
@@ -139,7 +143,10 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
-      if (showLoading) setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+        setIsInitialLoad(false);
+      }
     }
   }, [buildQueryString, searchFilters, sortBy, sortOrder]);
 
@@ -218,7 +225,7 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6 overflow-x-hidden relative">
-      {loading && <Loader fullScreen text="Loading users..." />}
+      {loading && isInitialLoad && <Loader fullScreen text="Loading users..." />}
       
       {/* Header */}
       <div className="mb-6">

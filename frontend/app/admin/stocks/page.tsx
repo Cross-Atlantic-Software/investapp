@@ -9,6 +9,7 @@ import { NotificationContainer, NotificationData } from '@/components/admin/Noti
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -40,7 +41,10 @@ export default function StocksPage() {
 
   const fetchStocks = useCallback(async (searchQuery = '', showLoading: boolean = true) => {
     try {
-      if (showLoading) setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+        setIsInitialLoad(true);
+      }
       const token = sessionStorage.getItem('adminToken') || '';
       
       const params = new URLSearchParams();
@@ -66,7 +70,10 @@ export default function StocksPage() {
     } catch (error) {
       console.error('Error fetching stocks:', error);
     } finally {
-      if (showLoading) setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+        setIsInitialLoad(false);
+      }
     }
   }, [sortBy, sortOrder]);
 
@@ -157,7 +164,7 @@ export default function StocksPage() {
 
   return (
     <div className="space-y-6 relative">
-      {loading && <Loader fullScreen text="Loading stocks..." />}
+      {loading && isInitialLoad && <Loader fullScreen text="Loading stocks..." />}
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-lg font-bold text-themeTeal">Stock management</h1>
