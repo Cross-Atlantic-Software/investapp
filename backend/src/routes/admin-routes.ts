@@ -28,7 +28,13 @@ import {
 // CMS Auth Controllers
 import { cmsLogin } from "../controllers/admin/cmsAuth";
 
+// Site User Management Controllers
+import { SiteUserManagementController } from "../controllers/admin/siteUserManagement";
+
 const router = express.Router();
+
+// Initialize Site User Management Controller
+const siteUserController = new SiteUserManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -56,5 +62,12 @@ router.post("/stocks", uploadIcon.any(), createStock);
 router.put("/stocks/:id", uploadIcon.any(), updateStock);
 router.delete("/stocks/:id", deleteStock);
 router.delete("/stocks/bulk", bulkDeleteStocks);
+
+// Site User Management Routes
+router.get("/site-users", siteUserController.getAllSiteUsers);
+router.get("/site-users/stats", siteUserController.getSiteUserStats);
+router.get("/site-users/:id", siteUserController.getSiteUserById);
+router.put("/site-users/:id", siteUserController.updateSiteUser);
+router.delete("/site-users/:id", siteUserController.deleteSiteUser);
 
 export default router;

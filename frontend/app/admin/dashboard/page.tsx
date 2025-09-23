@@ -9,6 +9,8 @@ interface DashboardStats {
   totalStocks: number;
   totalRevenue: number;
   activeUsers: number;
+  totalSiteUsers: number;
+  verifiedSiteUsers: number;
 }
 
 export default function AdminDashboard() {
@@ -17,6 +19,8 @@ export default function AdminDashboard() {
     totalStocks: 0,
     totalRevenue: 0,
     activeUsers: 0,
+    totalSiteUsers: 0,
+    verifiedSiteUsers: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -44,12 +48,22 @@ export default function AdminDashboard() {
       });
       const stocksData = await stocksResponse.json();
 
+      // Fetch site users stats
+      const siteUsersResponse = await fetch('/api/admin/site-users/stats', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      const siteUsersData = await siteUsersResponse.json();
+
       if (usersData.success && stocksData.success) {
         setStats({
           totalUsers: usersData.data.totalUsers || 0,
           totalStocks: stocksData.data.totalStocks || 0,
           totalRevenue: stocksData.data.totalValuation ? parseFloat(stocksData.data.totalValuation.replace('$', '').replace('T', '')) * 1000 : 0,
           activeUsers: usersData.data.activeUsers || 0,
+          totalSiteUsers: siteUsersData.success ? siteUsersData.data.totalUsers || 0 : 0,
+          verifiedSiteUsers: siteUsersData.success ? siteUsersData.data.verifiedUsers || 0 : 0,
         });
       }
     } catch (error) {

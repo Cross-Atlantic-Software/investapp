@@ -19,10 +19,6 @@ interface SearchFilters {
   last_active_to: string;
 }
 
-interface FilterOptions {
-  roles: number[];
-  authProviders: string[];
-}
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -53,10 +49,6 @@ export default function UsersPage() {
     last_active_from: '',
     last_active_to: '',
   });
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    roles: [],
-    authProviders: []
-  });
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -64,15 +56,6 @@ export default function UsersPage() {
     hasNextPage: false,
     hasPrevPage: false
   });
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-
-  useEffect(() => {
-    fetchUsers();
-    fetchFilterOptions();
-    getCurrentUserRole();
-  }, []);
-
   const getCurrentUserRole = () => {
     try {
       const storedUser = sessionStorage.getItem('adminUser');
@@ -85,23 +68,7 @@ export default function UsersPage() {
     }
   };
 
-  const fetchFilterOptions = async () => {
-    try {
-      const token = sessionStorage.getItem('adminToken') || '';
-
-      const response = await fetch('http://localhost:8888/api/admin/users/filter-options', {
-        headers: { 'token': token },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setFilterOptions(data.data);
-      }
-    } catch (error) {
-      console.error('Error fetching filter options:', error);
-    }
-  };
-
-  const buildQueryString = useCallback((filters: SearchFilters, page: number = 1, sortBy?: string, sortOrder?: string) => {
+  const buildQueryString = useCallback((filters: SearchFilters, page: number = 1) => {
     const params = new URLSearchParams();
     
     Object.entries(filters).forEach(([key, value]) => {
@@ -112,23 +79,18 @@ export default function UsersPage() {
     
     params.append('page', page.toString());
     params.append('limit', '10');
-    
-    if (sortBy) {
-      params.append('sort_by', sortBy);
-    }
-    if (sortOrder) {
-      params.append('sort_order', sortOrder.toUpperCase());
-    }
+    params.append('sort_by', 'createdAt');
+    params.append('sort_order', 'DESC');
     
     return params.toString();
   }, []);
 
-  const fetchUsers = async (page: number = 1, showLoading: boolean = true) => {
+  const fetchUsers = useCallback(async (page: number = 1, showLoading: boolean = true) => {
     try {
       if (showLoading) setLoading(true);
       const token = sessionStorage.getItem('adminToken') || '';
 
-      const queryString = buildQueryString(searchFilters, page, sortBy, sortOrder);
+      const queryString = buildQueryString(searchFilters, page);
       const response = await fetch(`http://localhost:8888/api/admin/users?${queryString}`, {
         headers: {
           'token': token,
@@ -146,7 +108,12 @@ export default function UsersPage() {
     } finally {
       if (showLoading) setLoading(false);
     }
-  };
+  }, [searchFilters, buildQueryString]);
+
+  useEffect(() => {
+    fetchUsers();
+    getCurrentUserRole();
+  }, [fetchUsers]);
 
   const handleSearchChange = (field: keyof SearchFilters, value: string) => {
     setSearchFilters(prev => ({
@@ -155,9 +122,6 @@ export default function UsersPage() {
     }));
   };
 
-  const handleSearch = () => {
-    fetchUsers(1);
-  };
 
   // Debounced search effect - faster and more responsive, no loading state
   useEffect(() => {
@@ -166,50 +130,10 @@ export default function UsersPage() {
     }, 300); // Reduced to 300ms for faster response
 
     return () => clearTimeout(timeoutId);
-  }, [searchFilters.search]);
-
-  const handleClearFilters = () => {
-    setSearchFilters({
-      search: '',
-      role: '',
-      auth_provider: '',
-      status: '',
-      email_verified: '',
-      phone_verified: '',
-      date_from: '',
-      date_to: '',
-      last_active_from: '',
-      last_active_to: '',
-    });
-    fetchUsers(1);
-  };
-
-  const handlePageChange = (page: number) => {
-    fetchUsers(page);
-  };
-
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('asc');
-    }
-    fetchUsers(pagination.currentPage);
-  };
+  }, [searchFilters.search, fetchUsers]);
 
   // Check if current user can create users (only Admin and SuperAdmin)
   const canCreateUsers = currentUserRole === 10 || currentUserRole === 11;
-
-  const getRoleName = (role: number) => {
-    switch (role) {
-      case 10: return 'Admin';
-      case 11: return 'SuperAdmin';
-      case 12: return 'Blogger';
-      case 13: return 'Site Manager';
-      default: return 'Unknown';
-    }
-  };
 
   return (
     <div className="space-y-6 overflow-x-hidden relative">
@@ -217,7 +141,7 @@ export default function UsersPage() {
       
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-lg font-bold text-themeTeal">User management</h1>
+        <h1 className="text-lg font-bold text-themeTeal">Admin User management</h1>
         <p className="text-sm text-themeTealLight">Manage your team members and their account permissions here.</p>
       </div>
 
@@ -262,9 +186,6 @@ export default function UsersPage() {
         <UserTable 
           users={users} 
           onRefresh={() => fetchUsers(pagination.currentPage)} 
-          onSort={handleSort} 
-          sortBy={sortBy} 
-          sortOrder={sortOrder}
           onNotification={(type, title, message) => addNotification({ type, title, message, duration: 5000 })}
         />
       </div>
