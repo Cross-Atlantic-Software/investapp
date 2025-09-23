@@ -16,10 +16,10 @@ type Props = {
 
 export function InvestappPrice({
   eyebrow = "INVESTAPP PRICE",
-  title = "A new standard for private market pricing insight",
-  description = "Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit.",
+  title = "Invest with Clarity. Exit with Confidence.",
+  description = "Unlike traditional platforms, we’re built on transparency and execution certainty—helping you trade smarter, faster, and safer.",
   ctaLabel = "Learn more",
-  ctaHref = "#",
+  ctaHref = "/contact",
   imageSrc = "/images/investapp-price-hero.webp", // export your composite graphic
   imageAlt = "Private market pricing visualization",
 }: Props) {

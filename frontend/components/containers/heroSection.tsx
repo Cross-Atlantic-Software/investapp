@@ -8,12 +8,12 @@ export function HeroSection() {
     <section className="bg-brandGradient overflow-hidden">
       <div className="appContainer flex flex-col md:flex-row items-center gap-10 lg:grid-cols-12 py-16">
         <div className="flex-1 text-center md:text-left">
-          <Heading as="h6" base="font-sans" className="mb-3">Sign in to your Secure Wallet!</Heading>
-          <Heading as="h1" className="mb-4">Private Markets, Reimagined. Invest in everything</Heading>
-          <p className="text-themeTealLight">InvestApp’s market data and price discovery tools enable institutional investors, shareholders, and brokers to trade the pre-IPO asset class with more confidence.</p>
+          <Heading as="h6" base="font-sans" className="mb-3">Unlisted Shares, Made Simple. Made Secure.</Heading>
+          <Heading as="h1" className="mb-4">Invest in Tomorrow’s IPOs, Today</Heading>
+          <p className="text-themeTealLight">Invest in pre-IPO opportunities with verified data, transparent pricing, and a secure ecosystem designed for both seasoned and first-time investors.</p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center md:justify-start">
-            <Button text="Sell Shares" color="themeTeal" variant="outline" size="md" href='/' />
-            <Button text="Invest Now" color="themeTeal" variant="solid" size="md" href='/' />
+            <Button text="Sell Shares" color="themeTeal" variant="outline" size="md" href='/contact' />
+            <Button text="Invest Now" color="themeTeal" variant="solid" size="md" href='/invest' />
           </div>
         </div>
         <div className="flex-1 relative">

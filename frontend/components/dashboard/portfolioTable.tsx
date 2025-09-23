@@ -128,45 +128,47 @@ export default function PortfolioTable({ rows, pageSize = 8 }: Props) {
       </div>
 
       {/* pagination */}
-      <nav className="flex items-center justify-center gap-2  p-4">
-        <button
-          onClick={() => go(page - 1)}
-          className="inline-flex items-center gap-1 rounded px-2 py-1 text-sm text-themeTeal hover:bg-themeTeal hover:text-themeTealWhite disabled:opacity-40 transition duration-500 cursor-pointer"
-          disabled={page === 1}
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Prev
-        </button>
+      {pagesToShow.length>6 && (
+        <nav className="flex items-center justify-center gap-2  p-4">
+          <button
+            onClick={() => go(page - 1)}
+            className="inline-flex items-center gap-1 rounded px-2 py-1 text-sm text-themeTeal hover:bg-themeTeal hover:text-themeTealWhite disabled:opacity-40 transition duration-500 cursor-pointer"
+            disabled={page === 1}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Prev
+          </button>
 
-        {pagesToShow.map((p, i) =>
-          p === "..." ? (
-            <span key={`dots-${i}`} className="px-2 text-themeTealLighter">
-              …
-            </span>
-          ) : (
-            <button
-              key={`p-${p}`}
-              onClick={() => go(p as number)}
-              className={`min-w-[32px] rounded px-2 py-1 text-sm cursor-pointer transition duration-500 ${
-                p === page
-                  ? "bg-themeSkyBlue text-themeTealWhite"
-                  : "text-themeTeal hover:bg-themeSkyBlue hover:text-themeTealWhite"
-              }`}
-            >
-              {p}
-            </button>
-          )
-        )}
+          {pagesToShow.map((p, i) =>
+            p === "..." ? (
+              <span key={`dots-${i}`} className="px-2 text-themeTealLighter">
+                …
+              </span>
+            ) : (
+              <button
+                key={`p-${p}`}
+                onClick={() => go(p as number)}
+                className={`min-w-[32px] rounded px-2 py-1 text-sm cursor-pointer transition duration-500 ${
+                  p === page
+                    ? "bg-themeSkyBlue text-themeTealWhite"
+                    : "text-themeTeal hover:bg-themeSkyBlue hover:text-themeTealWhite"
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
 
-        <button
-          onClick={() => go(page + 1)}
-          className="inline-flex items-center gap-1 rounded px-2 py-1 text-sm text-themeTeal hover:bg-themeTeal hover:text-themeTealWhite disabled:opacity-40 transition duration-500 cursor-pointer"
-          disabled={page === totalPages}
-        >
-          Next
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </nav>
+          <button
+            onClick={() => go(page + 1)}
+            className="inline-flex items-center gap-1 rounded px-2 py-1 text-sm text-themeTeal hover:bg-themeTeal hover:text-themeTealWhite disabled:opacity-40 transition duration-500 cursor-pointer"
+            disabled={page === totalPages}
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </nav>
+      )}
     </div>
   );
 }

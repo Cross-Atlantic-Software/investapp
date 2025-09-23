@@ -16,26 +16,21 @@ type Props = {
 
 export function MarketInsight({
   cards = [
-    { title: "Sector performance", period: "Past 7 Days", src: "/images/graph1.png" },
-    { title: "Sector performance vs Marketplace Average", period: "Past 6 Months", src: "/images/graph2.png" },
-    { title: "Bid - Offer Ratio", period: "Past 8 Months", src: "/images/graph3.png" },
-    { title: "Sector performance vs Marketplace Average", period: "Past 6 Months", src: "/images/graph4.png" },
-    { title: "Total Raised to Date", src: "/images/graph5.png" },
-    { title: "Employee Count", period: "Past 6 Months", src: "/images/graph6.png" },
+    { title: "Fastest-Growing Sectors", period: "Past 7 Days", src: "/images/graph1.png" },
+    { title: "Sector vs. Market Benchmark", period: "Past 6 Months", src: "/images/graph2.png" },
+    { title: "Demand–Supply Dynamics", period: "Past 8 Months", src: "/images/graph3.png" },
+    { title: "Valuation Trends by Funding", period: "Past 6 Months", src: "/images/graph4.png" },
+    { title: "Capital Raised So Far", src: "/images/graph5.png" },
+    { title: "Workforce as Growth Signal", period: "Past 6 Months", src: "/images/graph6.png" },
   ],
 }: Props) {
   return (
     <section>
       <div className="appContainer py-12 md:py-16">
         {/* Header */}
-        <div className="mx-auto mb-10 max-w-5xl text-center">
-          <Heading as="h2" className="mb-3 text-themeTeal">
-            Sector and Market Insights for sophisticated investors
-          </Heading>
-          <p className="text-themeTealLight">
-            Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to
-            established private giants. These are the companies shaping the future—now just a click away.
-          </p>
+        <div className="mx-auto mb-10 max-w-4xl text-center">
+          <Heading as="h2" className="mb-3 text-themeTeal">Your Data-Driven Edge in Private Markets</Heading>
+          <p className="text-themeTealLight">Go beyond prices. Explore sector momentum, valuation shifts, funding patterns, and demand–supply ratios, all transformed into actionable insights you can trust.</p>
         </div>
 
         {/* Image grid */}

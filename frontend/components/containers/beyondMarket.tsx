@@ -9,15 +9,9 @@ export function BeyondMarket() {
     <section className="">
       <div className="appContainer py-16 md:py-20 flex flex-col gap-6 text-center">
         {/* Header */}
-        <div className="max-w-3xl mx-auto">
-          <Heading as="h2" className="mb-3">
-            Discover the Market Beyond the Market
-          </Heading>
-          <p className="text-themeTealLight">
-            Explore a dynamic range of top-performing unlisted stocks—from
-            high-growth startups to established private giants. These are the
-            companies shaping the future—now just a click away.
-          </p>
+        <div className="max-w-2xl mx-auto">
+          <Heading as="h2" className="mb-3">Your Real-Time Window into India’s Private Market</Heading>
+          <p className="text-themeTealLight">Track live demand, price shifts, and valuations for top unlisted companies, from fast-growing startups to established giants.</p>
         </div>
 
         {/* Status bar */}
