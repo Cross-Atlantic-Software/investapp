@@ -63,11 +63,11 @@ export default function StocksPage() {
       params.append('sort_by', sortByRef.current);
       params.append('sort_order', sortOrderRef.current.toUpperCase());
       
-      const url = `http://localhost:8888/api/admin/stocks?${params.toString()}`;
+      const url = `/api/admin/stocks?${params.toString()}`;
         
       const response = await fetch(url, {
         headers: {
-          'token': token,
+          'Authorization': `Bearer ${token}`,
         },
       });
       const data = await response.json();
@@ -117,25 +117,47 @@ export default function StocksPage() {
     // The useEffect will handle the API call when sortBy or sortOrder changes
   };
 
-  const handleAddStock = async (stockData: Record<string, unknown>) => {
+  const handleAddStock = async (stockData: {
+    title: string;
+    company_name: string;
+    price_per_share: string;
+    valuation: string;
+    price_change: string;
+    icon: File | null;
+  }) => {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       const formData = new FormData();
       
-      // Append all stock data to formData
+      // Map frontend fields to backend fields
+      const fieldMapping: Record<string, string> = {
+        'company_name': 'company_name',
+        'price_per_share': 'price',
+        'price_change': 'price_change',
+        'icon': 'logo'
+      };
+
+      // Append mapped stock data to formData
       Object.keys(stockData).forEach(key => {
-        const value = stockData[key];
+        const value = (stockData as any)[key];
+        const backendField = fieldMapping[key] || key;
+        
         if (key === 'icon' && value instanceof File) {
-          formData.append(key, value);
+          formData.append(backendField, value);
         } else if (value !== null && value !== undefined && typeof value === 'string') {
-          formData.append(key, value);
+          formData.append(backendField, value);
         }
       });
 
-      const response = await fetch('http://localhost:8888/api/admin/stocks', {
+      // Add required fields that are missing from the form
+      formData.append('teaser', stockData.title || 'Stock teaser');
+      formData.append('short_description', `Short description for ${stockData.company_name}`);
+      formData.append('analysis', `Analysis for ${stockData.company_name} stock`);
+
+      const response = await fetch('/api/admin/stocks', {
         method: 'POST',
         headers: {
-          'token': token,
+          'Authorization': `Bearer ${token}`,
         },
         body: formData,
       });

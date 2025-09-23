@@ -1,7 +1,7 @@
 import express from "express";
-import adminMiddleware from "../utils/middleware/admin-middleware";
-import { uploadIcon } from "../utils/middleware/s3Upload";
-import updateLastActive from "../utils/middleware/updateLastActive";
+import adminMiddleware from "../utils/middlewares/admin-middleware";
+import { uploadIcon } from "../utils/middlewares/s3Upload";
+import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
 import {

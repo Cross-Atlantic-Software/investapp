@@ -8,15 +8,15 @@ import Link from "next/link";
 /* ---------- types ---------- */
 export type ProductItem = {
   id: string;
-  name: string;
-  symbol: string;
-  sector: string;
-  description: string;
-  logoUrl?: string;
-  priceINR: number;
-  changePct: number;
-  volumeThousands?: number;
-  graphImg?: string;
+  company_name: string;
+  logo: string;
+  price: number;
+  price_change: number;
+  teaser: string;
+  short_description: string;
+  analysis: string;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 /* ---------- list with pagination ---------- */
@@ -137,28 +137,23 @@ function PageBtn({ n, active, onClick }: { n: number; active: boolean; onClick: 
 
 /* ---------- row (unchanged from your mobile-friendly version) ---------- */
 function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id: string) => void }) {
-  const pos = item.changePct >= 0;
+  const pos = item.price_change >= 0;
   const changeSign = pos ? "+" : "";
   return (
     <article className="w-full rounded-xl bg-themeTealWhite p-2 md:p-3">
       <div className="flex flex-col gap-4 xl:flex-row md:items-center md:justify-between">
         <div className="flex gap-3 md:gap-4 items-center">
           <div className="h-14 w-14 md:h-20 md:w-20 shrink-0 rounded-lg bg-white grid place-items-center overflow-hidden">
-            {item.logoUrl ? (
-              <Image src={item.logoUrl} alt={`${item.name} logo`} width={80} height={80} className="h-full w-full object-cover" />
-            ) : (
-              <span className="text-base md:text-xl font-semibold">{abbr(item.name)}</span>
-            )}
+            <Image src={item.logo} alt={`${item.company_name} logo`} width={80} height={80} className="h-full w-full object-cover" />
           </div>
 
           <div className="min-w-0 w-full">
             <h3 className="text-themeTeal font-semibold leading-tight truncate">
-              <Link href='/discover-details' className="text-themeTeal font-semibold transition duration-500 hover:text-themeSkyBlue">
-                {item.name} <span>({item.symbol})</span>
+              <Link href={`/discover-details?stock=${item.id}`} className="text-themeTeal font-semibold transition duration-500 hover:text-themeSkyBlue">
+                {item.company_name}
               </Link>
             </h3>
-            <div className="text-xs text-themeTealLighter">{item.sector}</div>
-            <p className="mt-1 text-sm text-themeTealLight line-clamp-3 md:line-clamp-1">{item.description}</p>
+            <p className="mt-1 text-sm text-themeTealLight line-clamp-3 md:line-clamp-1">{item.teaser}</p>
 
             <div className="mt-2 flex justify-center md:hidden">
               <WishBtn onClick={() => onWishlist?.(item.id)} />
@@ -170,34 +165,25 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
           <WishBtn onClick={() => onWishlist?.(item.id)} />
         </div>
 
-        <div className="w-full md:w-auto md:min-w-[350px] lg:min-w-full xl:min-w-[400px]">
-          <div className="hidden md:grid grid-cols-4 bg-themeTeal px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white">
-            <div>Price</div><div>Change</div><div>Graph</div><div>Volume (’000)</div>
+        <div className="w-full md:w-auto md:min-w-[400px] lg:min-w-full xl:min-w-[500px]">
+          <div className="hidden md:grid grid-cols-2 bg-themeTeal px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white">
+            <div>Price</div><div>Change</div>
           </div>
-          <div className="hidden md:grid grid-cols-4 items-center gap-2 bg-white px-3 py-2 text-sm font-semibold text-themeTeal">
-            <div className="whitespace-nowrap">₹ {formatINR(item.priceINR)}</div>
+          <div className="hidden md:grid grid-cols-2 items-center gap-2 bg-white px-3 py-2 text-sm font-semibold text-themeTeal">
+            <div className="whitespace-nowrap">₹ {formatINR(item.price)}</div>
             <div className={pos ? "text-green-700" : "text-rose-600"}>
-              {changeSign}{item.changePct.toFixed(2)}%{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
+              {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
             </div>
-            <div className="flex justify-start">
-              <Image src={item.graphImg || "/images/price-up-graph.svg"} alt="Graph" width={60} height={24} className="object-contain" />
-            </div>
-            <div>{item.volumeThousands?.toLocaleString("en-IN") ?? "—"}</div>
           </div>
 
           <div className="grid md:hidden grid-cols-2 gap-3 bg-white p-3 text-sm text-themeTeal">
-            <MobileStat label="Price" value={`₹ ${formatINR(item.priceINR)}`} />
+            <MobileStat label="Price" value={`₹ ${formatINR(item.price)}`} />
             <MobileStat
               label="Change"
               value={<span className={pos ? "text-green-700" : "text-rose-600"}>
-                {changeSign}{item.changePct.toFixed(2)}%{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
+                {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
               </span>}
             />
-            <MobileStat
-              label="Graph"
-              value={<Image src={item.graphImg || "/images/price-up-graph.svg"} alt="Graph" width={72} height={22} className="object-contain" />}
-            />
-            <MobileStat label="Volume (’000)" value={item.volumeThousands?.toLocaleString("en-IN") ?? "—"} />
           </div>
         </div>
       </div>

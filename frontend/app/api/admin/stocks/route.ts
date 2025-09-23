@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(`${BACKEND_URL}/api/admin/stocks`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'token': token,
       },
     });
 
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const response = await fetch(`${BACKEND_URL}/api/admin/stocks`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'token': token,
       },
       body: formData,
     });

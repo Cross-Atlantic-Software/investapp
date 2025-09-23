@@ -36,7 +36,8 @@ export default function adminMiddleware(req: Request, res: Response, next: NextF
 
   try {
     // Verify the token and decode it
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET as string) as User 
+    const tokenSecret = process.env.TOKEN_SECRET || "fnknwdfnnnfsdklnfslkfsdkfnslkfnksnfnsllsfkfsnfnklsnflnleoiw";
+    const decoded = jwt.verify(token, tokenSecret) as User 
     // Attach the decoded user to the request object
     // Allow all CMS users to access admin panel (Admin, SuperAdmin, Blogger, SiteManager)
     if(decoded.role !== UserRole.Admin && 

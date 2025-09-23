@@ -13,7 +13,7 @@ export function HeroSection() {
           <p className="text-themeTealLight">InvestApp’s market data and price discovery tools enable institutional investors, shareholders, and brokers to trade the pre-IPO asset class with more confidence.</p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center md:justify-start">
             <Button text="Sell Shares" color="themeTeal" variant="outline" size="md" href='/' />
-            <Button text="Invest Now" color="themeTeal" variant="solid" size="md" href='/' />
+            <Button text="Invest Now" color="themeTeal" variant="solid" size="md" href='/invest' />
           </div>
         </div>
         <div className="flex-1 relative">

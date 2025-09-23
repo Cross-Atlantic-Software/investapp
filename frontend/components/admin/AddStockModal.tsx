@@ -2,9 +2,18 @@
 
 import React, { useState } from 'react';
 
+interface StockData {
+  title: string;
+  company_name: string;
+  price_per_share: string;
+  valuation: string;
+  price_change: string;
+  icon: File | null;
+}
+
 interface AddStockModalProps {
   onClose: () => void;
-  onSubmit: (stockData: any) => void;
+  onSubmit: (stockData: StockData) => void;
 }
 
 const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
@@ -14,7 +23,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
     price_per_share: '',
     valuation: '',
     price_change: '',
-    percentage_change: '',
     icon: null as File | null,
   });
 
@@ -130,7 +138,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               </div>
             </div>
             
-            {/* Price Change and Percentage Change */}
+            {/* Price Change*/}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -147,20 +155,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                 />
               </div>
               
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Percentage Change
-                </label>
-                <input
-                  type="number"
-                  name="percentage_change"
-                  value={formData.percentage_change}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                  placeholder="0.00"
-                  step="0.01"
-                />
-              </div>
             </div>
             
             {/* Stock Icon */}
