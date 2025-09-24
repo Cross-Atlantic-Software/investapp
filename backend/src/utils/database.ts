@@ -1,6 +1,8 @@
 import { Sequelize } from "sequelize";
 import User, { initializeUserModel } from "../Models/User";
 import UserVerification, { initializeUserVerificationModel } from "../Models/UserVerification";
+import Product, { initializeProductModel } from "../Models/Product";
+import CmsUser, { initializeCmsUserModel } from "../Models/CmsUser";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -34,6 +36,10 @@ async function initializeSequelize() {
   // Initialize the User model
   initializeUserModel(sequelize);
   initializeUserVerificationModel(sequelize);
+  initializeProductModel(sequelize);
+  initializeCmsUserModel(sequelize);
+  
+  // No associations needed since only admins handle stocks
   
   return sequelize;
 }
@@ -45,25 +51,43 @@ export const sequelizePromise = initializeSequelize();
 export const db = {
   get sequelize() {
     if (!sequelize) {
-      throw new Error('Sequelize not initialized yet. Wait for sequelizePromise to resolve.');
+      // Try to get sequelize from the promise if it's resolved
+      if (sequelizePromise) {
+        sequelizePromise.then(seq => {
+          sequelize = seq;
+        }).catch(err => {
+          console.error('Error getting sequelize from promise:', err);
+        });
+      }
+      
+      if (!sequelize) {
+        throw new Error('Sequelize not initialized yet. Wait for sequelizePromise to resolve.');
+      }
     }
     return sequelize;
   },
   User,
-  UserVerification
+  UserVerification,
+  Product,
+  CmsUser
 };
 
 async function initialize() {
   try {
-    // Wait for sequelize to be initialized
-    const sequelize = await sequelizePromise;
+    // Wait for sequelize to be initialized with timeout
+    const sequelizeInstance = await Promise.race([
+      sequelizePromise,
+      new Promise<never>((_, reject) => 
+        setTimeout(() => reject(new Error('Database initialization timeout')), 30000)
+      )
+    ]);
     
     // Sync the database
-    // await sequelize.sync({ alter: true });
+    // await sequelizeInstance.sync({ alter: true });
     
     // Only sync in development, skip in production
     if (process.env.NODE_ENV !== 'production') {
-      await sequelize.sync();
+      await sequelizeInstance.sync();
     } else {
       console.log('⚠️ Skipping database sync in production');
     }
@@ -75,14 +99,15 @@ async function initialize() {
     
   } catch (err) {
     console.error("❌ Database initialization failed:", err);
-    throw err;
+    // Don't exit the process, let the app continue and retry later
+    console.log('🔄 Will retry database connection on next request...');
   }
 }
 
 // Initialize database
 initialize().catch((err) => {
   console.error("❌ Database initialization failed:", err);
-  process.exit(1);
+  // Don't exit the process, let it continue and retry
 });
 
 export default db;

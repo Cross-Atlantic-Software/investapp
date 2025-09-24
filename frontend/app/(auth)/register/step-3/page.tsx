@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -8,7 +8,7 @@ import { Mail, Video, User, MoveLeft } from "lucide-react";
 import { Button, Heading } from "@/components/ui";
 import { useAuth } from "@/lib/contexts/AuthContext";
 
-export default function Page() {
+function Step3Content() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -18,7 +18,7 @@ export default function Page() {
   const [error, setError] = useState("");
   const [profileCompleted, setProfileCompleted] = useState(false);
 
-  const { completeProfile, error: authError, clearError, isAuthenticated } = useAuth();
+  const { completeProfile, error: authError, clearError } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -310,5 +310,20 @@ export default function Page() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4"></div>
+          <p className="text-themeTealLighter">Loading...</p>
+        </div>
+      </div>
+    }>
+      <Step3Content />
+    </Suspense>
   );
 }

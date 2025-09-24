@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { authApi, AuthApiError, RegisterRequest, LoginRequest, VerifyEmailRequest, CompleteProfileRequest, AuthResponse, GoogleAuthRequest } from '@/lib/api/auth';
 
 interface User {
@@ -23,6 +23,7 @@ interface AuthContextType {
   googleAuth: () => Promise<void>;
   googleTokenVerify: (data: GoogleAuthRequest) => Promise<AuthResponse & { needsProfileCompletion?: boolean; isNewUser?: boolean }>;
   logout: () => void;
+  refreshAuthState: () => void;
   error: string | null;
   clearError: () => void;
 }
@@ -266,6 +267,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('auth_user');
   };
 
+  const refreshAuthState = useCallback(() => {
+    const savedToken = localStorage.getItem('auth_token');
+    const savedUser = localStorage.getItem('auth_user');
+    
+    if (savedToken && savedUser) {
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        // Only update if the data has changed to prevent unnecessary re-renders
+        if (token !== savedToken || JSON.stringify(user) !== JSON.stringify(parsedUser)) {
+          setToken(savedToken);
+          setUser(parsedUser);
+        }
+      } catch (error) {
+        console.error('Error parsing saved auth data:', error);
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+      }
+    }
+  }, [token, user]);
+
   const value: AuthContextType = {
     user,
     token,
@@ -278,6 +299,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     googleAuth,
     googleTokenVerify,
     logout,
+    refreshAuthState,
     error,
     clearError,
   };
