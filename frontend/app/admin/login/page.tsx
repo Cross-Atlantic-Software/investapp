@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { CircleAlert, Eye, EyeOff, Lock, LogIn, User } from 'lucide-react';
+import { CircleAlert, Eye, EyeOff, Lock, LogIn, User, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui';
 
 export default function AdminLogin() {
   const [credentials, setCredentials] = useState({
@@ -169,6 +170,9 @@ export default function AdminLogin() {
               </button>
             </div>
           </form>
+        </div>
+        <div className='text-center'>
+          <Button text='Go back to InvestApp website' color="skyblue" variant="link" size="nospace" className='text-sm gap-0' href='./' icon={ArrowLeft} iconPosition='left' />
         </div>
       </div>
     </div>
