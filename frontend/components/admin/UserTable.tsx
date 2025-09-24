@@ -88,7 +88,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
     try {
       const token = sessionStorage.getItem('adminToken') || '';
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/${editingUser.id}`, {
+      const response = await fetch(`/api/admin/users/${editingUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
     setDeleteLoading(true);
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/${deleteModal.user.id}`, {
+      const response = await fetch(`/api/admin/users/${deleteModal.user.id}`, {
         method: 'DELETE',
         headers: {
           'token': token,

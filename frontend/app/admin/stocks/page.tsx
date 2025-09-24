@@ -73,7 +73,7 @@ export default function StocksPage() {
 
       const response = await fetch(url, {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'token': token,
         },
       });
       const data = await response.json();
@@ -166,10 +166,9 @@ export default function StocksPage() {
       formData.append('analysis', `Analysis for ${stockData.company_name} stock`);
 
       const response = await fetch('/api/admin/stocks', {
-
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'token': token,
         },
         body: formData,
       });

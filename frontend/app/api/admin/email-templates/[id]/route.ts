@@ -11,10 +11,10 @@ export async function GET(
     const token = request.headers.get('token');
     
     if (!token) {
-      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/site-users/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/admin/email-templates/${id}`, {
       headers: {
         'token': token,
       },
@@ -23,7 +23,7 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching site user:', error);
+    console.error('Error fetching email template:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -37,12 +37,12 @@ export async function PUT(
     const token = request.headers.get('token');
     
     if (!token) {
-      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/site-users/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/admin/email-templates/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ export async function PUT(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error updating site user:', error);
+    console.error('Error updating email template:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -68,10 +68,10 @@ export async function DELETE(
     const token = request.headers.get('token');
     
     if (!token) {
-      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/site-users/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/admin/email-templates/${id}`, {
       method: 'DELETE',
       headers: {
         'token': token,
@@ -81,7 +81,8 @@ export async function DELETE(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error deleting site user:', error);
+    console.error('Error deleting email template:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
+

@@ -72,7 +72,7 @@ export default function TradeTabs({
       // Get token from localStorage or sessionStorage
       const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
       
-      const response = await fetch('http://localhost:8888/api/trading/buy', {
+      const response = await fetch('/api/trading/buy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export default function TradeTabs({
   //     // Get token from localStorage or sessionStorage
   //     const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
       
-  //     const response = await fetch('http://localhost:8888/api/trading/sell', {
+  //     const response = await fetch('/api/trading/sell', {
   //       method: 'POST',
   //       headers: {
   //         'Content-Type': 'application/json',

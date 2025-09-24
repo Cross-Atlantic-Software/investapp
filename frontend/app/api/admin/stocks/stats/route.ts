@@ -4,12 +4,12 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('token') || request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.headers.get('token');
     if (!token) {
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/site-users/stats`, {
+    const response = await fetch(`${BACKEND_URL}/api/admin/stocks/stats`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error in /api/admin/site-users/stats:', error);
+    console.error('Error in /api/admin/stocks/stats:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

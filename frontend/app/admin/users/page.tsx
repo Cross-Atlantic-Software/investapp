@@ -100,7 +100,7 @@ export default function UsersPage() {
 
 
       const queryString = buildQueryString(searchFilters, page);
-      const response = await fetch(`http://localhost:8888/api/admin/users?${queryString}`, {
+      const response = await fetch(`/api/admin/users?${queryString}`, {
 
         headers: {
           'token': token,
