@@ -210,4 +210,35 @@ export class EmailTemplateService {
       return null;
     }
   }
+
+  static async getPasswordResetEmail(
+    userEmail: string,
+    userName: string,
+    resetLink: string
+  ): Promise<{ subject: string; body: string } | null> {
+    try {
+      const template = await this.getTemplateByType('Password_Reset');
+      if (!template) {
+        console.error('Password reset template not found');
+        return null;
+      }
+
+      const variables = {
+        userEmail,
+        userName,
+        resetLink
+      };
+
+      const formattedBody = this.replaceTemplateVariables(template.body, variables);
+      const formattedSubject = this.replaceTemplateVariables(template.subject, variables);
+
+      return {
+        subject: formattedSubject,
+        body: formattedBody
+      };
+    } catch (error) {
+      console.error('Error generating password reset email:', error);
+      return null;
+    }
+  }
 }
