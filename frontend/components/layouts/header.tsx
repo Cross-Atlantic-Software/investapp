@@ -47,7 +47,7 @@ export function Header() {
                     {user?.name || user?.email?.split('@')[0] || 'User'}
                   </span>
                   <span className="text-xs text-themeTealLighter">
-                    {user?.email}
+                  {user?.email}
                   </span>
                 </div>
               </div>
@@ -59,7 +59,6 @@ export function Header() {
                 title="Logout"
               >
                 <LogOut className="h-3 w-3" />
-                <span>Logout</span>
               </button>
             </div>
           ) : (

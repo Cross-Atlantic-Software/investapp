@@ -8,7 +8,6 @@ interface StockData {
   price_per_share: string;
   valuation: string;
   price_change: string;
-  percentage_change: string;
   icon: File | null;
 }
 
@@ -24,8 +23,8 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
     price_per_share: '',
     valuation: '',
     price_change: '',
-    percentage_change: '',
-    icon: null,
+    icon: null as File | null,
+
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,8 +49,8 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-8 max-h-[90vh] overflow-y-auto">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4">
           <div className="flex items-center justify-between">
@@ -70,7 +69,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
         </div>
 
         {/* Modal Body */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto">
           
           <form id="stock-form" onSubmit={handleSubmit} className="space-y-6">
             {/* Stock Title */}
@@ -140,7 +139,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               </div>
             </div>
             
-            {/* Price Change and Percentage Change */}
+            {/* Price Change*/}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -157,20 +156,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                 />
               </div>
               
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Percentage Change
-                </label>
-                <input
-                  type="number"
-                  name="percentage_change"
-                  value={formData.percentage_change}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                  placeholder="0.00"
-                  step="0.01"
-                />
-              </div>
             </div>
             
             {/* Stock Icon */}

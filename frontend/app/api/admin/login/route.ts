@@ -18,8 +18,10 @@ export async function POST(request: NextRequest) {
     if (data.success) {
       return NextResponse.json({
         success: true,
-        token: data.token,
-        user: data.user
+        data: {
+          token: data.data.token,
+          user: data.data.user
+        }
       });
     } else {
       return NextResponse.json({

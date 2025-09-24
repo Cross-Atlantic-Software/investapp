@@ -14,7 +14,7 @@ function getDatabaseConfig() {
   const env = (process.env.NODE_ENV as "development" | "production" | "test") || "development";
   const envConfig = (config as any)[env] || {};
   
-  return {
+  const dbConfig = {
     host: process.env.DB_HOST || envConfig.host,
     port: Number(process.env.DB_PORT || envConfig.port),
     user: process.env.DB_USER || envConfig.user,
@@ -22,6 +22,21 @@ function getDatabaseConfig() {
     database: process.env.DB_NAME || envConfig.database,
     environment: env
   };
+  
+  console.log('🔍 Database Configuration Debug:');
+  console.log('Environment:', env);
+  console.log('DB_HOST from env:', process.env.DB_HOST);
+  console.log('DB_USER from env:', process.env.DB_USER);
+  console.log('DB_NAME from env:', process.env.DB_NAME);
+  console.log('Final config:', {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    user: dbConfig.user,
+    database: dbConfig.database,
+    environment: dbConfig.environment
+  });
+  
+  return dbConfig;
 }
 
 // Initialize connection manager first

@@ -10,7 +10,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/admin/stocks`, {
+    const { searchParams } = new URL(request.url);
+    const page = searchParams.get('page') || '1';
+    const limit = searchParams.get('limit') || '10';
+    const search = searchParams.get('search') || '';
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') || 'DESC';
+
+    const params = new URLSearchParams({
+      page,
+      limit,
+      search,
+      sort_by: sortBy,
+      sort_order: sortOrder
+    });
+
+    const response = await fetch(`${BACKEND_URL}/api/admin/site-users?${params.toString()}`, {
       headers: {
         'token': token,
       },
@@ -19,7 +34,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching stocks:', error);
+    console.error('Error fetching site users:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -32,20 +47,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
-    const formData = await request.formData();
+    const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/admin/stocks`, {
+    const response = await fetch(`${BACKEND_URL}/api/admin/site-users`, {
       method: 'POST',
       headers: {
+        'Content-Type': 'application/json',
         'token': token,
       },
-      body: formData,
+      body: JSON.stringify(body),
     });
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error creating stock:', error);
+    console.error('Error creating site user:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

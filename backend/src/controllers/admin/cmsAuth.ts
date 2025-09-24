@@ -46,6 +46,7 @@ export const cmsLogin = async (req: Request, res: Response) => {
     }
 
     // Generate JWT token
+    const tokenSecret = process.env.TOKEN_SECRET || "fnknwdfnnnfsdklnfslkfsdkfnslkfnksnfnsllsfkfsnfnklsnflnleoiw";
     const token = jwt.sign(
       {
         user_id: user.id.toString(),
@@ -54,7 +55,7 @@ export const cmsLogin = async (req: Request, res: Response) => {
         first_name: user.first_name,
         last_name: user.last_name
       },
-      process.env.TOKEN_SECRET as string,
+      tokenSecret,
       { expiresIn: "7d" }
     );
 

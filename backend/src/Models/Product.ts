@@ -2,20 +2,20 @@ import { Sequelize, DataTypes, Model, Optional } from "sequelize";
 
 interface ProductAttributes {
   id: number;
-  title: string;
-  icon?: string;
-  company_name?: string;
-  price_per_share?: string;
-  valuation?: string;
-  price_change?: string;
-  percentage_change?: string;
+  company_name: string;
+  logo: string;
+  price: number;
+  price_change: number;
+  teaser: string;
+  short_description: string;
+  analysis: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 type ProductCreationAttributes = Optional<
   ProductAttributes,
-  "id" | "icon" | "company_name" | "price_per_share" | "valuation" | "price_change" | "percentage_change"
+  "id"
 >;
 
 class Product
@@ -23,13 +23,13 @@ class Product
   implements ProductAttributes
 {
   public id!: number;
-  public title!: string;
-  public icon?: string;
-  public company_name?: string;
-  public price_per_share?: string;
-  public valuation?: string;
-  public price_change?: string;
-  public percentage_change?: string;
+  public company_name!: string;
+  public logo!: string;
+  public price!: number;
+  public price_change!: number;
+  public teaser!: string;
+  public short_description!: string;
+  public analysis!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -43,27 +43,33 @@ export function initializeProductModel(sequelize: Sequelize) {
         autoIncrement: true,
         primaryKey: true
       },
-      title: {
+      company_name: {
         type: DataTypes.STRING,
         allowNull: false
       },
-      icon: {
-        type: DataTypes.STRING
+      logo: {
+        type: DataTypes.STRING,
+        allowNull: false
       },
-      company_name: {
-        type: DataTypes.STRING
-      },
-      price_per_share: {
-        type: DataTypes.STRING
-      },
-      valuation: {
-        type: DataTypes.STRING
+      price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
       },
       price_change: {
-        type: DataTypes.STRING
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
       },
-      percentage_change: {
-        type: DataTypes.STRING
+      teaser: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
+      short_description: {
+        type: DataTypes.TEXT,
+        allowNull: false
+      },
+      analysis: {
+        type: DataTypes.TEXT,
+        allowNull: false
       }
     }, {
       sequelize,

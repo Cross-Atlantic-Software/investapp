@@ -2,6 +2,7 @@
 
 import { Info } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 type TradeTabsProps = {
   company: string;            // e.g. "Pine Labs"
@@ -20,8 +21,9 @@ export default function TradeTabs({
   minUnits = 0,
   lotSize = 0,
   onBuySubmit,
-  onSellSubmit,
+  // onSellSubmit,
 }: TradeTabsProps) {
+  const router = useRouter();
   const [tab, setTab] = useState<"buy" | "sell">("buy");
 
   // BUY state
@@ -37,6 +39,118 @@ export default function TradeTabs({
   const [sellQty, setSellQty] = useState<number>(0);
   const [sellPrice, setSellPrice] = useState<number>(0);
   const [sellMsg, setSellMsg] = useState("");
+  
+  // Loading state for buy/sell operations
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Check if user is authenticated
+  const isAuthenticated = () => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      return !!token;
+    }
+    return false;
+  };
+
+  // Handle buy button click with authentication check
+  const handleBuyClick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!isAuthenticated()) {
+      router.push('/login');
+      return;
+    }
+    
+    // Prevent multiple clicks
+    if (isLoading) {
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Get token from localStorage or sessionStorage
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      
+      const response = await fetch('http://localhost:8888/api/trading/buy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token || '',
+        },
+        body: JSON.stringify({
+          companyName: company,
+          quantity: qty,
+          price: priceINR,
+          totalAmount: investFromQty
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.status) {
+        // Call the original callback
+        onBuySubmit?.({ quantity: qty, investINR: investFromQty });
+        
+        // Show success message with email confirmation
+        alert(`✅ Buy order placed successfully!\n\n📧 A confirmation email has been sent to your registered email address.\n\nPlease check your inbox for the transaction details.`);
+      } else {
+        alert('❌ Failed to place buy order: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Error placing buy order:', error);
+      alert('❌ Failed to place buy order. Please check your internet connection and try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle sell button click with authentication check
+  // const handleSellClick = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+    
+  //   if (!isAuthenticated()) {
+  //     router.push('/login');
+  //     return;
+  //   }
+    
+  //   try {
+  //     // Get token from localStorage or sessionStorage
+  //     const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      
+  //     const response = await fetch('http://localhost:8888/api/trading/sell', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'token': token || '',
+  //       },
+  //       body: JSON.stringify({
+  //         companyName: company,
+  //         quantity: sellQty,
+  //         sellingPrice: sellPrice,
+  //         totalAmount: sellQty * sellPrice,
+  //         message: sellMsg.trim() || undefined
+  //       })
+  //     });
+
+  //     const data = await response.json();
+      
+  //     if (data.status) {
+  //       // Call the original callback
+  //       onSellSubmit?.({
+  //         quantity: sellQty,
+  //         sellingPriceINR: sellPrice,
+  //         message: sellMsg.trim() || undefined,
+  //       });
+  //       alert('Sell order placed successfully! Check your email for confirmation.');
+  //     } else {
+  //       alert('Failed to place sell order: ' + data.message);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error placing sell order:', error);
+  //     alert('Failed to place sell order. Please try again.');
+  //   }
+  // };
 
   return (
     <div className="rounded bg-themeTealWhite">
@@ -60,10 +174,7 @@ export default function TradeTabs({
       {tab === "buy" && (
         <form
           className="p-4 sm:p-6 space-y-5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onBuySubmit?.({ quantity: qty, investINR: investFromQty });
-          }}
+          onSubmit={handleBuyClick}
         >
           <HeaderRow company={company} priceINR={priceINR} />
 
@@ -102,9 +213,14 @@ export default function TradeTabs({
 
           <button
             type="submit"
-            className="w-full rounded-md bg-emerald-700 px-4 py-3 text-white font-semibold cursor-pointer hover:bg-emerald-800 transition duration-500"
+            disabled={isLoading}
+            className={`w-full rounded-md px-4 py-3 text-white font-semibold transition duration-500 ${
+              isLoading 
+                ? 'bg-gray-500 cursor-not-allowed' 
+                : 'bg-emerald-700 cursor-pointer hover:bg-emerald-800'
+            }`}
           >
-            Invest Now
+            {isLoading ? 'Processing...' : 'Invest Now'}
           </button>
         </form>
       )}
@@ -113,14 +229,7 @@ export default function TradeTabs({
       {tab === "sell" && (
         <form
           className="p-4 sm:p-6 space-y-5"
-          onSubmit={(e) => {
-            e.preventDefault();
-            onSellSubmit?.({
-              quantity: sellQty,
-              sellingPriceINR: sellPrice,
-              message: sellMsg.trim() || undefined,
-            });
-          }}
+          // onSubmit={handleSellClick}
         >
           <SellHeaderRow company={company} />
 

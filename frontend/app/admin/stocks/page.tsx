@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+
 import StockTable from '@/components/admin/StockTable';
 import AddStockModal from '@/components/admin/AddStockModal';
 import Loader from '@/components/admin/Loader';
@@ -16,6 +17,19 @@ export default function StocksPage() {
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  
+  // Refs to store current values to avoid circular dependencies
+  const sortByRef = useRef(sortBy);
+  const sortOrderRef = useRef(sortOrder);
+  
+  // Update refs when values change
+  useEffect(() => {
+    sortByRef.current = sortBy;
+  }, [sortBy]);
+  
+  useEffect(() => {
+    sortOrderRef.current = sortOrder;
+  }, [sortOrder]);
   
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
@@ -51,14 +65,15 @@ export default function StocksPage() {
       if (searchQuery) {
         params.append('search', searchQuery);
       }
-      params.append('sort_by', sortBy);
-      params.append('sort_order', sortOrder.toUpperCase());
+      params.append('sort_by', sortByRef.current);
+      params.append('sort_order', sortOrderRef.current.toUpperCase());
       
-      const url = `${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/stocks?${params.toString()}`;
-        
+
+      const url = `/api/admin/stocks?${params.toString()}`;
+
       const response = await fetch(url, {
         headers: {
-          'token': token,
+          'Authorization': `Bearer ${token}`,
         },
       });
       const data = await response.json();
@@ -75,17 +90,14 @@ export default function StocksPage() {
         setIsInitialLoad(false);
       }
     }
-  }, [sortBy, sortOrder]);
+  }, []); // No dependencies to prevent recreation
 
+  // Initial load effect
   useEffect(() => {
     fetchStocks();
     getCurrentUserRole();
-  }, [fetchStocks]);
+  }, []); // Only run on mount
 
-  // handleSearch is available but currently unused as we use real-time search
-  // const handleSearch = () => {
-  //   fetchStocks(searchTerm);
-  // };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -99,11 +111,12 @@ export default function StocksPage() {
   // Debounced search effect - faster and more responsive, no loading state
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchStocks(searchTerm, false); // No loading state for dynamic search
+      fetchStocks(searchTerm, false); // Use stable function with refs
     }, 300); // Reduced to 300ms for faster response
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, fetchStocks]);
+  }, [searchTerm, sortBy, sortOrder, fetchStocks]); // Depend on the actual values and stable function
+
 
   const handleSort = (field: string) => {
     if (sortBy === field) {
@@ -112,7 +125,7 @@ export default function StocksPage() {
       setSortBy(field);
       setSortOrder('asc');
     }
-    fetchStocks(searchTerm);
+    // The useEffect will handle the API call when sortBy or sortOrder changes
   };
 
   const handleAddStock = async (stockData: {
@@ -121,27 +134,42 @@ export default function StocksPage() {
     price_per_share: string;
     valuation: string;
     price_change: string;
-    percentage_change: string;
     icon: File | null;
   }) => {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       const formData = new FormData();
       
-      // Append all stock data to formData
+      // Map frontend fields to backend fields
+      const fieldMapping: Record<string, string> = {
+        'company_name': 'company_name',
+        'price_per_share': 'price',
+        'price_change': 'price_change',
+        'icon': 'logo'
+      };
+
+      // Append mapped stock data to formData
       Object.keys(stockData).forEach(key => {
-        const typedKey = key as keyof typeof stockData;
-        if (key === 'icon' && stockData[typedKey]) {
-          formData.append(key, stockData[typedKey] as File);
-        } else if (stockData[typedKey] !== null && stockData[typedKey] !== undefined) {
-          formData.append(key, String(stockData[typedKey]));
+        const value = (stockData as any)[key];
+        const backendField = fieldMapping[key] || key;
+        
+        if (key === 'icon' && value instanceof File) {
+          formData.append(backendField, value);
+        } else if (value !== null && value !== undefined && typeof value === 'string') {
+          formData.append(backendField, value);
         }
       });
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/stocks`, {
+      // Add required fields that are missing from the form
+      formData.append('teaser', stockData.title || 'Stock teaser');
+      formData.append('short_description', `Short description for ${stockData.company_name}`);
+      formData.append('analysis', `Analysis for ${stockData.company_name} stock`);
+
+      const response = await fetch('/api/admin/stocks', {
+
         method: 'POST',
         headers: {
-          'token': token,
+          'Authorization': `Bearer ${token}`,
         },
         body: formData,
       });

@@ -19,11 +19,6 @@ interface SearchFilters {
   last_active_to: string;
 }
 
-// Commented out since FilterOptions is not currently being used
-// interface FilterOptions {
-//   roles: number[];
-//   authProviders: string[];
-// }
 
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
@@ -55,10 +50,7 @@ export default function UsersPage() {
     last_active_from: '',
     last_active_to: '',
   });
-  // const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-  //   roles: [],
-  //   authProviders: []
-  // });
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -66,8 +58,6 @@ export default function UsersPage() {
     hasNextPage: false,
     hasPrevPage: false
   });
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
   const getCurrentUserRole = () => {
     try {
@@ -81,23 +71,9 @@ export default function UsersPage() {
     }
   };
 
-  const fetchFilterOptions = useCallback(async () => {
-    try {
-      const token = sessionStorage.getItem('adminToken') || '';
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/filter-options`, {
-        headers: { 'token': token },
-      });
-      const data = await response.json();
-      if (data.success) {
-        // setFilterOptions(data.data); // Commented out since filterOptions is not being used
-      }
-    } catch (error) {
-      console.error('Error fetching filter options:', error);
-    }
-  }, []);
+  const buildQueryString = useCallback((filters: SearchFilters, page: number = 1) => {
 
-  const buildQueryString = useCallback((filters: SearchFilters, page: number = 1, sortBy?: string, sortOrder?: string) => {
     const params = new URLSearchParams();
     
     Object.entries(filters).forEach(([key, value]) => {
@@ -108,13 +84,8 @@ export default function UsersPage() {
     
     params.append('page', page.toString());
     params.append('limit', '10');
-    
-    if (sortBy) {
-      params.append('sort_by', sortBy);
-    }
-    if (sortOrder) {
-      params.append('sort_order', sortOrder.toUpperCase());
-    }
+    params.append('sort_by', 'createdAt');
+    params.append('sort_order', 'DESC');
     
     return params.toString();
   }, []);
@@ -127,8 +98,10 @@ export default function UsersPage() {
       }
       const token = sessionStorage.getItem('adminToken') || '';
 
-      const queryString = buildQueryString(searchFilters, page, sortBy, sortOrder);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users?${queryString}`, {
+
+      const queryString = buildQueryString(searchFilters, page);
+      const response = await fetch(`http://localhost:8888/api/admin/users?${queryString}`, {
+
         headers: {
           'token': token,
         },
@@ -148,13 +121,14 @@ export default function UsersPage() {
         setIsInitialLoad(false);
       }
     }
-  }, [buildQueryString, searchFilters, sortBy, sortOrder]);
+
+  }, [searchFilters, buildQueryString]);
 
   useEffect(() => {
     fetchUsers();
-    fetchFilterOptions();
     getCurrentUserRole();
-  }, [fetchUsers, fetchFilterOptions]);
+  }, [fetchUsers]);
+
 
   const handleSearchChange = (field: keyof SearchFilters, value: string) => {
     setSearchFilters(prev => ({
@@ -163,10 +137,6 @@ export default function UsersPage() {
     }));
   };
 
-  // handleSearch is available but currently unused as we use real-time search
-  // const handleSearch = () => {
-  //   fetchUsers(1);
-  // };
 
   // Debounced search effect - faster and more responsive, no loading state
   useEffect(() => {
@@ -177,51 +147,10 @@ export default function UsersPage() {
     return () => clearTimeout(timeoutId);
   }, [searchFilters.search, fetchUsers]);
 
-  // handleClearFilters is available but currently unused
-  // const handleClearFilters = () => {
-  //   setSearchFilters({
-  //     search: '',
-  //     role: '',
-  //     auth_provider: '',
-  //     status: '',
-  //     email_verified: '',
-  //     phone_verified: '',
-  //     date_from: '',
-  //     date_to: '',
-  //     last_active_from: '',
-  //     last_active_to: '',
-  //   });
-  //   fetchUsers(1);
-  // };
-
-  // handlePageChange is available but currently unused
-  // const handlePageChange = (page: number) => {
-  //   fetchUsers(page);
-  // };
-
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('asc');
-    }
-    fetchUsers(pagination.currentPage);
-  };
 
   // Check if current user can create users (only Admin and SuperAdmin)
   const canCreateUsers = currentUserRole === 10 || currentUserRole === 11;
 
-  // getRoleName is available but currently unused
-  // const getRoleName = (role: number) => {
-  //   switch (role) {
-  //     case 10: return 'Admin';
-  //     case 11: return 'SuperAdmin';
-  //     case 12: return 'Blogger';
-  //     case 13: return 'Site Manager';
-  //     default: return 'Unknown';
-  //   }
-  // };
 
   return (
     <div className="space-y-6 overflow-x-hidden relative">
@@ -229,7 +158,7 @@ export default function UsersPage() {
       
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-lg font-bold text-themeTeal">User management</h1>
+        <h1 className="text-lg font-bold text-themeTeal">Admin User management</h1>
         <p className="text-sm text-themeTealLight">Manage your team members and their account permissions here.</p>
       </div>
 
@@ -274,9 +203,6 @@ export default function UsersPage() {
         <UserTable 
           users={users} 
           onRefresh={() => fetchUsers(pagination.currentPage)} 
-          onSort={handleSort} 
-          sortBy={sortBy} 
-          sortOrder={sortOrder}
           onNotification={(type, title, message) => addNotification({ type, title, message, duration: 5000 })}
         />
       </div>
