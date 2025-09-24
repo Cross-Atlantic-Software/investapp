@@ -8,15 +8,15 @@ import { User, LogOut } from "lucide-react"
 const items: MenuItem[] = [
   { label: "Home", href: "/" },
   { label: "Invest", href: "/invest" },
-  { label: "Market Insights", href: "/market-insights" },
+  // { label: "Market Insights", href: "/market-insights" },
   // {
   //   label: "Market Insights",
   //   children: [
   //     { label: "Reports", href: "/market-insights" },
   //   ],
   // },
-  { label: "Knowledge Center", href: "/knowledge-center" },
-  { label: "Partner Program", href: "/partner-program" },
+  // { label: "Knowledge Center", href: "/knowledge-center" },
+  // { label: "Partner Program", href: "/partner-program" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];

@@ -48,12 +48,12 @@ export default function TradeTabs({
           onClick={() => setTab("buy")}
           label="Buy"
         />
-        <TabButton
+        {/* <TabButton
           active={tab === "sell"}
           activeColor="red"
           onClick={() => setTab("sell")}
           label="Sell"
-        />
+        /> */}
       </div>
 
       {/* BUY */}

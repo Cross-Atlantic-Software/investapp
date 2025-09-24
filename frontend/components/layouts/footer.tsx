@@ -17,33 +17,33 @@ type LinkItem = { label: string; href: string };
 type LinkGroup = { title: string; items: LinkItem[] };
 
 const groups: LinkGroup[] = [
-  {
-    title: "Products",
-    items: [
-      { label: "InvestApp Marketplace", href: "#" },
-      { label: "InvestApp Pro", href: "#" },
-      { label: "InvestApp Data", href: "#" },
-      { label: "Custom Index", href: "#" },
-    ],
-  },
-  {
-    title: "Featured Insights",
-    items: [
-      { label: "Private Market Education", href: "#" },
-      { label: "Private Market Updates", href: "#" },
-      { label: "Investment Outlook", href: "#" },
-      { label: "2025 Tech IPO Calendar", href: "#" },
-    ],
-  },
-  {
-    title: "About",
-    items: [
-      { label: "Press Releases", href: "#" },
-      { label: "In the News", href: "#" },
-      { label: "Careers", href: "#" },
-      { label: "FAQs", href: "#" },
-    ],
-  },
+  // {
+  //   title: "Products",
+  //   items: [
+  //     { label: "InvestApp Marketplace", href: "#" },
+  //     { label: "InvestApp Pro", href: "#" },
+  //     { label: "InvestApp Data", href: "#" },
+  //     { label: "Custom Index", href: "#" },
+  //   ],
+  // },
+  // {
+  //   title: "Featured Insights",
+  //   items: [
+  //     { label: "Private Market Education", href: "#" },
+  //     { label: "Private Market Updates", href: "#" },
+  //     { label: "Investment Outlook", href: "#" },
+  //     { label: "2025 Tech IPO Calendar", href: "#" },
+  //   ],
+  // },
+  // {
+  //   title: "About",
+  //   items: [
+  //     { label: "Press Releases", href: "#" },
+  //     { label: "In the News", href: "#" },
+  //     { label: "Careers", href: "#" },
+  //     { label: "FAQs", href: "#" },
+  //   ],
+  // },
   {
     title: "Legal",
     items: [
@@ -107,7 +107,7 @@ export default function Footer() {
 
           {/* 5th column: Social + CTA */}
           <div>
-            <div className="mb-4 flex gap-3">
+            {/* <div className="mb-4 flex gap-3">
               {[Facebook, Twitter, Linkedin, Youtube, Instagram].map((Icon, i) => (
                 <a
                   key={i}
@@ -118,7 +118,7 @@ export default function Footer() {
                   <Icon className="h-5 w-5" />
                 </a>
               ))}
-            </div>
+            </div> */}
 
             <h4 className="text-lg font-medium">We’d love to hear from you</h4>
             <p className="mt-1 mb-3 text-sm">

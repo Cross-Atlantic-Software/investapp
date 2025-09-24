@@ -51,7 +51,7 @@ export default function Invest() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-[max-content_minmax(0,1fr)]">
           {/* left column: desktop sidebar */}
           <aside className="hidden md:block md:w-auto md:max-w-max md:justify-self-start">
-            <FilterSidebar />
+            {/* <FilterSidebar /> */}
           </aside>
 
           {/* right column: results */}

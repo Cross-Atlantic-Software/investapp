@@ -20,7 +20,7 @@ export default function InvestmentCTA({
   primaryLabel = "Sell Shares",
   primaryHref = "/contact",
   secondaryLabel = "Invest Now",
-  secondaryHref = "/contact",
+  secondaryHref = "/invest",
   stats = [
     { value: "₹5Cr+", label: "Avg. Monthly Returns" },
     { value: "24–48h", label: "Deal Processing" },
