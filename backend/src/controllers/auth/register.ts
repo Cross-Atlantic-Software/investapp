@@ -46,10 +46,12 @@ export class RegisterService {
       const emailTemplate = await EmailTemplateService.getEmailVerificationEmail(newUser.email, emailToken);
       if (emailTemplate) {
         await sendMail(newUser.email, emailTemplate.subject, emailTemplate.body);
+        console.log(`✅ Email verification sent to ${newUser.email} using database template`);
       } else {
         // Fallback if template not found
         let mailSubject = "Verification - Invest App";
         await sendMail(newUser.email, mailSubject, `Your verification code is: ${emailToken}`);
+        console.log(`⚠️ Email verification sent to ${newUser.email} using fallback template`);
       }
 
       // Generate JWT token

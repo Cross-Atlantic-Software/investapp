@@ -137,6 +137,282 @@ export default function EmailTemplatesPage() {
     setIsModalOpen(true);
   };
 
+  const loadTemplate = (templateType: string) => {
+    const templates = {
+      verification: {
+        type: 'Email_Verification',
+        subject: 'Verify Your Email - Invest App',
+        body: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Verification</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff !important; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff !important; min-height: 100vh; }
+        .header { background-color: #232f3e; padding: 25px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 1px; }
+        .content { padding: 50px 30px; background-color: #ffffff !important; text-align: center; flex: 1; }
+        .main-heading { font-size: 26px; font-weight: 600; color: #000000 !important; margin: 0 0 25px 0; text-align: center; }
+        .intro-text { font-size: 17px; color: #333333 !important; margin: 0 0 40px 0; line-height: 1.7; text-align: center; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .verification-section { margin: 40px 0; text-align: center; }
+        .verification-label { font-size: 20px; font-weight: 600; color: #000000 !important; margin: 0 0 15px 0; text-align: center; }
+        .verification-code { font-size: 42px; font-weight: 700; color: #000000 !important; margin: 0 0 15px 0; letter-spacing: 3px; text-align: center; }
+        .validity-note { font-size: 15px; color: #666666 !important; margin: 0; text-align: center; }
+        .footer { background-color: #f8f9fa !important; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; margin-top: auto; }
+        .footer p { margin: 0; color: #6c757d !important; font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Invest App</h1>
+        </div>
+        <div class="content">
+            <h1 class="main-heading">Verify your email address</h1>
+            <p class="intro-text">
+                Thanks for starting the new InvestApp account creation process. We want to make sure it's really you. Please enter the following verification code when prompted. If you don't want to create an account, you can ignore this message.
+            </p>
+            <div class="verification-section">
+                <div class="verification-label">Verification code</div>
+                <div class="verification-code">{{otpCode}}</div>
+                <div class="validity-note">(This code is valid for 10 minutes)</div>
+            </div>
+            <div class="footer">
+                <p>If you didn't request this verification, please ignore this email.<br>© 2025 InvestApp. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
+      },
+      buy_confirmation: {
+        type: 'Buy_Order_Success',
+        subject: 'Buy Order Confirmation - Investment Successful',
+        body: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Confirmation - Invest App</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff !important; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff !important; min-height: 100vh; }
+        .header { background-color: #232f3e; padding: 25px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 1px; }
+        .content { padding: 50px 30px; background-color: #ffffff !important; text-align: center; flex: 1; }
+        .main-heading { font-size: 26px; font-weight: 600; color: #000000 !important; margin: 0 0 25px 0; text-align: center; }
+        .intro-text { font-size: 17px; color: #333333 !important; margin: 0 0 40px 0; line-height: 1.7; text-align: center; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .confirmation-section { margin: 40px 0; text-align: center; }
+        .confirmation-label { font-size: 20px; font-weight: 600; color: #000000 !important; margin: 0 0 15px 0; text-align: center; }
+        .confirmation-message { font-size: 18px; font-weight: 500; color: #28a745 !important; margin: 0 0 20px 0; text-align: center; background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; }
+        .transaction-details { background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px 0; }
+        .detail-row:last-child { margin-bottom: 0; font-weight: bold; color: #28a745; border-top: 1px solid #e9ecef; padding-top: 10px; margin-top: 10px; }
+        .detail-label { font-weight: 600; color: #333333; font-size: 14px; }
+        .detail-value { color: #666666; font-size: 14px; }
+        .footer { background-color: #f8f9fa !important; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; margin-top: auto; }
+        .footer p { margin: 0; color: #6c757d !important; font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Invest App</h1>
+        </div>
+        <div class="content">
+            <h1 class="main-heading">Buy Order Confirmed</h1>
+            <p class="intro-text">Your buy order has been successfully placed. Here are the details of your transaction:</p>
+            <div class="confirmation-section">
+                <div class="confirmation-label">Transaction Details</div>
+                <div class="confirmation-message">Buy Order Successfully Placed</div>
+            </div>
+            <div class="transaction-details">
+                <div class="detail-row">
+                    <span class="detail-label">Company:</span>
+                    <span class="detail-value">{{companyName}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Quantity:</span>
+                    <span class="detail-value">{{quantity}} shares</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Price per Share:</span>
+                    <span class="detail-value">₹{{price}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total Amount:</span>
+                    <span class="detail-value">₹{{totalAmount}}</span>
+                </div>
+            </div>
+            <div class="footer">
+                <p>Thank you for using Invest App!<br>© 2025 InvestApp. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
+      },
+      sell_confirmation: {
+        type: 'Sell_Order_Success',
+        subject: 'Sell Order Confirmation - Sale Completed',
+        body: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell Confirmation - Invest App</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff !important; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff !important; min-height: 100vh; }
+        .header { background-color: #232f3e; padding: 25px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 1px; }
+        .content { padding: 50px 30px; background-color: #ffffff !important; text-align: center; flex: 1; }
+        .main-heading { font-size: 26px; font-weight: 600; color: #000000 !important; margin: 0 0 25px 0; text-align: center; }
+        .intro-text { font-size: 17px; color: #333333 !important; margin: 0 0 40px 0; line-height: 1.7; text-align: center; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .confirmation-section { margin: 40px 0; text-align: center; }
+        .confirmation-label { font-size: 20px; font-weight: 600; color: #000000 !important; margin: 0 0 15px 0; text-align: center; }
+        .confirmation-message { font-size: 18px; font-weight: 500; color: #28a745 !important; margin: 0 0 20px 0; text-align: center; background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; }
+        .transaction-details { background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px 0; }
+        .detail-row:last-child { margin-bottom: 0; font-weight: bold; color: #28a745; border-top: 1px solid #e9ecef; padding-top: 10px; margin-top: 10px; }
+        .detail-label { font-weight: 600; color: #333333; font-size: 14px; }
+        .detail-value { color: #666666; font-size: 14px; }
+        .footer { background-color: #f8f9fa !important; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; margin-top: auto; }
+        .footer p { margin: 0; color: #6c757d !important; font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Invest App</h1>
+        </div>
+        <div class="content">
+            <h1 class="main-heading">Sell Order Confirmed</h1>
+            <p class="intro-text">Your sell order has been successfully placed. Here are the details of your transaction:</p>
+            <div class="confirmation-section">
+                <div class="confirmation-label">Transaction Details</div>
+                <div class="confirmation-message">Sell Order Successfully Placed</div>
+            </div>
+            <div class="transaction-details">
+                <div class="detail-row">
+                    <span class="detail-label">Company:</span>
+                    <span class="detail-value">{{companyName}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Quantity:</span>
+                    <span class="detail-value">{{quantity}} shares</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Selling Price per Share:</span>
+                    <span class="detail-value">₹{{sellingPrice}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total Amount:</span>
+                    <span class="detail-value">₹{{totalAmount}}</span>
+                </div>
+            </div>
+            <div class="footer">
+                <p>Thank you for using Invest App!<br>© 2025 InvestApp. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
+      },
+      admin_notification: {
+        type: 'Admin_Purchase_Notification',
+        subject: 'New Stock Purchase Notification - Admin Alert',
+        body: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Stock Purchase - Invest App</title>
+    <style>
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff !important; line-height: 1.6; }
+        .container { max-width: 600px; margin: 0 auto; background-color: #ffffff !important; min-height: 100vh; }
+        .header { background-color: #232f3e; padding: 25px; text-align: center; }
+        .header h1 { color: #ffffff; margin: 0; font-size: 26px; font-weight: 600; letter-spacing: 1px; }
+        .content { padding: 50px 30px; background-color: #ffffff !important; text-align: center; flex: 1; }
+        .main-heading { font-size: 26px; font-weight: 600; color: #000000 !important; margin: 0 0 25px 0; text-align: center; }
+        .intro-text { font-size: 17px; color: #333333 !important; margin: 0 0 40px 0; line-height: 1.7; text-align: center; max-width: 500px; margin-left: auto; margin-right: auto; }
+        .notification-section { margin: 40px 0; text-align: center; }
+        .notification-label { font-size: 20px; font-weight: 600; color: #000000 !important; margin: 0 0 15px 0; text-align: center; }
+        .notification-message { font-size: 18px; font-weight: 500; color: #28a745 !important; margin: 0 0 20px 0; text-align: center; background-color: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745; }
+        .transaction-details { background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 10px; padding: 5px 0; }
+        .detail-row:last-child { margin-bottom: 0; font-weight: bold; color: #28a745; border-top: 1px solid #e9ecef; padding-top: 10px; margin-top: 10px; }
+        .detail-label { font-weight: 600; color: #333333; font-size: 14px; }
+        .detail-value { color: #666666; font-size: 14px; }
+        .user-info { background-color: #f8f9fa; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: left; }
+        .user-info h3 { color: #000000; margin: 0 0 10px 0; font-size: 18px; font-weight: 600; }
+        .footer { background-color: #f8f9fa !important; padding: 30px; text-align: center; border-top: 1px solid #e9ecef; margin-top: auto; }
+        .footer p { margin: 0; color: #6c757d !important; font-size: 14px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Invest App</h1>
+        </div>
+        <div class="content">
+            <h1 class="main-heading">New Stock Purchase Notification</h1>
+            <p class="intro-text">{{userName}} has completed a stock purchase transaction on the platform. Please review the transaction details below:</p>
+            <div class="notification-section">
+                <div class="notification-label">Transaction Summary</div>
+                <div class="notification-message">New stock purchase completed successfully</div>
+            </div>
+            <div class="user-info">
+                <h3>User Information</h3>
+                <div class="detail-row">
+                    <span class="detail-label">User Email:</span>
+                    <span class="detail-value">{{userEmail}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">User Name:</span>
+                    <span class="detail-value">{{userName}}</span>
+                </div>
+            </div>
+            <div class="transaction-details">
+                <div class="detail-row">
+                    <span class="detail-label">Company:</span>
+                    <span class="detail-value">{{companyName}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Quantity:</span>
+                    <span class="detail-value">{{quantity}} shares</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Price per Share:</span>
+                    <span class="detail-value">₹{{price}}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total Amount:</span>
+                    <span class="detail-value">₹{{totalAmount}}</span>
+                </div>
+            </div>
+            <div class="footer">
+                <p>This is an automated notification from Invest App.<br>Please log into the admin panel to view more details and manage this transaction.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>`
+      }
+    };
+
+    const template = templates[templateType as keyof typeof templates];
+    if (template) {
+      setFormData({
+        type: template.type,
+        subject: template.subject,
+        body: template.body
+      });
+    }
+  };
+
   const handleSaveTemplate = async () => {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
@@ -446,13 +722,64 @@ export default function EmailTemplatesPage() {
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Body (HTML)</label>
+                  
+                  {/* Template Selector */}
+                  <div className="mb-3">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Quick Templates:</label>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => loadTemplate('verification')}
+                        className="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors"
+                      >
+                        Email Verification
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => loadTemplate('buy_confirmation')}
+                        className="px-3 py-1 text-xs bg-green-100 text-green-700 rounded hover:bg-green-200 transition-colors"
+                      >
+                        Buy Confirmation
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => loadTemplate('sell_confirmation')}
+                        className="px-3 py-1 text-xs bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition-colors"
+                      >
+                        Sell Confirmation
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => loadTemplate('admin_notification')}
+                        className="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition-colors"
+                      >
+                        Admin Notification
+                      </button>
+                    </div>
+                  </div>
+
                   <textarea
                     value={formData.body}
                     onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-                    placeholder="Email body content (HTML format)"
-                    rows={10}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                    placeholder="Email body content (HTML format). Use variables like {{otpCode}}, {{companyName}}, {{quantity}}, {{price}}, {{totalAmount}}, {{userName}}, {{userEmail}}"
+                    rows={15}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent font-mono text-sm"
                   />
+                  
+                  {/* Variable Helper */}
+                  <div className="mt-2 p-3 bg-gray-50 rounded-md">
+                    <p className="text-xs text-gray-600 mb-2">Available Variables:</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div><code className="bg-white px-1 rounded">{'{{otpCode}}'}</code> - Verification code</div>
+                      <div><code className="bg-white px-1 rounded">{'{{email}}'}</code> - User email</div>
+                      <div><code className="bg-white px-1 rounded">{'{{companyName}}'}</code> - Company name</div>
+                      <div><code className="bg-white px-1 rounded">{'{{quantity}}'}</code> - Number of shares</div>
+                      <div><code className="bg-white px-1 rounded">{'{{price}}'}</code> - Price per share</div>
+                      <div><code className="bg-white px-1 rounded">{'{{totalAmount}}'}</code> - Total amount</div>
+                      <div><code className="bg-white px-1 rounded">{'{{userName}}'}</code> - User name</div>
+                      <div><code className="bg-white px-1 rounded">{'{{userEmail}}'}</code> - User email</div>
+                    </div>
+                  </div>
                 </div>
               </div>
               

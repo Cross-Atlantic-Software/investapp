@@ -137,7 +137,10 @@ export class EmailTemplateManagementController {
       // Check if type is being changed and if new type already exists
       if (type && type !== template.type) {
         const existingTemplate = await this.emailTemplateModel.findOne({
-          where: { type, id: { [Op.ne]: id } }
+          where: { 
+            type, 
+            id: { [Op.ne]: parseInt(id) } 
+          }
         });
 
         if (existingTemplate) {
