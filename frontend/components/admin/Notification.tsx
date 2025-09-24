@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 export interface NotificationData {
   id: string;
@@ -19,6 +19,13 @@ const Notification: React.FC<NotificationProps> = ({ notification, onClose }) =>
   const [isVisible, setIsVisible] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
+  const handleClose = useCallback(() => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      onClose(notification.id);
+    }, 300);
+  }, [onClose, notification.id]);
+
   useEffect(() => {
     // Animate in
     const timer = setTimeout(() => setIsVisible(true), 100);
@@ -33,14 +40,7 @@ const Notification: React.FC<NotificationProps> = ({ notification, onClose }) =>
     }
     
     return () => clearTimeout(timer);
-  }, [notification.duration]);
-
-  const handleClose = () => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      onClose(notification.id);
-    }, 300);
-  };
+  }, [notification.duration, handleClose]);
 
   const getTypeStyles = () => {
     switch (notification.type) {

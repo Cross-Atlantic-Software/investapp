@@ -33,7 +33,7 @@ export default function AdminDashboard() {
       const token = sessionStorage.getItem('adminToken') || '';
       
       // Fetch user stats
-      const usersResponse = await fetch('http://localhost:8888/api/admin/users/stats', {
+      const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/stats`, {
         headers: {
           'token': token,
         },
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
       const usersData = await usersResponse.json();
       
       // Fetch stock stats
-      const stocksResponse = await fetch('http://localhost:8888/api/admin/stocks/stats', {
+      const stocksResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/stocks/stats`, {
         headers: {
           'token': token,
         },
@@ -78,7 +78,7 @@ export default function AdminDashboard() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-lg font-bold text-themeTeal">Dashboard overview</h1>
-        <p className="text-sm text-themeTealLight">Monitor your platform's key metrics and performance here.</p>
+        <p className="text-sm text-themeTealLight">Monitor your platform&apos;s key metrics and performance here.</p>
       </div>
 
       {loading ? (

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/users`, {
+    const response = await fetch(`${BACKEND_URL}/admin/users`, {
       headers: {
         'Authorization': `Bearer ${token}`,
       },

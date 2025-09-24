@@ -17,13 +17,14 @@ interface AddStockModalProps {
 }
 
 const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<StockData>({
     title: '',
     company_name: '',
     price_per_share: '',
     valuation: '',
     price_change: '',
     icon: null as File | null,
+
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

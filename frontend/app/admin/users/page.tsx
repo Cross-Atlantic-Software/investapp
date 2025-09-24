@@ -23,6 +23,7 @@ interface SearchFilters {
 export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
@@ -49,6 +50,7 @@ export default function UsersPage() {
     last_active_from: '',
     last_active_to: '',
   });
+
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -56,6 +58,7 @@ export default function UsersPage() {
     hasNextPage: false,
     hasPrevPage: false
   });
+
   const getCurrentUserRole = () => {
     try {
       const storedUser = sessionStorage.getItem('adminUser');
@@ -68,7 +71,9 @@ export default function UsersPage() {
     }
   };
 
+
   const buildQueryString = useCallback((filters: SearchFilters, page: number = 1) => {
+
     const params = new URLSearchParams();
     
     Object.entries(filters).forEach(([key, value]) => {
@@ -87,11 +92,16 @@ export default function UsersPage() {
 
   const fetchUsers = useCallback(async (page: number = 1, showLoading: boolean = true) => {
     try {
-      if (showLoading) setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+        setIsInitialLoad(true);
+      }
       const token = sessionStorage.getItem('adminToken') || '';
+
 
       const queryString = buildQueryString(searchFilters, page);
       const response = await fetch(`http://localhost:8888/api/admin/users?${queryString}`, {
+
         headers: {
           'token': token,
         },
@@ -106,14 +116,19 @@ export default function UsersPage() {
     } catch (error) {
       console.error('Error fetching users:', error);
     } finally {
-      if (showLoading) setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+        setIsInitialLoad(false);
+      }
     }
+
   }, [searchFilters, buildQueryString]);
 
   useEffect(() => {
     fetchUsers();
     getCurrentUserRole();
   }, [fetchUsers]);
+
 
   const handleSearchChange = (field: keyof SearchFilters, value: string) => {
     setSearchFilters(prev => ({
@@ -132,12 +147,14 @@ export default function UsersPage() {
     return () => clearTimeout(timeoutId);
   }, [searchFilters.search, fetchUsers]);
 
+
   // Check if current user can create users (only Admin and SuperAdmin)
   const canCreateUsers = currentUserRole === 10 || currentUserRole === 11;
 
+
   return (
     <div className="space-y-6 overflow-x-hidden relative">
-      {loading && <Loader fullScreen text="Loading users..." />}
+      {loading && isInitialLoad && <Loader fullScreen text="Loading users..." />}
       
       {/* Header */}
       <div className="mb-6">
