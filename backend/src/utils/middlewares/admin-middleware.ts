@@ -1,13 +1,16 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
-import { Roles } from "../Roles";
+import { UserRole } from "../Roles";
 
 // TypeScript type for the user object attached to the request
 interface User {
   user_id: string;
   role: number;
-  iat:number;
-  exp:number;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  iat: number;
+  exp: number;
   location?: {
     type: "Point";
     coordinates: [number, number];
@@ -33,9 +36,14 @@ export default function adminMiddleware(req: Request, res: Response, next: NextF
 
   try {
     // Verify the token and decode it
-    const decoded = jwt.verify(token, process.env.TOKEN_SECRET as string) as User 
+    const tokenSecret = process.env.TOKEN_SECRET || "fnknwdfnnnfsdklnfslkfsdkfnslkfnksnfnsllsfkfsnfnklsnflnleoiw";
+    const decoded = jwt.verify(token, tokenSecret) as User 
     // Attach the decoded user to the request object
-     if(decoded.role !== Roles.ADMIN){
+    // Allow all CMS users to access admin panel (Admin, SuperAdmin, Blogger, SiteManager)
+    if(decoded.role !== UserRole.Admin && 
+       decoded.role !== UserRole.SuperAdmin && 
+       decoded.role !== UserRole.Blogger && 
+       decoded.role !== UserRole.SiteManager){
         res.status(401).json({ message: "Auth Error", status: false });
         return;
     }

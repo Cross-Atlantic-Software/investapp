@@ -16,7 +16,7 @@ export default function Page() {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState("");
   
-  const { register, googleAuth, error: authError, clearError, isAuthenticated, isLoading } = useAuth();
+  const { register, googleAuth, error: authError, clearError, isAuthenticated } = useAuth();
   const router = useRouter();
 
   // Redirect if already authenticated
@@ -40,7 +40,7 @@ export default function Page() {
         localStorage.setItem('pending_token', response.token);
       }
       router.push("/register/step-2");
-    } catch (err) {
+    } catch {
       setError("Registration failed. Please try again.");
     } finally {
       setIsSubmitting(false);
@@ -53,7 +53,7 @@ export default function Page() {
       setError("");
       clearError();
       await googleAuth();
-    } catch (err) {
+    } catch {
       setError("Google authentication failed. Please try again.");
       setIsGoogleLoading(false);
     }

@@ -43,9 +43,27 @@ export class ConnectionManager {
       // Create Sequelize instance with pooling
       this.sequelize = createSequelizeWithPool(dbConfig);
       
-      // Test connection
-      await this.sequelize.authenticate();
-      console.log('✅ Database connection established successfully');
+      // Test connection with retry logic
+      let retryCount = 0;
+      const maxRetries = 3;
+      
+      while (retryCount < maxRetries) {
+        try {
+          await this.sequelize.authenticate();
+          console.log('✅ Database connection established successfully');
+          break;
+        } catch (authError) {
+          retryCount++;
+          console.warn(`⚠️ Authentication attempt ${retryCount} failed:`, authError);
+          
+          if (retryCount >= maxRetries) {
+            throw authError;
+          }
+          
+          // Wait before retry
+          await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+        }
+      }
       
       // Start health monitoring
       this.startHealthMonitoring();
@@ -55,19 +73,26 @@ export class ConnectionManager {
       
     } catch (error) {
       console.error('❌ Connection manager initialization failed:', error);
+      // Clean up on failure
+      await this.cleanup();
       throw error;
     }
   }
 
   // Create database if not exists
   private async createDatabaseIfNotExists(dbConfig: any): Promise<void> {
-    const connection = await this.mysqlPool.getConnection();
-    
+    let connection;
     try {
+      connection = await this.mysqlPool.getConnection();
       await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\`;`);
       console.log(`Database '${dbConfig.database}' ready`);
+    } catch (error) {
+      console.error('Error creating database:', error);
+      throw error;
     } finally {
-      connection.release();
+      if (connection) {
+        connection.release();
+      }
     }
   }
 
@@ -142,6 +167,29 @@ export class ConnectionManager {
     };
   }
 
+  // Cleanup method for error handling
+  private async cleanup(): Promise<void> {
+    try {
+      if (this.sequelize) {
+        await this.sequelize.close();
+        this.sequelize = null;
+      }
+    } catch (error) {
+      console.error('Error closing Sequelize:', error);
+    }
+
+    try {
+      if (this.mysqlPool) {
+        await this.mysqlPool.end();
+        this.mysqlPool = null;
+      }
+    } catch (error) {
+      console.error('Error closing MySQL pool:', error);
+    }
+
+    this.isInitialized = false;
+  }
+
   // Graceful shutdown
   public async shutdown(): Promise<void> {
     console.log('Shutting down connection manager...');
@@ -150,17 +198,7 @@ export class ConnectionManager {
       clearInterval(this.healthCheckInterval);
     }
 
-    if (this.sequelize) {
-      await this.sequelize.close();
-      console.log('✅ Sequelize connections closed');
-    }
-
-    if (this.mysqlPool) {
-      await this.mysqlPool.end();
-      console.log('✅ MySQL pool closed');
-    }
-
-    this.isInitialized = false;
+    await this.cleanup();
     console.log('✅ Connection manager shutdown complete');
   }
 

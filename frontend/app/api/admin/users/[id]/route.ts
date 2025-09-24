@@ -1,0 +1,75 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+
+export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const token = request.headers.get('token');
+    if (!token) {
+      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
+    }
+
+    const response = await fetch(`${BACKEND_URL}/api/admin/users/${params.id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'token': token,
+      },
+    });
+
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Error in /api/admin/users/[id]:', error);
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const token = request.headers.get('token');
+    if (!token) {
+      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
+    }
+
+    const body = await request.json();
+
+    const response = await fetch(`${BACKEND_URL}/api/admin/users/${params.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'token': token,
+      },
+      body: JSON.stringify(body),
+    });
+
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Error in /api/admin/users/[id] PUT:', error);
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const token = request.headers.get('token');
+    if (!token) {
+      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
+    }
+
+    const response = await fetch(`${BACKEND_URL}/api/admin/users/${params.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'token': token,
+      },
+    });
+
+    const data = await response.json();
+    return NextResponse.json(data, { status: response.status });
+  } catch (error) {
+    console.error('Error in /api/admin/users/[id] DELETE:', error);
+    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+  }
+}

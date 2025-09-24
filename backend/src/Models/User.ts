@@ -68,7 +68,7 @@ export function initializeUserModel(sequelize: Sequelize) {
       role: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: UserRole.Blogger, // Default role set to BLOGGER (3)
+        defaultValue: UserRole.Blogger, // Default role set to BLOGGER (12)
         validate: {
           isIn: [[
             UserRole.Admin,
