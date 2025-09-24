@@ -43,18 +43,18 @@ export default function DiscoverDetails() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,384px)] p-6">
         {/* LEFT: content */}
         <div className="min-w-0 space-y-6">
-          <SectionNav items={NAV} offset={88} />
+          {/* <SectionNav items={NAV} offset={88} /> */}
 
           <div className="space-y-6">
-            <Section id="price" title="Price Chart" info="Intraday private-market price. Delayed. Not investment advice."><PriceChartSection /></Section>
-            <Section id="score" title="Scorecard" info="Intraday private-market price. Delayed. Not investment advice."><ScorecardSection /></Section>
-            <Section id="rationale" title="Investment Rationale" info="Intraday private-market price. Delayed. Not investment advice."><InvestmentRationaleSection /></Section>
-            <Section id="bench" title="Performance Benchmark" info="Intraday private-market price. Delayed. Not investment advice."><PerformanceBenchmarkSection /></Section>
+            {/* <Section id="price" title="Price Chart" info="Intraday private-market price. Delayed. Not investment advice."><PriceChartSection /></Section> */}
+            {/* <Section id="score" title="Scorecard" info="Intraday private-market price. Delayed. Not investment advice."><ScorecardSection /></Section> */}
+            {/* <Section id="rationale" title="Investment Rationale" info="Intraday private-market price. Delayed. Not investment advice."><InvestmentRationaleSection /></Section> */}
+            {/* <Section id="bench" title="Performance Benchmark" info="Intraday private-market price. Delayed. Not investment advice."><PerformanceBenchmarkSection /></Section> */}
             <Section id="outlook" title="Sector Outlook" info="Intraday private-market price. Delayed. Not investment advice."><SectorOutlookSection /></Section>
-            <Section id="financials" title="Financial Performance" info="Intraday private-market price. Delayed. Not investment advice."><FinancialPerformanceSection /></Section>
-            <Section id="holders" title="Shareholding" info="Intraday private-market price. Delayed. Not investment advice."><ShareholdingSection /></Section>
-            <Section id="news" title="News Related to Company" info="Intraday private-market price. Delayed. Not investment advice."><NewsSection /></Section>
-            <Section id="faq" title="Frequently Asked Questions" info="Intraday private-market price. Delayed. Not investment advice."><FaqSection /></Section>
+            {/* <Section id="financials" title="Financial Performance" info="Intraday private-market price. Delayed. Not investment advice."><FinancialPerformanceSection /></Section> */}
+            {/* <Section id="holders" title="Shareholding" info="Intraday private-market price. Delayed. Not investment advice."><ShareholdingSection /></Section> */}
+            {/* <Section id="news" title="News Related to Company" info="Intraday private-market price. Delayed. Not investment advice."><NewsSection /></Section> */}
+            {/* <Section id="faq" title="Frequently Asked Questions" info="Intraday private-market price. Delayed. Not investment advice."><FaqSection /></Section> */}
           </div>
         </div>
 
