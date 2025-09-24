@@ -15,11 +15,33 @@ export default function Page() {
     [email]
   );
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!emailOk) return;
-    // TODO: call your password-reset API here
-    setSent(true);
+    
+    try {
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+      
+      if (data.status) {
+        setSent(true);
+      } else {
+        console.error('Forgot password error:', data.message);
+        // Still show success message for security (don't reveal if email exists)
+        setSent(true);
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      // Still show success message for security
+      setSent(true);
+    }
   };
 
   return (

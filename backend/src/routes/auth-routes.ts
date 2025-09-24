@@ -2,10 +2,14 @@ import express from "express";
 import { EmailVerifyValidation, loginValidation, registerValidation, completeProfileValidation } from "../utils/formValidation/form-validation";
 import AuthController from "../controllers/auth";
 import GoogleAuthController from "../controllers/googleAuth";
+import { ForgotPasswordService } from "../controllers/auth/forgotPassword";
+import { ResetPasswordService } from "../controllers/auth/resetPassword";
 import jwtAuthMiddleware from "../utils/middleware";
 
 const AuthCtrl = new AuthController();
 const GoogleAuthCtrl = new GoogleAuthController();
+const ForgotPasswordCtrl = new ForgotPasswordService();
+const ResetPasswordCtrl = new ResetPasswordService();
 
 const authRouter = express.Router();
 
@@ -13,6 +17,10 @@ authRouter.post('/register',registerValidation, AuthCtrl.register);
 authRouter.post('/login',loginValidation, AuthCtrl.login);
 authRouter.post('/verify-email',EmailVerifyValidation, AuthCtrl.verifyEmail);
 authRouter.post('/complete-profile', jwtAuthMiddleware, completeProfileValidation, AuthCtrl.completeProfile);
+
+// Password reset routes
+authRouter.post('/forgot-password', ForgotPasswordCtrl.forgotPassword);
+authRouter.post('/reset-password', ResetPasswordCtrl.resetPassword);
 
 // Google OAuth routes
 authRouter.get('/google', GoogleAuthCtrl.googleAuth);
