@@ -4,18 +4,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Loader from '@/components/admin/Loader';
 import { NotificationContainer, NotificationData } from '@/components/admin/Notification';
 
-interface SiteUser {
+interface EmailTemplate {
   id: number;
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  role: string;
-  status: number;
-  auth_provider: string;
-  email_verified: number;
-  phone_verified: number;
-  country_code: string;
+  type: string;
+  subject: string;
+  body: string;
+  created_by: number;
+  updated_by: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -29,8 +24,8 @@ interface Pagination {
   hasPrev: boolean;
 }
 
-export default function SiteUsersPage() {
-  const [users, setUsers] = useState<SiteUser[]>([]);
+export default function EmailTemplatesPage() {
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [search, setSearch] = useState('');
@@ -42,8 +37,13 @@ export default function SiteUsersPage() {
     hasNext: false,
     hasPrev: false
   });
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const [formData, setFormData] = useState({
+    type: '',
+    subject: '',
+    body: ''
+  });
 
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
@@ -55,7 +55,7 @@ export default function SiteUsersPage() {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
-  const fetchUsers = useCallback(async (page: number = 1, showLoading: boolean = true) => {
+  const fetchTemplates = useCallback(async (page: number = 1, showLoading: boolean = true) => {
     try {
       if (showLoading) setLoading(true);
       const token = sessionStorage.getItem('adminToken') || '';
@@ -64,11 +64,11 @@ export default function SiteUsersPage() {
         page: page.toString(),
         limit: '10',
         search: search,
-        sort_by: sortBy,
-        sort_order: sortOrder.toUpperCase()
+        sort_by: 'createdAt',
+        sort_order: 'DESC'
       });
 
-      const response = await fetch(`/api/admin/site-users?${params.toString()}`, {
+      const response = await fetch(`/api/admin/email-templates?${params.toString()}`, {
         headers: {
           'token': token,
         },
@@ -76,54 +76,120 @@ export default function SiteUsersPage() {
 
       const data = await response.json();
       if (data.success) {
-        setUsers(data.data.users);
+        setTemplates(data.data.templates);
         setPagination(data.data.pagination);
       } else {
-        console.error('Error fetching site users:', data.message);
+        console.error('Error fetching email templates:', data.message);
         addNotification({
           type: 'error',
           title: 'Error',
-          message: data.message || 'Failed to fetch site users',
+          message: data.message || 'Failed to fetch email templates',
           duration: 5000
         });
       }
     } catch (error) {
-      console.error('Error fetching site users:', error);
+      console.error('Error fetching email templates:', error);
       addNotification({
         type: 'error',
         title: 'Error',
-        message: 'Failed to fetch site users',
+        message: 'Failed to fetch email templates',
         duration: 5000
       });
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [search, sortBy, sortOrder]);
+  }, [search]);
 
   useEffect(() => {
-    fetchUsers();
-  }, [fetchUsers]);
+    fetchTemplates();
+  }, [fetchTemplates]);
 
   // Debounced search effect
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchUsers(1, false);
+      fetchTemplates(1, false);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [search, fetchUsers]);
+  }, [search, fetchTemplates]);
 
   const handlePageChange = (page: number) => {
-    fetchUsers(page);
+    fetchTemplates(page);
   };
 
+  const handleAddTemplate = () => {
+    setEditingTemplate(null);
+    setFormData({
+      type: '',
+      subject: '',
+      body: ''
+    });
+    setIsModalOpen(true);
+  };
 
-  const handleDeleteUser = async (userId: number) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+  const handleEditTemplate = (template: EmailTemplate) => {
+    setEditingTemplate(template);
+    setFormData({
+      type: template.type,
+      subject: template.subject,
+      body: template.body
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleSaveTemplate = async () => {
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const url = editingTemplate 
+        ? `/api/admin/email-templates/${editingTemplate.id}`
+        : '/api/admin/email-templates';
+      
+      const method = editingTemplate ? 'PUT' : 'POST';
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: editingTemplate ? 'Email template updated successfully' : 'Email template created successfully',
+          duration: 5000
+        });
+        setIsModalOpen(false);
+        fetchTemplates(pagination.currentPage);
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to save email template',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      console.error('Error saving email template:', error);
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to save email template',
+        duration: 5000
+      });
+    }
+  };
+
+  const handleDeleteTemplate = async (templateId: number) => {
+    if (!confirm('Are you sure you want to delete this email template?')) return;
 
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`/api/admin/site-users/${userId}`, {
+      const response = await fetch(`/api/admin/email-templates/${templateId}`, {
         method: 'DELETE',
         headers: {
           'token': token,
@@ -135,52 +201,29 @@ export default function SiteUsersPage() {
         addNotification({
           type: 'success',
           title: 'Success',
-          message: 'User deleted successfully',
+          message: 'Email template deleted successfully',
           duration: 5000
         });
-        fetchUsers(pagination.currentPage);
+        fetchTemplates(pagination.currentPage);
       } else {
         addNotification({
           type: 'error',
           title: 'Error',
-          message: data.message || 'Failed to delete user',
+          message: data.message || 'Failed to delete email template',
           duration: 5000
         });
       }
     } catch (error) {
-      console.error('Error deleting user:', error);
+      console.error('Error deleting email template:', error);
       addNotification({
         type: 'error',
         title: 'Error',
-        message: 'Failed to delete user',
+        message: 'Failed to delete email template',
         duration: 5000
       });
     }
   };
 
-  const getStatusBadge = (status: number) => {
-    return status === 1 ? (
-      <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
-        Active
-      </span>
-    ) : (
-      <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full">
-        Inactive
-      </span>
-    );
-  };
-
-  const getVerifiedBadge = (verified: number) => {
-    return verified === 1 ? (
-      <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-        Verified
-      </span>
-    ) : (
-      <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded-full">
-        Not Verified
-      </span>
-    );
-  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -192,12 +235,12 @@ export default function SiteUsersPage() {
 
   return (
     <div className="space-y-6 overflow-x-hidden relative">
-      {loading && <Loader fullScreen text="Loading site users..." />}
+      {loading && <Loader fullScreen text="Loading email templates..." />}
       
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-lg font-bold text-themeTeal">Site Users</h1>
-        <p className="text-sm text-themeTealLight">Manage registered site users and their information.</p>
+        <h1 className="text-lg font-bold text-themeTeal">Email Template Manager</h1>
+        <p className="text-sm text-themeTealLight">Manage email templates for different types of notifications.</p>
       </div>
 
       {/* Search Section */}
@@ -205,7 +248,7 @@ export default function SiteUsersPage() {
         <div className="flex items-center space-x-4">
           <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
             <span className="text-sm font-medium text-themeTeal">
-              All users <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{pagination.totalCount}</span>
+              All templates <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{pagination.totalCount}</span>
             </span>
           </div>
         </div>
@@ -215,39 +258,39 @@ export default function SiteUsersPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name or email"
+              placeholder="Search by type or subject"
               className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
             />
             <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
           </div>
+          <button
+            onClick={handleAddTemplate}
+            className="bg-themeTeal text-white px-4 py-2 text-sm rounded-lg hover:bg-themeTealLight transition-colors duration-200 flex items-center"
+          >
+            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Add Template
+          </button>
         </div>
       </div>
 
-      {/* Users Table */}
+      {/* Templates Table */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User Name
+                  Type
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Phone
+                  Subject
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Email Verified
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Auth Provider
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date Added
+                  Created
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                   Actions
@@ -255,48 +298,32 @@ export default function SiteUsersPage() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => (
-                <tr key={user.id} className="hover:bg-gray-50">
+              {templates.map((template) => (
+                <tr key={template.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center space-x-3">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-themeTeal to-themeTealLight flex items-center justify-center shadow-sm flex-shrink-0">
-                        <span className="text-xs font-bold text-white">
-                          {user.first_name?.[0] || user.email[0].toUpperCase()}
-                        </span>
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-gray-900">
-                          {user.first_name} {user.last_name}
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">{user.email}</div>
-                      </div>
-                    </div>
+                    <div className="text-sm font-medium text-gray-900">{template.type}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">
-                      {user.country_code} {user.phone}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getStatusBadge(user.status)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {getVerifiedBadge(user.email_verified)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
-                      {user.auth_provider}
-                    </span>
+                  <td className="px-6 py-4">
+                    <div className="text-sm text-gray-900 max-w-xs truncate">{template.subject}</div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {formatDate(user.createdAt)}
+                    {formatDate(template.createdAt)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     <div className="flex items-center space-x-1">
                       <button
-                        onClick={() => handleDeleteUser(user.id)}
+                        onClick={() => handleEditTemplate(template)}
+                        className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 transition-colors"
+                        title="Edit Template"
+                      >
+                        <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => handleDeleteTemplate(template.id)}
                         className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
-                        title="Delete User"
+                        title="Delete Template"
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -384,6 +411,69 @@ export default function SiteUsersPage() {
           </div>
         )}
       </div>
+
+      {/* Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                {editingTemplate ? 'Edit Email Template' : 'Add Email Template'}
+              </h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <input
+                    type="text"
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    placeholder="e.g., Buy_Order_Success, Sell_Order_Success, Contact_Us"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                  <input
+                    type="text"
+                    value={formData.subject}
+                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    placeholder="Email subject line"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Body (HTML)</label>
+                  <textarea
+                    value={formData.body}
+                    onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                    placeholder="Email body content (HTML format)"
+                    rows={10}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveTemplate}
+                  className="px-4 py-2 text-sm font-medium text-white bg-themeTeal hover:bg-themeTealLight rounded-md transition-colors"
+                >
+                  {editingTemplate ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Notifications */}
       <NotificationContainer

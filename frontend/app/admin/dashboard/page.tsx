@@ -33,7 +33,7 @@ export default function AdminDashboard() {
       const token = sessionStorage.getItem('adminToken') || '';
       
       // Fetch user stats
-      const usersResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/stats`, {
+      const usersResponse = await fetch('/api/admin/users/stats', {
         headers: {
           'token': token,
         },
@@ -41,7 +41,7 @@ export default function AdminDashboard() {
       const usersData = await usersResponse.json();
       
       // Fetch stock stats
-      const stocksResponse = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/stocks/stats`, {
+      const stocksResponse = await fetch('/api/admin/stocks/stats', {
         headers: {
           'token': token,
         },
@@ -51,7 +51,7 @@ export default function AdminDashboard() {
       // Fetch site users stats
       const siteUsersResponse = await fetch('/api/admin/site-users/stats', {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'token': token,
         },
       });
       const siteUsersData = await siteUsersResponse.json();

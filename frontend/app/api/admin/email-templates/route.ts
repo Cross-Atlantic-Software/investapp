@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const token = request.headers.get('token');
     
     if (!token) {
-      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       sort_order: sortOrder
     });
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/site-users?${params.toString()}`, {
+    const response = await fetch(`${BACKEND_URL}/api/admin/email-templates?${params.toString()}`, {
       headers: {
         'token': token,
       },
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching site users:', error);
+    console.error('Error fetching email templates:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -44,12 +44,12 @@ export async function POST(request: NextRequest) {
     const token = request.headers.get('token');
     
     if (!token) {
-      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
+      return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });
     }
 
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/site-users`, {
+    const response = await fetch(`${BACKEND_URL}/api/admin/email-templates`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -61,7 +61,8 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error creating site user:', error);
+    console.error('Error creating email template:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
+

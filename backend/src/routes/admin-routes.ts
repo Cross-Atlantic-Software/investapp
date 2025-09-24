@@ -30,11 +30,13 @@ import { cmsLogin } from "../controllers/admin/cmsAuth";
 
 // Site User Management Controllers
 import { SiteUserManagementController } from "../controllers/admin/siteUserManagement";
+import { EmailTemplateManagementController } from "../controllers/admin/emailTemplateManagement";
 
 const router = express.Router();
 
-// Initialize Site User Management Controller
+// Initialize Controllers
 const siteUserController = new SiteUserManagementController();
+const emailTemplateController = new EmailTemplateManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -69,5 +71,13 @@ router.get("/site-users/stats", siteUserController.getSiteUserStats);
 router.get("/site-users/:id", siteUserController.getSiteUserById);
 router.put("/site-users/:id", siteUserController.updateSiteUser);
 router.delete("/site-users/:id", siteUserController.deleteSiteUser);
+
+// Email Template Management Routes
+router.get("/email-templates", emailTemplateController.getAllEmailTemplates);
+router.get("/email-templates/stats", emailTemplateController.getEmailTemplateStats);
+router.get("/email-templates/:id", emailTemplateController.getEmailTemplateById);
+router.post("/email-templates", emailTemplateController.createEmailTemplate);
+router.put("/email-templates/:id", emailTemplateController.updateEmailTemplate);
+router.delete("/email-templates/:id", emailTemplateController.deleteEmailTemplate);
 
 export default router;

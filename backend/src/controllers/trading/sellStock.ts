@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import db, { sequelizePromise } from "../../utils/database";
 import { HttpStatusCode } from "../../utils/httpStatusCode";
-import { createSellConfirmationEmailTemplate } from "../../utils";
 import sendMail from "../../utils";
+import { EmailTemplateService } from "../../utils/emailTemplateService";
 
 export class SellStockService {
   private userModel = db.User;
@@ -37,8 +37,7 @@ export class SellStockService {
 
       // Send confirmation email
       try {
-        const emailSubject = `Sell Order Placed - ${companyName}`;
-        const emailContent = createSellConfirmationEmailTemplate(
+        const emailTemplate = await EmailTemplateService.getSellConfirmationEmail(
           user.email,
           companyName,
           quantity,
@@ -47,8 +46,12 @@ export class SellStockService {
           message
         );
         
-        await sendMail(user.email, emailSubject, emailContent);
-        console.log(`Sell confirmation email sent to: ${user.email}`);
+        if (emailTemplate) {
+          await sendMail(user.email, emailTemplate.subject, emailTemplate.body);
+          console.log(`Sell confirmation email sent to: ${user.email}`);
+        } else {
+          console.error("Sell confirmation email template not found");
+        }
       } catch (emailError) {
         console.error("Failed to send sell confirmation email:", emailError);
         // Don't fail the transaction if email fails

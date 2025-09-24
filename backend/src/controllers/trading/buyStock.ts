@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
 import db, { sequelizePromise } from "../../utils/database";
 import { HttpStatusCode } from "../../utils/httpStatusCode";
-import { createBuyConfirmationEmailTemplate, createSuperAdminNotificationTemplate } from "../../utils";
 import sendMail from "../../utils";
+import { EmailTemplateService } from "../../utils/emailTemplateService";
 
 export class BuyStockService {
   private userModel = db.User;
@@ -38,8 +38,7 @@ export class BuyStockService {
 
       // Send confirmation email
       try {
-        const emailSubject = `Buy Order Confirmed - ${companyName}`;
-        const emailContent = createBuyConfirmationEmailTemplate(
+        const emailTemplate = await EmailTemplateService.getBuyConfirmationEmail(
           user.email,
           companyName,
           quantity,
@@ -47,19 +46,22 @@ export class BuyStockService {
           totalAmount
         );
         
-        await sendMail(user.email, emailSubject, emailContent);
-        console.log(`Buy confirmation email sent to: ${user.email}`);
+        if (emailTemplate) {
+          await sendMail(user.email, emailTemplate.subject, emailTemplate.body);
+          console.log(`Buy confirmation email sent to: ${user.email}`);
+        } else {
+          console.error("Buy confirmation email template not found");
+        }
       } catch (emailError) {
         console.error("Failed to send buy confirmation email:", emailError);
         // Don't fail the transaction if email fails
       }
 
-      // Send notification to super admin (CMS user with id=3)
+      // Send notification to super admin (CMS user with id=1)
       try {
-        const superAdmin = await this.cmsUserModel.findByPk(3);
+        const superAdmin = await this.cmsUserModel.findByPk(1);
         if (superAdmin) {
-          const adminEmailSubject = `New Stock Purchase - ${companyName}`;
-          const adminEmailContent = createSuperAdminNotificationTemplate(
+          const adminEmailTemplate = await EmailTemplateService.getAdminPurchaseNotificationEmail(
             user.email,
             `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0],
             companyName,
@@ -68,10 +70,14 @@ export class BuyStockService {
             totalAmount
           );
           
-          await sendMail(superAdmin.email, adminEmailSubject, adminEmailContent);
-          console.log(`Super admin notification sent to: ${superAdmin.email}`);
+          if (adminEmailTemplate) {
+            await sendMail(superAdmin.email, adminEmailTemplate.subject, adminEmailTemplate.body);
+            console.log(`Super admin notification sent to: ${superAdmin.email}`);
+          } else {
+            console.error("Admin purchase notification template not found");
+          }
         } else {
-          console.warn("Super admin (CMS user id=2) not found");
+          console.warn("Super admin (CMS user id=1) not found");
         }
       } catch (adminEmailError) {
         console.error("Failed to send super admin notification:", adminEmailError);

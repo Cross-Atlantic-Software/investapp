@@ -3,6 +3,7 @@ import User, { initializeUserModel } from "../Models/User";
 import UserVerification, { initializeUserVerificationModel } from "../Models/UserVerification";
 import Product, { initializeProductModel } from "../Models/Product";
 import CmsUser, { initializeCmsUserModel } from "../Models/CmsUser";
+import EmailTemplate, { initializeEmailTemplateModel } from "../Models/EmailTemplate";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -53,6 +54,7 @@ async function initializeSequelize() {
   initializeUserVerificationModel(sequelize);
   initializeProductModel(sequelize);
   initializeCmsUserModel(sequelize);
+  initializeEmailTemplateModel(sequelize);
   
   // No associations needed since only admins handle stocks
   
@@ -84,7 +86,8 @@ export const db = {
   User,
   UserVerification,
   Product,
-  CmsUser
+  CmsUser,
+  EmailTemplate
 };
 
 async function initialize() {
