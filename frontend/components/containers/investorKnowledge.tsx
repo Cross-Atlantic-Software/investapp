@@ -21,34 +21,34 @@ type Props = {
 
 export default function InvestorKnowledge({
   eyebrow = "",
-  title = "Level up your investor knowledge",
-  blurb = "Learn the basics, assess your risk tolerance, understand the benefits of our nominee service and learn how seriously we take our due diligence to protect your interests.",
+  title = "Your Learning Hub for Private Markets",
+  blurb = "Before you invest, learn. Our Knowledge Centre offers simple, practical guides on private markets, so you can build confidence and protect your interests.",
   ctaLabel = "Visit our knowledge centre",
-  ctaHref = "#",
+  ctaHref = "/knowledge-center",
   items = [
     {
       id: "a1",
-      title: "Investing 101",
+      title: "Basics of Unlisted Investing",
       excerpt:
-        "Learn the basics, assess your risk tolerance, understand the benefits of our nominee service and learn how seriously we take our due diligence to protect your interests.",
+        "Understand what pre-IPO shares are, how they’re traded, and why they matter.",
     },
     {
       id: "a2",
-      title: "Investing 101",
+      title: "Managing Risk",
       excerpt:
-        "Learn the basics, assess your risk tolerance, understand the benefits of our nominee service and learn how seriously we take our due diligence to protect your interests.",
+        "Learn how to assess your risk tolerance and diversify your portfolio.",
     },
     {
       id: "a3",
-      title: "Investing 101",
+      title: "Investor Protection & Due Diligence",
       excerpt:
-        "Learn the basics, assess your risk tolerance, understand the benefits of our nominee service and learn how seriously we take our due diligence to protect your interests.",
+        "See how compliance, nominee services, and secure custody protect your interests.",
     },
     {
       id: "a4",
-      title: "Investing 101",
+      title: "Tools & Insights",
       excerpt:
-        "Learn the basics, assess your risk tolerance, understand the benefits of our nominee service and learn how seriously we take our due diligence to protect your interests.",
+        "Get the most out of our dashboards, liquidity signals, and research features.",
     },
   ],
 }: Props) {

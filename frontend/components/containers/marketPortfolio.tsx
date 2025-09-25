@@ -110,7 +110,7 @@ function RecoCard() {
   return (
     <div className={cardCls}>
       <CardHeader
-        title="Smart Recommendations"
+        title="Actionable Signals"
         right={<TrendingUp className="h-5 w-5 text-themeTeal/80" />}
       />
       <div className="text-md font-semibold text-themeTeal">
@@ -150,23 +150,18 @@ export default function MarketPortfolio() {
   ];
 
   const features: Feature[] = [
-    { id: "f1", title: "Deeper Insights", description: "Track the value of private company stock based on recent market activity, instead of marking everything at book value." },
-    { id: "f2", title: "Market Notifications", description: "Receive email alerts as soon as price movements are detected for select private issuers or target sectors." },
-    { id: "f3", title: "Automated Reporting", description: "Receive a monthly digest with price movements and observed trades for a pre-selected set of issuers." },
-    { id: "f4", title: "Automated Reporting", description: "Receive a monthly digest with price movements and observed trades for a pre-selected set of issuers." },
+    { id: "f1", title: "Invest Early, Invest Smart", description: "Access India’s most promising pre-IPO companies before the crowd." },
+    { id: "f2", title: "Liquidity, On Demand", description: "Enter and exit seamlessly with a trusted buyer–seller network. Leverage institutional-grade tools, liquidity, and intelligence." },
+    { id: "f3", title: "Signals That Matter", description: "Market depth, price discovery, and trend alerts built into your dashboard to optimize risk and provide opportunities" },
+    { id: "f4", title: "The Edge That Sets Us Apart", description: "Trade, learn, and grow in one secure platform. Invest smarter with demand signals that matter." },
   ];
 
   return (
     <section className="bg-themeTeal">
       <div className="appContainer py-12">
-        <div className="mx-auto mb-10 max-w-2xl text-center">
-          <Heading as="h2" className="mb-3 text-themeTealWhite">
-            Monitor your Private Market Portfolio
-          </Heading>
-          <p className="mb-6 text-themeTealWhite/90">
-            Monitor a range of private market investments with our platform and comprehensive data
-            reporting powered by MarketPrice.
-          </p>
+        <div className="mx-auto mb-10 max-w-3xl text-center">
+          <Heading as="h2" className="mb-3 text-themeTealWhite">Private Markets, Reimagined for Everyone</Heading>
+          <p className="mb-6 text-themeTealWhite/90">InvestApp isn’t just another marketplace. It’s a future-ready ecosystem that combines discovery, risk optimization, managing liquidity, and intelligence into one seamless platform.</p>
         </div>
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[320px_1fr]">

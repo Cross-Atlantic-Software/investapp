@@ -15,16 +15,16 @@ type Props = {
 };
 
 export default function InvestmentCTA({
-  title = "Ready for Your Next Big Investment?",
-  description = "Join our exclusive network of institutional investors and HNIs. Get early access to premium bulk deals with minimum investments starting from ₹5 Cr.",
+  title = "Ready to Access Exclusive Bulk Deals?",
+  description = "Join a growing network of institutional investors and HNIs who trust InvestApp for bulk allocations in high-growth private companies.",
   primaryLabel = "Sell Shares",
-  primaryHref = "#",
+  primaryHref = "/contact",
   secondaryLabel = "Invest Now",
-  secondaryHref = "#",
+  secondaryHref = "/invest",
   stats = [
-    { value: "₹50L+", label: "Avg. Monthly Returns" },
+    { value: "₹5Cr+", label: "Avg. Monthly Returns" },
     { value: "24–48h", label: "Deal Processing" },
-    { value: "100%", label: "Transparent" },
+    { value: "100%", label: "SEBI-Compliant Execution" },
     { value: "24/7", label: "Support" },
   ],
 }: Props) {

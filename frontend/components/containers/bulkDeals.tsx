@@ -16,12 +16,12 @@ type Props = {
 export default function BulkDeals({
   eyebrow = "Institutional Grade Opportunities",
   title = "Bulk Deals Corner",
-  description = "Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to established private giants. These are the companies shaping the future—now just a click away.",
+  description = "Access exclusive bulk deals in India’s top unlisted companies, designed for institutions, family offices, and HNIs. Transparent, compliant, and built for scale.",
   stats = [
-    { icon: IndianRupee, value: "₹2,500+ Cr", label: "Total Deal Value" },
-    { icon: Building2, value: "150+", label: "Active Institutions" },
-    { icon: TrendingUp, value: "₹180 Cr", label: "Avg. Deal Size" },
-    { icon: Users, value: "94%", label: "Success Rate" },
+    { icon: IndianRupee, value: "₹2,500+ Cr", label: "Total Transaction Value Processed" },
+    { icon: Building2, value: "150+", label: "Active Institutional Participants" },
+    { icon: TrendingUp, value: "₹180 Cr", label: "Average Deal Size" },
+    { icon: Users, value: "94%", label: "Completion Success Rate" },
   ],
 }: Props) {
   return (

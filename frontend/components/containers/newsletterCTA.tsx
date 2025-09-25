@@ -13,8 +13,8 @@ type Props = {
 };
 
 export default function NewsletterCTA({
-  title = "Exclusive Updates Await!",
-  description = "Dive into the world of Invest App with our Newsletter Be the First to Know, Explore and Experience.",
+  title = "Be First to Spot What’s Next",
+  description = "Sign up for exclusive updates and private market intelligence, delivered directly to your inbox.",
   placeholder = "Your Email Address",
   buttonLabel = "Subscribe",
   onSubmit,
@@ -29,7 +29,7 @@ export default function NewsletterCTA({
 
   return (
     <section>
-      <div className="appContainer">
+      <div className="appContainer mb-16">
         <div className="rounded-md bg-themeTealWhite px-6 py-10 md:py-16">
           <div className="mx-auto max-w-xl text-center">
             <Heading as="h3" className="text-themeTeal mb-2">

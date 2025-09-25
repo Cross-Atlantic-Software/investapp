@@ -14,6 +14,7 @@ type SideItem = {
 
 type Props = {
   heading?: string;
+  description?:string;
   feature?: {
     overlayText: string;
     imageSrc: string;
@@ -26,7 +27,8 @@ type Props = {
 };
 
 export default function PrivateMarketTrends({
-  heading = "Dive deeper into private market trends",
+  heading = "Stay Ahead with Private Market Intelligence",
+  description ="From IPO calendars to sector deep dives, access curated insights, proprietary data, and investor resources, all designed to give you an edge.",
   feature = {
     overlayText: "Tech IPO Calendar 2025",
     imageSrc: "/images/news1.webp",
@@ -61,10 +63,9 @@ export default function PrivateMarketTrends({
   return (
     <section>
       <div className="appContainer py-12 md:py-16">
-        <div className="mb-8 text-center">
-          <Heading as="h2" className="text-themeTeal">
-            {heading}
-          </Heading>
+        <div className="mb-8 text-center max-w-3xl mx-auto">
+          <Heading as="h2" className="text-themeTeal mb-3">{heading}</Heading>
+          <p className="mb-5 text-themeTealLight">{description}</p>
         </div>
 
         {/* 1/2 | 1/2 on md+, stacked on mobile */}
