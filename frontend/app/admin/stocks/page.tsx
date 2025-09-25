@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 
 import { StockTable, AddStockModal } from '@/components/admin/stocks';
 import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
+import { Plus, Search } from 'lucide-react';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
@@ -237,7 +238,7 @@ export default function StocksPage() {
   const canCreateStocks = currentUserRole === 10 || currentUserRole === 11;
 
   return (
-    <div className="space-y-6 relative">
+    <div className="space-y-6 relative overflow-hidden">
       {loading && isInitialLoad ? (
         <div className="flex items-center justify-center py-20">
           <Loader size="md" text="Loading stocks..." />
@@ -251,7 +252,7 @@ export default function StocksPage() {
           </div>
 
           {/* Search Section */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between flex-col md:flex-row gap-4 md:items-center mb-6">
             <div className="flex items-center space-x-4">
               <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
                 <span className="text-sm font-medium text-themeTeal">
@@ -266,7 +267,7 @@ export default function StocksPage() {
                   value={searchTerm}
                   onChange={handleSearchChange}
                   placeholder="Search by stock name"
-                  className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                  className="w-64 pl-10 pr-4 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal placeholder:text-themeTealLighter"
                 />
                 {isSearching ? (
                   <svg className="absolute left-3 top-2.5 h-4 w-4 text-themeTeal animate-spin" fill="none" viewBox="0 0 24 24">
@@ -274,14 +275,13 @@ export default function StocksPage() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : (
-                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-themeTealLighter"/>
                 )}
+                
                 {searchTerm && (
                   <button
                     onClick={handleClearSearch}
-                    className="absolute right-3 top-2.5 h-4 w-4 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-2.5 h-4 w-4 text-themeTealLight hover:text-themeTealLighter"
                   >
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -292,17 +292,16 @@ export default function StocksPage() {
               {canCreateStocks && (
                 <button
                   onClick={() => setShowAddModal(true)}
-                  className="bg-themeTeal text-white px-4 py-2 text-sm rounded-lg hover:bg-themeTealLight transition-colors duration-200 flex items-center"
+                  className="bg-themeTeal text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeSkyBlue transition duration-300 flex items-center cursor-pointer"
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+                  <Plus width={16} height={16} className='mr-1'/>
                   Add stock
                 </button>
               )}
             </div>
           </div>
-
+          
+          <div className="w-100 md:w-full overflow-hidden">
           <StockTable 
             stocks={stocks} 
             onRefresh={fetchStocks} 
@@ -311,6 +310,7 @@ export default function StocksPage() {
             sortOrder={sortOrder}
             onNotification={(type, title, message) => addNotification({ type, title, message, duration: 5000 })}
           />
+          </div>
         </>
       )}
       

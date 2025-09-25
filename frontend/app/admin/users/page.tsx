@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserTable, UserModal, RolesModal } from '@/components/admin/users';
 import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
+import { Info, Plus, Search } from 'lucide-react';
 
 interface SearchFilters {
   search: string;
@@ -184,7 +185,7 @@ export default function UsersPage() {
 
 
   return (
-    <div className="space-y-6 overflow-x-hidden relative">
+    <div className="space-y-6 relative">
       {loading && isInitialLoad ? (
         <div className="flex items-center justify-center py-20">
           <Loader size="md" text="Loading users..." />
@@ -197,17 +198,17 @@ export default function UsersPage() {
               <h1 className="text-lg font-bold text-themeTeal">Admin User management</h1>
               <button
                 onClick={() => setIsRolesModalOpen(true)}
-                className="w-5 h-5 bg-themeTealLight text-themeTeal rounded-full flex items-center justify-center hover:bg-themeTeal hover:text-white transition-colors duration-200"
+                className="w-5 h-5 text-themeTeal flex items-center justify-center transition-colors duration-200"
                 title="View role definitions and permissions"
               >
-                <span className="text-xs font-bold">i</span>
+                  <Info/>
               </button>
             </div>
             <p className="text-sm text-themeTealLight">Manage your team members and their account permissions here.</p>
           </div>
 
           {/* Search Section */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between flex-col md:flex-row gap-4 md:items-center mb-6">
             <div className="flex items-center space-x-4">
               <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
                 <span className="text-sm font-medium text-themeTeal">
@@ -222,7 +223,7 @@ export default function UsersPage() {
                   value={searchFilters.search}
                   onChange={(e) => handleSearchChange('search', e.target.value)}
                   placeholder="Search by name or email"
-                  className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                  className="w-64 pl-10 pr-4 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal placeholder:text-themeTealLighter"
                 />
                 {isSearching ? (
                   <svg className="absolute left-3 top-2.5 h-4 w-4 text-themeTeal animate-spin" fill="none" viewBox="0 0 24 24">
@@ -230,19 +231,15 @@ export default function UsersPage() {
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 ) : (
-                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-themeTealLighter"/>
                 )}
               </div>
               {canCreateUsers && (
                 <button
                   onClick={() => setIsModalOpen(true)}
-                  className="bg-themeTeal text-white px-4 py-2 text-sm rounded-lg hover:bg-themeTealLight transition-colors duration-200 flex items-center"
+                  className="bg-themeTeal text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeSkyBlue transition duration-300 flex items-center cursor-pointer"
                 >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
+                  <Plus width={16} height={16} className='mr-1'/>
                   Add user
                 </button>
               )}
@@ -250,7 +247,7 @@ export default function UsersPage() {
           </div>
 
           {/* User Table */}
-          <div className="overflow-hidden">
+          <div className="w-100 md:w-full overflow-hidden">
             <UserTable 
               users={users} 
               onRefresh={() => fetchUsers(pagination.currentPage)} 

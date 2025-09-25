@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ConfirmationModal } from '@/components/admin/shared';
+import { ChevronDown, LucideSquarePen, Trash2, X } from 'lucide-react';
 
 interface User {
   id: number;
@@ -150,61 +151,52 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
   return (
     <div className="space-y-6">
       {/* Modern Table */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-themeTealLighter">
         {/* Table Container */}
-        <div className="overflow-hidden">
-          <table className="w-full table-fixed">
-            {/* Table Head */}
-            <thead className="bg-white border-b border-gray-200">
+        <div className="overflow-x-auto">
+          <table className="w-full min-w-[800px]">
+            <thead className="bg-themeTeal border-b border-themeTealLighter">
               <tr>
-                <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   User name
                 </th>
-                <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Access
                 </th>
                 <th 
-                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('last_active')}
                 >
                   <div className="flex items-center">
                     Last active
                     {sortBy === 'last_active' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
                     ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
                     )}
                   </div>
                 </th>
                 <th 
-                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('createdAt')}
                 >
                   <div className="flex items-center">
                     Date added
                     {sortBy === 'createdAt' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
                     ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
                     )}
                   </div>
                 </th>
-                <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
 
             {/* Table Body */}
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-themeTealLighter">
               {users.map((user, index) => (
                 <tr 
                   key={user.id} 
@@ -215,16 +207,16 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                   {/* User Column with Name, Email and Phone */}
                   <td className="px-4 py-3">
                     <div className="flex items-center space-x-3">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-themeTeal to-themeTealLight flex items-center justify-center shadow-sm flex-shrink-0">
-                        <span className="text-xs font-bold text-white">
+                      <div className="h-8 w-8 rounded-full bg-themeTeal flex items-center justify-center flex-shrink-0">
+                        <span className="text-xs font-medium text-themeTealWhite">
                           {user.first_name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-semibold text-themeTeal">
                           {user.first_name} {user.last_name}
                         </div>
-                        <div className="text-xs text-gray-500 truncate">{user.email}</div>
+                        <div className="text-xs text-themeTealLighter truncate">{user.email}</div>
                       </div>
                     </div>
                   </td>
@@ -249,7 +241,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                   </td>
 
                   {/* Last Active Column */}
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm text-themeTeal">
                     <div className="truncate">
                       {user.last_active ? (
                         <span className="text-xs">
@@ -260,7 +252,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                           })}
                         </span>
                       ) : (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-themeTeal">
                           Never
                         </span>
                       )}
@@ -268,7 +260,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                   </td>
 
                   {/* Date Added Column */}
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm text-themeTeal">
                     <div className="truncate">
                       <span className="text-xs">
                         {new Date(user.createdAt).toLocaleDateString('en-US', { 
@@ -286,25 +278,21 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                       <div className="flex items-center space-x-3">
                         <button
                           onClick={() => handleEditUser(user)}
-                          className="flex items-center space-x-1 text-themeTeal hover:text-themeTealLight transition-colors duration-200"
+                          className="flex items-center space-x-1 px-2 py-1 bg-themeTeal rounded text-themeTealWhite hover:bg-themeTealWhite hover:text-themeTeal transition duration-300 cursor-pointer"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                          </svg>
+                          <LucideSquarePen width={16} height={16}/>
                           <span className="text-sm">Edit</span>
                         </button>
                         <button
                           onClick={() => handleDeleteUser(user)}
-                          className="flex items-center space-x-1 text-red-600 hover:text-red-800 transition-colors duration-200"
+                          className="flex items-center space-x-1 bg-red-700 px-2 py-1 rounded text-themeTealWhite transition duration-300 cursor-pointer hover:bg-themeTealWhite hover:text-red-700"
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                          </svg>
+                          <Trash2 width={16} height={16}/>
                           <span className="text-sm">Delete</span>
                         </button>
                       </div>
                     ) : (
-                      <span className="text-gray-400 text-xs">View Only</span>
+                      <span className="text-themeTealLighter text-xs">View Only</span>
                     )}
                   </td>
                 </tr>
@@ -329,9 +317,9 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
       {/* Edit User Modal */}
       {editingUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+          <div className="bg-white rounded shadow w-full max-w-lg mx-4 overflow-hidden">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-white">Edit User</h3>
                 <button
@@ -339,11 +327,9 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                     setEditingUser(null);
                     setEditFormData({});
                   }}
-                  className="text-white hover:text-gray-200 transition-colors duration-200"
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X/>
                 </button>
               </div>
             </div>
@@ -352,45 +338,45 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
             <div className="p-6 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">First Name</label>
+                  <label className="block text-xs font-medium text-themeTeal mb-1">First Name</label>
                   <input
                     type="text"
                     value={editFormData.first_name || ''}
                     onChange={(e) => setEditFormData({...editFormData, first_name: e.target.value})}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal"
                     placeholder="Enter first name"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Last Name</label>
+                  <label className="block text-xs font-medium text-themeTeal mb-1">Last Name</label>
                   <input
                     type="text"
                     value={editFormData.last_name || ''}
                     onChange={(e) => setEditFormData({...editFormData, last_name: e.target.value})}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal"
                     placeholder="Enter last name"
                   />
                 </div>
               </div>
               
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Email Address</label>
+                <label className="block text-xs font-medium text-themeTeal mb-1">Email Address</label>
                 <input
                   type="email"
                   value={editFormData.email || ''}
                   onChange={(e) => setEditFormData({...editFormData, email: e.target.value})}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal"
                   placeholder="Enter email address"
                 />
               </div>
               
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">User Role</label>
+                <label className="block text-xs font-medium text-themeTeal mb-1">User Role</label>
                 <select
                   value={editFormData.role || 12}
                   onChange={(e) => setEditFormData({...editFormData, role: parseInt(e.target.value)})}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal"
                 >
                   <option value={12}>Blogger</option>
                   <option value={13}>Site Manager</option>
@@ -401,11 +387,11 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
             </div>
             
             {/* Modal Footer */}
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end flex-shrink-0 rounded-b-2xl">
+            <div className="px-4 py-3 bg-themeTealWhite flex justify-end flex-shrink-0 rounded-b-2xl">
               <button
                 onClick={handleUpdateUser}
                 disabled={editLoading}
-                className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium flex items-center"
+                className="px-6 py-3 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium flex items-center"
               >
                 {editLoading ? (
                   <>
