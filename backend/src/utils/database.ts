@@ -6,6 +6,8 @@ import CmsUser, { initializeCmsUserModel } from "../Models/CmsUser";
 import EmailTemplate, { initializeEmailTemplateModel } from "../Models/EmailTemplate";
 import Enquiry, { initializeEnquiryModel } from "../Models/Enquiry";
 import Subscriber, { initializeSubscriberModel } from "../Models/Subscriber";
+import PrivateMarketNews, { initializePrivateMarketNewsModel } from "../Models/PrivateMarketNews";
+import Taxonomy, { initializeTaxonomyModel } from "../Models/Taxonomy";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -64,6 +66,12 @@ async function initializeSequelize() {
   // Initialize Subscriber model
   initializeSubscriberModel(sequelize);
   
+  // Initialize Private Market News model
+  initializePrivateMarketNewsModel(sequelize);
+  
+  // Initialize Taxonomy model
+  initializeTaxonomyModel(sequelize);
+  
   // No associations needed since only admins handle stocks
   
   return sequelize;
@@ -91,13 +99,16 @@ export const db = {
     }
     return sequelize;
   },
+  sequelizePromise,
   User,
   UserVerification,
   Product,
   CmsUser,
   EmailTemplate,
   Enquiry,
-  Subscriber
+  Subscriber,
+  PrivateMarketNews,
+  Taxonomy,
 };
 
 async function initialize() {
