@@ -1,12 +1,14 @@
 'use client';
 import { Section, SectionNav, ShareIntro, TradeTabsShell } from "@/components/shares";
 // Removed unused section imports since we only display stock details from our schema
-import { useSearchParams } from 'next/navigation';
-import { useEffect, useState, Suspense } from 'react';
+import { useParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
+
 const NAV = [
   { id: "stock-details", label: "Stock Details" },
 ];
+
 interface StockData {
   id: string;
   company_name: string;
@@ -20,24 +22,24 @@ interface StockData {
   updatedAt?: string;
 }
 
-function DiscoverDetailsContent() {
-  const searchParams = useSearchParams();
-  const stockId = searchParams.get('stock');
+export default function UnlistedCompanyDetails() {
+  const params = useParams();
+  const companyName = params.name as string;
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStockData = async () => {
-      if (!stockId) {
-        setError('No stock ID provided');
+      if (!companyName) {
+        setError('No company name provided');
         setLoading(false);
         return;
       }
 
       try {
         setLoading(true);
-        const response = await fetch(`/api/stocks/name/${encodeURIComponent(stockId)}`);
+        const response = await fetch(`/api/stocks/name/${encodeURIComponent(companyName)}`);
         const data = await response.json();
         
         if (data.success && data.data) {
@@ -68,7 +70,7 @@ function DiscoverDetailsContent() {
     };
 
     fetchStockData();
-  }, [stockId]);
+  }, [companyName]);
 
   if (loading) {
     return (
@@ -111,18 +113,9 @@ function DiscoverDetailsContent() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,384px)] p-6">
         {/* LEFT: content */}
         <div className="min-w-0 space-y-6">
-          {/* <SectionNav items={NAV} offset={88} /> */}
+          <SectionNav items={NAV} offset={88} />
 
           <div className="space-y-6">
-            {/* <Section id="price" title="Price Chart" info="Intraday private-market price. Delayed. Not investment advice."><PriceChartSection /></Section> */}
-            {/* <Section id="score" title="Scorecard" info="Intraday private-market price. Delayed. Not investment advice."><ScorecardSection /></Section> */}
-            {/* <Section id="rationale" title="Investment Rationale" info="Intraday private-market price. Delayed. Not investment advice."><InvestmentRationaleSection /></Section> */}
-            {/* <Section id="bench" title="Performance Benchmark" info="Intraday private-market price. Delayed. Not investment advice."><PerformanceBenchmarkSection /></Section> */}
-            {/* <Section id="outlook" title="Sector Outlook" info="Intraday private-market price. Delayed. Not investment advice."><SectorOutlookSection /></Section> */}
-            {/* <Section id="financials" title="Financial Performance" info="Intraday private-market price. Delayed. Not investment advice."><FinancialPerformanceSection /></Section> */}
-            {/* <Section id="holders" title="Shareholding" info="Intraday private-market price. Delayed. Not investment advice."><ShareholdingSection /></Section> */}
-            {/* <Section id="news" title="News Related to Company" info="Intraday private-market price. Delayed. Not investment advice."><NewsSection /></Section> */}
-            {/* <Section id="faq" title="Frequently Asked Questions" info="Intraday private-market price. Delayed. Not investment advice."><FaqSection /></Section> */}
             <Section id="stock-details" title="Stock Details" info="Real-time stock information from our database.">
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <div className="space-y-6">
@@ -212,20 +205,5 @@ function DiscoverDetailsContent() {
       </div>
 
     </>
-  );
-}
-
-export default function DiscoverDetails() {
-  return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto"></div>
-          <p className="mt-2 text-themeTealLighter">Loading stock details...</p>
-        </div>
-      </div>
-    }>
-      <DiscoverDetailsContent />
-    </Suspense>
   );
 }

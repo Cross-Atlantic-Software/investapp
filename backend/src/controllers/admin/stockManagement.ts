@@ -27,7 +27,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'company_name', 'price', 'price_change', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -89,6 +89,37 @@ export const getStockById = async (req: Request, res: Response) => {
   }
 };
 
+// Get stock by company name
+export const getStockByName = async (req: Request, res: Response) => {
+  try {
+    const { name } = req.params;
+
+    const stock = await db.Product.findOne({
+      where: {
+        company_name: name
+      }
+    });
+
+    if (!stock) {
+      return res.status(404).json({
+        success: false,
+        message: "Stock not found"
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: stock
+    });
+  } catch (error) {
+    console.error("Error fetching stock by name:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
 // Create new stock
 export const createStock = async (req: MulterRequest, res: Response) => {
   try {
@@ -110,7 +141,13 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       price_change,
       teaser,
       short_description,
-      analysis
+      analysis,
+      demand,
+      homeDisplay,
+      bannerDisplay,
+      valuation,
+      price_per_share,
+      percentage_change
     } = cleanedBody;
 
     // Validate required fields
@@ -154,7 +191,13 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       price_change,
       teaser,
       short_description,
-      analysis
+      analysis,
+      demand: demand || 'Low Demand',
+      homeDisplay: homeDisplay || 'no',
+      bannerDisplay: bannerDisplay || 'no',
+      valuation: valuation || 'N/A',
+      price_per_share: price_per_share || price || 0,
+      percentage_change: percentage_change || price_change || 0
     });
 
     return res.status(201).json({
@@ -188,7 +231,13 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       price_change,
       teaser,
       short_description,
-      analysis
+      analysis,
+      demand,
+      homeDisplay,
+      bannerDisplay,
+      valuation,
+      price_per_share,
+      percentage_change
     } = req.body;
 
     const stock = await db.Product.findByPk(id);
@@ -227,7 +276,13 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       price_change: price_change !== undefined ? price_change : stock.price_change,
       teaser: teaser !== undefined ? teaser : stock.teaser,
       short_description: short_description !== undefined ? short_description : stock.short_description,
-      analysis: analysis !== undefined ? analysis : stock.analysis
+      analysis: analysis !== undefined ? analysis : stock.analysis,
+      demand: demand !== undefined ? demand : stock.demand,
+      homeDisplay: homeDisplay !== undefined ? homeDisplay : stock.homeDisplay,
+      bannerDisplay: bannerDisplay !== undefined ? bannerDisplay : stock.bannerDisplay,
+      valuation: valuation !== undefined ? valuation : stock.valuation,
+      price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,
+      percentage_change: percentage_change !== undefined ? percentage_change : stock.percentage_change
     });
 
     return res.status(200).json({

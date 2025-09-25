@@ -149,7 +149,7 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
 
           <div className="min-w-0 w-full">
             <h3 className="text-themeTeal font-semibold leading-tight truncate">
-              <Link href={`/discover-details?stock=${item.id}`} className="text-themeTeal font-semibold transition duration-500 hover:text-themeSkyBlue">
+              <Link href={`/unlisted-company-name/${encodeURIComponent(item.company_name)}`} className="text-themeTeal font-semibold transition duration-500 hover:text-themeSkyBlue">
                 {item.company_name}
               </Link>
             </h3>
