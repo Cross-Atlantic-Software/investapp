@@ -171,10 +171,10 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4">
+        <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-white">Create New User</h2>
@@ -344,7 +344,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end flex-shrink-0 rounded-b-2xl">
           <button
             type="submit"
             form="user-form"

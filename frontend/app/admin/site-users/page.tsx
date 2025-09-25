@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Loader from '@/components/admin/Loader';
-import { NotificationContainer, NotificationData } from '@/components/admin/Notification';
+import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
 
 interface SiteUser {
   id: number;
@@ -34,6 +33,7 @@ export default function SiteUsersPage() {
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [search, setSearch] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [pagination, setPagination] = useState<Pagination>({
     currentPage: 1,
     totalPages: 1,
@@ -100,18 +100,57 @@ export default function SiteUsersPage() {
     }
   }, [search, sortBy, sortOrder]);
 
+  // Separate search function that never touches loading states
+  const searchUsers = useCallback(async () => {
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '10',
+        search: search,
+        sort_by: sortBy,
+        sort_order: sortOrder.toUpperCase()
+      });
+
+      const response = await fetch(`/api/admin/site-users?${params.toString()}`, {
+        headers: {
+          'token': token,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setUsers(data.data.users);
+        setPagination(data.data.pagination);
+      } else {
+        console.error('Error searching site users:', data.message);
+      }
+    } catch (error) {
+      console.error('Error searching site users:', error);
+    }
+  }, [search, sortBy, sortOrder]);
+
   useEffect(() => {
     fetchUsers();
-  }, [fetchUsers]);
+  }, []); // Only run once on mount
 
   // Debounced search effect
   useEffect(() => {
+    if (search) {
+      setIsSearching(true);
+    }
+    
     const timeoutId = setTimeout(() => {
-      fetchUsers(1, false);
+      searchUsers(); // Use dedicated search function that never touches loading states
+      setIsSearching(false);
     }, 300);
 
-    return () => clearTimeout(timeoutId);
-  }, [search, fetchUsers]);
+    return () => {
+      clearTimeout(timeoutId);
+      setIsSearching(false);
+    };
+  }, [search, searchUsers]); // Include searchUsers in dependencies
 
   const handlePageChange = (page: number) => {
     fetchUsers(page);
@@ -192,41 +231,52 @@ export default function SiteUsersPage() {
 
   return (
     <div className="space-y-6 overflow-x-hidden relative">
-      {loading && <Loader fullScreen text="Loading site users..." />}
-      
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-lg font-bold text-themeTeal">Site Users</h1>
-        <p className="text-sm text-themeTealLight">Manage registered site users and their information.</p>
-      </div>
-
-      {/* Search Section */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
-            <span className="text-sm font-medium text-themeTeal">
-              All users <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{pagination.totalCount}</span>
-            </span>
-          </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader size="md" text="Loading site users..." />
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by name or email"
-              className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
-            />
-            <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-lg font-bold text-themeTeal">Site Users</h1>
+            <p className="text-sm text-themeTealLight">Manage registered site users and their information.</p>
           </div>
-        </div>
-      </div>
 
-      {/* Users Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          {/* Search Section */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
+                <span className="text-sm font-medium text-themeTeal">
+                  All users <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{pagination.totalCount}</span>
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by name or email"
+                  className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                />
+                {isSearching ? (
+                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-themeTeal animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Users Table */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -295,12 +345,13 @@ export default function SiteUsersPage() {
                     <div className="flex items-center space-x-1">
                       <button
                         onClick={() => handleDeleteUser(user.id)}
-                        className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50 transition-colors"
+                        className="text-red-600 hover:text-red-900 px-2 py-1 rounded hover:bg-red-50 transition-colors flex items-center space-x-1"
                         title="Delete User"
                       >
                         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
+                        <span className="text-xs font-medium">Delete</span>
                       </button>
                     </div>
                   </td>
@@ -384,6 +435,8 @@ export default function SiteUsersPage() {
           </div>
         )}
       </div>
+        </>
+      )}
 
       {/* Notifications */}
       <NotificationContainer

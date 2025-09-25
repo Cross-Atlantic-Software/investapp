@@ -25,12 +25,27 @@ interface StockTableProps {
   onNotification?: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void;
 }
 
+interface ImageUploadState {
+  file: File | null;
+  preview: string | null;
+  uploading: boolean;
+  progress: number;
+  error: string | null;
+}
+
 const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification }) => {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Stock>>({});
   const [editLoading, setEditLoading] = useState(false);
   const [editIconFile, setEditIconFile] = useState<File | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
+  const [imageUpload, setImageUpload] = useState<ImageUploadState>({
+    file: null,
+    preview: null,
+    uploading: false,
+    progress: 0,
+    error: null,
+  });
 
   // Get current user's role to determine permissions
   const getCurrentUserRole = () => {
@@ -49,6 +64,21 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const currentUserRole = getCurrentUserRole();
   const canManageStocks = currentUserRole === 10 || currentUserRole === 11; // Admin or SuperAdmin
 
+  const validateImageFile = (file: File): string | null => {
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      return 'Please select a valid image file (PNG, JPG, GIF, etc.)';
+    }
+    
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+    if (file.size > maxSize) {
+      return 'File size must be less than 10MB';
+    }
+    
+    return null;
+  };
+
   const handleEditStock = (stock: Stock) => {
     setEditingStock(stock);
     setEditFormData({
@@ -60,6 +90,103 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       analysis: stock.analysis
     });
     setEditIconFile(null); // Reset icon file
+    setImageUpload({
+      file: null,
+      preview: null,
+      uploading: false,
+      progress: 0,
+      error: null,
+    });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    
+    if (!file) {
+      setImageUpload({
+        file: null,
+        preview: null,
+        uploading: false,
+        progress: 0,
+        error: null,
+      });
+      setEditIconFile(null);
+      return;
+    }
+
+    // Validate file
+    const validationError = validateImageFile(file);
+    if (validationError) {
+      setImageUpload(prev => ({
+        ...prev,
+        error: validationError,
+        file: null,
+        preview: null,
+      }));
+      setEditIconFile(null);
+      return;
+    }
+
+    // Create preview
+    const preview = URL.createObjectURL(file);
+    
+    setImageUpload({
+      file,
+      preview,
+      uploading: false,
+      progress: 0,
+      error: null,
+    });
+    
+    setEditIconFile(file);
+  };
+
+  const removeImage = () => {
+    if (imageUpload.preview) {
+      URL.revokeObjectURL(imageUpload.preview);
+    }
+    setImageUpload({
+      file: null,
+      preview: null,
+      uploading: false,
+      progress: 0,
+      error: null,
+    });
+    setEditIconFile(null);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const files = e.dataTransfer.files;
+    if (files && files.length > 0) {
+      const file = files[0];
+      
+      // Create a synthetic event to reuse the file change handler
+      const syntheticEvent = {
+        target: {
+          files: [file]
+        }
+      } as React.ChangeEvent<HTMLInputElement>;
+      
+      handleFileChange(syntheticEvent);
+    }
   };
 
   const handleViewStock = (stock: Stock) => {
@@ -320,9 +447,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       {/* Edit Stock Modal */}
       {editingStock && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-4 max-h-[95vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4">
+            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-semibold text-white">Edit Stock</h3>
@@ -343,7 +470,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             </div>
             
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
+            <div className="p-6 flex-1 overflow-y-auto">
               <form id="edit-stock-form" className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Company Name Field */}
@@ -447,8 +574,64 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       Company Logo URL
                     </label>
-                    <div className="mt-1 border-2 border-gray-300 border-dashed rounded-lg hover:border-themeTeal transition-colors duration-200">
-                      {editingStock?.logo ? (
+                    {/* Error Message */}
+                    {imageUpload.error && (
+                      <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                        <p className="text-xs text-red-600">{imageUpload.error}</p>
+                      </div>
+                    )}
+                    
+                    <label 
+                      htmlFor="edit-icon-upload"
+                      className={`mt-1 border-2 border-dashed rounded-lg transition-colors duration-200 cursor-pointer ${
+                        imageUpload.error 
+                          ? 'border-red-300 bg-red-50' 
+                          : imageUpload.preview 
+                            ? 'border-green-300 bg-green-50' 
+                            : 'border-gray-300 hover:border-themeTeal hover:bg-themeTeal/5'
+                      }`}
+                      onDragOver={handleDragOver}
+                      onDragEnter={handleDragEnter}
+                      onDragLeave={handleDragLeave}
+                      onDrop={handleDrop}
+                    >
+                      {imageUpload.preview ? (
+                        /* New Image Preview */
+                        <div className="p-4">
+                          <div className="space-y-3 text-center">
+                            <div className="relative inline-block">
+                              <img
+                                src={imageUpload.preview}
+                                alt="New preview"
+                                className="h-20 w-20 object-cover rounded-lg border border-gray-200 mx-auto"
+                              />
+                              <button
+                                type="button"
+                                onClick={removeImage}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors duration-200"
+                              >
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                              </button>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              <p className="font-medium text-green-600">✓ New image selected</p>
+                              <p className="text-xs text-gray-500">{imageUpload.file?.name}</p>
+                              <p className="text-xs text-gray-500">
+                                {(imageUpload.file?.size! / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              className="bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight transition-colors duration-200"
+                            >
+                              Change Image
+                            </button>
+                          </div>
+                        </div>
+                      ) : editingStock?.logo ? (
+                        /* Current Icon Display */
                         <div className="p-4">
                           <div className="flex items-center space-x-4">
                             <div className="flex-shrink-0">
@@ -463,60 +646,72 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-700 mb-2">Current Icon</p>
                               <div className="flex items-center space-x-3">
-                                <label htmlFor="edit-icon-upload" className="relative cursor-pointer bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-themeTeal transition-colors">
-                                  <span>Change Icon</span>
-                                  <input
-                                    id="edit-icon-upload"
-                                    name="edit-icon-upload"
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={(e) => setEditIconFile(e.target.files?.[0] || null)}
-                                    className="sr-only"
-                                  />
-                                </label>
+                                <button
+                                  type="button"
+                                  className="bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight transition-colors duration-200"
+                                >
+                                  Change Icon
+                                </button>
                                 <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                               </div>
                             </div>
                           </div>
                         </div>
                       ) : (
+                        /* Upload Prompt */
                         <div className="p-4">
                           <div className="space-y-1 text-center">
                             <svg className="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
                               <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                             <div className="flex text-sm text-gray-600 justify-center">
-                              <label htmlFor="edit-icon-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-themeTeal hover:text-themeTealLight focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-themeTeal">
-                                <span>Upload a file</span>
-                                <input
-                                  id="edit-icon-upload"
-                                  name="edit-icon-upload"
-                                  type="file"
-                                  accept="image/*"
-                                  onChange={(e) => setEditIconFile(e.target.files?.[0] || null)}
-                                  className="sr-only"
-                                />
-                              </label>
+                              <span className="bg-white rounded-md font-medium text-themeTeal px-2 py-1">Upload a file</span>
                               <p className="pl-1">or drag and drop</p>
                             </div>
                             <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
                           </div>
                         </div>
                       )}
-                    </div>
+                    </label>
+                    
+                    {/* Hidden File Input */}
+                    <input
+                      id="edit-icon-upload"
+                      name="edit-icon-upload"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="sr-only"
+                    />
+                    
+                    {/* Upload Progress */}
+                    {imageUpload.uploading && (
+                      <div className="mt-2">
+                        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                          <span>Uploading...</span>
+                          <span>{imageUpload.progress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-themeTeal h-2 rounded-full transition-all duration-300"
+                            style={{ width: `${imageUpload.progress}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </form>
             </div>
 
             {/* Modal Footer */}
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end flex-shrink-0 rounded-b-2xl">
               <button
                 type="submit"
                 form="edit-stock-form"
                 onClick={handleUpdateStock}
                 disabled={editLoading}
-                className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium flex items-center"
+                className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium"
               >
                 {editLoading ? (
                   <>
@@ -543,9 +738,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       {/* View Stock Modal */}
       {viewingStock && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl mx-4 my-4 max-h-[95vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
@@ -564,8 +759,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     )}
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-white">Stock Details</h3>
-                    <p className="text-blue-100 text-sm">{viewingStock.company_name}</p>
+                    <h3 className="text-base font-semibold text-white">Stock Details</h3>
+                    <p className="text-white/80 text-sm">{viewingStock.company_name}</p>
                   </div>
                 </div>
                 <button
@@ -580,111 +775,115 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             </div>
             
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto max-h-[calc(95vh-140px)]">
-              <div className="space-y-6">
+            <div className="p-6 flex-1 overflow-y-auto">
+              <div className="space-y-4">
                 {/* Basic Information */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Basic Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Company Name</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">{viewingStock.company_name}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Company Name</label>
+                    <input
+                      type="text"
+                      value={viewingStock.company_name}
+                      readOnly
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Stock ID</label>
+                    <input
+                      type="text"
+                      value={viewingStock.id}
+                      readOnly
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Current Price</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 text-sm">₹</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={viewingStock.price}
+                        readOnly
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                      />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock ID</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">{viewingStock.id}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Current Price</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">₹{viewingStock.price}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Price Change</label>
-                      <p className={`text-sm bg-white p-2 rounded border ${viewingStock.price_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {viewingStock.price_change >= 0 ? '+' : ''}₹{viewingStock.price_change}
-                      </p>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Price Change</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 text-sm">₹</span>
+                      </div>
+                      <input
+                        type="text"
+                        value={`${viewingStock.price_change >= 0 ? '+' : ''}${viewingStock.price_change}`}
+                        readOnly
+                        className={`w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 ${
+                          viewingStock.price_change >= 0 ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      />
                     </div>
                   </div>
                 </div>
 
                 {/* Teaser */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Teaser</h4>
-                  <p className="text-sm text-gray-700 bg-white p-3 rounded border leading-relaxed">
-                    {viewingStock.teaser}
-                  </p>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Teaser</label>
+                  <textarea
+                    value={viewingStock.teaser}
+                    readOnly
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                    rows={2}
+                  />
                 </div>
 
                 {/* Short Description */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Short Description</h4>
-                  <p className="text-sm text-gray-700 bg-white p-3 rounded border leading-relaxed">
-                    {viewingStock.short_description}
-                  </p>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Short Description</label>
+                  <textarea
+                    value={viewingStock.short_description}
+                    readOnly
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                    rows={3}
+                  />
                 </div>
 
                 {/* Analysis */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Analysis</h4>
-                  <div className="text-sm text-gray-700 bg-white p-3 rounded border leading-relaxed whitespace-pre-line">
-                    {viewingStock.analysis}
-                  </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Analysis</label>
+                  <textarea
+                    value={viewingStock.analysis}
+                    readOnly
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                    rows={4}
+                  />
                 </div>
 
-                {/* Timestamps */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Timestamps</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Created At</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {new Date(viewingStock.createdAt).toLocaleString()}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Last Updated</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {new Date(viewingStock.updatedAt).toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Logo Preview */}
+                {/* Company Logo */}
                 {viewingStock.logo && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Company Logo</h4>
-                    <div className="flex justify-center">
-                      <div className="relative">
-                        <Image
-                          src={viewingStock.logo}
-                          alt={`${viewingStock.company_name} logo`}
-                          width={200}
-                          height={200}
-                          className="rounded-lg border-2 border-gray-200 shadow-sm"
-                        />
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Company Logo</label>
+                    <div className="mt-1 border-2 border-gray-300 border-dashed rounded-lg p-4">
+                      <div className="flex justify-center">
+                        <div className="relative">
+                          <Image
+                            src={viewingStock.logo}
+                            alt={`${viewingStock.company_name} logo`}
+                            width={120}
+                            height={120}
+                            className="h-30 w-30 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+                          />
+                        </div>
                       </div>
                     </div>
-                    <p className="text-xs text-gray-500 text-center mt-2 break-all">
-                      {viewingStock.logo}
-                    </p>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
-              <button
-                onClick={() => setViewingStock(null)}
-                className="px-4 py-2 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors duration-200 font-medium flex items-center"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <span>Close</span>
-              </button>
-            </div>
           </div>
         </div>
       )}

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import Loader from '@/components/admin/Loader';
-import { NotificationContainer, NotificationData } from '@/components/admin/Notification';
+import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
 
 interface EmailTemplate {
   id: number;
@@ -29,6 +28,7 @@ export default function EmailTemplatesPage() {
   const [loading, setLoading] = useState(true);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [search, setSearch] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [pagination, setPagination] = useState<Pagination>({
     currentPage: 1,
     totalPages: 1,
@@ -100,18 +100,57 @@ export default function EmailTemplatesPage() {
     }
   }, [search]);
 
+  // Separate search function that never touches loading states
+  const searchTemplates = useCallback(async () => {
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '10',
+        search: search,
+        sort_by: 'createdAt',
+        sort_order: 'DESC'
+      });
+
+      const response = await fetch(`/api/admin/email-templates?${params.toString()}`, {
+        headers: {
+          'token': token,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setTemplates(data.data.templates);
+        setPagination(data.data.pagination);
+      } else {
+        console.error('Error searching email templates:', data.message);
+      }
+    } catch (error) {
+      console.error('Error searching email templates:', error);
+    }
+  }, [search]);
+
   useEffect(() => {
     fetchTemplates();
-  }, [fetchTemplates]);
+  }, []); // Only run once on mount
 
   // Debounced search effect
   useEffect(() => {
+    if (search) {
+      setIsSearching(true);
+    }
+    
     const timeoutId = setTimeout(() => {
-      fetchTemplates(1, false);
+      searchTemplates(); // Use dedicated search function that never touches loading states
+      setIsSearching(false);
     }, 300);
 
-    return () => clearTimeout(timeoutId);
-  }, [search, fetchTemplates]);
+    return () => {
+      clearTimeout(timeoutId);
+      setIsSearching(false);
+    };
+  }, [search, searchTemplates]); // Include searchTemplates in dependencies
 
   const handlePageChange = (page: number) => {
     fetchTemplates(page);
@@ -511,50 +550,61 @@ export default function EmailTemplatesPage() {
 
   return (
     <div className="space-y-6 overflow-x-hidden relative">
-      {loading && <Loader fullScreen text="Loading email templates..." />}
-      
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-lg font-bold text-themeTeal">Email Template Manager</h1>
-        <p className="text-sm text-themeTealLight">Manage email templates for different types of notifications.</p>
-      </div>
-
-      {/* Search Section */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex items-center space-x-4">
-          <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
-            <span className="text-sm font-medium text-themeTeal">
-              All templates <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{pagination.totalCount}</span>
-            </span>
-          </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <Loader size="md" text="Loading email templates..." />
         </div>
-        <div className="flex items-center space-x-3">
-          <div className="relative">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by type or subject"
-              className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
-            />
-            <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-lg font-bold text-themeTeal">Email Template Manager</h1>
+            <p className="text-sm text-themeTealLight">Manage email templates for different types of notifications.</p>
           </div>
-          <button
-            onClick={handleAddTemplate}
-            className="bg-themeTeal text-white px-4 py-2 text-sm rounded-lg hover:bg-themeTealLight transition-colors duration-200 flex items-center"
-          >
-            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
-            Add Template
-          </button>
-        </div>
-      </div>
 
-      {/* Templates Table */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          {/* Search Section */}
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
+                <span className="text-sm font-medium text-themeTeal">
+                  All templates <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{pagination.totalCount}</span>
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search by type or subject"
+                  className="w-64 pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                />
+                {isSearching ? (
+                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-themeTeal animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+              </div>
+              <button
+                onClick={handleAddTemplate}
+                className="bg-themeTeal text-white px-4 py-2 text-sm rounded-lg hover:bg-themeTealLight transition-colors duration-200 flex items-center"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Add Template
+              </button>
+            </div>
+          </div>
+
+          {/* Templates Table */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
             <thead className="bg-gray-50 border-b border-gray-200">
@@ -690,38 +740,65 @@ export default function EmailTemplatesPage() {
 
       {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-          <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
-            <div className="mt-3">
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                {editingTemplate ? 'Edit Email Template' : 'Add Email Template'}
-              </h3>
-              
-              <div className="space-y-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 flex-shrink-0 rounded-t-2xl">
+              <div className="flex items-center justify-between">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                  <input
-                    type="text"
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    placeholder="e.g., Buy_Order_Success, Sell_Order_Success, Contact_Us"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
-                  />
+                  <h3 className="text-base font-semibold text-white">
+                    {editingTemplate ? 'Edit Email Template' : 'Add Email Template'}
+                  </h3>
                 </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
-                  <input
-                    type="text"
-                    value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                    placeholder="Email subject line"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
-                  />
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-white/80 hover:text-white transition-colors duration-200"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto">
+              <form id="email-template-form" className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Type Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Type <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.type}
+                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="e.g., Buy_Order_Success, Sell_Order_Success, Contact_Us"
+                    />
+                  </div>
+
+                  {/* Subject Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Subject <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.subject}
+                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="Email subject line"
+                    />
+                  </div>
                 </div>
-                
+
+                {/* Body Field */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Body (HTML)</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">
+                    Body (HTML) <span className="text-red-500">*</span>
+                  </label>
                   
                   {/* Template Selector */}
                   <div className="mb-3">
@@ -761,9 +838,9 @@ export default function EmailTemplatesPage() {
                   <textarea
                     value={formData.body}
                     onChange={(e) => setFormData({ ...formData, body: e.target.value })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 font-mono text-sm"
                     placeholder="Email body content (HTML format). Use variables like {{otpCode}}, {{companyName}}, {{quantity}}, {{price}}, {{totalAmount}}, {{userName}}, {{userEmail}}"
-                    rows={15}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent font-mono text-sm"
+                    rows={12}
                   />
                   
                   {/* Variable Helper */}
@@ -781,25 +858,24 @@ export default function EmailTemplatesPage() {
                     </div>
                   </div>
                 </div>
-              </div>
-              
-              <div className="flex justify-end space-x-3 mt-6">
-                <button
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveTemplate}
-                  className="px-4 py-2 text-sm font-medium text-white bg-themeTeal hover:bg-themeTealLight rounded-md transition-colors"
-                >
-                  {editingTemplate ? 'Update' : 'Create'}
-                </button>
-              </div>
+              </form>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end flex-shrink-0 rounded-b-2xl">
+              <button
+                type="submit"
+                form="email-template-form"
+                onClick={handleSaveTemplate}
+                className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 font-medium"
+              >
+                {editingTemplate ? 'Update Template' : 'Create Template'}
+              </button>
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
 
       {/* Notifications */}

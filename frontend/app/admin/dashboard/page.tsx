@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import AdminStats from '../../../components/admin/AdminStats';
-import Loader from '../../../components/admin/Loader';
+import { AdminStats } from '@/components/admin/dashboard';
+import { Loader } from '@/components/admin/shared';
 
 interface DashboardStats {
   totalUsers: number;
