@@ -4,9 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "NODE_OPTIONS='--max-old-space-size=4096' next build",
-    "build:fast": "NODE_OPTIONS='--max-old-space-size=2048' next build --no-lint",
-    "build:production": "NODE_OPTIONS='--max-old-space-size=4096' next build && next export",
+    "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint"
   },
