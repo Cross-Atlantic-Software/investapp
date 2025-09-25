@@ -133,6 +133,7 @@ export default function EmailTemplatesPage() {
 
   useEffect(() => {
     fetchTemplates();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   // Debounced search effect

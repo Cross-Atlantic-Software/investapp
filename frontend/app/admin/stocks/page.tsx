@@ -125,6 +125,7 @@ export default function StocksPage() {
   useEffect(() => {
     fetchStocks();
     getCurrentUserRole();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
 
@@ -161,6 +162,7 @@ export default function StocksPage() {
     } else {
       fetchStocks('', false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sortBy, sortOrder, searchTerm, searchStocks]);
 
   const handleSort = (field: string) => {
@@ -195,7 +197,7 @@ export default function StocksPage() {
 
       // Append mapped stock data to formData
       Object.keys(stockData).forEach(key => {
-        const value = (stockData as any)[key];
+        const value = (stockData as Record<string, unknown>)[key];
         const backendField = fieldMapping[key] || key;
         
         if (key === 'icon' && value instanceof File) {

@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('token');
     if (!token) {
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/stocks/${params.id}`, {
+    const { id } = await params;
+    const response = await fetch(`${BACKEND_URL}/api/admin/stocks/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -25,16 +26,17 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('token');
     if (!token) {
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
+    const { id } = await params;
     const formData = await request.formData();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/stocks/${params.id}`, {
+    const response = await fetch(`${BACKEND_URL}/api/admin/stocks/${id}`, {
       method: 'PUT',
       headers: {
         'token': token,
@@ -50,14 +52,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('token');
     if (!token) {
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/stocks/${params.id}`, {
+    const { id } = await params;
+    const response = await fetch(`${BACKEND_URL}/api/admin/stocks/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

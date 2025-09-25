@@ -42,8 +42,8 @@ export default function SiteUsersPage() {
     hasNext: false,
     hasPrev: false
   });
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortBy] = useState('createdAt');
+  const [sortOrder] = useState<'asc' | 'desc'>('desc');
 
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
@@ -133,6 +133,7 @@ export default function SiteUsersPage() {
 
   useEffect(() => {
     fetchUsers();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
   // Debounced search effect

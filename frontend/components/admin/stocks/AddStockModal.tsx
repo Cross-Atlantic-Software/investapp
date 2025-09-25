@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 
 interface StockData {
   title: string;
@@ -137,7 +138,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
         target: {
           files: [file]
         }
-      } as React.ChangeEvent<HTMLInputElement>;
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
       
       handleFileChange(syntheticEvent);
     }
@@ -304,9 +305,11 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                   /* Image Preview */
                   <div className="space-y-3 text-center">
                     <div className="relative inline-block">
-                      <img
+                      <Image
                         src={imageUpload.preview}
                         alt="Preview"
+                        width={80}
+                        height={80}
                         className="h-20 w-20 object-cover rounded-lg border border-gray-200"
                       />
                       <button
@@ -323,7 +326,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                       <p className="font-medium text-green-600">✓ Image selected</p>
                       <p className="text-xs text-gray-500">{imageUpload.file?.name}</p>
                       <p className="text-xs text-gray-500">
-                        {(imageUpload.file?.size! / 1024 / 1024).toFixed(2)} MB
+                        {imageUpload.file?.size ? (imageUpload.file.size / 1024 / 1024).toFixed(2) : '0'} MB
                       </p>
                     </div>
                     <button

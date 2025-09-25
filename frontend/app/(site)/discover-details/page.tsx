@@ -2,7 +2,7 @@
 import { Section, SectionNav, ShareIntro, TradeTabsShell } from "@/components/shares";
 // Removed unused section imports since we only display stock details from our schema
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Image from 'next/image';
 const NAV = [
   { id: "stock-details", label: "Stock Details" },
@@ -20,7 +20,7 @@ interface StockData {
   updatedAt?: string;
 }
 
-export default function DiscoverDetails() {
+function DiscoverDetailsContent() {
   const searchParams = useSearchParams();
   const stockId = searchParams.get('stock');
   const [stockData, setStockData] = useState<StockData | null>(null);
@@ -203,5 +203,20 @@ export default function DiscoverDetails() {
       </div>
 
     </>
+  );
+}
+
+export default function DiscoverDetails() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto"></div>
+          <p className="mt-2 text-themeTealLighter">Loading stock details...</p>
+        </div>
+      </div>
+    }>
+      <DiscoverDetailsContent />
+    </Suspense>
   );
 }

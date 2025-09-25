@@ -183,7 +183,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         target: {
           files: [file]
         }
-      } as React.ChangeEvent<HTMLInputElement>;
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
       
       handleFileChange(syntheticEvent);
     }
@@ -600,9 +600,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         <div className="p-4">
                           <div className="space-y-3 text-center">
                             <div className="relative inline-block">
-                              <img
+                              <Image
                                 src={imageUpload.preview}
                                 alt="New preview"
+                                width={80}
+                                height={80}
                                 className="h-20 w-20 object-cover rounded-lg border border-gray-200 mx-auto"
                               />
                               <button
@@ -619,7 +621,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                               <p className="font-medium text-green-600">✓ New image selected</p>
                               <p className="text-xs text-gray-500">{imageUpload.file?.name}</p>
                               <p className="text-xs text-gray-500">
-                                {(imageUpload.file?.size! / 1024 / 1024).toFixed(2)} MB
+                                {imageUpload.file?.size ? (imageUpload.file.size / 1024 / 1024).toFixed(2) : '0'} MB
                               </p>
                             </div>
                             <button

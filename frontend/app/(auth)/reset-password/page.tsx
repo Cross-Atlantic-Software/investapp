@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Lock, MoveLeft, CheckCircle } from "lucide-react";
 import { Button, Heading } from "@/components/ui";
 
-export default function Page() {
+function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwVisible, setPwVisible] = useState(false);
@@ -267,5 +267,20 @@ export default function Page() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-[100svh] flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto"></div>
+          <p className="mt-2 text-themeTealLighter">Loading...</p>
+        </div>
+      </main>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

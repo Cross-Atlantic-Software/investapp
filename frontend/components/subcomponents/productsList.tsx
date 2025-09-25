@@ -213,12 +213,6 @@ function MobileStat({ label, value }: { label: string; value: React.ReactNode })
 }
 
 /* utils */
-function abbr(name: string) {
-  const p = name.split(/\s+/).filter(Boolean);
-  if (!p.length) return "?";
-  if (p.length === 1) return p[0].slice(0, 2).toUpperCase();
-  return (p[0][0] + p[1][0]).toUpperCase();
-}
 function formatINR(n: number) {
   return new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
 }
