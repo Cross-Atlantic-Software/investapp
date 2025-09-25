@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import RichTextEditor from './RichTextEditor';
+import RichTextEditor from '../RichTextEditor';
 import Image from 'next/image';
 import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X } from 'lucide-react';
 
@@ -701,10 +701,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     </label>
                     <RichTextEditor
                       value={editFormData.short_description || ''}
-                      onChange={(e) => setEditFormData({...editFormData, short_description: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                      onChange={(value) => setEditFormData({...editFormData, short_description: value})}
                       placeholder="Enter short description"
-                      rows={3}
+                      height="120px"
                     />
                   </div>
 
