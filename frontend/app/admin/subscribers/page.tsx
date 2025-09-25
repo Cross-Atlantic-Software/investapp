@@ -142,87 +142,85 @@ export default function SubscribersPage() {
   };
 
   return (
-    <div className="space-y-6 overflow-x-hidden relative min-h-[60vh]">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-lg font-bold text-themeTeal">Newsletter Subscribers</h1>
-        <p className="text-sm text-themeTealLight">Manage newsletter subscribers and view subscription statistics.</p>
-      </div>
-
+    <div className="space-y-6 relative overflow-hidden">
       {loading && isInitialLoad ? (
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <Loader text="Loading subscribers..." />
+        <div className="flex items-center justify-center py-20">
+          <Loader size="md" text="Loading subscribers..." />
         </div>
       ) : (
         <>
-          {/* Statistics Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-2xl font-bold text-gray-600">{stats.totalSubscribers}</div>
-                  <div className="text-sm text-gray-600">Total Subscribers</div>
-                </div>
-                <div className="p-3 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg">
-                  <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-lg font-bold text-themeTeal">Subscriber management</h1>
+            <p className="text-sm text-themeTealLight">Manage your newsletter subscribers here.</p>
+          </div>
+
+          {/* Search Section */}
+          <div className="flex justify-between flex-col md:flex-row gap-4 md:items-center mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
+                <span className="text-sm font-medium text-themeTeal">
+                  All subscribers <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{subscribers.length}</span>
+                </span>
               </div>
             </div>
           </div>
-
-          {/* Subscribers Table */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">All Subscribers</h2>
-              <p className="text-sm text-gray-600">Manage newsletter subscribers</p>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Subscribed Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {subscribers.length === 0 ? (
+          
+          <div className="w-100 md:w-full overflow-hidden">
+            <div className="bg-white rounded border border-themeTealLighter">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead className="bg-themeTeal border-b border-themeTealLighter">
                     <tr>
-                      <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
-                        No subscribers found
-                      </td>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                        Subscribed Date
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
+                        Actions
+                      </th>
                     </tr>
-                  ) : (
-                    subscribers.map((subscriber) => (
-                      <tr key={subscriber.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{subscriber.email}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-600">{formatDate(subscriber.createdAt)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <button
-                            onClick={() => handleDeleteSubscriber(subscriber.id)}
-                            className="text-red-600 hover:text-red-900 transition-colors duration-200"
-                          >
-                            Delete
-                          </button>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-themeTealLighter">
+                    {subscribers.length === 0 ? (
+                      <tr>
+                        <td colSpan={3} className="px-4 py-12 text-center text-themeTealLight">
+                          No subscribers found
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                    ) : (
+                      subscribers.map((subscriber, index) => (
+                        <tr 
+                          key={subscriber.id} 
+                          className={`hover:bg-themeTealWhite transition duration-300 ${
+                            index % 2 === 0 ? 'bg-white' : 'bg-themeTealWhite'
+                          }`}
+                        >
+                          <td className="px-4 py-3">
+                            <div className="text-xs font-medium text-themeTeal">{subscriber.email}</div>
+                          </td>
+                          <td className="px-4 py-3">
+                            <div className="text-xs text-themeTealLight">{formatDate(subscriber.createdAt)}</div>
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium">
+                            <button
+                              onClick={() => handleDeleteSubscriber(subscriber.id)}
+                              className="p-2 text-themeTealWhite bg-red-500 rounded transition duration-300 hover:bg-red-600 cursor-pointer"
+                              title="Delete Subscriber"
+                            >
+                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </>

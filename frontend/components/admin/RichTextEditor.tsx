@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import ReactQuill to avoid SSR issues
 const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
-import React, { useState, useRef, useEffect } from 'react';
 
 interface RichTextEditorProps {
   value: string;

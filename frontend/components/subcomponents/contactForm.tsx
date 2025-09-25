@@ -175,12 +175,12 @@ export default function ContactForm({
     >
       <h3 className="mb-1 text-lg font-semibold text-themeTeal">Send us a Message</h3>
       <p className="mb-5 text-sm text-themeTealLight">
-        Looking for quick answers? Visit our FAQ's before submitting a request.
+        Looking for quick answers? Visit our FAQs before submitting a request.
       </p>
 
       {submitStatus === 'success' && (
         <div className="mb-4 rounded bg-green-100 border border-green-400 text-green-700 px-4 py-3">
-          Thank you! Your message has been sent successfully. We'll get back to you soon.
+          Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
         </div>
       )}
 

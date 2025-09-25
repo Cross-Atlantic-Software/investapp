@@ -4,7 +4,7 @@ const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.headers.get('token');
@@ -16,7 +16,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     if (!id) {
       return NextResponse.json(
