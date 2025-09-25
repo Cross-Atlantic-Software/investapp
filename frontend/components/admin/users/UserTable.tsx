@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import ConfirmationModal from './ConfirmationModal';
+import { ConfirmationModal } from '@/components/admin/shared';
 
 interface User {
   id: number;
@@ -88,7 +88,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
     try {
       const token = sessionStorage.getItem('adminToken') || '';
 
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/${editingUser.id}`, {
+      const response = await fetch(`/api/admin/users/${editingUser.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
     setDeleteLoading(true);
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/admin/users/${deleteModal.user.id}`, {
+      const response = await fetch(`/api/admin/users/${deleteModal.user.id}`, {
         method: 'DELETE',
         headers: {
           'token': token,
@@ -328,10 +328,10 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
 
       {/* Edit User Modal */}
       {editingUser && (
-        <div className="fixed inset-0 bg-white/30 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4">
+            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-white">Edit User</h3>
                 <button
@@ -401,7 +401,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
             </div>
             
             {/* Modal Footer */}
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end">
+            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end flex-shrink-0 rounded-b-2xl">
               <button
                 onClick={handleUpdateUser}
                 disabled={editLoading}

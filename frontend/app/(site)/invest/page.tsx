@@ -1,23 +1,78 @@
 'use client';
 import { PageTitle } from '@/components/containers';
 import { FilterSidebar, ProductList } from '@/components/subcomponents';
+import { ProductItem } from '@/components/subcomponents/productsList';
 import { Heading } from '@/components/ui';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
-
-const PRODUCTS = [
-    { id: 'anth', name: 'Anthropic', symbol: 'ANTH', sector: 'Fintech', description: 'Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to established private giants.', priceINR: 350.92, changePct: 0.05, volumeThousands: 82752, graphImg: '/images/price-up-graph.svg', logoUrl: '/images/anthropic.png' },
-    { id: 'anth1', name: 'Anthropic', symbol: 'ANTH', sector: 'Fintech', description: 'Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to established private giants.', priceINR: 350.92, changePct: 0.05, volumeThousands: 82752, graphImg: '/images/price-up-graph.svg', logoUrl: '/images/anthropic.png' },
-    { id: 'anth2', name: 'Anthropic', symbol: 'ANTH', sector: 'Fintech', description: 'Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to established private giants.', priceINR: 350.92, changePct: 0.05, volumeThousands: 82752, graphImg: '/images/price-up-graph.svg', logoUrl: '/images/anthropic.png' },
-    { id: 'anth3', name: 'Anthropic', symbol: 'ANTH', sector: 'Fintech', description: 'Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to established private giants.', priceINR: 350.92, changePct: 0.05, volumeThousands: 82752, graphImg: '/images/price-up-graph.svg', logoUrl: '/images/anthropic.png' },
-    { id: 'anth4', name: 'Anthropic', symbol: 'ANTH', sector: 'Fintech', description: 'Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to established private giants.', priceINR: 350.92, changePct: 0.05, volumeThousands: 82752, graphImg: '/images/price-up-graph.svg', logoUrl: '/images/anthropic.png' },
-    { id: 'anth5', name: 'Anthropic', symbol: 'ANTH', sector: 'Fintech', description: 'Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to established private giants.', priceINR: 350.92, changePct: 0.05, volumeThousands: 82752, graphImg: '/images/price-up-graph.svg', logoUrl: '/images/anthropic.png' },
-    { id: 'anth6', name: 'Anthropic', symbol: 'ANTH', sector: 'Fintech', description: 'Explore a dynamic range of top-performing unlisted stocks—from high-growth startups to established private giants.', priceINR: 350.92, changePct: 0.05, volumeThousands: 82752, graphImg: '/images/price-up-graph.svg', logoUrl: '/images/anthropic.png' },
-];
+import { useEffect, useMemo, useState, useCallback } from 'react';
 
 export default function Invest() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
+  const [stocks, setStocks] = useState<ProductItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Function to map backend data to frontend format
+  const mapStockToProduct = useCallback((stock: {
+    id: number;
+    company_name: string;
+    logo: string;
+    price: number;
+    price_change: number;
+    teaser: string;
+    short_description: string;
+    analysis: string;
+    createdAt?: Date;
+    updatedAt?: Date;
+  }): ProductItem => {
+    return {
+      id: stock.id.toString(),
+      company_name: stock.company_name,
+      logo: stock.logo,
+      price: typeof stock.price === 'string' ? parseFloat(stock.price) : stock.price,
+      price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
+      teaser: stock.teaser,
+      short_description: stock.short_description,
+      analysis: stock.analysis,
+      createdAt: stock.createdAt?.toString(),
+      updatedAt: stock.updatedAt?.toString()
+    };
+  }, []);
+
+  // Fetch stocks from API
+  const fetchStocks = useCallback(async (searchQuery = '') => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const params = new URLSearchParams({
+        page: '1',
+        limit: '50', // Get more stocks for better user experience
+        sortBy: 'createdAt',
+        sortOrder: 'DESC'
+      });
+      
+      if (searchQuery) {
+        params.append('search', searchQuery);
+      }
+      
+      const response = await fetch(`/api/stocks?${params.toString()}`);
+      const data = await response.json();
+      
+      if (data.success && data.data?.stocks) {
+        const mappedStocks = data.data.stocks.map(mapStockToProduct);
+        setStocks(mappedStocks);
+      } else {
+        setError(data.message || 'Failed to fetch stocks');
+      }
+    } catch (err) {
+      console.error('Error fetching stocks:', err);
+      setError('Failed to fetch stocks. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  }, [mapStockToProduct]);
 
   useEffect(() => {
     if (!showFilters) return;
@@ -26,16 +81,30 @@ export default function Invest() {
     return () => window.removeEventListener('keydown', onKey);
   }, [showFilters]);
 
+  // Load stocks on component mount
+  useEffect(() => {
+    fetchStocks();
+  }, [fetchStocks]);
+
+  // Handle search with debouncing
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchStocks(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, fetchStocks]);
+
   const filtered = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return PRODUCTS;
-    return PRODUCTS.filter(
+    if (!q) return stocks;
+    return stocks.filter(
       x =>
-        x.name.toLowerCase().includes(q) ||
-        x.symbol.toLowerCase().includes(q) ||
-        x.sector.toLowerCase().includes(q)
+        x.company_name.toLowerCase().includes(q) ||
+        x.teaser.toLowerCase().includes(q) ||
+        x.short_description.toLowerCase().includes(q)
     );
-  }, [searchTerm]);
+  }, [stocks, searchTerm]);
 
   return (
     <>
@@ -104,7 +173,17 @@ export default function Invest() {
                 </div>
             </div>
 
-            <ProductList items={filtered} pageSize={5} />
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-themeTeal">Loading stocks...</div>
+              </div>
+            ) : error ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-red-600">{error}</div>
+              </div>
+            ) : (
+              <ProductList items={filtered} pageSize={5} />
+            )}
           </main>
         </div>
 

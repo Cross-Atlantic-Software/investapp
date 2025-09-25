@@ -3,6 +3,7 @@ import User, { initializeUserModel } from "../Models/User";
 import UserVerification, { initializeUserVerificationModel } from "../Models/UserVerification";
 import Product, { initializeProductModel } from "../Models/Product";
 import CmsUser, { initializeCmsUserModel } from "../Models/CmsUser";
+import EmailTemplate, { initializeEmailTemplateModel } from "../Models/EmailTemplate";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -14,7 +15,7 @@ function getDatabaseConfig() {
   const env = (process.env.NODE_ENV as "development" | "production" | "test") || "development";
   const envConfig = (config as any)[env] || {};
   
-  return {
+  const dbConfig = {
     host: process.env.DB_HOST || envConfig.host,
     port: Number(process.env.DB_PORT || envConfig.port),
     user: process.env.DB_USER || envConfig.user,
@@ -22,6 +23,21 @@ function getDatabaseConfig() {
     database: process.env.DB_NAME || envConfig.database,
     environment: env
   };
+  
+  console.log('🔍 Database Configuration Debug:');
+  console.log('Environment:', env);
+  console.log('DB_HOST from env:', process.env.DB_HOST);
+  console.log('DB_USER from env:', process.env.DB_USER);
+  console.log('DB_NAME from env:', process.env.DB_NAME);
+  console.log('Final config:', {
+    host: dbConfig.host,
+    port: dbConfig.port,
+    user: dbConfig.user,
+    database: dbConfig.database,
+    environment: dbConfig.environment
+  });
+  
+  return dbConfig;
 }
 
 // Initialize connection manager first
@@ -38,6 +54,7 @@ async function initializeSequelize() {
   initializeUserVerificationModel(sequelize);
   initializeProductModel(sequelize);
   initializeCmsUserModel(sequelize);
+  initializeEmailTemplateModel(sequelize);
   
   // No associations needed since only admins handle stocks
   
@@ -69,7 +86,8 @@ export const db = {
   User,
   UserVerification,
   Product,
-  CmsUser
+  CmsUser,
+  EmailTemplate
 };
 
 async function initialize() {

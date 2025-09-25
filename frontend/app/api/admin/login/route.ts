@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = await request.json();
 
     // Call your backend admin login API
-    const response = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8888'}/admin/login`, {
+    const response = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8888'}/api/admin/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -18,8 +18,10 @@ export async function POST(request: NextRequest) {
     if (data.success) {
       return NextResponse.json({
         success: true,
-        token: data.token,
-        user: data.user
+        data: {
+          token: data.data.token,
+          user: data.data.user
+        }
       });
     } else {
       return NextResponse.json({

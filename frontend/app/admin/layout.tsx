@@ -30,23 +30,24 @@ export default function AdminLayout({
   useEffect(() => {
     setMounted(true);
     
-    // Skip authentication for login page
-    if (isLoginPage) {
-      setIsAuthenticated(true);
-      return;
-    }
-
     // Check if user is authenticated (token exists in sessionStorage)
     const token = sessionStorage.getItem('adminToken');
     const storedUser = sessionStorage.getItem('adminUser');
     
     if (!token || !storedUser) {
-      // No session data, redirect to login
-      router.push('/admin/login');
-      return;
+      // No session data
+      if (isLoginPage) {
+        // Allow access to login page if not authenticated
+        setIsAuthenticated(true);
+        return;
+      } else {
+        // Redirect to login if trying to access protected pages
+        router.push('/admin/login');
+        return;
+      }
     }
 
-    // User is authenticated, set user info
+    // User has valid session data
     try {
       const user = JSON.parse(storedUser);
       setUserInfo({
@@ -57,11 +58,21 @@ export default function AdminLayout({
               user.role === 13 ? 'Site Manager' : 'User'
       });
       setIsAuthenticated(true);
+      
+      // If user is already authenticated and tries to access login page, redirect to dashboard
+      if (isLoginPage) {
+        router.push('/admin/dashboard');
+        return;
+      }
     } catch (e) {
       console.error('Error parsing stored user data:', e);
       sessionStorage.removeItem('adminToken');
       sessionStorage.removeItem('adminUser');
-      router.push('/admin/login');
+      if (isLoginPage) {
+        setIsAuthenticated(true);
+      } else {
+        router.push('/admin/login');
+      }
     }
   }, [isLoginPage, router]);
 
@@ -201,7 +212,45 @@ export default function AdminLayout({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
                     </div>
-                    Users
+                    Admin Users
+                  </a>
+                  <a
+                    href="/admin/site-users"
+                    className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                      pathname === '/admin/site-users'
+                        ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
+                        : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal hover:shadow-md'
+                    }`}
+                  >
+                    <div className={`mr-3 p-1.5 rounded-lg ${
+                      pathname === '/admin/site-users'
+                        ? 'bg-white/20'
+                        : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                    }`}>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    Site Users
+                  </a>
+                  <a
+                    href="/admin/email-templates"
+                    className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                      pathname === '/admin/email-templates'
+                        ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
+                        : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal hover:shadow-md'
+                    }`}
+                  >
+                    <div className={`mr-3 p-1.5 rounded-lg ${
+                      pathname === '/admin/email-templates'
+                        ? 'bg-white/20'
+                        : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                    }`}>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    Email Templates
                   </a>
                 </div>
               </div>

@@ -8,15 +8,10 @@ export type ShareIntroProps = {
   breadcrumbs: Crumb[];
   logoUrl: string;
   company: string;
-  highestBid: number;
-  lowestAsk: number;
-  lastMatched: number;
   investPrice: number;
   changeAbs: number;
   changePct: number;
   updatedAt: string;
-  stockDemand: string;
-  sectorSentiment: string;
   tags: string[];
   founded: string | number;
   sector: string;
@@ -24,16 +19,15 @@ export type ShareIntroProps = {
   hq: string;
   about: string;
   website: string;
+  valuation?: string;
 };
 
 export default function ShareIntro(props: ShareIntroProps) {
   const {
     breadcrumbs, logoUrl, company,
-    highestBid, lowestAsk, lastMatched,
     investPrice, changeAbs, changePct, updatedAt,
-    stockDemand, sectorSentiment, tags,
-    founded, sector, subsector, hq,
-    about, website,
+    tags, founded, sector, subsector, hq,
+    about, website, valuation,
   } = props;
 
   const pos = changeAbs >= 0;
@@ -55,11 +49,8 @@ export default function ShareIntro(props: ShareIntroProps) {
 
           {/* KPIs: responsive grid */}
           <div className="mt-4 flex flex-wrap items-start gap-x-8 gap-y-3">
-            <Kpi label="Highest bid" value={`₹ ${formatINR(highestBid)}`} />
-            <Kpi label="Lowest ask" value={`₹ ${formatINR(lowestAsk)}`} />
-            <Kpi label="Last matched price" value={`₹ ${formatINR(lastMatched)}`} />
             <Kpi
-              label="Invest App Price"
+              label="Current Price"
               value={
                 <div>
                   <div className="font-semibold text-themeTeal">
@@ -72,13 +63,19 @@ export default function ShareIntro(props: ShareIntroProps) {
                 </div>
               }
             />
+            {valuation && (
+              <Kpi
+                label="Valuation"
+                value={`₹${parseFloat(valuation).toLocaleString()}B`}
+              />
+            )}
             <Kpi
-              label="Stock Demand"
-              value={<span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-1 text-xs">↗ {stockDemand}</span>}
-            />
-            <Kpi
-              label="Sector Sentiment"
-              value={<span className="inline-flex items-center rounded-full bg-emerald-100 text-emerald-700 px-2 py-1 text-xs">↗ {sectorSentiment}</span>}
+              label="Price Change"
+              value={
+                <span className={pos ? "text-green-600" : "text-rose-600"}>
+                  {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))}
+                </span>
+              }
             />
           </div>
 

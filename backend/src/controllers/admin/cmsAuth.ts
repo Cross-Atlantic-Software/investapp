@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
-import { db } from "../../utils/database";
+import db, { sequelizePromise } from "../../utils/database";
 import { UserRole } from "../../utils/Roles";
 
 // User interface is defined in admin-middleware.ts
@@ -17,6 +17,9 @@ export const cmsLogin = async (req: Request, res: Response) => {
         message: "Email and password are required"
       });
     }
+
+    // Ensure database is ready
+    await sequelizePromise;
 
     // Find CMS user by email
     const user = await db.CmsUser.findOne({ where: { email } });
@@ -38,6 +41,7 @@ export const cmsLogin = async (req: Request, res: Response) => {
 
     // Verify password
     const isPasswordValid = await user.comparePassword(password);
+    
     if (!isPasswordValid) {
       return res.status(401).json({
         success: false,
@@ -46,6 +50,7 @@ export const cmsLogin = async (req: Request, res: Response) => {
     }
 
     // Generate JWT token
+    const tokenSecret = process.env.TOKEN_SECRET || "fnknwdfnnnfsdklnfslkfsdkfnslkfnksnfnsllsfkfsnfnklsnflnleoiw";
     const token = jwt.sign(
       {
         user_id: user.id.toString(),
@@ -54,7 +59,7 @@ export const cmsLogin = async (req: Request, res: Response) => {
         first_name: user.first_name,
         last_name: user.last_name
       },
-      process.env.TOKEN_SECRET as string,
+      tokenSecret,
       { expiresIn: "7d" }
     );
 

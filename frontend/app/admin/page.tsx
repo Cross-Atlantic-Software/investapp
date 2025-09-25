@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Loader from '../../components/admin/Loader';
+import { Loader } from '@/components/admin/shared';
 
 export default function AdminPage() {
   const router = useRouter();

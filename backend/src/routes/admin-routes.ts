@@ -1,7 +1,7 @@
 import express from "express";
-import adminMiddleware from "../utils/middleware/admin-middleware";
-import { uploadIcon } from "../utils/middleware/s3Upload";
-import updateLastActive from "../utils/middleware/updateLastActive";
+import adminMiddleware from "../utils/middlewares/admin-middleware";
+import { uploadIcon } from "../utils/middlewares/s3Upload";
+import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
 import {
@@ -28,7 +28,15 @@ import {
 // CMS Auth Controllers
 import { cmsLogin } from "../controllers/admin/cmsAuth";
 
+// Site User Management Controllers
+import { SiteUserManagementController } from "../controllers/admin/siteUserManagement";
+import { EmailTemplateManagementController } from "../controllers/admin/emailTemplateManagement";
+
 const router = express.Router();
+
+// Initialize Controllers
+const siteUserController = new SiteUserManagementController();
+const emailTemplateController = new EmailTemplateManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -56,5 +64,20 @@ router.post("/stocks", uploadIcon.any(), createStock);
 router.put("/stocks/:id", uploadIcon.any(), updateStock);
 router.delete("/stocks/:id", deleteStock);
 router.delete("/stocks/bulk", bulkDeleteStocks);
+
+// Site User Management Routes
+router.get("/site-users", siteUserController.getAllSiteUsers);
+router.get("/site-users/stats", siteUserController.getSiteUserStats);
+router.get("/site-users/:id", siteUserController.getSiteUserById);
+router.put("/site-users/:id", siteUserController.updateSiteUser);
+router.delete("/site-users/:id", siteUserController.deleteSiteUser);
+
+// Email Template Management Routes
+router.get("/email-templates", emailTemplateController.getAllEmailTemplates);
+router.get("/email-templates/stats", emailTemplateController.getEmailTemplateStats);
+router.get("/email-templates/:id", emailTemplateController.getEmailTemplateById);
+router.post("/email-templates", emailTemplateController.createEmailTemplate);
+router.put("/email-templates/:id", emailTemplateController.updateEmailTemplate);
+router.delete("/email-templates/:id", emailTemplateController.deleteEmailTemplate);
 
 export default router;

@@ -58,7 +58,7 @@ const Loader: React.FC<LoaderProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="absolute inset-0 bg-themeTealWhite bg-opacity-95 flex items-center justify-center z-10">
+      <div className="absolute inset-0 bg-white bg-opacity-95 flex items-center justify-center z-10">
         {spinner}
       </div>
     );

@@ -3,7 +3,8 @@ import jwt from "jsonwebtoken";
 import randomstring from "randomstring";
 import db, { sequelizePromise } from "../../utils/database";
 import { HttpStatusCode } from "../../utils/httpStatusCode";
-import sendMail, { createOTPEmailTemplate } from "../../utils";
+import sendMail from "../../utils";
+import { EmailTemplateService } from "../../utils/emailTemplateService";
 
 export class RegisterService {
   private model = db.User;
@@ -42,9 +43,16 @@ export class RegisterService {
         type: "email"
       });
       
-      let mailSubject = "Verification - Invest App";
-      let content = createOTPEmailTemplate(newUser.email, emailToken);
-      await sendMail(newUser.email, mailSubject, content);
+      const emailTemplate = await EmailTemplateService.getEmailVerificationEmail(newUser.email, emailToken);
+      if (emailTemplate) {
+        await sendMail(newUser.email, emailTemplate.subject, emailTemplate.body);
+        console.log(`✅ Email verification sent to ${newUser.email} using database template`);
+      } else {
+        // Fallback if template not found
+        let mailSubject = "Verification - Invest App";
+        await sendMail(newUser.email, mailSubject, `Your verification code is: ${emailToken}`);
+        console.log(`⚠️ Email verification sent to ${newUser.email} using fallback template`);
+      }
 
       // Generate JWT token
       const payload = { user_id: newUser.id, role: newUser.role };

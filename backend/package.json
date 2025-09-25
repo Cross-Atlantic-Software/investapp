@@ -5,7 +5,8 @@
   "main": "app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node-dev --pretty --respawn ./src/app.ts"
+    "dev": "ts-node-dev --pretty --respawn ./src/app.ts",
+    "seed": "ts-node ./src/scripts/seedStocks.ts"
   },
   "keywords": [],
   "author": "",

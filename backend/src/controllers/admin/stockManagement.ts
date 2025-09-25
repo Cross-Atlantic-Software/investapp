@@ -19,15 +19,15 @@ export const getAllStocks = async (req: Request, res: Response) => {
 
     let whereClause: any = {};
     
-    // Add search functionality - search only by stock name (title)
+    // Add search functionality - search only by company name
     if (search) {
       whereClause = {
-        title: { [Op.like]: `%${search}%` }
+        company_name: { [Op.like]: `%${search}%` }
       };
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'title', 'company_name', 'price_per_share', 'valuation', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price', 'price_change', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -104,19 +104,20 @@ export const createStock = async (req: MulterRequest, res: Response) => {
     });
     
     const {
-      title,
       company_name,
-      price_per_share,
-      valuation,
+      logo,
+      price,
       price_change,
-      percentage_change
+      teaser,
+      short_description,
+      analysis
     } = cleanedBody;
 
     // Validate required fields
-    if (!title) {
+    if (!company_name) {
       return res.status(400).json({
         success: false,
-        message: "Title is required",
+        message: "Company name is required",
         debug: {
           originalBody: req.body,
           cleanedBody: cleanedBody,
@@ -125,8 +126,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       });
     }
 
-    // Handle icon upload to S3
-    let iconUrl: string | undefined = undefined;
+    // Handle logo upload to S3
+    let logoUrl: string | undefined = undefined;
     if (req.files) {
       let file: Express.Multer.File | undefined;
       
@@ -141,19 +142,19 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       
       if (file) {
         const s3File = file as any;
-        iconUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
+        logoUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
       }
     }
 
     // Create new stock
     const newStock = await db.Product.create({
-      title,
-      icon: iconUrl,
       company_name,
-      price_per_share,
-      valuation,
+      logo: logoUrl || logo,
+      price,
       price_change,
-      percentage_change
+      teaser,
+      short_description,
+      analysis
     });
 
     return res.status(201).json({
@@ -163,10 +164,15 @@ export const createStock = async (req: MulterRequest, res: Response) => {
     });
   } catch (error) {
     console.error("Error creating stock:", error);
+    console.error("Error details:", {
+      message: (error as Error).message,
+      stack: (error as Error).stack,
+      name: (error as Error).name
+    });
     return res.status(500).json({
       success: false,
       message: "Internal server error",
-      error: process.env.NODE_ENV === 'development' ? error : undefined
+      error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
     });
   }
 };
@@ -176,12 +182,13 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
   try {
     const { id } = req.params;
     const {
-      title,
       company_name,
-      price_per_share,
-      valuation,
+      logo,
+      price,
       price_change,
-      percentage_change
+      teaser,
+      short_description,
+      analysis
     } = req.body;
 
     const stock = await db.Product.findByPk(id);
@@ -192,8 +199,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       });
     }
 
-    // Handle icon upload to S3
-    let iconUrl = stock.icon; // Keep existing icon by default
+    // Handle logo upload to S3
+    let logoUrl = stock.logo; // Keep existing logo by default
     if (req.files) {
       let file: Express.Multer.File | undefined;
       
@@ -208,19 +215,19 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       
       if (file) {
         const s3File = file as any;
-        iconUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
+        logoUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
       }
     }
 
     // Update stock
     await stock.update({
-      title: title !== undefined ? title : stock.title,
-      icon: iconUrl,
       company_name: company_name !== undefined ? company_name : stock.company_name,
-      price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,
-      valuation: valuation !== undefined ? valuation : stock.valuation,
+      logo: logoUrl,
+      price: price !== undefined ? price : stock.price,
       price_change: price_change !== undefined ? price_change : stock.price_change,
-      percentage_change: percentage_change !== undefined ? percentage_change : stock.percentage_change
+      teaser: teaser !== undefined ? teaser : stock.teaser,
+      short_description: short_description !== undefined ? short_description : stock.short_description,
+      analysis: analysis !== undefined ? analysis : stock.analysis
     });
 
     return res.status(200).json({
@@ -293,17 +300,16 @@ export const getStockStats = async (req: Request, res: Response) => {
       order: [['createdAt', 'DESC']]
     });
 
-    // Calculate average price per share (if numeric)
+    // Calculate average price (if numeric)
     const priceStats = await db.Product.findAll({
       attributes: [
-        [db.sequelize.fn('AVG', db.sequelize.cast(db.sequelize.col('price_per_share'), 'DECIMAL')), 'avgPrice'],
-        [db.sequelize.fn('MIN', db.sequelize.cast(db.sequelize.col('price_per_share'), 'DECIMAL')), 'minPrice'],
-        [db.sequelize.fn('MAX', db.sequelize.cast(db.sequelize.col('price_per_share'), 'DECIMAL')), 'maxPrice']
+        [db.sequelize.fn('AVG', db.sequelize.cast(db.sequelize.col('price'), 'DECIMAL')), 'avgPrice'],
+        [db.sequelize.fn('MIN', db.sequelize.cast(db.sequelize.col('price'), 'DECIMAL')), 'minPrice'],
+        [db.sequelize.fn('MAX', db.sequelize.cast(db.sequelize.col('price'), 'DECIMAL')), 'maxPrice']
       ],
       where: {
-        price_per_share: {
-          [Op.ne]: null as any,
-          [Op.regexp]: '^[0-9]+\.?[0-9]*$'
+        price: {
+          [Op.ne]: null as any
         }
       },
       raw: true

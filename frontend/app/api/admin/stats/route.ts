@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
+    const token = request.headers.get('token');
     
     if (!token) {
       return NextResponse.json({ success: false, message: 'No token provided' }, { status: 401 });

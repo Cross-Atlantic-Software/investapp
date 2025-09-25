@@ -7,6 +7,7 @@ export { default as PlatformFeatures } from "./platformFeatures";
 export { default as ScrollToTop } from "./scrollToTop";
 export { default as FilterSidebar } from "./filterssidebar";
 export { ProductList } from "./productsList";
+export type { ProductItem } from "./productsList";
 export { default as Breadcrumbs } from "./breadcrumbs";
 export { default as WhyBox } from "./whyBox";
 export { default as PricingWhy } from "./pricingPlans";

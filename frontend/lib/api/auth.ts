@@ -1,5 +1,5 @@
 // Get API base URL from environment variables
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '/api';
 
 export interface AuthResponse {
   status: boolean;
@@ -101,7 +101,7 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export const authApi = {
   async register(data: RegisterRequest): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ export const authApi = {
 
   async login(data: LoginRequest): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ export const authApi = {
         headers['Authorization'] = `Bearer ${data.token}`;
       }
       
-      const response = await fetch(`${API_BASE_URL}/auth/verify-email`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/verify-email`, {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -177,7 +177,7 @@ export const authApi = {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/complete-profile`, {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
@@ -186,7 +186,7 @@ export const authApi = {
       if (!response.ok) {
         // If 401, try without token (temporary workaround)
         if (response.status === 401) {
-          const responseWithoutAuth = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+          const responseWithoutAuth = await fetch(`${API_BASE_URL}/api/auth/complete-profile`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -209,7 +209,7 @@ export const authApi = {
 
   async googleAuth(): Promise<{ authUrl: string }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -227,7 +227,7 @@ export const authApi = {
 
   async googleTokenVerify(data: GoogleAuthRequest): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/google/verify`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/google/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
