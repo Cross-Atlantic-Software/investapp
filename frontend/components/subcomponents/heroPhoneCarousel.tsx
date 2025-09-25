@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, A11y } from "swiper/modules";
 // If CSS-in-component fails in your setup, move these two lines into globals.css instead.
@@ -24,6 +24,71 @@ export type Slide = {
   pps?: string; // Price Per Share
   valuation?: string; // Valuation
 };
+
+// API Response Types
+interface ApiStock {
+  id: number;
+  company_name: string;
+  logo: string;
+  price: string;
+  price_change: string;
+  teaser: string;
+  short_description: string;
+  analysis: string;
+  demand: string;
+  homeDisplay: string;
+  bannerDisplay: string;
+  valuation: string;
+  price_per_share: string;
+  percentage_change: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface ApiResponse {
+  success: boolean;
+  data: {
+    stocks: ApiStock[];
+    totalCount: number;
+  };
+}
+
+// API fetch function
+async function fetchBannerStocks(): Promise<Slide[]> {
+  try {
+    const response = await fetch('http://localhost:3000/api/stocks/banner-display');
+    if (!response.ok) {
+      throw new Error('Failed to fetch banner stocks');
+    }
+    
+    const apiData: ApiResponse = await response.json();
+    
+    if (!apiData.success || !apiData.data.stocks) {
+      throw new Error('Invalid API response');
+    }
+    
+    // Map API data to Slide format - only using fields that were already displayed in UI
+    return apiData.data.stocks.map((stock: ApiStock): Slide => {
+      const priceChange = parseFloat(stock.price_change);
+      const percentageChange = parseFloat(stock.percentage_change);
+      
+      return {
+        logo: stock.logo,
+        title: stock.company_name,
+        highlight: undefined, // Keep undefined since we're not using API demand field
+        description: stock.teaser,
+        price: `₹ ${stock.price} ${priceChange >= 0 ? '↑' : '↓'}`,
+        changePct: `${percentageChange >= 0 ? '+' : ''}${stock.percentage_change}% ${percentageChange >= 0 ? '↑' : '↓'}`,
+        pps: `₹ ${stock.price_per_share}`,
+        valuation: `₹ ${stock.valuation}B`,
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching banner stocks:', error);
+    // Return empty array if API fails
+    return [];
+  }
+}
 
 const demoSlides: Slide[] = [
   {
@@ -77,7 +142,27 @@ function Logo({ title, src }: { title: string; src?: string }) {
   );
 }
 
-export default function HeroPhoneCarousel({ slides = demoSlides }: { slides?: Slide[] }) {
+export default function HeroPhoneCarousel(){
+  const [apiSlides, setApiSlides] = useState<Slide[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadBannerStocks = async () => {
+      try {
+        setLoading(true);
+        const fetchedSlides = await fetchBannerStocks();
+        setApiSlides(fetchedSlides);
+      } catch (error) {
+        console.error('Failed to load banner stocks:', error);
+        setApiSlides([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBannerStocks();
+  }, []);
+
   return (
     <section className="w-full">
       <div className="px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-5 items-center">
@@ -93,7 +178,7 @@ export default function HeroPhoneCarousel({ slides = demoSlides }: { slides?: Sl
              [--swiper-pagination-bullet-inactive-color:#558191]
              [--swiper-pagination-bullet-inactive-opacity:1]
              [--swiper-pagination-bullet-size:8px]">
-              {slides.map((s, i) => (
+              {apiSlides.map((s, i) => (
                 <SwiperSlide key={i} className="h-full">
                   <Card slide={s} />
                 </SwiperSlide>
