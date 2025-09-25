@@ -1,5 +1,6 @@
 'use client';
 
+import { X } from 'lucide-react';
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 
 interface UserModalProps {
@@ -172,20 +173,18 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
+      <div className="bg-white rounded w-full max-w-lg mx-4 overflow-hidden">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
+        <div className="bg-themeTeal px-6 py-4 rounded-t">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-white">Create New User</h2>
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors duration-200"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              className="text-themeTealWhite transition duration-300 cursor-pointer"
+                >
+                <X/>
             </button>
           </div>
         </div>
@@ -197,7 +196,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
             {/* Name Fields */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label htmlFor="first_name" className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="first_name" className="block text-xs font-medium text-themeTeal mb-1">
                   First Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -207,12 +206,12 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
                   value={formData.first_name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal placeholder:text-themeTealLight"
                   placeholder="Enter first name"
                 />
               </div>
               <div>
-                <label htmlFor="last_name" className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="last_name" className="block text-xs font-medium text-themeTeal mb-1">
                   Last Name <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -222,7 +221,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
                   value={formData.last_name}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal placeholder:text-themeTealLight"
                   placeholder="Enter last name"
                 />
               </div>
@@ -230,7 +229,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
 
             {/* Email Field */}
             <div>
-              <label htmlFor="email" className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-xs font-medium text-themeTeal mb-1">
                 Email Address <span className="text-red-500">*</span>
               </label>
               <input
@@ -240,14 +239,14 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
                 value={formData.email}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal placeholder:text-themeTealLight"
                 placeholder="Enter email address"
               />
             </div>
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="password" className="block text-xs font-medium text-themeTeal mb-1">
                 Password <span className="text-red-500">*</span>
               </label>
               <input
@@ -258,7 +257,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
                 onChange={handleInputChange}
                 required
                 minLength={6}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal placeholder:text-themeTealLight"
                 placeholder="Enter password (min 6 characters)"
               />
             </div>
@@ -266,7 +265,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
             {/* Phone Fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label htmlFor="country_code" className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="country_code" className="block text-xs font-medium text-themeTeal mb-1">
                   Country Code
                 </label>
                 <select
@@ -274,7 +273,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
                   name="country_code"
                   value={formData.country_code}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition-all duration-200 text-themeTeal placeholder:text-themeTealLight"
                 >
                   <option value="+91">+91 (India)</option>
                   <option value="+1">+1 (US)</option>
@@ -284,7 +283,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label htmlFor="phone" className="block text-xs font-medium text-gray-700 mb-1">
+                <label htmlFor="phone" className="block text-xs font-medium text-themeTeal mb-1">
                   Phone Number <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -301,8 +300,8 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
                       setPhoneError('');
                     }
                   }}
-                  className={`w-full px-3 py-2 text-sm border rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 ${
-                    phoneError ? 'border-red-300 focus:ring-red-500' : 'border-gray-300'
+                  className={`w-full px-3 py-2 text-sm border rounded focus:outline-none focus:border-themeTeal transition duration-200 text-themeTeal placeholder:text-themeTealLight ${
+                    phoneError ? 'border-red-300 focus:ring-red-500' : 'border-themeTeal'
                   }`}
                   placeholder="Enter 10-digit phone number"
                   maxLength={10}
@@ -315,7 +314,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
 
             {/* Role Field */}
             <div>
-              <label htmlFor="role" className="block text-xs font-medium text-gray-700 mb-1">
+              <label htmlFor="role" className="block text-xs font-medium text-themeTeal mb-1">
                 User Role <span className="text-red-500">*</span>
               </label>
               <select
@@ -324,7 +323,7 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
                 value={formData.role}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-200 text-themeTeal placeholder:text-themeTealLight"
               >
                 {availableRoles.map((role) => (
                   <option key={role.value} value={role.value}>
@@ -344,12 +343,12 @@ const UserModal: React.FC<UserModalProps> = ({ isOpen, onClose, onSuccess }) => 
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end flex-shrink-0 rounded-b-2xl">
+        <div className="px-4 py-3 bg-themeTealWhite flex justify-end flex-shrink-0 rounded-b-2xl">
           <button
             type="submit"
             form="user-form"
             disabled={loading}
-            className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium flex items-center"
+            className="px-5 py-3 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium flex items-center cursor-pointer"
           >
             {loading ? (
               <>

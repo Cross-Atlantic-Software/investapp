@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import RichTextEditor from './RichTextEditor';
 import Image from 'next/image';
+import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X } from 'lucide-react';
 
 interface Stock {
   id: number;
@@ -287,64 +288,52 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   return (
     <div className="space-y-6">
       {/* Modern Table */}
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+      <div className="bg-white rounded border border-themeTealLighter">
         {/* Table Container */}
         <div className="overflow-x-auto">
           <table className="w-full min-w-[800px]">
-            <thead className="bg-white border-b border-gray-200">
+            <thead className="bg-themeTeal border-b border-themeTealLighter">
               <tr>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('company_name')}
                 >
                   <div className="flex items-center">
                     Company
                     {sortBy === 'company_name' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
                     ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
                     )}
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('price')}
                 >
                   <div className="flex items-center">
                     Price
                     {sortBy === 'price' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
                     ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
                     )}
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('price_change')}
                 >
                   <div className="flex items-center">
                     Price Change
                     {sortBy === 'price_change' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
                     ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
                     )}
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Teaser
                 </th>
                 <th 
@@ -449,39 +438,39 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     )}
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-themeTealLighter">
               {stocks.map((stock, index) => (
                 <tr 
                   key={stock.id}
-                  className={`hover:bg-gray-50 transition-colors duration-200 ${
-                    index % 2 === 0 ? 'bg-white' : 'bg-gray-25'
+                  className={`hover:bg-themeTealWhite transition duration-300 ${
+                    index % 2 === 0 ? 'bg-white' : 'bg-themeTealWhite'
                   }`}
                 >
                   {/* Company Column */}
                   <td className="px-4 py-3">
                     <div className="flex items-center space-x-3">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-br from-themeTeal to-themeTealLight flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden">
+                      <div className="h-8 flex items-center justify-center flex-shrink-0 overflow-hidden">
                         {stock.logo ? (
                           <Image
-                            className="h-8 w-8 rounded-full object-cover"
+                            className="h-8 rounded-full object-cover"
                             src={stock.logo}
                             alt={stock.company_name}
                             width={32}
                             height={32}
                           />
                         ) : (
-                          <span className="text-xs font-bold text-white">
+                          <span className="text-xs font-bold text-themeTealWhite bg-themeTeal p-2 rounded">
                             {stock.company_name.charAt(0).toUpperCase()}
                           </span>
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-themeTeal font-semibold">
                           {stock.company_name}
                         </div>
                       </div>
@@ -490,19 +479,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Price Column */}
                   <td className="px-4 py-3">
-                    <div className="text-xs font-medium text-gray-900">₹{stock.price}</div>
+                    <div className="text-xs font-medium text-themeTeal flex items-center"><IndianRupee width={12} height={12}/>{stock.price}</div>
                   </td>
 
                   {/* Price Change Column */}
                   <td className="px-4 py-3">
-                    <div className={`text-xs font-medium ${stock.price_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {stock.price_change >= 0 ? '+' : ''}₹{stock.price_change}
+                    <div className={`text-xs font-medium flex items-center ${stock.price_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {stock.price_change >= 0 ? '+' : '-'}<IndianRupee width={12} height={12}/>{stock.price_change}
                     </div>
                   </td>
 
                   {/* Teaser Column */}
                   <td className="px-4 py-3">
-                    <div className="text-xs text-gray-600 truncate max-w-xs">
+                    <div className="text-xs text-themeTealLight truncate max-w-xs">
                       {stock.teaser}
                     </div>
                   </td>
@@ -565,34 +554,27 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       {/* View Button - Available for all users */}
                       <button
                         onClick={() => handleViewStock(stock)}
-                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors duration-200"
+                        className="p-2 text-themeTealWhite bg-themeSkyBlue rounded transition duration-300 hover:bg-white hover:text-themeSkyBlue cursor-pointer"
                         title="View Stock Details"
                       >
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
+                        <Eye width={16} height={16}/>
                       </button>
                       
                       {canManageStocks && (
                         <>
                           <button
                             onClick={() => handleEditStock(stock)}
-                            className="p-2 text-themeTeal hover:text-themeTealLight hover:bg-teal-50 rounded-md transition-colors duration-200"
+                            className="p-2 bg-themeTeal text-themeTealWhite rounded transition duration-300 hover:bg-white hover:text-themeTeal cursor-pointer"
                             title="Edit Stock"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
+                            <SquarePen width={16} height={16}/>
                           </button>
                           <button
                             onClick={() => handleDelete(stock.id)}
-                            className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-md transition-colors duration-200"
+                            className="p-2 bg-red-700 text-themeTealWhite hover:text-red-700 hover:bg-white rounded transition duration-300 cursor-pointer"
                             title="Delete Stock"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
+                            <Trash2 width={16} height={16}/>
                           </button>
                         </>
                       )}
@@ -609,23 +591,23 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       {/* Empty State */}
       {stocks.length === 0 && (
         <div className="text-center py-16 min-h-[400px] flex flex-col items-center justify-center">
-          <svg className="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="mx-auto h-16 w-16 text-themeTealLighter mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
           </svg>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No stocks found</h3>
-          <p className="text-sm text-gray-500">Get started by adding a new stock.</p>
+          <h3 className="text-lg font-medium text-themeTeal mb-2">No stocks found</h3>
+          <p className="text-sm text-themeTealLighter">Get started by adding a new stock.</p>
         </div>
       )}
 
       {/* Edit Stock Modal */}
       {editingStock && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-white">Edit Stock</h3>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Edit Stock</h3>
                 </div>
                 <button
                   onClick={() => {
@@ -633,11 +615,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setEditFormData({});
                     setEditIconFile(null);
                   }}
-                  className="text-white/80 hover:text-white transition-colors duration-200"
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X/>
                 </button>
               </div>
             </div>
@@ -648,33 +628,33 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Company Name Field */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-themeTeal mb-1">
                       Company Name <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={editFormData.company_name || ''}
                       onChange={(e) => setEditFormData({...editFormData, company_name: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                       placeholder="Enter company name"
                     />
                   </div>
 
                   {/* Price Field */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-themeTeal mb-1">
                       Price <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 text-sm">₹</span>
+                        <span className="text-themeTealLighter"><IndianRupee width={16} height={16} /></span>
                       </div>
                       <input
                         type="number"
                         step="0.01"
                         value={editFormData.price || ''}
                         onChange={(e) => setEditFormData({...editFormData, price: parseFloat(e.target.value) || 0})}
-                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                         placeholder="0.00"
                       />
                     </div>
@@ -682,19 +662,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Price Change Field */}
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-themeTeal mb-1">
                       Price Change <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 text-sm">₹</span>
+                        <span className="text-themeTealLighter"><IndianRupee width={16} height={16} /></span>
                       </div>
                       <input
                         type="number"
                         step="0.01"
                         value={editFormData.price_change || ''}
                         onChange={(e) => setEditFormData({...editFormData, price_change: parseFloat(e.target.value) || 0})}
-                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                         placeholder="0.00"
                       />
                     </div>
@@ -702,13 +682,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Teaser Field */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-themeTeal mb-1">
                       Teaser <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={editFormData.teaser || ''}
                       onChange={(e) => setEditFormData({...editFormData, teaser: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                       placeholder="Enter teaser text"
                       rows={2}
                     />
@@ -716,20 +696,21 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Short Description Field */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-themeTeal mb-1">
                       Short Description <span className="text-red-500">*</span>
                     </label>
                     <RichTextEditor
                       value={editFormData.short_description || ''}
-                      onChange={(value) => setEditFormData({...editFormData, short_description: value})}
-                      placeholder="Enter short description with rich formatting..."
-                      height="120px"
+                      onChange={(e) => setEditFormData({...editFormData, short_description: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                      placeholder="Enter short description"
+                      rows={3}
                     />
                   </div>
 
                   {/* Analysis Field */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-themeTeal mb-1">
                       Analysis <span className="text-red-500">*</span>
                     </label>
                     <RichTextEditor
@@ -748,7 +729,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <select
                       value={editFormData.demand || ''}
                       onChange={(e) => setEditFormData({...editFormData, demand: e.target.value as 'High Demand' | 'Low Demand'})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                     >
                       <option value="">Select Demand</option>
                       <option value="High Demand">High Demand</option>
@@ -844,7 +825,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Company Logo */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-themeTeal mb-1">
                       Company Logo URL
                     </label>
                     {/* Error Message */}
@@ -856,12 +837,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     
                     <label 
                       htmlFor="edit-icon-upload"
-                      className={`mt-1 border-2 border-dashed rounded-lg transition-colors duration-200 cursor-pointer ${
+                      className={`mt-1 border-2 block border-dashed rounded transition duration-200 cursor-pointer ${
                         imageUpload.error 
                           ? 'border-red-300 bg-red-50' 
                           : imageUpload.preview 
                             ? 'border-green-300 bg-green-50' 
-                            : 'border-gray-300 hover:border-themeTeal hover:bg-themeTeal/5'
+                            : 'border-gray-300 hover:border-themeTealLighter hover:bg-themeTealWhite'
                       }`}
                       onDragOver={handleDragOver}
                       onDragEnter={handleDragEnter}
@@ -878,28 +859,26 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 alt="New preview"
                                 width={80}
                                 height={80}
-                                className="h-20 w-20 object-cover rounded-lg border border-gray-200 mx-auto"
+                                className="h-20 w-20 object-cover rounded border border-themeTealLighter mx-auto"
                               />
                               <button
                                 type="button"
                                 onClick={removeImage}
                                 className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors duration-200"
                               >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                </svg>
+                                <X/>
                               </button>
                             </div>
-                            <div className="text-sm text-gray-600">
+                            <div className="text-sm text-themeTealLighter">
                               <p className="font-medium text-green-600">✓ New image selected</p>
-                              <p className="text-xs text-gray-500">{imageUpload.file?.name}</p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-themeTealLighter">{imageUpload.file?.name}</p>
+                              <p className="text-xs text-themeTealLighter">
                                 {imageUpload.file?.size ? (imageUpload.file.size / 1024 / 1024).toFixed(2) : '0'} MB
                               </p>
                             </div>
                             <button
                               type="button"
-                              className="bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight transition-colors duration-200"
+                              className="bg-themeTeal text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-themeTealLight transition duration-200 cursor-pointer"
                             >
                               Change Image
                             </button>
@@ -915,11 +894,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 alt="Current icon"
                                 width={60}
                                 height={60}
-                                className="h-15 w-15 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+                                className="h-15 w-15 rounded object-cover border-2 border-themeTealLighter/30"
                               />
                             </div>
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-700 mb-2">Current Icon</p>
+                              <p className="text-sm font-medium text-themeTeal mb-2">Current Icon</p>
                               <div className="flex items-center space-x-3">
                                 <button
                                   type="button"
@@ -927,7 +906,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 >
                                   Change Icon
                                 </button>
-                                <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                <p className="text-xs text-themeTealLighter">PNG, JPG, GIF up to 10MB</p>
                               </div>
                             </div>
                           </div>
@@ -980,13 +959,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             </div>
 
             {/* Modal Footer */}
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end flex-shrink-0 rounded-b-2xl">
+            <div className="px-4 py-3 bg-themeTealWhite flex justify-end flex-shrink-0 rounded-b-2xl">
               <button
                 type="submit"
                 form="edit-stock-form"
                 onClick={handleUpdateStock}
                 disabled={editLoading}
-                className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium"
+                className="px-4 py-3 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50 font-medium cursor-pointer flex gap-1"
               >
                 {editLoading ? (
                   <>
@@ -998,9 +977,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </>
                 ) : (
                   <>
-                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
+                    <Check width={20} height={20}/>
                     <span>Update Stock</span>
                   </>
                 )}
@@ -1013,12 +990,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       {/* View Stock Modal */}
       {viewingStock && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
-            <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
-                  <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center overflow-hidden">
+                  <div className="h-12 w-12 rounded-full bg-themeTealWhite flex items-center justify-center overflow-hidden">
                     {viewingStock.logo ? (
                       <Image
                         src={viewingStock.logo}
@@ -1028,23 +1005,21 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         className="h-12 w-12 rounded-full object-cover"
                       />
                     ) : (
-                      <span className="text-lg font-bold text-white">
+                      <span className="text-lg font-bold text-themeTealWhite">
                         {viewingStock.company_name.charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-white">Stock Details</h3>
-                    <p className="text-white/80 text-sm">{viewingStock.company_name}</p>
+                    <h3 className="text-base font-semibold text-themeTealWhite">Stock Details</h3>
+                    <p className="text-themeTealWhite/80 text-sm">{viewingStock.company_name}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setViewingStock(null)}
-                  className="text-white/80 hover:text-white transition-colors duration-200"
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
+                  <X/>
                 </button>
               </div>
             </div>
@@ -1055,48 +1030,48 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Company Name</label>
+                    <label className="block text-xs font-medium text-themeTeal mb-1">Company Name</label>
                     <input
                       type="text"
                       value={viewingStock.company_name}
                       readOnly
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Stock ID</label>
+                    <label className="block text-xs font-medium text-themeTeal mb-1">Stock ID</label>
                     <input
                       type="text"
                       value={viewingStock.id}
                       readOnly
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Current Price</label>
+                    <label className="block text-xs font-medium text-themeTeal mb-1">Current Price</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 text-sm">₹</span>
+                        <span className="text-themeTealLighter"><IndianRupee width={16} height={16} /></span>
                       </div>
                       <input
                         type="text"
                         value={viewingStock.price}
                         readOnly
-                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Price Change</label>
+                    <label className="block text-xs font-medium text-themeTeal mb-1">Price Change</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 text-sm">₹</span>
+                        <span className="text-themeTealLighter"><IndianRupee width={16} height={16} /></span>
                       </div>
                       <input
                         type="text"
                         value={`${viewingStock.price_change >= 0 ? '+' : ''}${viewingStock.price_change}`}
                         readOnly
-                        className={`w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 ${
+                        className={`w-full pl-8 pr-4 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite focus:outline-none ${
                           viewingStock.price_change >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       />
@@ -1172,33 +1147,33 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                 {/* Teaser */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Teaser</label>
+                  <label className="block text-xs font-medium text-themeTeal mb-1">Teaser</label>
                   <textarea
                     value={viewingStock.teaser}
                     readOnly
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
                     rows={2}
                   />
                 </div>
 
                 {/* Short Description */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Short Description</label>
+                  <label className="block text-xs font-medium text-themeTeal mb-1">Short Description</label>
                   <textarea
                     value={viewingStock.short_description}
                     readOnly
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
                     rows={3}
                   />
                 </div>
 
                 {/* Analysis */}
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Analysis</label>
+                  <label className="block text-xs font-medium text-themeTeal mb-1">Analysis</label>
                   <textarea
                     value={viewingStock.analysis}
                     readOnly
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
                     rows={4}
                   />
                 </div>
@@ -1206,8 +1181,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 {/* Company Logo */}
                 {viewingStock.logo && (
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Company Logo</label>
-                    <div className="mt-1 border-2 border-gray-300 border-dashed rounded-lg p-4">
+                    <label className="block text-xs font-medium text-themeTeal mb-1">Company Logo</label>
+                    <div className="mt-1 border-2 border-themeTealLighter border-dashed rounded p-4">
                       <div className="flex justify-center">
                         <div className="relative">
                           <Image
@@ -1215,7 +1190,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             alt={`${viewingStock.company_name} logo`}
                             width={120}
                             height={120}
-                            className="h-30 w-30 rounded-lg object-cover border-2 border-gray-200 shadow-sm"
+                            className="h-30 w-30 rounded-lg object-cover shadow-sm shadow-themeTeal/20"
                           />
                         </div>
                       </div>
