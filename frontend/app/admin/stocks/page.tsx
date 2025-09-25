@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-import StockTable from '@/components/admin/StockTable';
-import AddStockModal from '@/components/admin/AddStockModal';
-import Loader from '@/components/admin/Loader';
-import { NotificationContainer, NotificationData } from '@/components/admin/Notification';
+import StockTable from '@/components/admin/stocks/StockTable';
+import AddStockModal from '@/components/admin/stocks/AddStockModal';
+import Loader from '@/components/admin/shared/Loader';
+import { NotificationContainer, NotificationData } from '@/components/admin/shared/Notification';
 import { Plus, Search } from 'lucide-react';
 
 export default function StocksPage() {
@@ -130,7 +130,6 @@ export default function StocksPage() {
     getCurrentUserRole();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
-  }, [fetchStocks]); // Include fetchStocks in dependencies
 
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -180,6 +179,7 @@ export default function StocksPage() {
   };
 
   const handleAddStock = async (stockData: {
+    title: string;
     company_name: string;
     logo: string;
     price: number;
@@ -200,6 +200,7 @@ export default function StocksPage() {
       const formData = new FormData();
       
       // Append all stock data to formData
+      formData.append('title', stockData.title);
       formData.append('company_name', stockData.company_name);
       formData.append('logo', stockData.logo);
       formData.append('price', stockData.price.toString());
@@ -324,7 +325,24 @@ export default function StocksPage() {
         <AddStockModal
           onClose={() => setShowAddModal(false)}
           onSubmit={(stockData) => {
-            handleAddStock(stockData);
+            const adaptedData = {
+              title: stockData.title,
+              company_name: stockData.company_name,
+              logo: '',
+              price: 0,
+              price_change: parseFloat(stockData.price_change) || 0,
+              teaser: '',
+              short_description: '',
+              analysis: '',
+              demand: 'High Demand' as const,
+              homeDisplay: 'no' as const,
+              bannerDisplay: 'no' as const,
+              valuation: stockData.valuation,
+              price_per_share: parseFloat(stockData.price_per_share) || 0,
+              percentage_change: 0,
+              icon: stockData.icon
+            };
+            handleAddStock(adaptedData);
             addNotification({
               type: 'success',
               title: 'Stock Added',
