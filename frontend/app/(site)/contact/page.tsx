@@ -19,12 +19,7 @@ export default function Contact() {
         <section className="appContainer py-10 md:py-16">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,420px)_1fr]">
             <ContactInfo className="md:pr-4" />
-            <ContactForm
-              onSubmit={(data) => {
-                // TODO: send to API / integrations
-                console.log("contact form submit", data);
-              }}
-            />
+            <ContactForm />
           </div>
         </section>
         

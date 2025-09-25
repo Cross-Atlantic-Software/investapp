@@ -19,6 +19,7 @@ export default function AdminLayout({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userInfo, setUserInfo] = useState<{name: string, role: string} | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [isUsersMenuOpen, setIsUsersMenuOpen] = useState(false);
 
   const handleLogout = useCallback(() => {
     sessionStorage.removeItem('adminToken');
@@ -26,6 +27,11 @@ export default function AdminLayout({
     router.push('/admin/login');
   }, [router]);
 
+  // Auto-open users menu when navigating to user-related pages
+  useEffect(() => {
+    const userRelatedPages = ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'];
+    setIsUsersMenuOpen(userRelatedPages.includes(pathname));
+  }, [pathname]);
 
   useEffect(() => {
     setMounted(true);
@@ -195,44 +201,124 @@ export default function AdminLayout({
                     </div>
                     Stocks
                   </a>
-                  <a
-                    href="/admin/users"
-                    className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
-                      pathname === '/admin/users'
-                        ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
-                        : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal hover:shadow-md'
-                    }`}
-                  >
-                    <div className={`mr-3 p-1.5 rounded-lg ${
-                      pathname === '/admin/users'
-                        ? 'bg-white/20'
-                        : 'bg-gray-100 group-hover:bg-themeTeal/10'
-                    }`}>
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  {/* Users Menu - Collapsible */}
+                  <div>
+                    <button
+                      onClick={() => setIsUsersMenuOpen(!isUsersMenuOpen)}
+                      className={`group flex items-center justify-between w-full px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                        ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'].includes(pathname)
+                          ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
+                          : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal hover:shadow-md'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className={`mr-3 p-1.5 rounded-lg ${
+                          ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'].includes(pathname)
+                            ? 'bg-white/20'
+                            : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                        }`}>
+                          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                          </svg>
+                        </div>
+                        Users
+                      </div>
+                      <svg 
+                        className={`h-4 w-4 transition-transform duration-200 ${
+                          isUsersMenuOpen ? 'rotate-180' : ''
+                        }`} 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                       </svg>
-                    </div>
-                    Admin Users
-                  </a>
-                  <a
-                    href="/admin/site-users"
-                    className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
-                      pathname === '/admin/site-users'
-                        ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
-                        : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal hover:shadow-md'
-                    }`}
-                  >
-                    <div className={`mr-3 p-1.5 rounded-lg ${
-                      pathname === '/admin/site-users'
-                        ? 'bg-white/20'
-                        : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                    </button>
+                    
+                    {/* Submenu */}
+                    <div className={`overflow-hidden transition-all duration-200 ${
+                      isUsersMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}>
-                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
+                      <div className="ml-4 mt-2 space-y-1">
+                        <a
+                          href="/admin/users"
+                          className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            pathname === '/admin/users'
+                              ? 'bg-themeTeal text-white shadow-md'
+                              : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal'
+                          }`}
+                        >
+                          <div className={`mr-3 p-1 rounded-lg ${
+                            pathname === '/admin/users'
+                              ? 'bg-white/20'
+                              : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                          }`}>
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                          </div>
+                          Admin Users
+                        </a>
+                        <a
+                          href="/admin/site-users"
+                          className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            pathname === '/admin/site-users'
+                              ? 'bg-themeTeal text-white shadow-md'
+                              : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal'
+                          }`}
+                        >
+                          <div className={`mr-3 p-1 rounded-lg ${
+                            pathname === '/admin/site-users'
+                              ? 'bg-white/20'
+                              : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                          }`}>
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                            </svg>
+                          </div>
+                          Site Users
+                        </a>
+                        <a
+                          href="/admin/enquiries"
+                          className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            pathname === '/admin/enquiries'
+                              ? 'bg-themeTeal text-white shadow-md'
+                              : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal'
+                          }`}
+                        >
+                          <div className={`mr-3 p-1 rounded-lg ${
+                            pathname === '/admin/enquiries'
+                              ? 'bg-white/20'
+                              : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                          }`}>
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                            </svg>
+                          </div>
+                          Enquiries
+                        </a>
+                        <a
+                          href="/admin/subscribers"
+                          className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
+                            pathname === '/admin/subscribers'
+                              ? 'bg-themeTeal text-white shadow-md'
+                              : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal'
+                          }`}
+                        >
+                          <div className={`mr-3 p-1 rounded-lg ${
+                            pathname === '/admin/subscribers'
+                              ? 'bg-white/20'
+                              : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                          }`}>
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                          </div>
+                          Subscribers
+                        </a>
+                      </div>
                     </div>
-                    Site Users
-                  </a>
+                  </div>
                   <a
                     href="/admin/email-templates"
                     className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${

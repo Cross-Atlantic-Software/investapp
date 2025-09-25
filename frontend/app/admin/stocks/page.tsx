@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-import StockTable from '@/components/admin/StockTable';
+import StockTable from '@/components/admin/stocks/StockTable';
 import AddStockModal from '@/components/admin/AddStockModal';
-import Loader from '@/components/admin/Loader';
-import { NotificationContainer, NotificationData } from '@/components/admin/Notification';
+import Loader from '@/components/admin/shared/Loader';
+import { NotificationContainer, NotificationData } from '@/components/admin/shared/Notification';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
@@ -127,8 +127,6 @@ export default function StocksPage() {
   useEffect(() => {
     fetchStocks();
     getCurrentUserRole();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount
   }, [fetchStocks]); // Include fetchStocks in dependencies
 
 

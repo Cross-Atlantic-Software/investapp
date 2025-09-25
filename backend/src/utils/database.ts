@@ -4,6 +4,8 @@ import UserVerification, { initializeUserVerificationModel } from "../Models/Use
 import Product, { initializeProductModel } from "../Models/Product";
 import CmsUser, { initializeCmsUserModel } from "../Models/CmsUser";
 import EmailTemplate, { initializeEmailTemplateModel } from "../Models/EmailTemplate";
+import Enquiry, { initializeEnquiryModel } from "../Models/Enquiry";
+import Subscriber, { initializeSubscriberModel } from "../Models/Subscriber";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -56,6 +58,12 @@ async function initializeSequelize() {
   initializeCmsUserModel(sequelize);
   initializeEmailTemplateModel(sequelize);
   
+  // Initialize Enquiry model
+  initializeEnquiryModel(sequelize);
+  
+  // Initialize Subscriber model
+  initializeSubscriberModel(sequelize);
+  
   // No associations needed since only admins handle stocks
   
   return sequelize;
@@ -87,7 +95,9 @@ export const db = {
   UserVerification,
   Product,
   CmsUser,
-  EmailTemplate
+  EmailTemplate,
+  Enquiry,
+  Subscriber
 };
 
 async function initialize() {

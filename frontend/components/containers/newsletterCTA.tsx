@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { Mail } from "lucide-react";
 import { Button, Heading } from "@/components/ui";
 
@@ -13,18 +14,65 @@ type Props = {
 };
 
 export default function NewsletterCTA({
-  title = "Be First to Spot What’s Next",
+  title = "Be First to Spot What's Next",
   description = "Sign up for exclusive updates and private market intelligence, delivered directly to your inbox.",
   placeholder = "Your Email Address",
   buttonLabel = "Subscribe",
   onSubmit,
 }: Props) {
   const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState("");
+  const router = useRouter();
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    onSubmit?.(email);
-    setEmail("");
+    
+    if (!email) {
+      setMessage("Please enter your email address");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setMessage("");
+
+    try {
+      // Call the custom onSubmit if provided, otherwise use default behavior
+      if (onSubmit) {
+        onSubmit(email);
+        setEmail("");
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Default behavior: save to database and redirect to register
+      const response = await fetch('/api/subscribers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setMessage("Successfully subscribed! Redirecting to registration...");
+        setEmail("");
+        
+        // Redirect to register page after a short delay
+        setTimeout(() => {
+          router.push('/register/step-1');
+        }, 1500);
+      } else {
+        setMessage(data.message || "Failed to subscribe. Please try again.");
+      }
+    } catch (error) {
+      console.error('Error subscribing:', error);
+      setMessage("Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -53,7 +101,8 @@ export default function NewsletterCTA({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={placeholder}
-                  className="w-full bg-transparent text-themeTeal placeholder-themeTealLighter focus:outline-none"
+                  disabled={isSubmitting}
+                  className="w-full bg-transparent text-themeTeal placeholder-themeTealLighter focus:outline-none disabled:opacity-50"
                 />
               </div>
 
@@ -63,9 +112,18 @@ export default function NewsletterCTA({
                 color="skyblue"
                 size="md"
                 className="w-44"
-                text={buttonLabel}
-                href="/"
+                text={isSubmitting ? "Subscribing..." : buttonLabel}
+                disabled={isSubmitting}
               />
+
+              {/* Message display */}
+              {message && (
+                <div className={`text-sm text-center max-w-lg ${
+                  message.includes("Successfully") ? "text-green-600" : "text-red-600"
+                }`}>
+                  {message}
+                </div>
+              )}
             </form>
           </div>
         </div>

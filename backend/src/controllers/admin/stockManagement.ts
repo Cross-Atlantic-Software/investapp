@@ -332,6 +332,23 @@ export const getStockStats = async (req: Request, res: Response) => {
   try {
     const totalStocks = await db.Product.count();
     
+    // Calculate 30-day percentage changes
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const totalStocks30DaysAgo = await db.Product.count({
+      where: {
+        createdAt: {
+          [Op.lte]: thirtyDaysAgo
+        }
+      }
+    });
+
+    // Calculate percentage change (growth in last 30 days)
+    const totalStocksChange = totalStocks30DaysAgo > 0 ? 
+      ((totalStocks - totalStocks30DaysAgo) / totalStocks30DaysAgo * 100) : 
+      (totalStocks > 0 ? 100 : 0);
+    
     // Count stocks by company
     const stocksByCompany = await db.Product.findAll({
       attributes: [
@@ -376,7 +393,8 @@ export const getStockStats = async (req: Request, res: Response) => {
         totalStocks,
         stocksByCompany,
         recentStocks,
-        priceStats: priceStats[0] || { avgPrice: 0, minPrice: 0, maxPrice: 0 }
+        priceStats: priceStats[0] || { avgPrice: 0, minPrice: 0, maxPrice: 0 },
+        totalStocksChange: Math.round(totalStocksChange * 100) / 100
       }
     });
   } catch (error) {

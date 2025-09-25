@@ -1,0 +1,345 @@
+[1mdiff --git a/backend/src/Models/Product.ts b/backend/src/Models/Product.ts[m
+[1mindex 445d110..b68f43f 100644[m
+[1m--- a/backend/src/Models/Product.ts[m
+[1m+++ b/backend/src/Models/Product.ts[m
+[36m@@ -9,6 +9,12 @@[m [minterface ProductAttributes {[m
+   teaser: string;[m
+   short_description: string;[m
+   analysis: string;[m
+[32m+[m[32m  demand: 'High Demand' | 'Low Demand';[m
+[32m+[m[32m  homeDisplay: 'yes' | 'no';[m
+[32m+[m[32m  bannerDisplay: 'yes' | 'no';[m
+[32m+[m[32m  valuation: string;[m
+[32m+[m[32m  price_per_share: number;[m
+[32m+[m[32m  percentage_change: number;[m
+   createdAt?: Date;[m
+   updatedAt?: Date;[m
+ }[m
+[36m@@ -30,6 +36,12 @@[m [mclass Product[m
+   public teaser!: string;[m
+   public short_description!: string;[m
+   public analysis!: string;[m
+[32m+[m[32m  public demand!: 'High Demand' | 'Low Demand';[m
+[32m+[m[32m  public homeDisplay!: 'yes' | 'no';[m
+[32m+[m[32m  public bannerDisplay!: 'yes' | 'no';[m
+[32m+[m[32m  public valuation!: string;[m
+[32m+[m[32m  public price_per_share!: number;[m
+[32m+[m[32m  public percentage_change!: number;[m
+   public readonly createdAt!: Date;[m
+   public readonly updatedAt!: Date;[m
+ }[m
+[36m@@ -70,6 +82,32 @@[m [mexport function initializeProductModel(sequelize: Sequelize) {[m
+       analysis: {[m
+         type: DataTypes.TEXT,[m
+         allowNull: false[m
+[32m+[m[32m      },[m
+[32m+[m[32m      demand: {[m
+[32m+[m[32m        type: DataTypes.ENUM('High Demand', 'Low Demand'),[m
+[32m+[m[32m        allowNull: false[m
+[32m+[m[32m      },[m
+[32m+[m[32m      homeDisplay: {[m
+[32m+[m[32m        type: DataTypes.ENUM('yes', 'no'),[m
+[32m+[m[32m        allowNull: false,[m
+[32m+[m[32m        defaultValue: 'no'[m
+[32m+[m[32m      },[m
+[32m+[m[32m      bannerDisplay: {[m
+[32m+[m[32m        type: DataTypes.ENUM('yes', 'no'),[m
+[32m+[m[32m        allowNull: false,[m
+[32m+[m[32m        defaultValue: 'no'[m
+[32m+[m[32m      },[m
+[32m+[m[32m      valuation: {[m
+[32m+[m[32m        type: DataTypes.STRING(100),[m
+[32m+[m[32m        allowNull: false[m
+[32m+[m[32m      },[m
+[32m+[m[32m      price_per_share: {[m
+[32m+[m[32m        type: DataTypes.DECIMAL(10, 2),[m
+[32m+[m[32m        allowNull: false[m
+[32m+[m[32m      },[m
+[32m+[m[32m      percentage_change: {[m
+[32m+[m[32m        type: DataTypes.DECIMAL(5, 2),[m
+[32m+[m[32m        allowNull: false[m
+       }[m
+     }, {[m
+       sequelize,[m
+[1mdiff --git a/backend/src/controllers/admin/stockManagement.ts b/backend/src/controllers/admin/stockManagement.ts[m
+[1mindex 12a9b52..5d043dd 100644[m
+[1m--- a/backend/src/controllers/admin/stockManagement.ts[m
+[1m+++ b/backend/src/controllers/admin/stockManagement.ts[m
+[36m@@ -27,7 +27,7 @@[m [mexport const getAllStocks = async (req: Request, res: Response) => {[m
+     }[m
+ [m
+     // Validate sort fields to prevent SQL injection[m
+[31m-    const allowedSortFields = ['id', 'company_name', 'price', 'price_change', 'createdAt', 'updatedAt'];[m
+[32m+[m[32m    const allowedSortFields = ['id', 'company_name', 'price', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'createdAt', 'updatedAt'];[m
+     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';[m
+     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';[m
+ [m
+[36m@@ -89,6 +89,37 @@[m [mexport const getStockById = async (req: Request, res: Response) => {[m
+   }[m
+ };[m
+ [m
+[32m+[m[32m// Get stock by company name[m
+[32m+[m[32mexport const getStockByName = async (req: Request, res: Response) => {[m
+[32m+[m[32m  try {[m
+[32m+[m[32m    const { name } = req.params;[m
+[32m+[m
+[32m+[m[32m    const stock = await db.Product.findOne({[m
+[32m+[m[32m      where: {[m
+[32m+[m[32m        company_name: name[m
+[32m+[m[32m      }[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    if (!stock) {[m
+[32m+[m[32m      return res.status(404).json({[m
+[32m+[m[32m        success: false,[m
+[32m+[m[32m        message: "Stock not found"[m
+[32m+[m[32m      });[m
+[32m+[m[32m    }[m
+[32m+[m
+[32m+[m[32m    return res.status(200).json({[m
+[32m+[m[32m      success: true,[m
+[32m+[m[32m      data: stock[m
+[32m+[m[32m    });[m
+[32m+[m[32m  } catch (error) {[m
+[32m+[m[32m    console.error("Error fetching stock by name:", error);[m
+[32m+[m[32m    return res.status(500).json({[m
+[32m+[m[32m      success: false,[m
+[32m+[m[32m      message: "Internal server error"[m
+[32m+[m[32m    });[m
+[32m+[m[32m  }[m
+[32m+[m[32m};[m
+[32m+[m
+ // Create new stock[m
+ export const createStock = async (req: MulterRequest, res: Response) => {[m
+   try {[m
+[36m@@ -110,7 +141,13 @@[m [mexport const createStock = async (req: MulterRequest, res: Response) => {[m
+       price_change,[m
+       teaser,[m
+       short_description,[m
+[31m-      analysis[m
+[32m+[m[32m      analysis,[m
+[32m+[m[32m      demand,[m
+[32m+[m[32m      homeDisplay,[m
+[32m+[m[32m      bannerDisplay,[m
+[32m+[m[32m      valuation,[m
+[32m+[m[32m      price_per_share,[m
+[32m+[m[32m      percentage_change[m
+     } = cleanedBody;[m
+ [m
+     // Validate required fields[m
+[36m@@ -154,7 +191,13 @@[m [mexport const createStock = async (req: MulterRequest, res: Response) => {[m
+       price_change,[m
+       teaser,[m
+       short_description,[m
+[31m-      analysis[m
+[32m+[m[32m      analysis,[m
+[32m+[m[32m      demand: demand || 'Low Demand',[m
+[32m+[m[32m      homeDisplay: homeDisplay || 'no',[m
+[32m+[m[32m      bannerDisplay: bannerDisplay || 'no',[m
+[32m+[m[32m      valuation: valuation || 'N/A',[m
+[32m+[m[32m      price_per_share: price_per_share || price || 0,[m
+[32m+[m[32m      percentage_change: percentage_change || price_change || 0[m
+     });[m
+ [m
+     return res.status(201).json({[m
+[36m@@ -188,7 +231,13 @@[m [mexport const updateStock = async (req: MulterRequest, res: Response) => {[m
+       price_change,[m
+       teaser,[m
+       short_description,[m
+[31m-      analysis[m
+[32m+[m[32m      analysis,[m
+[32m+[m[32m      demand,[m
+[32m+[m[32m      homeDisplay,[m
+[32m+[m[32m      bannerDisplay,[m
+[32m+[m[32m      valuation,[m
+[32m+[m[32m      price_per_share,[m
+[32m+[m[32m      percentage_change[m
+     } = req.body;[m
+ [m
+     const stock = await db.Product.findByPk(id);[m
+[36m@@ -227,7 +276,13 @@[m [mexport const updateStock = async (req: MulterRequest, res: Response) => {[m
+       price_change: price_change !== undefined ? price_change : stock.price_change,[m
+       teaser: teaser !== undefined ? teaser : stock.teaser,[m
+       short_description: short_description !== undefined ? short_description : stock.short_description,[m
+[31m-      analysis: analysis !== undefined ? analysis : stock.analysis[m
+[32m+[m[32m      analysis: analysis !== undefined ? analysis : stock.analysis,[m
+[32m+[m[32m      demand: demand !== undefined ? demand : stock.demand,[m
+[32m+[m[32m      homeDisplay: homeDisplay !== undefined ? homeDisplay : stock.homeDisplay,[m
+[32m+[m[32m      bannerDisplay: bannerDisplay !== undefined ? bannerDisplay : stock.bannerDisplay,[m
+[32m+[m[32m      valuation: valuation !== undefined ? valuation : stock.valuation,[m
+[32m+[m[32m      price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,[m
+[32m+[m[32m      percentage_change: percentage_change !== undefined ? percentage_change : stock.percentage_change[m
+     });[m
+ [m
+     return res.status(200).json({[m
+[1mdiff --git a/backend/src/routes/index.ts b/backend/src/routes/index.ts[m
+[1mindex a141083..b596eef 100644[m
+[1m--- a/backend/src/routes/index.ts[m
+[1m+++ b/backend/src/routes/index.ts[m
+[36m@@ -3,6 +3,7 @@[m [mimport healthRoutes from "./health-routes";[m
+ import adminRoutes from "./admin-routes";[m
+ import stockRoutes from "./stock-routes";[m
+ import tradingRoutes from "./trading-routes";[m
+[32m+[m[32mimport enquiryRoutes from "./enquiry-routes";[m
+ import express from "express";[m
+ [m
+ const router = express.Router();[m
+[36m@@ -22,4 +23,7 @@[m [mrouter.use('/trading', tradingRoutes);[m
+ // Admin CMS routes (for admin users)[m
+ router.use('/admin', adminRoutes);[m
+ [m
+[32m+[m[32m// Enquiry routes (public for submission, protected for admin management)[m
+[32m+[m[32mrouter.use('/enquiries', enquiryRoutes);[m
+[32m+[m
+ export default router;[m
+[1mdiff --git a/backend/src/routes/stock-routes.ts b/backend/src/routes/stock-routes.ts[m
+[1mindex 90fcf97..fd56a90 100644[m
+[1m--- a/backend/src/routes/stock-routes.ts[m
+[1m+++ b/backend/src/routes/stock-routes.ts[m
+[36m@@ -1,10 +1,15 @@[m
+ import express from "express";[m
+[31m-import { getAllStocks, getStockById } from "../controllers/admin/stockManagement";[m
+[32m+[m[32mimport { getAllStocks, getStockById, getStockByName } from "../controllers/admin/stockManagement";[m
+[32m+[m[32mimport { getHomeDisplayStocks } from "../controllers/stocks/homeDisplayStocks";[m
+[32m+[m[32mimport { getBannerDisplayStocks } from "../controllers/stocks/bannerDisplayStocks";[m
+ [m
+ const router = express.Router();[m
+ [m
+ // Public stock routes (no authentication required)[m
+ router.get("/", getAllStocks);[m
+[32m+[m[32mrouter.get("/home-display", getHomeDisplayStocks);[m
+[32m+[m[32mrouter.get("/banner-display", getBannerDisplayStocks);[m
+[32m+[m[32mrouter.get("/name/:name", getStockByName);[m
+ router.get("/:id", getStockById);[m
+ [m
+ export default router;[m
+[1mdiff --git a/backend/src/utils/database.ts b/backend/src/utils/database.ts[m
+[1mindex c1054d2..64b9f18 100644[m
+[1m--- a/backend/src/utils/database.ts[m
+[1m+++ b/backend/src/utils/database.ts[m
+[36m@@ -4,6 +4,7 @@[m [mimport UserVerification, { initializeUserVerificationModel } from "../Models/Use[m
+ import Product, { initializeProductModel } from "../Models/Product";[m
+ import CmsUser, { initializeCmsUserModel } from "../Models/CmsUser";[m
+ import EmailTemplate, { initializeEmailTemplateModel } from "../Models/EmailTemplate";[m
+[32m+[m[32mimport Enquiry, { initializeEnquiryModel } from "../Models/Enquiry";[m
+ import { connectionManager } from "./pooling";[m
+ import dotenv from "dotenv";[m
+ import config from "./config.json";[m
+[36m@@ -56,6 +57,9 @@[m [masync function initializeSequelize() {[m
+   initializeCmsUserModel(sequelize);[m
+   initializeEmailTemplateModel(sequelize);[m
+   [m
+[32m+[m[32m  // Initialize Enquiry model[m
+[32m+[m[32m  initializeEnquiryModel(sequelize);[m
+[32m+[m[41m  [m
+   // No associations needed since only admins handle stocks[m
+   [m
+   return sequelize;[m
+[36m@@ -87,7 +91,8 @@[m [mexport const db = {[m
+   UserVerification,[m
+   Product,[m
+   CmsUser,[m
+[31m-  EmailTemplate[m
+[32m+[m[32m  EmailTemplate,[m
+[32m+[m[32m  Enquiry[m
+ };[m
+ [m
+ async function initialize() {[m
+[1mdiff --git a/frontend/app/(site)/contact/page.tsx b/frontend/app/(site)/contact/page.tsx[m
+[1mindex fc1ba9a..f69bb8d 100644[m
+[1m--- a/frontend/app/(site)/contact/page.tsx[m
+[1m+++ b/frontend/app/(site)/contact/page.tsx[m
+[36m@@ -19,12 +19,7 @@[m [mexport default function Contact() {[m
+         <section className="appContainer py-10 md:py-16">[m
+           <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(0,420px)_1fr]">[m
+             <ContactInfo className="md:pr-4" />[m
+[31m-            <ContactForm[m
+[31m-              onSubmit={(data) => {[m
+[31m-                // TODO: send to API / integrations[m
+[31m-                console.log("contact form submit", data);[m
+[31m-              }}[m
+[31m-            />[m
+[32m+[m[32m            <ContactForm />[m
+           </div>[m
+         </section>[m
+         [m
+[1mdiff --git a/frontend/app/(site)/discover-details/page.tsx b/frontend/app/(site)/discover-details/page.tsx[m
+[1mindex 6ce1199..b7d529e 100644[m
+[1m--- a/frontend/app/(site)/discover-details/page.tsx[m
+[1m+++ b/frontend/app/(site)/discover-details/page.tsx[m
+[36m@@ -37,7 +37,7 @@[m [mfunction DiscoverDetailsContent() {[m
+ [m
+       try {[m
+         setLoading(true);[m
+[31m-        const response = await fetch(`/api/stocks/${stockId}`);[m
+[32m+[m[32m        const response = await fetch(`/api/stocks/name/${encodeURIComponent(stockId)}`);[m
+         const data = await response.json();[m
+         [m
+         if (data.success && data.data) {[m
+[1mdiff --git a/frontend/app/admin/stocks/page.tsx b/frontend/app/admin/stocks/page.tsx[m
+[1mindex a0d5179..dade878 100644[m
+[1m--- a/frontend/app/admin/stocks/page.tsx[m
+[1m+++ b/frontend/app/admin/stocks/page.tsx[m
+[36m@@ -3,6 +3,7 @@[m
+ import React, { useState, useEffect, useCallback, useRef } from 'react';[m
+ [m
+ import { StockTable, AddStockModal } from '@/components/admin/stocks';[m
+[32m+[m[32mimport type { StockData } from '@/components/admin/stocks/AddStockModal';[m
+ import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';[m
+ [m
+ export default function StocksPage() {[m
+[36m@@ -175,42 +176,30 @@[m [mexport default function StocksPage() {[m
+     // The useEffect will handle the API call when sortBy or sortOrder changes[m
+   };[m
+ [m
+[31m-  const handleAddStock = async (stockData: {[m
+[31m-    title: string;[m
+[31m-    company_name: string;[m
+[31m-    price_per_share: string;[m
+[31m-    valuation: string;[m
+[31m-    price_change: string;[m
+[31m-    icon: File | null;[m
+[31m-  }) => {[m
+[32m+[m[32m  const handleAddStock = async (stockData: StockData) => {[m
+     try {[m
+       const token = sessionStorage.getItem('adminToken') || '';[m
+       const formData = new FormData();[m
+       [m
+[31m-      // Map frontend fields to backend fields[m
+[31m-      const fieldMapping: Record<string, string> = {[m
+[31m-        'company_name': 'company_name',[m
+[31m-        'price_per_share': 'price',[m
+[31m-        'price_change': 'price_change',[m
+[31m-        'icon': 'logo'[m
+[31m-      };[m
+[31m-[m
+[31m-      // Append mapped stock data to formData[m
+[31m-      Object.keys(stockData).forEach(key => {[m
+[31m-        const value = (stockData as Record<string, unknown>)[key];[m
+[31m-        const backendField = fieldMapping[key] || key;[m
+[31m-        [m
+[31m-        if (key === 'icon' && value instanceof File) {[m
+[31m-          formData.append(backendField, value);[m
+[31m-        } else if (value !== null && value !== undefined && typeof value === 'string') {[m
+[31m-          formData.append(backendField, value);[m
+[31m-        }[m
+[31m-      });[m
+[31m-[m
+[31m-      // Add required fields that are missing from the form[m
+[31m-      formData.append('teaser', stockData.title || 'Stock teaser');[m
+[31m-      formData.append('short_description', `Short description for ${stockData.company_name}`);[m
+[31m-      formData.append('analysis', `Analysis for ${stockData.company_name} stock`);[m
+[32m+[m[32m      // Append all stock data to formData[m
+[32m+[m[32m      formData.append('company_name', stockData.company_name);[m
+[32m+[m[32m      formData.append('logo', stockData.logo);[m
+[32m+[m[32m      formData.append('price', stockData.price.toString());[m
+[32m+[m[32m      formData.append('price_change', stockData.price_change.toString());[m
+[32m+[m[32m      formData.append('teaser', stockData.teaser);[m
+[32m+[m[32m      formData.append('short_description', stockData.short_description);[m
+[32m+[m[32m      formData.append('analysis', stockData.analysis);[m
+[32m+[m[32m      formData.append('demand', stockData.demand);[m
+[32m+[m[32m      formData.append('homeDisplay', stockData.homeDisplay);[m
+[32m+[m[32m      formData.append('bannerDisplay', stockData.bannerDisplay);[m
+[32m+[m[32m      formData.append('valuation', stockData.valuation);[m
+[32m+[m[32m      formData.append('price_per_share', stockData.price_per_share.toString());[m
+[32m+[m[32m      formData.append('percentage_change', stoc
