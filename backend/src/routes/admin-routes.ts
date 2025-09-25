@@ -32,6 +32,23 @@ import { cmsLogin } from "../controllers/admin/cmsAuth";
 import { SiteUserManagementController } from "../controllers/admin/siteUserManagement";
 import { EmailTemplateManagementController } from "../controllers/admin/emailTemplateManagement";
 
+// Enquiry Management Controllers
+import {
+  getAllEnquiries,
+  getEnquiryById,
+  updateEnquiryStatus,
+  deleteEnquiry,
+  getEnquiryStats
+} from "../controllers/enquiries/enquiryController";
+
+// Subscriber Management Controllers
+import {
+  createSubscriber,
+  getAllSubscribers,
+  deleteSubscriber,
+  getSubscriberStats
+} from "../controllers/subscribers/subscriberController";
+
 const router = express.Router();
 
 // Initialize Controllers
@@ -79,5 +96,17 @@ router.get("/email-templates/:id", emailTemplateController.getEmailTemplateById)
 router.post("/email-templates", emailTemplateController.createEmailTemplate);
 router.put("/email-templates/:id", emailTemplateController.updateEmailTemplate);
 router.delete("/email-templates/:id", emailTemplateController.deleteEmailTemplate);
+
+// Enquiry Management Routes
+router.get("/enquiries", getAllEnquiries);
+router.get("/enquiries/stats", getEnquiryStats);
+router.get("/enquiries/:id", getEnquiryById);
+router.put("/enquiries/:id/status", updateEnquiryStatus);
+router.delete("/enquiries/:id", deleteEnquiry);
+
+// Subscriber Management Routes
+router.get("/subscribers", getAllSubscribers);
+router.get("/subscribers/stats", getSubscriberStats);
+router.delete("/subscribers/:id", deleteSubscriber);
 
 export default router;

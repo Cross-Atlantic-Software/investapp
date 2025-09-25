@@ -128,7 +128,7 @@ export default function StocksPage() {
   useEffect(() => {
     fetchStocks();
     getCurrentUserRole();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
 
 

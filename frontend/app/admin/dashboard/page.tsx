@@ -11,6 +11,16 @@ interface DashboardStats {
   activeUsers: number;
   totalSiteUsers: number;
   verifiedSiteUsers: number;
+  totalEnquiries: number;
+  totalSubscribers: number;
+  newRegistrations24h: number;
+  // Percentage changes
+  totalUsersChange: number;
+  totalStocksChange: number;
+  totalSiteUsersChange: number;
+  verifiedSiteUsersChange: number;
+  totalEnquiriesChange: number;
+  totalSubscribersChange: number;
 }
 
 export default function AdminDashboard() {
@@ -21,6 +31,16 @@ export default function AdminDashboard() {
     activeUsers: 0,
     totalSiteUsers: 0,
     verifiedSiteUsers: 0,
+    totalEnquiries: 0,
+    totalSubscribers: 0,
+    newRegistrations24h: 0,
+    // Percentage changes
+    totalUsersChange: 0,
+    totalStocksChange: 0,
+    totalSiteUsersChange: 0,
+    verifiedSiteUsersChange: 0,
+    totalEnquiriesChange: 0,
+    totalSubscribersChange: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -56,6 +76,30 @@ export default function AdminDashboard() {
       });
       const siteUsersData = await siteUsersResponse.json();
 
+      // Fetch enquiries stats
+      const enquiriesResponse = await fetch('/api/admin/enquiries/stats', {
+        headers: {
+          'token': token,
+        },
+      });
+      const enquiriesData = await enquiriesResponse.json();
+
+      // Fetch subscribers stats
+      const subscribersResponse = await fetch('/api/admin/subscribers/stats', {
+        headers: {
+          'token': token,
+        },
+      });
+      const subscribersData = await subscribersResponse.json();
+
+      // Fetch new registrations in last 24h
+      const newRegistrationsResponse = await fetch('/api/admin/site-users/stats?period=24h', {
+        headers: {
+          'token': token,
+        },
+      });
+      const newRegistrationsData = await newRegistrationsResponse.json();
+
       if (usersData.success && stocksData.success) {
         setStats({
           totalUsers: usersData.data.totalUsers || 0,
@@ -64,6 +108,16 @@ export default function AdminDashboard() {
           activeUsers: usersData.data.activeUsers || 0,
           totalSiteUsers: siteUsersData.success ? siteUsersData.data.totalUsers || 0 : 0,
           verifiedSiteUsers: siteUsersData.success ? siteUsersData.data.verifiedUsers || 0 : 0,
+          totalEnquiries: enquiriesData.success ? enquiriesData.data.total || 0 : 0,
+          totalSubscribers: subscribersData.success ? subscribersData.data.totalSubscribers || 0 : 0,
+          newRegistrations24h: newRegistrationsData.success ? newRegistrationsData.data.newRegistrations24h || 0 : 0,
+          // Percentage changes
+          totalUsersChange: usersData.data.totalUsersChange || 0,
+          totalStocksChange: stocksData.data.totalStocksChange || 0,
+          totalSiteUsersChange: siteUsersData.success ? siteUsersData.data.totalUsersChange || 0 : 0,
+          verifiedSiteUsersChange: siteUsersData.success ? siteUsersData.data.verifiedUsersChange || 0 : 0,
+          totalEnquiriesChange: enquiriesData.success ? enquiriesData.data.totalChange || 0 : 0,
+          totalSubscribersChange: subscribersData.success ? subscribersData.data.totalSubscribersChange || 0 : 0,
         });
       }
     } catch (error) {

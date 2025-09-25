@@ -4,12 +4,20 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { X } from 'lucide-react';
 
-interface StockData {
-  title: string;
+export interface StockData {
   company_name: string;
-  price_per_share: string;
+  logo: string;
+  price: number;
+  price_change: number;
+  teaser: string;
+  short_description: string;
+  analysis: string;
+  demand: 'High Demand' | 'Low Demand';
+  homeDisplay: 'yes' | 'no';
+  bannerDisplay: 'yes' | 'no';
   valuation: string;
-  price_change: string;
+  price_per_share: number;
+  percentage_change: number;
   icon: File | null;
 }
 
@@ -28,11 +36,19 @@ interface AddStockModalProps {
 
 const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
   const [formData, setFormData] = useState<StockData>({
-    title: '',
     company_name: '',
-    price_per_share: '',
+    logo: '',
+    price: 0,
+    price_change: 0,
+    teaser: '',
+    short_description: '',
+    analysis: '',
+    demand: 'High Demand',
+    homeDisplay: 'no',
+    bannerDisplay: 'no',
     valuation: '',
-    price_change: '',
+    price_per_share: 0,
+    percentage_change: 0,
     icon: null as File | null,
   });
 
