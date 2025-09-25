@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { Button, Heading, PhoneCarousel } from "@/components/ui";
+import { Button, Heading } from "@/components/ui";
+import { HeroPhoneCarousel } from "../subcomponents";
 
 export function HeroSection() {
   return (
@@ -28,8 +29,10 @@ export function HeroSection() {
               />
             </div>
           </div>
-          <div className="absolute xl:-right-20 -right-20 -bottom-30 w-40 lg:w-50 xl:w-60 hidden lg:block">
-            <PhoneCarousel
+          {/* <div className="absolute xl:-right-20 -right-20 -bottom-30 w-40 lg:w-50 xl:w-60 hidden lg:block"> */}
+          <div className="absolute hidden lg:block z-20 xl:-right-90 -right-90 xl:-bottom-10 -bottom-20">
+            <HeroPhoneCarousel />
+            {/* <PhoneCarousel
               slides={[
                 { src: "/images/slide1.webp", alt: "Chart 1" },
                 { src: "/images/slide2.webp", alt: "Chart 2" },
@@ -40,7 +43,7 @@ export function HeroSection() {
               insetBottomPct={8}
               insetLeftPct={4.5}
               radiusPx={22}
-            />
+            /> */}
 
           </div>
         </div>
