@@ -238,59 +238,73 @@ export default function EnquiriesPage() {
       ) : (
         <>
           {/* Header */}
-          <div className="mb-6">
+          <div className="mb-8">
             <h1 className="text-lg font-bold text-themeTeal">Enquiry Management</h1>
             <p className="text-sm text-themeTealLight">Manage customer enquiries and support requests.</p>
           </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="text-2xl font-bold text-themeTeal">{stats.total}</div>
-              <div className="text-sm text-gray-600">Total Enquiries</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="text-2xl font-bold text-blue-600">{stats.new}</div>
-              <div className="text-sm text-gray-600">New</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="text-2xl font-bold text-yellow-600">{stats.read}</div>
-              <div className="text-sm text-gray-600">Read</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="text-2xl font-bold text-green-600">{stats.replied}</div>
-              <div className="text-sm text-gray-600">Replied</div>
-            </div>
-            <div className="bg-white p-4 rounded-lg border border-gray-200">
-              <div className="text-2xl font-bold text-gray-600">{stats.closed}</div>
-              <div className="text-sm text-gray-600">Closed</div>
-            </div>
-          </div>
-
-          {/* Filter Section */}
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center space-x-4">
-              <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
-                <span className="text-sm font-medium text-themeTeal">
-                  All enquiries <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{enquiries.length}</span>
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <select
-                  value={statusFilter}
-                  onChange={handleStatusFilterChange}
-                  className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
-                >
-                  <option value="all">All Status</option>
-                  <option value="new">New</option>
-                  <option value="read">Read</option>
-                  <option value="replied">Replied</option>
-                  <option value="closed">Closed</option>
-                </select>
-              </div>
-            </div>
+          {/* Stats Row */}
+          <div className="flex items-center space-x-3 mb-6">
+            <button
+              onClick={() => setStatusFilter('all')}
+              className={`px-3 py-1.5 rounded-full transition-colors ${
+                statusFilter === 'all' 
+                  ? 'bg-themeTeal text-white' 
+                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+              }`}
+            >
+              <span className="text-sm font-medium">
+                Total <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.total}</span>
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter('new')}
+              className={`px-3 py-1.5 rounded-full transition-colors ${
+                statusFilter === 'new' 
+                  ? 'bg-themeTeal text-white' 
+                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+              }`}
+            >
+              <span className="text-sm font-medium">
+                New <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.new}</span>
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter('read')}
+              className={`px-3 py-1.5 rounded-full transition-colors ${
+                statusFilter === 'read' 
+                  ? 'bg-themeTeal text-white' 
+                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+              }`}
+            >
+              <span className="text-sm font-medium">
+                Read <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.read}</span>
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter('replied')}
+              className={`px-3 py-1.5 rounded-full transition-colors ${
+                statusFilter === 'replied' 
+                  ? 'bg-themeTeal text-white' 
+                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+              }`}
+            >
+              <span className="text-sm font-medium">
+                Replied <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.replied}</span>
+              </span>
+            </button>
+            <button
+              onClick={() => setStatusFilter('closed')}
+              className={`px-3 py-1.5 rounded-full transition-colors ${
+                statusFilter === 'closed' 
+                  ? 'bg-themeTeal text-white' 
+                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+              }`}
+            >
+              <span className="text-sm font-medium">
+                Closed <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.closed}</span>
+              </span>
+            </button>
           </div>
 
           <EnquiryTable 

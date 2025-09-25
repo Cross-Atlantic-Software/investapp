@@ -72,18 +72,18 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
   const SortIcon = ({ field }: { field: string }) => {
     if (sortBy !== field) {
       return (
-        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg className="w-4 h-4 text-themeTealWhite" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
         </svg>
       );
     }
     
     return sortOrder === 'asc' ? (
-      <svg className="w-4 h-4 text-themeTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
       </svg>
     ) : (
-      <svg className="w-4 h-4 text-themeTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
       </svg>
     );
@@ -116,11 +116,11 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
     <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-themeTeal">
             <tr>
               <th
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTealLight"
                 onClick={() => onSort('name')}
               >
                 <div className="flex items-center space-x-1">
@@ -130,7 +130,7 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
               </th>
               <th
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTealLight"
                 onClick={() => onSort('email')}
               >
                 <div className="flex items-center space-x-1">
@@ -138,15 +138,9 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
                   <SortIcon field="email" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Subject
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Message
-              </th>
               <th
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTealLight"
                 onClick={() => onSort('status')}
               >
                 <div className="flex items-center space-x-1">
@@ -156,7 +150,7 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
               </th>
               <th
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
+                className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTealLight"
                 onClick={() => onSort('createdAt')}
               >
                 <div className="flex items-center space-x-1">
@@ -164,14 +158,14 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
                   <SortIcon field="createdAt" />
                 </div>
               </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                 Actions
               </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {enquiries.map((enquiry) => (
-              <tr key={enquiry.id} className="hover:bg-gray-50">
+            {enquiries.map((enquiry, index) => (
+              <tr key={enquiry.id} className={index % 2 === 0 ? 'bg-white' : 'bg-themeTealWhite'}>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10">
@@ -195,17 +189,7 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
                     <div className="text-sm text-gray-500">{enquiry.phone}</div>
                   )}
                 </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs">
-                    {enquiry.subject ? truncateText(enquiry.subject, 30) : 'No subject'}
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div className="text-sm text-gray-900 max-w-xs">
-                    {truncateText(enquiry.message, 40)}
-                  </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-6 py-4 whitespace-nowrap text-center">
                   {getStatusBadge(enquiry.status)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
