@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+<<<<<<< HEAD
+import { Button, Heading } from "@/components/ui";
+import { HeroPhoneCarousel } from "../subcomponents";
+=======
 import { Button, Heading, PhoneCarousel } from "@/components/ui";
 import StockCarouselCard from "@/components/ui/StockCarouselCard"; // Direct import
 
@@ -13,6 +17,7 @@ interface BannerStock {
   percentage_change: number;
   valuation: string;
 }
+>>>>>>> ae78a5866c6ca569a1f4e998b37afc1ebc03c166
 
 export function HeroSection() {
   const [bannerStocks, setBannerStocks] = useState<BannerStock[]>([]);
@@ -78,6 +83,24 @@ export function HeroSection() {
               />
             </div>
           </div>
+<<<<<<< HEAD
+          {/* <div className="absolute xl:-right-20 -right-20 -bottom-30 w-40 lg:w-50 xl:w-60 hidden lg:block"> */}
+          <div className="absolute hidden lg:block z-20 xl:-right-90 -right-90 xl:-bottom-10 -bottom-20">
+            <HeroPhoneCarousel />
+            {/* <PhoneCarousel
+              slides={[
+                { src: "/images/slide1.webp", alt: "Chart 1" },
+                { src: "/images/slide2.webp", alt: "Chart 2" },
+              ]}
+              // fine-tune these 4 numbers until the slides sit perfectly in your frame
+              insetTopPct={7}
+              insetRightPct={4.5}
+              insetBottomPct={8}
+              insetLeftPct={4.5}
+              radiusPx={22}
+            /> */}
+
+=======
           <div className="absolute xl:-right-20 -right-20 -bottom-30 w-40 lg:w-50 xl:w-60 hidden lg:block">
             {loading ? (
               <div className="flex items-center justify-center h-full">
@@ -104,6 +127,7 @@ export function HeroSection() {
                 radiusPx={22}
               />
             )}
+>>>>>>> ae78a5866c6ca569a1f4e998b37afc1ebc03c166
           </div>
         </div>
       </div>
