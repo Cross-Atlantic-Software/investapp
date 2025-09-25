@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { X } from 'lucide-react';
 
 export interface StockData {
   company_name: string;
@@ -180,21 +181,19 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-8 max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto m-0">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4 rounded-t-2xl">
-          <div className="flex items-center justify-between">
-            <div>
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
               <h3 className="text-base font-semibold text-white">Add New Stock</h3>
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors duration-200"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
+              className="text-themeTealWhite transition duration-300 cursor-pointer"
+                >
+                  <X/>
             </button>
           </div>
         </div>
@@ -205,7 +204,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
           <form id="stock-form" onSubmit={handleSubmit} className="space-y-6">
             {/* Stock Title */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-themeTeal mb-1">
                 Stock Title <span className="text-red-500">*</span>
               </label>
               <input
@@ -214,14 +213,14 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                 value={formData.title}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
                 placeholder="Enter stock title"
               />
             </div>
             
             {/* Company Name */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-themeTeal mb-1">
                 Company Name <span className="text-red-500">*</span>
               </label>
               <input
@@ -230,7 +229,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                 value={formData.company_name}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
                 placeholder="Enter company name"
               />
             </div>
@@ -238,7 +237,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
             {/* Price and Valuation */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-themeTeal mb-1">
                   Price per Share <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -247,14 +246,14 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                   value={formData.price_per_share}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
                   placeholder="0.00"
                   step="0.01"
                 />
               </div>
               
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-themeTeal mb-1">
                   Valuation <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -263,7 +262,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                   value={formData.valuation}
                   onChange={handleInputChange}
                   required
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
                   placeholder="0.00"
                   step="0.01"
                 />
@@ -273,7 +272,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
             {/* Price Change*/}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-themeTeal mb-1">
                   Price Change
                 </label>
                 <input
@@ -281,7 +280,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                   name="price_change"
                   value={formData.price_change}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
                   placeholder="0.00"
                   step="0.01"
                 />
@@ -291,7 +290,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
             
             {/* Stock Icon */}
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-themeTeal mb-1">
                 Stock Icon
               </label>
               
@@ -305,12 +304,12 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               {/* Upload Area */}
               <label 
                 htmlFor="icon-upload"
-                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-lg transition-colors duration-200 cursor-pointer ${
+                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-themeTealLighter rounded transition-colors duration-200 cursor-pointer ${
                   imageUpload.error 
                     ? 'border-red-300 bg-red-50' 
                     : imageUpload.preview 
                       ? 'border-green-300 bg-green-50' 
-                      : 'border-gray-300 hover:border-themeTeal hover:bg-themeTeal/5'
+                      : 'border-gray-300 hover:border-themeTealLighter hover:bg-themeTealWhite'
                 }`}
                 onDragOver={handleDragOver}
                 onDragEnter={handleDragEnter}
@@ -326,28 +325,26 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                         alt="Preview"
                         width={80}
                         height={80}
-                        className="h-20 w-20 object-cover rounded-lg border border-gray-200"
+                        className="h-20 w-20 object-cover rounded border border-themeTealLighter mx-auto"
                       />
                       <button
                         type="button"
                         onClick={removeImage}
                         className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors duration-200"
                       >
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <X/>
                       </button>
                     </div>
-                    <div className="text-sm text-gray-600">
-                      <p className="font-medium text-green-600">✓ Image selected</p>
-                      <p className="text-xs text-gray-500">{imageUpload.file?.name}</p>
-                      <p className="text-xs text-gray-500">
+                    <div className="text-sm text-themeTealLighter">
+                      <p className="font-medium text-green-600 mb-2">✓ Image selected</p>
+                      <p className="text-xs text-themeTealLighter">{imageUpload.file?.name}</p>
+                      <p className="text-xs text-themeTealLighter">
                         {imageUpload.file?.size ? (imageUpload.file.size / 1024 / 1024).toFixed(2) : '0'} MB
                       </p>
                     </div>
                     <button
                       type="button"
-                      className="bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight transition-colors duration-200"
+                      className="bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight transition-colors duration-200 cursor-pointer"
                     >
                       Change Image
                     </button>
@@ -380,13 +377,13 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               {/* Upload Progress */}
               {imageUpload.uploading && (
                 <div className="mt-2">
-                  <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+                  <div className="flex items-center justify-between text-xs text-themeTealLighter mb-1">
                     <span>Uploading...</span>
                     <span>{imageUpload.progress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
-                      className="bg-themeTeal h-2 rounded-full transition-all duration-300"
+                      className="bg-themeTeal h-2 rounded-full transition duration-300"
                       style={{ width: `${imageUpload.progress}%` }}
                     ></div>
                   </div>
@@ -398,11 +395,11 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200 flex justify-end flex-shrink-0 rounded-b-2xl">
+        <div className="px-4 py-3 bg-themeTealWhite flex justify-end flex-shrink-0 rounded-b-2xl">
           <button
             type="submit"
             form="stock-form"
-            className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight transition-colors duration-200 font-medium"
+            className="px-5 py-3 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50 font-medium cursor-pointer"
           >
             Add Stock
           </button>

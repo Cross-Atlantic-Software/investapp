@@ -1,5 +1,6 @@
 'use client';
 
+import { ChartColumnStacked, ShieldCheck, TrendingDown, TrendingUp, Users, UserStar } from 'lucide-react';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -56,12 +57,10 @@ const AdminStats: React.FC<AdminStatsProps> = ({
       changeType: stats.totalUsersChange >= 0 ? 'increase' : 'decrease',
       redirectPath: '/admin/users',
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
+        <Users />
       ),
-      gradient: 'from-blue-500 to-blue-600',
-      bgColor: 'bg-blue-50',
+      gradient: 'from-themeTeal to-themeTeal',
+      bgColor: 'bg-themeTeal',
     },
     {
       title: 'Total Site Users',
@@ -70,12 +69,10 @@ const AdminStats: React.FC<AdminStatsProps> = ({
       changeType: stats.totalSiteUsersChange >= 0 ? 'increase' : 'decrease',
       redirectPath: '/admin/site-users',
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
+        <UserStar/>
       ),
-      gradient: 'from-indigo-500 to-indigo-600',
-      bgColor: 'bg-indigo-50',
+      gradient: 'from-themeTeal to-themeTeal',
+      bgColor: 'bg-themeTeal',
     },
     {
       title: 'Total Stocks',
@@ -84,12 +81,10 @@ const AdminStats: React.FC<AdminStatsProps> = ({
       changeType: stats.totalStocksChange >= 0 ? 'increase' : 'decrease',
       redirectPath: '/admin/stocks',
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-        </svg>
+        <ChartColumnStacked/>
       ),
-      gradient: 'from-purple-500 to-purple-600',
-      bgColor: 'bg-purple-50',
+      gradient: 'from-themeTeal to-themeTeal',
+      bgColor: 'bg-themeTeal',
     },
     {
       title: 'Verified Site Users',
@@ -98,12 +93,10 @@ const AdminStats: React.FC<AdminStatsProps> = ({
       changeType: stats.verifiedSiteUsersChange >= 0 ? 'increase' : 'decrease',
       redirectPath: '/admin/site-users',
       icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
+        <ShieldCheck/>
       ),
-      gradient: 'from-green-500 to-green-600',
-      bgColor: 'bg-green-50',
+      gradient: 'from-themeTeal to-themeTeal',
+      bgColor: 'bg-themeTeal',
     },
     {
       title: 'Total Enquiries',
@@ -182,29 +175,25 @@ const AdminStats: React.FC<AdminStatsProps> = ({
         >
           <div className="flex items-center justify-between">
             <div className="flex-1">
-              <h3 className="text-sm font-medium text-gray-600 mb-1">{stat.title}</h3>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{stat.value}</div>
+              <h3 className="text-sm font-medium text-themeTealLight mb-1">{stat.title}</h3>
+              <div className="text-3xl font-bold text-themeTeal mb-2">{stat.value}</div>
               <div className="flex items-center space-x-1">
                 <span className={`text-sm font-medium ${
                   stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
                 }`}>
                   {stat.change}
                 </span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-themeTealLighter">
                   {stat.changeType === 'increase' ? 'increased' : 'decreased'}
                 </span>
                 {stat.changeType === 'increase' ? (
-                  <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 17l9.2-9.2M17 17V7H7" />
-                  </svg>
+                  <TrendingUp width={20} height={20} className='text-green-600'/>
                 ) : (
-                  <svg className="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 7l-9.2 9.2M7 7v10h10" />
-                  </svg>
+                  <TrendingDown width={20} height={20} className='text-red-600'/>
                 )}
               </div>
             </div>
-            <div className={`p-3 rounded-xl bg-gradient-to-r ${stat.gradient} text-white shadow-lg`}>
+            <div className={`p-3 rounded bg-gradient-to-r ${stat.gradient} text-white shadow-lg shadow-themeTeal/10`}>
               {stat.icon}
             </div>
           </div>

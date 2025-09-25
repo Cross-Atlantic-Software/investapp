@@ -3,21 +3,16 @@
 import { useEffect, useState, useCallback } from 'react';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
+import { LogOut } from 'lucide-react';
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
-  // Skip authentication check for login page
   const isLoginPage = pathname === '/admin/login';
 
-  // Always start with false to prevent hydration mismatch
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userInfo, setUserInfo] = useState<{name: string, role: string} | null>(null);
+  const [userInfo, setUserInfo] = useState<{ name: string; role: string } | null>(null);
   const [mounted, setMounted] = useState(false);
   const [isUsersMenuOpen, setIsUsersMenuOpen] = useState(false);
 
@@ -35,37 +30,37 @@ export default function AdminLayout({
 
   useEffect(() => {
     setMounted(true);
-    
-    // Check if user is authenticated (token exists in sessionStorage)
+
     const token = sessionStorage.getItem('adminToken');
     const storedUser = sessionStorage.getItem('adminUser');
-    
+
     if (!token || !storedUser) {
-      // No session data
       if (isLoginPage) {
-        // Allow access to login page if not authenticated
         setIsAuthenticated(true);
         return;
       } else {
-        // Redirect to login if trying to access protected pages
         router.push('/admin/login');
         return;
       }
     }
 
-    // User has valid session data
     try {
       const user = JSON.parse(storedUser);
       setUserInfo({
         name: `${user.first_name} ${user.last_name}`,
-        role: user.role === 11 ? 'SuperAdmin' : 
-              user.role === 10 ? 'Admin' : 
-              user.role === 12 ? 'Blogger' : 
-              user.role === 13 ? 'Site Manager' : 'User'
+        role:
+          user.role === 11
+            ? 'SuperAdmin'
+            : user.role === 10
+            ? 'Admin'
+            : user.role === 12
+            ? 'Blogger'
+            : user.role === 13
+            ? 'Site Manager'
+            : 'User',
       });
       setIsAuthenticated(true);
-      
-      // If user is already authenticated and tries to access login page, redirect to dashboard
+
       if (isLoginPage) {
         router.push('/admin/dashboard');
         return;
@@ -82,29 +77,24 @@ export default function AdminLayout({
     }
   }, [isLoginPage, router]);
 
-  // For login page, render children directly
-  if (isLoginPage) {
-    return <>{children}</>;
-  }
+  if (isLoginPage) return <>{children}</>;
 
-  // Don't render anything until component is mounted (prevents hydration mismatch)
   if (!mounted) {
     return (
       <div className="min-h-screen bg-themeTealWhite flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4" />
           <p className="text-themeTeal text-sm">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // If not authenticated, show loading state while redirecting
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-themeTealWhite flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4" />
           <p className="text-themeTeal text-sm">Redirecting to login...</p>
         </div>
       </div>
@@ -115,38 +105,34 @@ export default function AdminLayout({
     <div className="min-h-screen bg-themeTealWhite relative">
       <header className="bg-white shadow-sm">
         <div className="flex items-center justify-end h-16 px-6 ml-64">
-          {/* User Profile */}
-                   <div className="flex items-center space-x-3">
-                     <div className="text-right">
-                       <p className="text-sm font-medium text-themeTeal">
-                         {userInfo?.name || 'Loading...'}
-                       </p>
-                       <p className="text-xs text-themeTealLighter">
-                         {userInfo?.role || 'Loading...'}
-                       </p>
-                     </div>
-                     <div className="w-8 h-8 bg-themeTeal rounded-full flex items-center justify-center">
-                       <span className="text-themeTealWhite text-sm font-medium">
-                         {userInfo?.name ? userInfo.name.split(' ').map(n => n[0]).join('') : 'U'}
-                       </span>
-                     </div>
-                     <button
-                       onClick={handleLogout}
-                       className="ml-2 text-themeTealLighter hover:text-themeTeal transition-colors duration-200"
-                       title="Logout"
-                     >
-                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                       </svg>
-                     </button>
-                   </div>
+          <div className="flex items-center space-x-3">
+            <div className="text-right">
+              <p className="text-sm font-medium text-themeTeal">
+                {userInfo?.name || 'Loading...'}
+              </p>
+              <p className="text-xs text-themeTealLighter">
+                {userInfo?.role || 'Loading...'}
+              </p>
+            </div>
+            <div className="w-8 h-8 bg-themeTeal rounded-full flex items-center justify-center">
+              <span className="text-themeTealWhite text-sm font-medium">
+                {userInfo?.name ? userInfo.name.split(' ').map(n => n[0]).join('') : 'U'}
+              </span>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="ml-2 text-themeTealLighter hover:text-themeTeal transition-colors duration-200"
+              title="Logout"
+            >
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </header>
       
       <div className="flex">
         <div className="fixed inset-y-0 left-0 z-50 w-64 bg-gradient-to-b from-white to-gray-50 shadow-xl">
           <div className="flex flex-col h-full">
-            {/* Header */}
             <div className="flex items-center justify-center h-16 px-4 bg-themeTeal">
               <Image
                 src="/images/logo.svg"
@@ -158,7 +144,6 @@ export default function AdminLayout({
               />
             </div>
             
-            {/* Enhanced Navigation */}
             <nav className="flex-1 px-4 py-8 space-y-3">
               <div className="mb-6">
                 <div className="space-y-2">
@@ -182,6 +167,7 @@ export default function AdminLayout({
                     </div>
                     Dashboard
                   </a>
+                  
                   <a
                     href="/admin/stocks"
                     className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
@@ -201,7 +187,7 @@ export default function AdminLayout({
                     </div>
                     Stocks
                   </a>
-                  {/* Users Menu - Collapsible */}
+                  
                   <div>
                     <button
                       onClick={() => setIsUsersMenuOpen(!isUsersMenuOpen)}
@@ -235,7 +221,6 @@ export default function AdminLayout({
                       </svg>
                     </button>
                     
-                    {/* Submenu */}
                     <div className={`overflow-hidden transition-all duration-200 ${
                       isUsersMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
                     }`}>
@@ -259,6 +244,7 @@ export default function AdminLayout({
                           </div>
                           Admin Users
                         </a>
+                        
                         <a
                           href="/admin/site-users"
                           className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
@@ -278,6 +264,7 @@ export default function AdminLayout({
                           </div>
                           Site Users
                         </a>
+                        
                         <a
                           href="/admin/enquiries"
                           className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
@@ -297,6 +284,7 @@ export default function AdminLayout({
                           </div>
                           Enquiries
                         </a>
+                        
                         <a
                           href="/admin/subscribers"
                           className={`group flex items-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
@@ -319,6 +307,7 @@ export default function AdminLayout({
                       </div>
                     </div>
                   </div>
+                  
                   <a
                     href="/admin/email-templates"
                     className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
@@ -339,27 +328,12 @@ export default function AdminLayout({
                     Email Templates
                   </a>
                 </div>
-              </div>
+              </div>  
             </nav>
-            
-            {/* Enhanced Footer */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
-              <button
-                onClick={handleLogout}
-                className="group flex items-center w-full px-4 py-3 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-xl transition-all duration-200"
-              >
-                <div className="mr-3 p-1.5 rounded-lg bg-gray-100 group-hover:bg-red-100">
-                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                </div>
-                Logout
-              </button>
-            </div>
           </div>
         </div>
-        
-        <main className="flex-1 p-6 ml-64 overflow-x-hidden">
+
+        <main className="flex-1 px-4 py-6 lg:px-6 lg:ml-64 transition-[margin] duration-200">
           {children}
         </main>
       </div>
