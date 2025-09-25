@@ -37,7 +37,7 @@ function DiscoverDetailsContent() {
 
       try {
         setLoading(true);
-        const response = await fetch(`/api/stocks/${stockId}`);
+        const response = await fetch(`/api/stocks/name/${encodeURIComponent(stockId)}`);
         const data = await response.json();
         
         if (data.success && data.data) {

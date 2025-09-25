@@ -9,6 +9,12 @@ interface ProductAttributes {
   teaser: string;
   short_description: string;
   analysis: string;
+  demand: 'High Demand' | 'Low Demand';
+  homeDisplay: 'yes' | 'no';
+  bannerDisplay: 'yes' | 'no';
+  valuation: string;
+  price_per_share: number;
+  percentage_change: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -30,6 +36,12 @@ class Product
   public teaser!: string;
   public short_description!: string;
   public analysis!: string;
+  public demand!: 'High Demand' | 'Low Demand';
+  public homeDisplay!: 'yes' | 'no';
+  public bannerDisplay!: 'yes' | 'no';
+  public valuation!: string;
+  public price_per_share!: number;
+  public percentage_change!: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -69,6 +81,32 @@ export function initializeProductModel(sequelize: Sequelize) {
       },
       analysis: {
         type: DataTypes.TEXT,
+        allowNull: false
+      },
+      demand: {
+        type: DataTypes.ENUM('High Demand', 'Low Demand'),
+        allowNull: false
+      },
+      homeDisplay: {
+        type: DataTypes.ENUM('yes', 'no'),
+        allowNull: false,
+        defaultValue: 'no'
+      },
+      bannerDisplay: {
+        type: DataTypes.ENUM('yes', 'no'),
+        allowNull: false,
+        defaultValue: 'no'
+      },
+      valuation: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+      },
+      price_per_share: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false
+      },
+      percentage_change: {
+        type: DataTypes.DECIMAL(5, 2),
         allowNull: false
       }
     }, {

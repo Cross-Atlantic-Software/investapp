@@ -1,9 +1,59 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Button, Heading, PhoneCarousel } from "@/components/ui";
+import StockCarouselCard from "@/components/ui/StockCarouselCard"; // Direct import
+
+interface BannerStock {
+  id: number;
+  company_name: string;
+  logo: string;
+  price_per_share: number;
+  percentage_change: number;
+  valuation: string;
+}
 
 export function HeroSection() {
+  const [bannerStocks, setBannerStocks] = useState<BannerStock[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchBannerStocks();
+  }, []);
+
+  const fetchBannerStocks = async () => {
+    try {
+      const response = await fetch('/api/stocks/banner-display');
+      const data = await response.json();
+      
+      if (data.success) {
+        setBannerStocks(data.data.stocks);
+      } else {
+        console.error('API Error:', data.message);
+        // Fallback: show empty state
+        setBannerStocks([]);
+      }
+    } catch (error) {
+      console.error('Error fetching banner stocks:', error);
+      // Fallback: show empty state
+      setBannerStocks([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Transform stocks to carousel slides
+  const carouselSlides = bannerStocks.map(stock => ({
+    component: <StockCarouselCard key={stock.id} stock={stock} />,
+    alt: `${stock.company_name} Stock`
+  }));
+
+  // Fallback to static images if no banner stocks
+  const fallbackSlides = [
+    { src: "/images/slide1.webp", alt: "Chart 1" },
+    { src: "/images/slide2.webp", alt: "Chart 2" },
+  ];
   return (
     <section className="bg-brandGradient overflow-hidden">
       <div className="appContainer flex flex-col md:flex-row items-center gap-10 lg:grid-cols-12 py-16">
@@ -29,19 +79,31 @@ export function HeroSection() {
             </div>
           </div>
           <div className="absolute xl:-right-20 -right-20 -bottom-30 w-40 lg:w-50 xl:w-60 hidden lg:block">
-            <PhoneCarousel
-              slides={[
-                { src: "/images/slide1.webp", alt: "Chart 1" },
-                { src: "/images/slide2.webp", alt: "Chart 2" },
-              ]}
-              // fine-tune these 4 numbers until the slides sit perfectly in your frame
-              insetTopPct={7}
-              insetRightPct={4.5}
-              insetBottomPct={8}
-              insetLeftPct={4.5}
-              radiusPx={22}
-            />
-
+            {loading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+              </div>
+            ) : bannerStocks.length > 0 ? (
+              <PhoneCarousel
+                slides={carouselSlides}
+                // fine-tune these 4 numbers until the slides sit perfectly in your frame
+                insetTopPct={7}
+                insetRightPct={4.5}
+                insetBottomPct={8}
+                insetLeftPct={4.5}
+                radiusPx={22}
+              />
+            ) : (
+              <PhoneCarousel
+                slides={fallbackSlides}
+                // fine-tune these 4 numbers until the slides sit perfectly in your frame
+                insetTopPct={7}
+                insetRightPct={4.5}
+                insetBottomPct={8}
+                insetLeftPct={4.5}
+                radiusPx={22}
+              />
+            )}
           </div>
         </div>
       </div>

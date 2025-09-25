@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 
-import { StockTable, AddStockModal } from '@/components/admin/stocks';
-import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
+import StockTable from '@/components/admin/StockTable';
+import AddStockModal from '@/components/admin/AddStockModal';
+import Loader from '@/components/admin/Loader';
+import { NotificationContainer, NotificationData } from '@/components/admin/Notification';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
@@ -127,6 +129,7 @@ export default function StocksPage() {
     getCurrentUserRole();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
+  }, [fetchStocks]); // Include fetchStocks in dependencies
 
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -176,41 +179,44 @@ export default function StocksPage() {
   };
 
   const handleAddStock = async (stockData: {
-    title: string;
     company_name: string;
-    price_per_share: string;
+    logo: string;
+    price: number;
+    price_change: number;
+    teaser: string;
+    short_description: string;
+    analysis: string;
+    demand: 'High Demand' | 'Low Demand';
+    homeDisplay: 'yes' | 'no';
+    bannerDisplay: 'yes' | 'no';
     valuation: string;
-    price_change: string;
+    price_per_share: number;
+    percentage_change: number;
     icon: File | null;
   }) => {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       const formData = new FormData();
       
-      // Map frontend fields to backend fields
-      const fieldMapping: Record<string, string> = {
-        'company_name': 'company_name',
-        'price_per_share': 'price',
-        'price_change': 'price_change',
-        'icon': 'logo'
-      };
-
-      // Append mapped stock data to formData
-      Object.keys(stockData).forEach(key => {
-        const value = (stockData as Record<string, unknown>)[key];
-        const backendField = fieldMapping[key] || key;
-        
-        if (key === 'icon' && value instanceof File) {
-          formData.append(backendField, value);
-        } else if (value !== null && value !== undefined && typeof value === 'string') {
-          formData.append(backendField, value);
-        }
-      });
-
-      // Add required fields that are missing from the form
-      formData.append('teaser', stockData.title || 'Stock teaser');
-      formData.append('short_description', `Short description for ${stockData.company_name}`);
-      formData.append('analysis', `Analysis for ${stockData.company_name} stock`);
+      // Append all stock data to formData
+      formData.append('company_name', stockData.company_name);
+      formData.append('logo', stockData.logo);
+      formData.append('price', stockData.price.toString());
+      formData.append('price_change', stockData.price_change.toString());
+      formData.append('teaser', stockData.teaser);
+      formData.append('short_description', stockData.short_description);
+      formData.append('analysis', stockData.analysis);
+      formData.append('demand', stockData.demand);
+      formData.append('homeDisplay', stockData.homeDisplay);
+      formData.append('bannerDisplay', stockData.bannerDisplay);
+      formData.append('valuation', stockData.valuation);
+      formData.append('price_per_share', stockData.price_per_share.toString());
+      formData.append('percentage_change', stockData.percentage_change.toString());
+      
+      // Add logo file if selected
+      if (stockData.icon) {
+        formData.append('logo', stockData.icon);
+      }
 
       const response = await fetch('/api/admin/stocks', {
         method: 'POST',
