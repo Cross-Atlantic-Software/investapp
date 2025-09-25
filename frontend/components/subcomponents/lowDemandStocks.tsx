@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, A11y } from "swiper/modules";
 import { ArrowDown, TrendingDown } from "lucide-react";
@@ -32,6 +33,22 @@ function Logo({ name, src }: { name: string; src: string }) {
       </div>
     );
   }
+  
+  // Handle external URLs (like S3 URLs)
+  if (src.startsWith('http')) {
+    return (
+      <div className="h-10 w-10 flex items-center justify-center">
+        <img
+          src={src}
+          alt={`${name} logo`}
+          className="h-8 w-8 object-contain"
+          onError={() => setErr(true)}
+        />
+      </div>
+    );
+  }
+  
+  // Handle local paths
   return (
     <div>
       <Image
@@ -90,7 +107,9 @@ export default function LowDemandStocks({
                   {/* Top */}
                   <div className="mb-5 flex items-center gap-3">
                     <Logo name={s.name} src={s.logo} />
-                    <p className="font-semibold text-themeTeal">{s.name}</p>
+                    <Link href={`/unlisted-company-name/${encodeURIComponent(s.name)}`} className="font-semibold text-themeTeal transition duration-500 hover:text-themeSkyBlue">
+                      {s.name}
+                    </Link>
                   </div>
 
                   {/* Metrics */}
@@ -98,16 +117,18 @@ export default function LowDemandStocks({
                     <div>
                       <p className="text-themeTealLighter">₹ Change</p>
                       <p className="flex items-center gap-1 font-semibold text-red-800">
-                        {s.changeINR} <TrendingDown className="h-3.5 w-3.5" />
+                        ₹{s.changeINR} <TrendingDown className="h-3.5 w-3.5" />
                       </p>
                     </div>
                     <div>
                       <p className="text-themeTealLighter">% Change</p>
-                      <p className="font-semibold text-red-800 flex gap-1 items-center">{s.changePct}% <ArrowDown size={16} /></p>
+                      <p className="font-semibold text-red-800 flex gap-1 items-center">
+                        {s.changePct}% <ArrowDown size={16} />
+                      </p>
                     </div>
                     <div>
                       <p className="text-themeTealLighter">Price Per Share</p>
-                      <p className="font-semibold text-themeTeal">{s.price}</p>
+                      <p className="font-semibold text-themeTeal">₹{s.price}</p>
                     </div>
                     <div>
                       <p className="text-themeTealLighter">Valuation</p>

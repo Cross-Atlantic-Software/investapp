@@ -172,7 +172,7 @@ export default function AdminLogin() {
           </form>
         </div>
         <div className='text-center'>
-          <Button text='Go back to InvestApp website' color="skyblue" variant="link" size="nospace" className='text-sm gap-0' href='./' icon={ArrowLeft} iconPosition='left' />
+          <Button text='Go back to InvestApp website' color="skyblue" variant="link" size="nospace" className='text-sm gap-0' href='../../' icon={ArrowLeft} iconPosition='left' />
         </div>
       </div>
     </div>

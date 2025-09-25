@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import RichTextEditor from '../RichTextEditor';
 import Image from 'next/image';
 import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X } from 'lucide-react';
 
@@ -12,7 +13,13 @@ interface Stock {
   price_change: number;
   teaser: string;
   short_description: string;
-  analysis: string;
+  analysis: string
+  demand: 'High Demand' | 'Low Demand';
+  homeDisplay: 'yes' | 'no';
+  bannerDisplay: 'yes' | 'no';
+  valuation: string;
+  price_per_share: number;
+  percentage_change: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,7 +95,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       price_change: stock.price_change,
       teaser: stock.teaser,
       short_description: stock.short_description,
-      analysis: stock.analysis
+      analysis: stock.analysis,
+      demand: stock.demand,
+      homeDisplay: stock.homeDisplay,
+      bannerDisplay: stock.bannerDisplay,
+      valuation: stock.valuation,
+      price_per_share: stock.price_per_share,
+      percentage_change: stock.percentage_change
     });
     setEditIconFile(null); // Reset icon file
     setImageUpload({
@@ -209,6 +222,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       formData.append('teaser', editFormData.teaser || '');
       formData.append('short_description', editFormData.short_description || '');
       formData.append('analysis', editFormData.analysis || '');
+      formData.append('demand', editFormData.demand || '');
+      formData.append('homeDisplay', editFormData.homeDisplay || '');
+      formData.append('bannerDisplay', editFormData.bannerDisplay || '');
+      formData.append('valuation', editFormData.valuation || '');
+      formData.append('price_per_share', editFormData.price_per_share?.toString() || '');
+      formData.append('percentage_change', editFormData.percentage_change?.toString() || '');
       
       // Add logo file if selected
       if (editIconFile) {
@@ -317,6 +336,108 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Teaser
                 </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('demand')}
+                >
+                  <div className="flex items-center">
+                    Demand
+                    {sortBy === 'demand' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('homeDisplay')}
+                >
+                  <div className="flex items-center">
+                    Home Display
+                    {sortBy === 'homeDisplay' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('bannerDisplay')}
+                >
+                  <div className="flex items-center">
+                    Banner Display
+                    {sortBy === 'bannerDisplay' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('valuation')}
+                >
+                  <div className="flex items-center">
+                    Valuation
+                    {sortBy === 'valuation' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('price_per_share')}
+                >
+                  <div className="flex items-center">
+                    Price/Share
+                    {sortBy === 'price_per_share' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('percentage_change')}
+                >
+                  <div className="flex items-center">
+                    % Change
+                    {sortBy === 'percentage_change' ? (
+                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    ) : (
+                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    )}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                   Actions
                 </th>
@@ -372,6 +493,58 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   <td className="px-4 py-3">
                     <div className="text-xs text-themeTealLight truncate max-w-xs">
                       {stock.teaser}
+                    </div>
+                  </td>
+
+                  {/* Demand Column */}
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      stock.demand === 'High Demand' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {stock.demand || 'N/A'}
+                    </span>
+                  </td>
+
+                  {/* Home Display Column */}
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      stock.homeDisplay === 'yes' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {stock.homeDisplay === 'yes' ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+
+                  {/* Banner Display Column */}
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      stock.bannerDisplay === 'yes' 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-gray-100 text-gray-800'
+                    }`}>
+                      {stock.bannerDisplay === 'yes' ? 'Yes' : 'No'}
+                    </span>
+                  </td>
+
+                  {/* Valuation Column */}
+                  <td className="px-4 py-3">
+                    <div className="text-xs font-medium text-gray-900">
+                      {stock.valuation || 'N/A'}
+                    </div>
+                  </td>
+
+                  {/* Price per Share Column */}
+                  <td className="px-4 py-3">
+                    <div className="text-xs font-medium text-gray-900">₹{stock.price_per_share || 0}</div>
+                  </td>
+
+                  {/* Percentage Change Column */}
+                  <td className="px-4 py-3">
+                    <div className={`text-xs font-medium ${(stock.percentage_change || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {(stock.percentage_change || 0) >= 0 ? '+' : ''}{stock.percentage_change || 0}%
                     </div>
                   </td>
 
@@ -526,12 +699,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-xs font-medium text-themeTeal mb-1">
                       Short Description <span className="text-red-500">*</span>
                     </label>
-                    <textarea
+                    <RichTextEditor
                       value={editFormData.short_description || ''}
-                      onChange={(e) => setEditFormData({...editFormData, short_description: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                      onChange={(value) => setEditFormData({...editFormData, short_description: value})}
                       placeholder="Enter short description"
-                      rows={3}
+                      height="120px"
                     />
                   </div>
 
@@ -540,13 +712,114 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-xs font-medium text-themeTeal mb-1">
                       Analysis <span className="text-red-500">*</span>
                     </label>
-                    <textarea
+                    <RichTextEditor
                       value={editFormData.analysis || ''}
-                      onChange={(e) => setEditFormData({...editFormData, analysis: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
-                      placeholder="Enter analysis"
-                      rows={4}
+                      onChange={(value) => setEditFormData({...editFormData, analysis: value})}
+                      placeholder="Enter detailed analysis with rich formatting..."
+                      height="200px"
                     />
+                  </div>
+
+                  {/* Demand Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Demand <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={editFormData.demand || ''}
+                      onChange={(e) => setEditFormData({...editFormData, demand: e.target.value as 'High Demand' | 'Low Demand'})}
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                    >
+                      <option value="">Select Demand</option>
+                      <option value="High Demand">High Demand</option>
+                      <option value="Low Demand">Low Demand</option>
+                    </select>
+                  </div>
+
+                  {/* Home Display Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Home Display <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={editFormData.homeDisplay || ''}
+                      onChange={(e) => setEditFormData({...editFormData, homeDisplay: e.target.value as 'yes' | 'no'})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                    >
+                      <option value="">Select Display</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+
+                  {/* Banner Display Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Banner Display <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={editFormData.bannerDisplay || ''}
+                      onChange={(e) => setEditFormData({...editFormData, bannerDisplay: e.target.value as 'yes' | 'no'})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                    >
+                      <option value="">Select Display</option>
+                      <option value="yes">Yes</option>
+                      <option value="no">No</option>
+                    </select>
+                  </div>
+
+                  {/* Valuation Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Valuation <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.valuation || ''}
+                      onChange={(e) => setEditFormData({...editFormData, valuation: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="Enter valuation"
+                    />
+                  </div>
+
+                  {/* Price per Share Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Price per Share <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 text-sm">₹</span>
+                      </div>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editFormData.price_per_share || ''}
+                        onChange={(e) => setEditFormData({...editFormData, price_per_share: parseFloat(e.target.value) || 0})}
+                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Percentage Change Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Percentage Change <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span className="text-gray-500 text-sm">%</span>
+                      </div>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={editFormData.percentage_change || ''}
+                        onChange={(e) => setEditFormData({...editFormData, percentage_change: parseFloat(e.target.value) || 0})}
+                        className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                        placeholder="0.00"
+                      />
+                    </div>
                   </div>
 
                   {/* Company Logo */}
@@ -801,6 +1074,72 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                           viewingStock.price_change >= 0 ? 'text-green-600' : 'text-red-600'
                         }`}
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Additional Stock Information */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Stock Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Demand</label>
+                      <p className={`text-sm bg-white p-2 rounded border ${
+                        viewingStock.demand === 'High Demand' 
+                          ? 'text-green-600 font-semibold' 
+                          : 'text-red-600 font-semibold'
+                      }`}>
+                        {viewingStock.demand || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Valuation</label>
+                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {viewingStock.valuation || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Price per Share</label>
+                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        ₹{viewingStock.price_per_share || 0}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Percentage Change</label>
+                      <p className={`text-sm bg-white p-2 rounded border ${
+                        (viewingStock.percentage_change || 0) >= 0 
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {(viewingStock.percentage_change || 0) >= 0 ? '+' : ''}{viewingStock.percentage_change || 0}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Display Settings */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Display Settings</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Home Display</label>
+                      <p className={`text-sm bg-white p-2 rounded border ${
+                        viewingStock.homeDisplay === 'yes' 
+                          ? 'text-green-600 font-semibold' 
+                          : 'text-gray-600'
+                      }`}>
+                        {viewingStock.homeDisplay === 'yes' ? 'Yes' : 'No'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Banner Display</label>
+                      <p className={`text-sm bg-white p-2 rounded border ${
+                        viewingStock.bannerDisplay === 'yes' 
+                          ? 'text-green-600 font-semibold' 
+                          : 'text-gray-600'
+                      }`}>
+                        {viewingStock.bannerDisplay === 'yes' ? 'Yes' : 'No'}
+                      </p>
                     </div>
                   </div>
                 </div>
