@@ -4,6 +4,11 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
+interface TaxonomyTag {
+  category: string;
+  name: string;
+}
+
 interface PrivateMarketNewsItem {
   id: number;
   title: string;
@@ -73,7 +78,7 @@ export default function PrivateMarketNews({ limit = 3, showTitle = true }: Priva
     }
   };
 
-  const parseTaxonomyTags = (tagsString: string) => {
+  const parseTaxonomyTags = (tagsString: string): TaxonomyTag[] => {
     try {
       return JSON.parse(tagsString);
     } catch {
@@ -123,8 +128,8 @@ export default function PrivateMarketNews({ limit = 3, showTitle = true }: Priva
       <div className="space-y-4">
         {news.map((item) => {
           const taxonomyTags = parseTaxonomyTags(item.taxonomy_tags);
-          const primaryTag = taxonomyTags.find((tag: any) => tag.category === 'Primary');
-          const secondaryTag = taxonomyTags.find((tag: any) => tag.category === 'Secondary');
+          const primaryTag = taxonomyTags.find((tag: TaxonomyTag) => tag.category === 'Primary');
+          const secondaryTag = taxonomyTags.find((tag: TaxonomyTag) => tag.category === 'Secondary');
           
           return (
             <div key={item.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg transition-colors">

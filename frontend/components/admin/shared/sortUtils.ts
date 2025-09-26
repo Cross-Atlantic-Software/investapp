@@ -57,7 +57,7 @@ export const caseInsensitiveCompare = (a: string, b: string): number => {
  * @param sortOrder - Sort order (asc/desc)
  * @returns Sorted array
  */
-export const sortData = <T extends Record<string, any>>(
+export const sortData = <T extends Record<string, unknown>>(
   data: T[],
   sortBy: string,
   sortOrder: 'asc' | 'desc'
