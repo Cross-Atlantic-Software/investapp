@@ -177,7 +177,7 @@ export const authApi = {
         headers['Authorization'] = `Bearer ${token}`;
       }
       
-      const response = await fetch(`${API_BASE_URL}/auth/complete-profile`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/complete-profile`, {
         method: 'POST',
         headers,
         body: JSON.stringify(data),
