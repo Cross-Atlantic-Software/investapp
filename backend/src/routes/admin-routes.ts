@@ -35,6 +35,7 @@ import { PrivateMarketNewsManagementController } from "../controllers/admin/priv
 import { TaxonomyManagementController } from "../controllers/admin/taxonomyManagement";
 import { NotableActivityManagementController } from "../controllers/admin/notableActivityManagement";
 import { ActivityTypeManagementController } from "../controllers/admin/activityTypeManagement";
+import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
 
 // Enquiry Management Controllers
 import {
@@ -62,6 +63,7 @@ const privateMarketNewsController = new PrivateMarketNewsManagementController();
 const taxonomyController = new TaxonomyManagementController();
 const notableActivityController = new NotableActivityManagementController();
 const activityTypeController = new ActivityTypeManagementController();
+const bulkDealsController = new BulkDealsManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -70,7 +72,8 @@ router.post("/login", cmsLogin);        // CMS users login
 router.use((req, res, next) => {
   // Skip authentication for new feature routes during testing
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
-      req.path.includes('/taxonomies') || req.path.includes('/activity-types')) {
+      req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
+      req.path.includes('/bulk-deals')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -157,5 +160,14 @@ router.get("/activity-types/:id", activityTypeController.getActivityTypeById);
 router.post("/activity-types", activityTypeController.createActivityType);
 router.put("/activity-types/:id", activityTypeController.updateActivityType);
 router.delete("/activity-types/:id", activityTypeController.deleteActivityType);
+
+// Bulk Deals Management Routes
+router.get("/bulk-deals", bulkDealsController.getAllBulkDeals);
+router.get("/bulk-deals/stats", bulkDealsController.getBulkDealsStats);
+router.get("/bulk-deals/:id", bulkDealsController.getBulkDealById);
+router.post("/bulk-deals", uploadIcon.any(), bulkDealsController.createBulkDeal);
+router.put("/bulk-deals/:id", uploadIcon.any(), bulkDealsController.updateBulkDeal);
+router.delete("/bulk-deals/:id", bulkDealsController.deleteBulkDeal);
+router.delete("/bulk-deals/bulk", bulkDealsController.bulkDeleteBulkDeals);
 
 export default router;

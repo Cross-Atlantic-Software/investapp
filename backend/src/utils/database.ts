@@ -10,6 +10,7 @@ import PrivateMarketNews, { initializePrivateMarketNewsModel } from "../Models/P
 import Taxonomy, { initializeTaxonomyModel } from "../Models/Taxonomy";
 import NotableActivity, { initializeNotableActivityModel } from "../Models/NotableActivity";
 import ActivityType, { initializeActivityTypeModel } from "../Models/ActivityType";
+import BulkDeals, { initializeBulkDealsModel } from "../Models/BulkDeals";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -80,6 +81,9 @@ async function initializeSequelize() {
   // Initialize Activity Type model
   initializeActivityTypeModel(sequelize);
   
+  // Initialize Bulk Deals model
+  initializeBulkDealsModel(sequelize);
+  
   // No associations needed since only admins handle stocks
   
   return sequelize;
@@ -119,6 +123,7 @@ export const db = {
   Taxonomy,
   NotableActivity,
   ActivityType,
+  BulkDeals,
 };
 
 async function initialize() {
