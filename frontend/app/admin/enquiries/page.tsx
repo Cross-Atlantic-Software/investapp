@@ -254,65 +254,65 @@ export default function EnquiriesPage() {
           </div>
 
           {/* Stats Row */}
-          <div className="flex items-center space-x-3 mb-6">
+          <div className="flex items-center gap-3 mb-6 flex-wrap">
             <button
               onClick={() => setStatusFilter('all')}
-              className={`px-3 py-1.5 rounded-full transition-colors ${
+              className={`pl-3 px-1 py-1 rounded-full transition-colors cursor-pointer duration-500 ${
                 statusFilter === 'all' 
-                  ? 'bg-themeTeal text-white' 
-                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+                  ? 'bg-themeTeal text-themeTealWhite' 
+                  : 'bg-themeTealLight text-themeTealWhite hover:bg-themeTeal hover:text-themeTealWhite'
               }`}
             >
-              <span className="text-sm font-medium">
-                Total <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.total}</span>
+              <span className="text-sm font-medium flex gap-2 items-center">
+                <span>Total</span> <span className="bg-white text-themeTeal w-6 flex items-center justify-center h-6 block rounded-full text-xs">{stats.total}</span>
               </span>
             </button>
             <button
               onClick={() => setStatusFilter('new')}
-              className={`px-3 py-1.5 rounded-full transition-colors ${
+              className={`pl-3 px-1 py-1 rounded-full transition-colors cursor-pointer duration-500 ${
                 statusFilter === 'new' 
-                  ? 'bg-themeTeal text-white' 
-                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+                  ? 'bg-themeTeal text-themeTealWhite' 
+                  : 'bg-themeTealLight text-themeTealWhite hover:bg-themeTeal hover:text-themeTealWhite'
               }`}
             >
-              <span className="text-sm font-medium">
-                New <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.new}</span>
+              <span className="text-sm font-medium flex gap-2 items-center">
+                <span>New</span> <span className="bg-white text-themeTeal w-6 flex items-center justify-center h-6 block rounded-full text-xs">{stats.new}</span>
               </span>
             </button>
             <button
               onClick={() => setStatusFilter('read')}
-              className={`px-3 py-1.5 rounded-full transition-colors ${
+              className={`pl-3 px-1 py-1 rounded-full transition-colors cursor-pointer duration-500 ${
                 statusFilter === 'read' 
-                  ? 'bg-themeTeal text-white' 
-                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+                  ? 'bg-themeTeal text-themeTealWhite' 
+                  : 'bg-themeTealLight text-themeTealWhite hover:bg-themeTeal hover:text-themeTealWhite'
               }`}
             >
-              <span className="text-sm font-medium">
-                Read <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.read}</span>
+              <span className="text-sm font-medium flex gap-2 items-center">
+                <span>Read</span> <span className="bg-white text-themeTeal w-6 flex items-center justify-center h-6 block rounded-full text-xs">{stats.read}</span>
               </span>
             </button>
             <button
               onClick={() => setStatusFilter('replied')}
-              className={`px-3 py-1.5 rounded-full transition-colors ${
+              className={`pl-3 px-1 py-1 rounded-full transition-colors cursor-pointer duration-500 ${
                 statusFilter === 'replied' 
-                  ? 'bg-themeTeal text-white' 
-                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+                  ? 'bg-themeTeal text-themeTealWhite' 
+                  : 'bg-themeTealLight text-themeTealWhite hover:bg-themeTeal hover:text-themeTealWhite'
               }`}
             >
-              <span className="text-sm font-medium">
-                Replied <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.replied}</span>
+              <span className="text-sm font-medium flex gap-2 items-center">
+                <span>Replied</span> <span className="bg-white text-themeTeal w-6 flex items-center justify-center h-6 block rounded-full text-xs">{stats.replied}</span>
               </span>
             </button>
             <button
               onClick={() => setStatusFilter('closed')}
-              className={`px-3 py-1.5 rounded-full transition-colors ${
+              className={`pl-3 px-1 py-1 rounded-full transition-colors cursor-pointer duration-500 ${
                 statusFilter === 'closed' 
-                  ? 'bg-themeTeal text-white' 
-                  : 'bg-themeTeal/10 text-themeTeal hover:bg-themeTeal/20'
+                  ? 'bg-themeTeal text-themeTealWhite' 
+                  : 'bg-themeTealLight text-themeTealWhite hover:bg-themeTeal hover:text-themeTealWhite'
               }`}
             >
-              <span className="text-sm font-medium">
-                Closed <span className="bg-white text-themeTeal px-2 py-0.5 rounded-full text-xs ml-1">{stats.closed}</span>
+              <span className="text-sm font-medium flex gap-2 items-center">
+                <span>Closed</span> <span className="bg-white text-themeTeal w-6 flex items-center justify-center h-6 block rounded-full text-xs">{stats.closed}</span>
               </span>
             </button>
           </div>

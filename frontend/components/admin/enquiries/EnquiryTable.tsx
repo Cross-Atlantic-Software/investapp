@@ -1,5 +1,6 @@
 'use client';
 
+import { Eye } from 'lucide-react';
 import React from 'react';
 
 interface Enquiry {
@@ -91,12 +92,12 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
 
   if (enquiries.length === 0) {
     return (
-      <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
+      <div className="bg-white rounded border border-themeTealLighter p-8 text-center">
         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No enquiries found</h3>
-        <p className="mt-1 text-sm text-gray-500">Get started by waiting for customer enquiries to come in.</p>
+        <h3 className="mt-2 text-sm font-medium text-themeTeal">No enquiries found</h3>
+        <p className="mt-1 text-sm text-themeTealLighter">Get started by waiting for customer enquiries to come in.</p>
         <div className="mt-6">
           <button
             onClick={onRefresh}
@@ -168,42 +169,39 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
                       </div>
                     </div>
                     <div className="ml-4">
-                      <div className="text-sm font-medium text-gray-900">{enquiry.name}</div>
+                      <div className="text-sm font-medium text-themeTeal">{enquiry.name}</div>
                       {enquiry.company && (
-                        <div className="text-sm text-gray-500">{enquiry.company}</div>
+                        <div className="text-sm text-themeTealLighter">{enquiry.company}</div>
                       )}
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{enquiry.email}</div>
+                  <div className="text-sm text-themeTeal">{enquiry.email}</div>
                   {enquiry.phone && (
-                    <div className="text-sm text-gray-500">{enquiry.phone}</div>
+                    <div className="text-sm text-themeTealLighter">{enquiry.phone}</div>
                   )}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
                   {getStatusBadge(enquiry.status)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTealLighter">
                   {formatDate(enquiry.createdAt)}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => onView(enquiry)}
-                      className="text-themeTeal hover:text-themeTealLight"
+                      className="text-themeTeal hover:text-themeTealLight duration-300 transition cursor-pointer"
                       title="View Details"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                      </svg>
+                      <Eye width={20}/>
                     </button>
                     <div className="relative">
                       <select
                         value={enquiry.status}
                         onChange={(e) => onUpdateStatus(enquiry.id, e.target.value)}
-                        className="text-xs border border-gray-300 rounded px-2 py-1 bg-white focus:outline-none focus:ring-1 focus:ring-themeTeal"
+                        className="text-xs border border-themeTealLighter rounded px-2 py-1 text-themeTeal focus:outline-none"
                       >
                         <option value="new">New</option>
                         <option value="read">Read</option>

@@ -577,9 +577,9 @@ export default function EmailTemplatesPage() {
           {/* Search Section */}
           <div className="flex justify-between flex-col md:flex-row gap-4 md:items-center mb-6">
             <div className="flex items-center space-x-4">
-              <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
-                <span className="text-sm font-medium text-themeTeal">
-                  All templates <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{pagination.totalCount}</span>
+              <div className="bg-themeTealLight pl-3 px-1 py-1 rounded-full">
+                <span className="text-sm font-medium flex gap-2 items-center text-themeTealWhite">
+                  <span>All templates </span> <span className="bg-white text-themeTeal w-6 flex items-center justify-center h-6 block rounded-full text-sm">{pagination.totalCount}</span>
                 </span>
               </div>
             </div>

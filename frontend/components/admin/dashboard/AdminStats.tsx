@@ -144,7 +144,7 @@ const AdminStats: React.FC<AdminStatsProps> = ({
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6">
         {[...Array(7)].map((_, index) => (
           <div key={index} className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 animate-pulse">
             <div className="flex items-center justify-between">
@@ -166,12 +166,12 @@ const AdminStats: React.FC<AdminStatsProps> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-6">
       {statCards.map((stat, index) => (
         <div 
           key={index} 
           onClick={() => handleCardClick(stat.redirectPath)}
-          className="bg-white rounded-xl shadow-lg border border-gray-200 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+          className="bg-white rounded-xl shadow-lg shadow-themeTeal/20 p-6 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer"
         >
           <div className="flex items-center justify-between">
             <div className="flex-1">

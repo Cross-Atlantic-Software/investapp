@@ -56,7 +56,7 @@ export function HeroSection() {
     { src: "/images/slide2.webp", alt: "Chart 2" },
   ];
   return (
-    <section className="bg-brandGradient overflow-hidden">
+    <section className="bg-brandGradient overflow-hidden relative">
       <div className="appContainer flex flex-col md:flex-row items-center gap-10 lg:grid-cols-12 py-16">
         <div className="flex-1 text-center md:text-left">
           <Heading as="h6" base="font-sans" className="mb-3">Unlisted Shares, Made Simple. Made Secure.</Heading>
@@ -67,37 +67,19 @@ export function HeroSection() {
             <Button text="Invest Now" color="themeTeal" variant="solid" size="md" href='/invest' />
           </div>
         </div>
-        <div className="flex-1 relative">
-          <div>
-            <div className="w-full max-w-screen-md">
-              <Image
-                src="/images/hero.webp"
-                alt="Hero"
-                width={1887}
-                height={1079}
-                className="scale-125"
-              />
-            </div>
-          </div>
-          {/* <div className="absolute xl:-right-20 -right-20 -bottom-30 w-40 lg:w-50 xl:w-60 hidden lg:block"> */}
-          <div className="absolute hidden lg:block z-20 xl:-right-90 -right-90 xl:-bottom-10 -bottom-20">
-            <HeroPhoneCarousel />
-            {/* <PhoneCarousel
-              slides={[
-                { src: "/images/slide1.webp", alt: "Chart 1" },
-                { src: "/images/slide2.webp", alt: "Chart 2" },
-              ]}
-              // fine-tune these 4 numbers until the slides sit perfectly in your frame
-              insetTopPct={7}
-              insetRightPct={4.5}
-              insetBottomPct={8}
-              insetLeftPct={4.5}
-              radiusPx={22}
-            /> */}
-
+        <div>
+          <div className="w-full max-w-screen-md">
+            <Image
+              src="/images/hero.webp"
+              alt="Hero"
+              width={1887}
+              height={1079}
+              className="scale-125"
+            />
           </div>
         </div>
       </div>
+      <HeroPhoneCarousel />
     </section>
   )
 }

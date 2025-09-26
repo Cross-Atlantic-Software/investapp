@@ -44,29 +44,25 @@ const NotableActivityTable: React.FC<NotableActivityTableProps> = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Icon
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                <SortableHeader
-                  field="description"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSort={onSort}
-                >
-                  Description
-                </SortableHeader>
-              </th>
+              <SortableHeader
+                field="description"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Description
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Activity Types
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                <SortableHeader
-                  field="created_at"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSort={onSort}
-                >
-                  Date Added
-                </SortableHeader>
-              </th>
+              <SortableHeader
+                field="created_at"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Date Added
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Actions
               </th>
@@ -106,7 +102,7 @@ const NotableActivityTable: React.FC<NotableActivityTableProps> = ({
                     {activity.activity_types?.map((type) => (
                       <span 
                         key={type.id}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLighter text-themeTeal"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLight text-themeTealWhite"
                       >
                         {type.name}
                       </span>
@@ -120,7 +116,7 @@ const NotableActivityTable: React.FC<NotableActivityTableProps> = ({
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => onEdit(activity)}
-                      className="p-2 bg-blue-600 text-white hover:bg-blue-700 rounded transition duration-300 cursor-pointer flex gap-1"
+                      className="p-2 bg-themeTeal text-themeTealWhite hover:bg-themeTealWhite hover:text-themeTeal rounded transition duration-300 cursor-pointer flex gap-1"
                       title="Edit Activity"
                     >
                       <Edit width={16} height={16}/>

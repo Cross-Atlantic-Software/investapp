@@ -80,7 +80,7 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto m-0">
       <div className="bg-white rounded w-full max-w-md mx-4 overflow-hidden max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="bg-themeTeal px-6 py-4 rounded-t flex-shrink-0">
@@ -106,7 +106,7 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({...formData, title: e.target.value})}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none placeholder:text-themeTealLighter focus:border-themeTeal text-themeTeal"
                 placeholder="Enter news title"
               />
             </div>
@@ -117,7 +117,7 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
                 type="url"
                 value={formData.url}
                 onChange={(e) => setFormData({...formData, url: e.target.value})}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal text-themeTeal placeholder:text-themeTealLighter"
                 placeholder="https://example.com/news-article"
               />
             </div>
@@ -128,7 +128,7 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
                 type="file"
                 accept="image/*"
                 onChange={(e) => setFormData({...formData, icon: e.target.files?.[0] || null})}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal text-themeTeal placeholder:text-themeTealLighter"
               />
               {formData.icon && (
                 <div className="mt-2">
@@ -141,7 +141,7 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
                     <button
                       type="button"
                       onClick={removeIcon}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors duration-200"
+                      className="absolute -top-2 -right-2 bg-red-700 text-white rounded-full p-1 hover:bg-red-600 transition-colors duration-200"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -164,7 +164,7 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
                 <div className="flex items-center justify-end">
                   <button
                     onClick={onTaxonomyModalOpen}
-                    className="text-themeTeal hover:text-themeSkyBlue text-sm flex items-center"
+                    className="text-themeTeal hover:text-themeSkyBlue text-sm flex items-center transition duration-300 cursor-pointer"
                   >
                     <Plus width={14} height={14} className="mr-1"/>
                     Add Taxonomy
@@ -180,14 +180,14 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
           <div className="flex justify-end space-x-3">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-themeTeal border border-themeTealLighter rounded-md hover:bg-themeTealWhite transition duration-300"
+              className="px-5 py-3 text-themeTealWhite bg-themeTealLighter rounded hover:bg-themeTealLight transition duration-300 cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!formData.title || !formData.url || (!formData.icon && !editingItem?.icon) || loading}
-              className="px-4 py-2 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+              className="px-5 py-3 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 cursor-pointer"
             >
               {loading ? 'Processing...' : submitLabel}
             </button>

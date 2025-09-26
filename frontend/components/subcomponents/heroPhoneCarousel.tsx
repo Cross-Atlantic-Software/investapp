@@ -164,8 +164,8 @@ export default function HeroPhoneCarousel(){
   }, []);
 
   return (
-    <section className="w-full">
-      <div className="px-4 sm:px-6 lg:px-8 grid lg:grid-cols-2 gap-5 items-center">
+    <section className="absolute hidden lg:block right-10 bottom-10">
+      <div className="">
         <div className="flex justify-center lg:justify-end">
           <PhoneFrame>
             <Swiper

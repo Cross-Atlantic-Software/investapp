@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Loader, NotificationContainer, NotificationData, ConfirmationModal } from '@/components/admin/shared';
+import { Trash2 } from 'lucide-react';
 
 interface Subscriber {
   id: number;
@@ -208,9 +209,9 @@ export default function SubscribersPage() {
           {/* Search Section */}
           <div className="flex justify-between flex-col md:flex-row gap-4 md:items-center mb-6">
             <div className="flex items-center space-x-4">
-              <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
-                <span className="text-sm font-medium text-themeTeal">
-                  All subscribers <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{subscribers.length}</span>
+              <div className="bg-themeTealLight pl-3 px-1 py-1 rounded-full">
+                <span className="text-sm font-medium flex gap-2 items-center text-themeTealWhite">
+                  <span>All Subscribers</span> <span className="bg-white text-themeTeal w-6 flex items-center justify-center h-6 block rounded-full text-sm">{subscribers.length}</span>
                 </span>
               </div>
             </div>
@@ -223,7 +224,7 @@ export default function SubscribersPage() {
                   <thead className="bg-themeTeal border-b border-themeTealLighter">
                     <tr>
                       <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
+                        className="px-4 py-3 text-left text-sm font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                         onClick={() => handleSort('email')}
                       >
                         <div className="flex items-center space-x-1">
@@ -232,7 +233,7 @@ export default function SubscribersPage() {
                         </div>
                       </th>
                       <th 
-                        className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
+                        className="px-4 py-3 text-left text-sm font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                         onClick={() => handleSort('createdAt')}
                       >
                         <div className="flex items-center space-x-1">
@@ -240,7 +241,7 @@ export default function SubscribersPage() {
                           <SortIcon field="createdAt" />
                         </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
+                      <th className="px-4 py-3 text-left text-sm font-medium text-themeTealWhite uppercase tracking-wider w-32">
                         Actions
                       </th>
                     </tr>
@@ -261,20 +262,18 @@ export default function SubscribersPage() {
                           }`}
                         >
                           <td className="px-4 py-3">
-                            <div className="text-xs font-medium text-themeTeal">{subscriber.email}</div>
+                            <div className="text-sm font-medium text-themeTeal">{subscriber.email}</div>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="text-xs text-themeTealLight">{formatDate(subscriber.createdAt)}</div>
+                            <div className="text-sm text-themeTealLight">{formatDate(subscriber.createdAt)}</div>
                           </td>
                           <td className="px-4 py-3 text-sm font-medium">
                             <button
                               onClick={() => handleDeleteSubscriber(subscriber.id)}
-                              className="p-2 text-themeTealWhite bg-red-500 rounded transition duration-300 hover:bg-red-600 cursor-pointer"
+                              className="p-2 text-themeTealWhite bg-rose-600 rounded transition duration-300 hover:bg-red-600 cursor-pointer"
                               title="Delete Subscriber"
                             >
-                              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
+                              <Trash2 width={20}/>
                             </button>
                           </td>
                         </tr>

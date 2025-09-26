@@ -34,36 +34,32 @@ const NewsTable: React.FC<NewsTableProps> = ({
         <table className="min-w-full divide-y divide-themeTealLighter">
           <thead className="bg-themeTeal">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                 Icon
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                <SortableHeader
-                  field="title"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSort={onSort}
-                >
-                  Title
-                </SortableHeader>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <SortableHeader
+                field="title"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Title
+              </SortableHeader>
+              <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                 URL
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                 Taxonomies
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                <SortableHeader
-                  field="created_at"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSort={onSort}
-                >
-                  Date Added
-                </SortableHeader>
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+              <SortableHeader
+                field="created_at"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Date Added
+              </SortableHeader>
+              <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                 Actions
               </th>
             </tr>
@@ -103,7 +99,7 @@ const NewsTable: React.FC<NewsTableProps> = ({
                       href={item.url} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-800 truncate block"
+                      className="text-themeSkyBlue hover:text-themeTealLight transition duration-300 truncate block"
                     >
                       {item.url}
                     </a>
@@ -116,7 +112,7 @@ const NewsTable: React.FC<NewsTableProps> = ({
                       return taxonomy ? (
                         <span 
                           key={taxonomy.id}
-                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-white"
+                          className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium text-themeTealWhite"
                           style={{ backgroundColor: taxonomy.color }}
                         >
                           {taxonomy.name}
@@ -132,7 +128,7 @@ const NewsTable: React.FC<NewsTableProps> = ({
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => onEdit(item)}
-                      className="p-2 bg-blue-600 text-white hover:bg-blue-700 rounded transition duration-300 cursor-pointer flex gap-1"
+                      className="p-2 bg-themeTeal text-themeTealWhite hover:bg-white hover:text-themeTeal rounded transition duration-300 cursor-pointer flex gap-1"
                       title="Edit News"
                     >
                       <Edit width={16} height={16}/>
