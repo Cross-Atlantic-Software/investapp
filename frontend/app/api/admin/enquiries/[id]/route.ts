@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(
   request: NextRequest,
@@ -15,7 +15,7 @@ export async function GET(
 
     const { id } = await params;
     
-    const response = await fetch(`${BACKEND_URL}/api/admin/enquiries/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/enquiries/${id}`, {
       headers: {
         'token': token,
       },
@@ -45,7 +45,7 @@ export async function DELETE(
 
     const { id } = await params;
     
-    const response = await fetch(`${BACKEND_URL}/api/admin/enquiries/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/enquiries/${id}`, {
       method: 'DELETE',
       headers: {
         'token': token,

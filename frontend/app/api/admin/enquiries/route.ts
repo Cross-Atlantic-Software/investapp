@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
     
-    const response = await fetch(`${BACKEND_URL}/api/admin/enquiries?${queryString}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/enquiries?${queryString}`, {
       headers: {
         'token': token,
       },
