@@ -34,7 +34,7 @@ export default function Page() {
 
     try {
       await login({ email, password });
-      router.push("/dashboard");
+      router.push("/invest");
     } catch (err) {
       console.error('Login error:', err);
       setError("Login failed. Please check your credentials and try again.");

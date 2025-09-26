@@ -22,7 +22,7 @@ export default function Page() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/dashboard");
+      router.push("/invest");
     }
   }, [isAuthenticated, router]);
 
