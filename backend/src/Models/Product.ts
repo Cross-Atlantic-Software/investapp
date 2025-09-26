@@ -4,7 +4,6 @@ interface ProductAttributes {
   id: number;
   company_name: string;
   logo: string;
-  price: number;
   price_change: number;
   teaser: string;
   short_description: string;
@@ -15,6 +14,10 @@ interface ProductAttributes {
   valuation: string;
   price_per_share: number;
   percentage_change: number;
+  founded: number;
+  sector: string;
+  subsector: string;
+  headquarters: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -31,7 +34,6 @@ class Product
   public id!: number;
   public company_name!: string;
   public logo!: string;
-  public price!: number;
   public price_change!: number;
   public teaser!: string;
   public short_description!: string;
@@ -42,6 +44,10 @@ class Product
   public valuation!: string;
   public price_per_share!: number;
   public percentage_change!: number;
+  public founded!: number;
+  public sector!: string;
+  public subsector!: string;
+  public headquarters!: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -61,10 +67,6 @@ export function initializeProductModel(sequelize: Sequelize) {
       },
       logo: {
         type: DataTypes.STRING,
-        allowNull: false
-      },
-      price: {
-        type: DataTypes.DECIMAL(10, 2),
         allowNull: false
       },
       price_change: {
@@ -107,6 +109,22 @@ export function initializeProductModel(sequelize: Sequelize) {
       },
       percentage_change: {
         type: DataTypes.DECIMAL(5, 2),
+        allowNull: false
+      },
+      founded: {
+        type: DataTypes.INTEGER,
+        allowNull: false
+      },
+      sector: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+      },
+      subsector: {
+        type: DataTypes.STRING(100),
+        allowNull: false
+      },
+      headquarters: {
+        type: DataTypes.STRING(200),
         allowNull: false
       }
     }, {

@@ -193,6 +193,10 @@ export default function StocksPage() {
     valuation: string;
     price_per_share: number;
     percentage_change: number;
+    founded: number;
+    sector: string;
+    subsector: string;
+    headquarters: string;
     icon: File | null;
   }) => {
     try {
@@ -214,6 +218,10 @@ export default function StocksPage() {
       formData.append('valuation', stockData.valuation);
       formData.append('price_per_share', stockData.price_per_share.toString());
       formData.append('percentage_change', stockData.percentage_change.toString());
+      formData.append('founded', stockData.founded.toString());
+      formData.append('sector', stockData.sector);
+      formData.append('subsector', stockData.subsector);
+      formData.append('headquarters', stockData.headquarters);
       
       // Add logo file if selected
       if (stockData.icon) {
@@ -340,6 +348,10 @@ export default function StocksPage() {
               valuation: stockData.valuation,
               price_per_share: stockData.price_per_share,
               percentage_change: stockData.percentage_change,
+              founded: stockData.founded,
+              sector: stockData.sector,
+              subsector: stockData.subsector,
+              headquarters: stockData.headquarters,
               icon: stockData.icon
             };
             handleAddStock(adaptedData);

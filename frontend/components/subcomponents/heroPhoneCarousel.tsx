@@ -19,7 +19,7 @@ export type Slide = {
   title: string;
   highlight?: string; // e.g., HIGH DEMAND
   description?: string;
-  price?: string; // e.g., ₹ 290.58 ↑
+  price_change?: number; // e.g., ₹ 290.58 ↑
   changePct?: string; // e.g., 66% ↑
   pps?: string; // Price Per Share
   valuation?: string; // Valuation
@@ -30,8 +30,7 @@ interface ApiStock {
   id: number;
   company_name: string;
   logo: string;
-  price: string;
-  price_change: string;
+  price_change: number;
   teaser: string;
   short_description: string;
   analysis: string;
@@ -69,7 +68,7 @@ async function fetchBannerStocks(): Promise<Slide[]> {
     
     // Map API data to Slide format - only using fields that were already displayed in UI
     return apiData.data.stocks.map((stock: ApiStock): Slide => {
-      const priceChange = parseFloat(stock.price_change);
+      const priceChange = stock.price_change;
       const percentageChange = parseFloat(stock.percentage_change);
       
       return {
@@ -77,7 +76,7 @@ async function fetchBannerStocks(): Promise<Slide[]> {
         title: stock.company_name,
         highlight: stock.demand,
         description: stock.teaser,
-        price: `₹ ${stock.price} ${priceChange >= 0 ? '↑' : '↓'}`,
+        price_change: priceChange,
         changePct: `${percentageChange >= 0 ? '+' : ''}${stock.percentage_change}% ${percentageChange >= 0 ? '↑' : '↓'}`,
         pps: `₹ ${stock.price_per_share}`,
         valuation: `₹ ${stock.valuation}B`,
@@ -229,7 +228,7 @@ function Pill({ label }: { label?: string }) {
   );
 }
 
-function StatRow({ label, value }: { label: string; value?: string }) {
+function StatRow({ label, value }: { label: string; value?: (string | number) }) {
   return (
     <div className="flex flex-col">
       <span className="text-themeTealLight text-xs">{label}</span>
@@ -259,7 +258,7 @@ function Card({ slide }: { slide: Slide }) {
         {/* Stats */}
         <div className="mt-4 rounded bg-themeTealWhite p-2">
           <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-            <StatRow label="₹ Price" value={slide.price} />
+            <StatRow label="₹ Price Change" value={slide.price_change} />
             <StatRow label="% Change" value={slide.changePct} />
             <StatRow label="PPS" value={slide.pps} />
             <StatRow label="Valuation" value={slide.valuation} />

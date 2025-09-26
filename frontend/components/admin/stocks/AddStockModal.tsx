@@ -20,6 +20,10 @@ export interface StockData {
   valuation: string;
   price_per_share: number;
   percentage_change: number;
+  founded: number;
+  sector: string;
+  subsector: string;
+  headquarters: string;
   icon: File | null;
 }
 
@@ -52,6 +56,10 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
     valuation: '',
     price_per_share: 0,
     percentage_change: 0,
+    founded: new Date().getFullYear(),
+    sector: 'Technology',
+    subsector: 'Software',
+    headquarters: '',
     icon: null as File | null,
   });
 
@@ -409,6 +417,73 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                   <option value="yes">Yes</option>
                   <option value="no">No</option>
                 </select>
+              </div>
+            </div>
+
+            {/* Company Information */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Founded Year <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="founded"
+                  value={formData.founded}
+                  onChange={handleInputChange}
+                  required
+                  min="1800"
+                  max={new Date().getFullYear()}
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
+                  placeholder="2023"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Sector <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="sector"
+                  value={formData.sector}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
+                  placeholder="Technology"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Subsector <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="subsector"
+                  value={formData.subsector}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
+                  placeholder="Software"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Headquarters <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  name="headquarters"
+                  value={formData.headquarters}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
+                  placeholder="San Francisco, CA"
+                />
               </div>
             </div>
             

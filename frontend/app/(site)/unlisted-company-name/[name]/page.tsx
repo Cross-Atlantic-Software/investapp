@@ -1,23 +1,26 @@
 'use client';
-import { Section, SectionNav, ShareIntro, TradeTabsShell } from "@/components/shares";
+import { Section, ShareIntro, TradeTabsShell } from "@/components/shares";
 // Removed unused section imports since we only display stock details from our schema
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 
-const NAV = [
-  { id: "stock-details", label: "Stock Details" },
-];
+// const NAV = [
+//   { id: "stock-details", label: "Stock Details" },
+// ];
 
 interface StockData {
   id: string;
   company_name: string;
   logo: string;
-  price: number;
+  price_per_share: number;
   price_change: number;
   teaser: string;
   short_description: string;
   analysis: string;
+  founded: number;
+  sector: string;
+  subsector: string;
+  headquarters: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -49,11 +52,15 @@ export default function UnlistedCompanyDetails() {
             id: stock.id.toString(),
             company_name: stock.company_name,
             logo: stock.logo,
-            price: typeof stock.price === 'string' ? parseFloat(stock.price) : stock.price,
+            price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
             price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
             teaser: stock.teaser,
             short_description: stock.short_description,
             analysis: stock.analysis,
+            founded: typeof stock.founded === 'string' ? parseInt(stock.founded) : stock.founded,
+            sector: stock.sector,
+            subsector: stock.subsector,
+            headquarters: stock.headquarters,
             createdAt: stock.createdAt?.toString(),
             updatedAt: stock.updatedAt?.toString()
           };
@@ -98,29 +105,29 @@ export default function UnlistedCompanyDetails() {
         ]}
         logoUrl={stockData.logo}
         company={stockData.company_name}
-        investPrice={stockData.price}
+        investPrice={stockData.price_per_share}
         changeAbs={stockData.price_change}
         changePct={0}
         updatedAt={stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "Recently"}
         tags={["Most Active", "Upcoming IPO", "Unicorn"]}
-        founded={1998}
-        sector="Technology"
-        subsector="Technology"
-        hq="Noida, Uttar Pradesh"
+        founded={stockData.founded}
+        sector={stockData.sector}
+        subsector={stockData.subsector}
+        hq={stockData.headquarters}
         about={stockData.short_description}
         website={`${stockData.company_name.toLowerCase().replace(/\s+/g, '')}.com`}
       />
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,384px)] p-6">
         {/* LEFT: content */}
         <div className="min-w-0 space-y-6">
-          <SectionNav items={NAV} offset={88} />
+          {/* <SectionNav items={NAV} offset={88} /> */}
 
           <div className="space-y-6">
-            <Section id="stock-details" title="Stock Details" info="Real-time stock information from our database.">
+            <Section id="stock-details" title="Company Analysis">
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <div className="space-y-6">
                   {/* Company Logo and Name */}
-                  <div className="flex items-center gap-4">
+                  {/* <div className="flex items-center gap-4">
                     <div className="h-16 w-16 rounded-lg bg-gray-100 overflow-hidden">
                       <Image src={stockData.logo} alt={`${stockData.company_name} logo`} width={64} height={64} className="h-full w-full object-cover" />
                     </div>
@@ -128,10 +135,10 @@ export default function UnlistedCompanyDetails() {
                       <h2 className="text-2xl font-bold text-gray-900">{stockData.company_name}</h2>
                       <p className="text-gray-600">Stock ID: {stockData.id}</p>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Price Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold text-gray-900">Price Information</h3>
                       <div className="space-y-3">
@@ -165,26 +172,26 @@ export default function UnlistedCompanyDetails() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
 
                   {/* Teaser */}
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <h3 className="text-lg font-semibold text-gray-900">Teaser</h3>
                     <p className="text-gray-700 text-lg">{stockData.teaser}</p>
-                  </div>
+                  </div> */}
 
                   {/* Short Description */}
-                  <div className="space-y-2">
+                  {/* <div className="space-y-2">
                     <h3 className="text-lg font-semibold text-gray-900">Short Description</h3>
                     <div 
                       className="text-gray-700 prose max-w-none"
                       dangerouslySetInnerHTML={{ __html: stockData.short_description || '' }}
                     />
-                  </div>
+                  </div> */}
 
                   {/* Analysis */}
                   <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Analysis</h3>
+                    {/* <h3 className="text-lg font-semibold text-gray-900">Analysis</h3> */}
                     <div 
                       className="prose max-w-none text-gray-700"
                       dangerouslySetInnerHTML={{ __html: stockData.analysis || '' }}
@@ -200,7 +207,7 @@ export default function UnlistedCompanyDetails() {
         <aside className="lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-5rem)] overflow-y-auto">
           <TradeTabsShell
             company={stockData.company_name}
-            priceINR={stockData.price}
+            priceINR={stockData.price_per_share}
             settlementDate="Aug 21, 2025"
             minUnits={300}
             lotSize={300}

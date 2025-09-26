@@ -10,17 +10,20 @@ interface Stock {
   id: number;
   company_name: string;
   logo: string;
-  price: number;
   price_change: number;
   teaser: string;
   short_description: string;
-  analysis: string
+  analysis: string;
   demand: 'High Demand' | 'Low Demand';
   homeDisplay: 'yes' | 'no';
   bannerDisplay: 'yes' | 'no';
   valuation: string;
   price_per_share: number;
   percentage_change: number;
+  founded: number;
+  sector: string;
+  subsector: string;
+  headquarters: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -100,7 +103,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     setEditingStock(stock);
     setEditFormData({
       company_name: stock.company_name,
-      price: stock.price,
       price_change: stock.price_change,
       teaser: stock.teaser,
       short_description: stock.short_description,
@@ -110,7 +112,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       bannerDisplay: stock.bannerDisplay,
       valuation: stock.valuation,
       price_per_share: stock.price_per_share,
-      percentage_change: stock.percentage_change
+      percentage_change: stock.percentage_change,
+      founded: stock.founded,
+      sector: stock.sector,
+      subsector: stock.subsector,
+      headquarters: stock.headquarters
     });
     setEditIconFile(null); // Reset icon file
     setImageUpload({
@@ -226,7 +232,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       // Create FormData for file upload
       const formData = new FormData();
       formData.append('company_name', editFormData.company_name || '');
-      formData.append('price', editFormData.price?.toString() || '');
       formData.append('price_change', editFormData.price_change?.toString() || '');
       formData.append('teaser', editFormData.teaser || '');
       formData.append('short_description', editFormData.short_description || '');
@@ -237,6 +242,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       formData.append('valuation', editFormData.valuation || '');
       formData.append('price_per_share', editFormData.price_per_share?.toString() || '');
       formData.append('percentage_change', editFormData.percentage_change?.toString() || '');
+      formData.append('founded', editFormData.founded?.toString() || '');
+      formData.append('sector', editFormData.sector || '');
+      formData.append('subsector', editFormData.subsector || '');
+      formData.append('headquarters', editFormData.headquarters || '');
       
       // Add logo file if selected
       if (editIconFile) {
@@ -318,11 +327,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 </th>
                 <th 
                   className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('price')}
+                  onClick={() => onSort?.('price_per_share')}
                 >
                   <div className="flex items-center">
                     Price
-                    {sortBy === 'price' ? (
+                    {sortBy === 'price_per_share' ? (
                       <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
                     ) : (
                       <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
@@ -414,6 +423,58 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     )}
                   </div>
                 </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  onClick={() => onSort?.('founded')}
+                >
+                  <div className="flex items-center">
+                    Founded
+                    {sortBy === 'founded' ? (
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  onClick={() => onSort?.('sector')}
+                >
+                  <div className="flex items-center">
+                    Sector
+                    {sortBy === 'sector' ? (
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  onClick={() => onSort?.('subsector')}
+                >
+                  <div className="flex items-center">
+                    Subsector
+                    {sortBy === 'subsector' ? (
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
+                    )}
+                  </div>
+                </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  onClick={() => onSort?.('headquarters')}
+                >
+                  <div className="flex items-center">
+                    Headquarters
+                    {sortBy === 'headquarters' ? (
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
+                    )}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                   Actions
                 </th>
@@ -455,7 +516,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Price Column */}
                   <td className="px-4 py-3">
-                    <div className="text-xs font-medium text-themeTeal flex items-center"><IndianRupee width={12} height={12}/>{stock.price}</div>
+                    <div className="text-xs font-medium text-themeTeal flex items-center"><IndianRupee width={12} height={12}/>{stock.price_per_share}</div>
                   </td>
 
 
@@ -505,6 +566,26 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <div className={`text-xs font-medium ${(stock.percentage_change || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {(stock.percentage_change || 0) >= 0 ? '+' : ''}{stock.percentage_change || 0}%
                     </div>
+                  </td>
+
+                  {/* Founded Column */}
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-themeTeal">{stock.founded || 'N/A'}</div>
+                  </td>
+
+                  {/* Sector Column */}
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-themeTeal">{stock.sector || 'N/A'}</div>
+                  </td>
+
+                  {/* Subsector Column */}
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-themeTeal">{stock.subsector || 'N/A'}</div>
+                  </td>
+
+                  {/* Headquarters Column */}
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-themeTeal">{stock.headquarters || 'N/A'}</div>
                   </td>
 
                   {/* Actions Column */}
@@ -597,26 +678,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                       placeholder="Enter company name"
                     />
-                  </div>
-
-                  {/* Price Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-themeTeal mb-1">
-                      Price <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-themeTealLighter"><IndianRupee width={16} height={16} /></span>
-                      </div>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={editFormData.price || ''}
-                        onChange={(e) => setEditFormData({...editFormData, price: parseFloat(e.target.value) || 0})}
-                        className="w-full pl-8 pr-4 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
-                        placeholder="0.00"
-                      />
-                    </div>
                   </div>
 
                   {/* Price Change Field */}
@@ -779,6 +840,64 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         placeholder="0.00"
                       />
                     </div>
+                  </div>
+
+                  {/* Founded Year Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Founded Year <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1800"
+                      max={new Date().getFullYear()}
+                      value={editFormData.founded || ''}
+                      onChange={(e) => setEditFormData({...editFormData, founded: parseInt(e.target.value) || 0})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="2023"
+                    />
+                  </div>
+
+                  {/* Sector Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Sector <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.sector || ''}
+                      onChange={(e) => setEditFormData({...editFormData, sector: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="Technology"
+                    />
+                  </div>
+
+                  {/* Subsector Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Subsector <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.subsector || ''}
+                      onChange={(e) => setEditFormData({...editFormData, subsector: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="Software"
+                    />
+                  </div>
+                  
+                  {/* Headquarters Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Headquarters <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editFormData.headquarters || ''}
+                      onChange={(e) => setEditFormData({...editFormData, headquarters: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="San Francisco, CA"
+                    />
                   </div>
 
                   {/* Company Logo */}
@@ -1000,20 +1119,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-themeTeal mb-1">Current Price</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-themeTealLighter"><IndianRupee width={16} height={16} /></span>
-                      </div>
-                      <input
-                        type="text"
-                        value={viewingStock.price}
-                        readOnly
-                        className="w-full pl-8 pr-4 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div>
                     <label className="block text-xs font-medium text-themeTeal mb-1">Price Change</label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1065,6 +1170,37 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                           : 'text-red-600'
                       }`}>
                         {(viewingStock.percentage_change || 0) >= 0 ? '+' : ''}{viewingStock.percentage_change || 0}%
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Company Information */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Company Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Founded Year</label>
+                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {viewingStock.founded || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Sector</label>
+                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {viewingStock.sector || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Subsector</label>
+                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {viewingStock.subsector || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Headquarters</label>
+                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {viewingStock.headquarters || 'N/A'}
                       </p>
                     </div>
                   </div>

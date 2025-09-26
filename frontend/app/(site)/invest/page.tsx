@@ -129,7 +129,6 @@ export default function Invest() {
             <div className="mb-4">
                 {/* row: mobile → heading left, Filters right; desktop → heading left, search right */}
                 <div className="flex items-center justify-between md:grid md:grid-cols-[1fr_auto] md:gap-3">
-                    <Heading as="h5" className="font-semibold">Search Results</Heading>
 
                     {/* Filters toggle (mobile only) */}
                     <button
@@ -144,15 +143,15 @@ export default function Invest() {
                     </button>
 
                     {/* Search input (desktop only in this row) */}
-                    <div className="hidden lg:block lg:w-80 lg:justify-self-end">
-                        <div className="flex items-center border border-themeTealLighter rounded-md px-2 py-1.5 w-full">
-                            <Search className="text-themeTealLighter mr-2 shrink-0" size={18} />
+                    <div className="hidden lg:block lg:w-96 lg:justify-self-end">
+                        <div className="flex items-center border border-themeTealLighter rounded-md px-3 py-2 w-full">
+                            <Search className="text-themeTealLighter mr-3 shrink-0" size={20} />
                             <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder="Search companies, sectors, or keywords..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full p-1.5 outline-none bg-transparent text-themeTeal"
+                            className="w-full p-1 outline-none bg-transparent text-themeTeal text-base"
                             />
                         </div>
                     </div>
@@ -160,14 +159,14 @@ export default function Invest() {
 
                 {/* Search input (mobile full-width below row) */}
                 <div className="mt-3 md:hidden">
-                    <div className="flex items-center border border-themeTealLighter rounded-md px-2 py-1.5 w-full">
-                        <Search className="text-themeTealLighter mr-2 shrink-0" size={18} />
+                    <div className="flex items-center border border-themeTealLighter rounded-md px-3 py-2 w-full">
+                        <Search className="text-themeTealLighter mr-3 shrink-0" size={20} />
                         <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder="Search companies, sectors, or keywords..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full p-1.5 outline-none bg-transparent text-themeTeal"
+                            className="w-full p-1 outline-none bg-transparent text-themeTeal text-base"
                         />
                     </div>
                 </div>

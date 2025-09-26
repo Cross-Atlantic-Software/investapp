@@ -3,6 +3,7 @@ import Breadcrumbs, { type Crumb } from "../subcomponents/breadcrumbs";
 import RegisterCard from "./registerCard";
 import WishlistCard from "./wishlistCard";
 import { Button, Heading } from "../ui";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export type ShareIntroProps = {
   breadcrumbs: Crumb[];
@@ -30,6 +31,7 @@ export default function ShareIntro(props: ShareIntroProps) {
     about, website, valuation,
   } = props;
 
+  const { isAuthenticated } = useAuth();
   const pos = changeAbs >= 0;
 
   return (
@@ -50,14 +52,14 @@ export default function ShareIntro(props: ShareIntroProps) {
           {/* KPIs: responsive grid */}
           <div className="mt-4 flex flex-wrap items-start gap-x-8 gap-y-3">
             <Kpi
-              label="Current Price"
+              label="Price per share"
               value={
                 <div>
                   <div className="font-semibold text-themeTeal">
                     ₹ {formatINR(investPrice)}{" "}
-                    <span className={pos ? "text-green-600 text-sm" : "text-rose-600 text-sm"}>
+                    {/* <span className={pos ? "text-green-600 text-sm" : "text-rose-600 text-sm"}>
                       {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))} ({pos ? "+" : ""}{changePct.toFixed(2)}%)
-                    </span>
+                    </span> */}
                   </div>
                   <div className="text-xs text-themeTealLight">Updated {updatedAt}</div>
                 </div>
@@ -114,7 +116,7 @@ export default function ShareIntro(props: ShareIntroProps) {
 
         {/* RIGHT */}
         <div className="space-y-6">
-          <RegisterCard />
+          {!isAuthenticated && <RegisterCard />}
           <WishlistCard name={company} sector={sector} priceINR={investPrice} />
         </div>
       </div>
