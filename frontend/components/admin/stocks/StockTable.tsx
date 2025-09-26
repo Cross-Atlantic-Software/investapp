@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState } from 'react';
-import RichTextEditor from '../RichTextEditor';
 import Image from 'next/image';
 import { Loader } from '@/components/admin/shared';
 import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X } from 'lucide-react';
+import SimpleRichTextEditor from '../SimpleRichTextEditor';
 
 interface Stock {
   id: number;
@@ -41,6 +41,14 @@ interface ImageUploadState {
   progress: number;
   error: string | null;
 }
+
+// Utility function to strip HTML tags
+const stripHtmlTags = (html: string): string => {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  return tempDiv.textContent || tempDiv.innerText || '';
+};
+
 
 const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification }) => {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
@@ -650,9 +658,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-xs font-medium text-themeTeal mb-1">
                       Short Description <span className="text-red-500">*</span>
                     </label>
-                    <RichTextEditor
+                    <SimpleRichTextEditor
                       value={editFormData.short_description || ''}
-                      onChange={(value) => setEditFormData({...editFormData, short_description: value})}
+                      onChange={(value) => setEditFormData(prev => ({...prev, short_description: value}))}
                       placeholder="Enter short description"
                       height="120px"
                     />
@@ -663,10 +671,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-xs font-medium text-themeTeal mb-1">
                       Analysis <span className="text-red-500">*</span>
                     </label>
-                    <RichTextEditor
+                    <SimpleRichTextEditor
                       value={editFormData.analysis || ''}
-                      onChange={(value) => setEditFormData({...editFormData, analysis: value})}
-                      placeholder="Enter detailed analysis with rich formatting..."
+                      onChange={(value) => setEditFormData(prev => ({...prev, analysis: value}))}
+                      placeholder="Enter detailed analysis..."
                       height="200px"
                     />
                   </div>
@@ -1102,23 +1110,43 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                 {/* Short Description */}
                 <div>
-                  <label className="block text-xs font-medium text-themeTeal mb-1">Short Description</label>
-                  <textarea
-                    value={viewingStock.short_description}
-                    readOnly
-                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
-                    rows={3}
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-xs font-medium text-themeTeal">Short Description</label>
+                    <button
+                      onClick={() => {
+                        const plainText = stripHtmlTags(viewingStock.short_description || '');
+                        navigator.clipboard.writeText(plainText);
+                        onNotification?.('success', 'Copied', 'Short description copied as plain text');
+                      }}
+                      className="text-xs bg-themeTeal text-white px-2 py-1 rounded hover:bg-themeTealLight transition duration-200"
+                    >
+                      Copy as Plain Text
+                    </button>
+                  </div>
+                  <div
+                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none min-h-[80px]"
+                    dangerouslySetInnerHTML={{ __html: viewingStock.short_description || '' }}
                   />
                 </div>
 
                 {/* Analysis */}
                 <div>
-                  <label className="block text-xs font-medium text-themeTeal mb-1">Analysis</label>
-                  <textarea
-                    value={viewingStock.analysis}
-                    readOnly
-                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
-                    rows={4}
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-xs font-medium text-themeTeal">Analysis</label>
+                    <button
+                      onClick={() => {
+                        const plainText = stripHtmlTags(viewingStock.analysis || '');
+                        navigator.clipboard.writeText(plainText);
+                        onNotification?.('success', 'Copied', 'Analysis copied as plain text');
+                      }}
+                      className="text-xs bg-themeTeal text-white px-2 py-1 rounded hover:bg-themeTealLight transition duration-200"
+                    >
+                      Copy as Plain Text
+                    </button>
+                  </div>
+                  <div
+                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none min-h-[120px]"
+                    dangerouslySetInnerHTML={{ __html: viewingStock.analysis || '' }}
                   />
                 </div>
 
@@ -1147,6 +1175,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
           </div>
         </div>
       )}
+
     </div>
   );
 };

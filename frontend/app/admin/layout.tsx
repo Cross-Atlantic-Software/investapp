@@ -304,73 +304,73 @@ function Sidebar({
   );
 
   return (
-    <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full">
       <div className="hidden lg:flex items-center justify-center h-16 px-4 bg-themeTeal">
-        <Image
-          src="/images/logo.svg"
-          alt="InvestApp Logo"
-          width={120}
-          height={35}
-          priority
-        />
-      </div>
-
+              <Image
+                src="/images/logo.svg"
+                alt="InvestApp Logo"
+                width={120}
+                height={35}
+                priority
+              />
+            </div>
+            
       <nav className="flex-1 px-4 py-6 lg:py-8 space-y-3 overflow-y-auto">
-        <div className="space-y-2">
+                <div className="space-y-2">
           <NavLink
-            href="/admin/dashboard"
+                    href="/admin/dashboard"
             active={pathname === '/admin/dashboard' || pathname === '/admin'}
             icon={
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
-              </svg>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v6H8V5z" />
+                      </svg>
             }
             label="Dashboard"
           />
 
           <NavLink
-            href="/admin/stocks"
+                    href="/admin/stocks"
             active={pathname === '/admin/stocks'}
             icon={
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                      </svg>
             }
             label="Stocks"
           />
 
           {/* Users accordion */}
-          <div>
-            <button
-              onClick={() => setIsUsersMenuOpen(!isUsersMenuOpen)}
+                  <div>
+                    <button
+                      onClick={() => setIsUsersMenuOpen(!isUsersMenuOpen)}
               className={`${linkBase} ${
-                ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'].includes(pathname)
-                  ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
+                        ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'].includes(pathname)
+                          ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
                   : 'text-themeTeal hover:bg-themeTealWhite hover:text-themeTeal hover:shadow-md'
               } w-full justify-between`}
               aria-expanded={isUsersMenuOpen}
               aria-controls="users-submenu"
-            >
-              <div className="flex items-center">
+                    >
+                      <div className="flex items-center">
                 <div
                   className={`mr-3 p-1.5 rounded-full transition duration-300 ${
-                    ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'].includes(pathname)
-                      ? 'bg-white/20'
+                          ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'].includes(pathname)
+                            ? 'bg-white/20'
                       : 'bg-themeTealWhite group-hover:bg-themeTeal group-hover:text-themeTealWhite'
                   }`}
                 >
                   <ShieldUser width={16} height={16}/>
-                </div>
-                Users
-              </div>
+                        </div>
+                        Users
+                      </div>
               <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isUsersMenuOpen ? 'rotate-180' : ''}`} />
-            </button>
-
+                    </button>
+                    
             <div
               id="users-submenu"
               className={`overflow-hidden transition-[max-height,opacity] duration-200 ${
-                isUsersMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                      isUsersMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
               }`}
             >
               <div className="ml-4 mt-2 space-y-1">
@@ -381,66 +381,66 @@ function Sidebar({
                   label="Admin Users"
                 />
                 <SubLink
-                  href="/admin/site-users"
+                          href="/admin/site-users"
                   active={pathname === '/admin/site-users'}
                   icon={<Users className="h-3 w-3" />}
                   label="Site Users"
                 />
                 <SubLink
-                  href="/admin/enquiries"
+                          href="/admin/enquiries"
                   active={pathname === '/admin/enquiries'}
                   icon={
-                    <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
                         strokeWidth={2}
                         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
                       />
-                    </svg>
+                            </svg>
                   }
                   label="Enquiries"
                 />
                 <SubLink
-                  href="/admin/subscribers"
+                          href="/admin/subscribers"
                   active={pathname === '/admin/subscribers'}
                   icon={<UserPlus className="h-3 w-3" />}
                   label="Subscribers"
                 />
-              </div>
-            </div>
-          </div>
-
+                      </div>
+                    </div>
+                  </div>
+                  
           <NavLink
-            href="/admin/email-templates"
+                    href="/admin/email-templates"
             active={pathname === '/admin/email-templates'}
             icon={<FileText className="h-4 w-4" />}
             label="Email Templates"
           />
 
           <NavLink
-            href="/admin/private-market-news"
+                    href="/admin/private-market-news"
             active={pathname === '/admin/private-market-news'}
             icon={
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
                   d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
                 />
-              </svg>
+                      </svg>
             }
             label="Private Market News"
           />
 
           <NavLink
-            href="/admin/notable-activities"
+                    href="/admin/notable-activities"
             active={pathname === '/admin/notable-activities'}
             icon={
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
             }
             label="Notable Activities"
           />
@@ -460,8 +460,8 @@ function Sidebar({
             }
             label="Bulk Deals"
           />
-        </div>
-      </nav>
+              </div>  
+            </nav>
     </div>
   );
 }

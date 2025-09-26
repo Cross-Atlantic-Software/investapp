@@ -176,15 +176,19 @@ export default function UnlistedCompanyDetails() {
                   {/* Short Description */}
                   <div className="space-y-2">
                     <h3 className="text-lg font-semibold text-gray-900">Short Description</h3>
-                    <p className="text-gray-700">{stockData.short_description}</p>
+                    <div 
+                      className="text-gray-700 prose max-w-none"
+                      dangerouslySetInnerHTML={{ __html: stockData.short_description || '' }}
+                    />
                   </div>
 
                   {/* Analysis */}
                   <div className="space-y-2">
                     <h3 className="text-lg font-semibold text-gray-900">Analysis</h3>
-                    <div className="prose max-w-none">
-                      <p className="text-gray-700 whitespace-pre-line">{stockData.analysis}</p>
-                    </div>
+                    <div 
+                      className="prose max-w-none text-gray-700"
+                      dangerouslySetInnerHTML={{ __html: stockData.analysis || '' }}
+                    />
                   </div>
                 </div>
               </div>

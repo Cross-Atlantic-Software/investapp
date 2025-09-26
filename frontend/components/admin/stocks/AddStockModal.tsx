@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { X } from 'lucide-react';
-import RichTextEditor from '../RichTextEditor';
+import SimpleRichTextEditor from '../SimpleRichTextEditor';
 
 export interface StockData {
   title: string;
@@ -342,10 +342,11 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               <label className="block text-xs font-medium text-themeTeal mb-1">
                 Short Description
               </label>
-              <RichTextEditor
+              <SimpleRichTextEditor
                 value={formData.short_description}
-                onChange={(value) => setFormData({...formData, short_description: value})}
+                onChange={(value) => setFormData(prev => ({...prev, short_description: value}))}
                 placeholder="Enter short description"
+                height="120px"
               />
             </div>
 
@@ -354,10 +355,11 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               <label className="block text-xs font-medium text-themeTeal mb-1">
                 Analysis
               </label>
-              <RichTextEditor
+              <SimpleRichTextEditor
                 value={formData.analysis}
-                onChange={(value) => setFormData({...formData, analysis: value})}
-                placeholder="Enter detailed analysis with rich formatting..."
+                onChange={(value) => setFormData(prev => ({...prev, analysis: value}))}
+                placeholder="Enter detailed analysis..."
+                height="200px"
               />
             </div>
 
