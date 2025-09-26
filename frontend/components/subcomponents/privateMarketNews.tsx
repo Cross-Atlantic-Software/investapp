@@ -148,12 +148,14 @@ export default function PrivateMarketNews({
 
 
   const getTimeAgo = (dateString: string): string => {
-    // Handle time-only format (e.g., "20:37:41")
+    // Handle time-only format (e.g., "22:39:33")
     if (dateString && dateString.includes(':') && !dateString.includes('-')) {
-      // If it's just time format, assume it's today
-      const today = new Date();
+      // If it's just time format, assume it's from yesterday or earlier
+      // This handles the case where database only stores time
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
       const [hours, minutes, seconds] = dateString.split(':').map(Number);
-      const date = new Date(today.getFullYear(), today.getMonth(), today.getDate(), hours, minutes, seconds);
+      const date = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), hours, minutes, seconds);
       
       const now = new Date();
       const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
