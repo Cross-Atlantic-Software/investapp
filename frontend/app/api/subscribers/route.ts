@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call backend API
-    const response = await fetch(`${BACKEND_URL}/api/subscribers`, {
+    const response = await fetch(`${API_BASE_URL}/api/subscribers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

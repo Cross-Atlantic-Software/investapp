@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
       params.append('search', search);
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/private-market-news?${params.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news?${params.toString()}`, {
       headers: {
         'token': token,
       },
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/private-market-news`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news`, {
       method: 'POST',
       headers: {
         'token': token,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/private-market-news/${params.id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news/${params.id}`, {
       headers: {
         'token': token,
       },
@@ -32,7 +32,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const formData = await request.formData();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/private-market-news/${params.id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news/${params.id}`, {
       method: 'PUT',
       headers: {
         'token': token,
@@ -55,7 +55,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/private-market-news/${params.id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news/${params.id}`, {
       method: 'DELETE',
       headers: {
         'token': token,

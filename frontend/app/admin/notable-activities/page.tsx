@@ -3,9 +3,8 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { Plus, Search, X } from 'lucide-react';
-import Loader from '@/components/admin/shared/Loader';
-import { NotificationContainer, NotificationData } from '@/components/admin/shared/Notification';
+import { Plus, Search, X, Trash2, Edit } from 'lucide-react';
+import { Loader, NotificationContainer, NotificationData, ConfirmationModal, SortableHeader, createSortHandler } from '@/components/admin/shared';
 import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
 
 interface NotableActivityItem {
@@ -36,6 +35,8 @@ export default function NotableActivitiesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showActivityTypeModal, setShowActivityTypeModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [activityToDelete, setActivityToDelete] = useState<number | null>(null);
   const [editingItem, setEditingItem] = useState<NotableActivityItem | null>(null);
   const [newActivity, setNewActivity] = useState({
     description: '',
@@ -51,24 +52,41 @@ export default function NotableActivitiesPage() {
   const itemsPerPage = 10;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Refs to store current values to avoid circular dependencies
+  const currentPageRef = useRef(currentPage);
+  const searchTermRef = useRef(searchTerm);
+  const sortByRef = useRef(sortBy);
+  const sortOrderRef = useRef(sortOrder);
+  
+  // Update refs when values change
+  useEffect(() => { currentPageRef.current = currentPage; }, [currentPage]);
+  useEffect(() => { searchTermRef.current = searchTerm; }, [searchTerm]);
+  useEffect(() => { sortByRef.current = sortBy; }, [sortBy]);
+  useEffect(() => { sortOrderRef.current = sortOrder; }, [sortOrder]);
 
-  const addNotification = useCallback((message: string, type: 'success' | 'error' = 'success') => {
+  // Notification helper functions
+  const addNotification = (notification: Omit<NotificationData, 'id'>) => {
     const id = Date.now().toString();
-    setNotifications(prev => [...prev, { id, message, type, title: type === 'success' ? 'Success' : 'Error' }]);
-    setTimeout(() => {
-      setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 5000);
-  }, []);
+    setNotifications(prev => [...prev, { ...notification, id }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
+  // Sort handler using the utility function
+  const handleSort = createSortHandler(setSortBy, setSortOrder);
 
   const fetchActivities = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: currentPage.toString(),
+        page: currentPageRef.current.toString(),
         limit: itemsPerPage.toString(),
-        search: searchTerm,
-        sort_by: sortBy,
-        sort_order: sortOrder
+        search: searchTermRef.current,
+        sort_by: sortByRef.current,
+        sort_order: sortOrderRef.current
       });
 
       const response = await fetch(`/api/admin/notable-activities?${params}`);
@@ -79,16 +97,28 @@ export default function NotableActivitiesPage() {
         setTotalPages(data.data.pagination.totalPages);
         setTotalItems(data.data.pagination.total);
       } else {
-        addNotification('Failed to fetch notable activities', 'error');
+        setNotifications(prev => [...prev, {
+          id: Date.now().toString(),
+          type: 'error',
+          title: 'Fetch Failed',
+          message: 'Failed to fetch notable activities',
+          duration: 5000
+        }]);
       }
     } catch (error) {
       console.error('Error fetching notable activities:', error);
-      addNotification('Error fetching notable activities', 'error');
+      setNotifications(prev => [...prev, {
+        id: Date.now().toString(),
+        type: 'error',
+        title: 'Fetch Failed',
+        message: 'Error fetching notable activities',
+        duration: 5000
+      }]);
     } finally {
       setLoading(false);
       setIsInitialLoad(false);
     }
-  }, [currentPage, searchTerm, sortBy, sortOrder, addNotification]);
+  }, []); // No dependencies - completely stable
 
   const fetchActivityTypes = useCallback(async () => {
     try {
@@ -103,28 +133,24 @@ export default function NotableActivitiesPage() {
     }
   }, []);
 
+  // Initial load effect
   useEffect(() => {
     fetchActivities();
-  }, [fetchActivities]);
-
-  useEffect(() => {
     fetchActivityTypes();
-  }, [fetchActivityTypes]);
+  }, []); // Only run once on mount
+
+  // Effect for pagination, search, and sorting changes
+  useEffect(() => {
+    if (currentPage !== 1 || searchTerm !== '' || sortBy !== 'created_at' || sortOrder !== 'desc') {
+      fetchActivities();
+    }
+  }, [currentPage, searchTerm, sortBy, sortOrder]); // Trigger when these change
 
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
     setCurrentPage(1);
   }, []);
 
-  const handleSort = useCallback((field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(field);
-      setSortOrder('desc');
-    }
-    setCurrentPage(1);
-  }, [sortBy, sortOrder]);
 
   const handleCreateActivity = async () => {
     try {
@@ -144,16 +170,31 @@ export default function NotableActivitiesPage() {
       const data = await response.json();
 
       if (data.success) {
-        addNotification('Notable activity created successfully');
+        addNotification({
+          type: 'success',
+          title: 'Activity Created',
+          message: 'Notable activity created successfully',
+          duration: 5000
+        });
         setShowCreateModal(false);
         setNewActivity({ description: '', icon: null, activity_type_ids: [] });
         fetchActivities();
       } else {
-        addNotification(data.message || 'Failed to create notable activity', 'error');
+        addNotification({
+          type: 'error',
+          title: 'Create Failed',
+          message: data.message || 'Failed to create notable activity',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error creating notable activity:', error);
-      addNotification('Error creating notable activity', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Create Failed',
+        message: 'Error creating notable activity',
+        duration: 5000
+      });
     }
   };
 
@@ -177,39 +218,77 @@ export default function NotableActivitiesPage() {
       const data = await response.json();
 
       if (data.success) {
-        addNotification('Notable activity updated successfully');
+        addNotification({
+          type: 'success',
+          title: 'Activity Updated',
+          message: 'Notable activity updated successfully',
+          duration: 5000
+        });
         setShowEditModal(false);
         setEditingItem(null);
         setNewActivity({ description: '', icon: null, activity_type_ids: [] });
         fetchActivities();
       } else {
-        addNotification(data.message || 'Failed to update notable activity', 'error');
+        addNotification({
+          type: 'error',
+          title: 'Update Failed',
+          message: data.message || 'Failed to update notable activity',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error updating notable activity:', error);
-      addNotification('Error updating notable activity', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Update Failed',
+        message: 'Error updating notable activity',
+        duration: 5000
+      });
     }
   };
 
   const handleDeleteActivity = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this notable activity?')) return;
+    setActivityToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteActivity = async () => {
+    if (!activityToDelete) return;
 
     try {
-      const response = await fetch(`/api/admin/notable-activities/${id}`, {
+      const response = await fetch(`/api/admin/notable-activities/${activityToDelete}`, {
         method: 'DELETE',
       });
 
       const data = await response.json();
 
       if (data.success) {
-        addNotification('Notable activity deleted successfully');
+        addNotification({
+          type: 'success',
+          title: 'Activity Deleted',
+          message: 'Notable activity deleted successfully',
+          duration: 5000
+        });
         fetchActivities();
       } else {
-        addNotification(data.message || 'Failed to delete notable activity', 'error');
+        addNotification({
+          type: 'error',
+          title: 'Delete Failed',
+          message: data.message || 'Failed to delete notable activity',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error deleting notable activity:', error);
-      addNotification('Error deleting notable activity', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Delete Failed',
+        message: 'Error deleting notable activity',
+        duration: 5000
+      });
+    } finally {
+      setShowDeleteModal(false);
+      setActivityToDelete(null);
     }
   };
 
@@ -226,16 +305,31 @@ export default function NotableActivitiesPage() {
       const data = await response.json();
 
       if (data.success) {
-        addNotification('Activity type created successfully');
+        addNotification({
+          type: 'success',
+          title: 'Activity Type Created',
+          message: 'Activity type created successfully',
+          duration: 5000
+        });
         setShowActivityTypeModal(false);
         setNewActivityType({ name: '' });
         fetchActivityTypes();
       } else {
-        addNotification(data.message || 'Failed to create activity type', 'error');
+        addNotification({
+          type: 'error',
+          title: 'Create Failed',
+          message: data.message || 'Failed to create activity type',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error creating activity type:', error);
-      addNotification('Error creating activity type', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Create Failed',
+        message: 'Error creating activity type',
+        duration: 5000
+      });
     }
   };
 
@@ -250,14 +344,29 @@ export default function NotableActivitiesPage() {
       const data = await response.json();
 
       if (data.success) {
-        addNotification('Activity type deleted successfully');
+        addNotification({
+          type: 'success',
+          title: 'Activity Type Deleted',
+          message: 'Activity type deleted successfully',
+          duration: 5000
+        });
         fetchActivityTypes();
       } else {
-        addNotification(data.message || 'Failed to delete activity type', 'error');
+        addNotification({
+          type: 'error',
+          title: 'Delete Failed',
+          message: data.message || 'Failed to delete activity type',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error deleting activity type:', error);
-      addNotification('Error deleting activity type', 'error');
+      addNotification({
+        type: 'error',
+        title: 'Delete Failed',
+        message: 'Error deleting activity type',
+        duration: 5000
+      });
     }
   };
 
@@ -293,86 +402,90 @@ export default function NotableActivitiesPage() {
   }
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Notable Activities</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowActivityTypeModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Manage Activity Types
-          </button>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Notable Activity
-          </button>
+    <div className="space-y-6 relative overflow-hidden max-h-screen overflow-y-auto">
+      {/* Header */}
+      <div className="mb-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-themeTeal">Notable Activities Management</h1>
+            <p className="text-sm text-themeTealLight mt-1">Manage notable activities and activity types here.</p>
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowActivityTypeModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 text-sm rounded hover:bg-blue-700 transition duration-300 flex items-center cursor-pointer"
+            >
+              <Plus width={16} height={16} className='mr-1'/>
+              Manage Activity Types
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-themeTeal text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeSkyBlue transition duration-300 flex items-center cursor-pointer"
+            >
+              <Plus width={16} height={16} className='mr-1'/>
+              Add Notable Activity
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Search and Filters */}
-      <div className="mb-6 flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input
-            type="text"
-            placeholder="Search activities..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+      {/* Search Section */}
+      <div className="flex justify-between flex-col md:flex-row gap-4 md:items-center mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
+            <span className="text-sm font-medium text-themeTeal">
+              All activities <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{totalItems}</span>
+            </span>
+          </div>
         </div>
-      </div>
-
-      {/* Stats */}
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Total Activities</h3>
-          <p className="text-2xl font-bold text-gray-900">{totalItems}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Activity Types</h3>
-          <p className="text-2xl font-bold text-gray-900">{activityTypes.length}</p>
-        </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Current Page</h3>
-          <p className="text-2xl font-bold text-gray-900">{currentPage} of {totalPages}</p>
+        <div className="flex items-center space-x-3">
+          <div className="relative">
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              placeholder="Search activities..."
+              className="w-64 pl-10 pr-4 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal placeholder:text-themeTealLighter"
+            />
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-themeTealLighter"/>
+          </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div className="bg-white rounded border border-themeTealLighter">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="w-full min-w-[800px]">
+            <thead className="bg-themeTeal border-b border-themeTealLighter">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Icon
                 </th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('description')}
+                <SortableHeader
+                  field="description"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={handleSort}
                 >
-                  Description {sortBy === 'description' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Description
+                </SortableHeader>
+                <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Activity Types
                 </th>
-                <th 
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100"
-                  onClick={() => handleSort('created_at')}
+                <SortableHeader
+                  field="created_at"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={handleSort}
                 >
-                  Created {sortBy === 'created_at' && (sortOrder === 'asc' ? '↑' : '↓')}
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Created
+                </SortableHeader>
+                <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-white divide-y divide-themeTealLighter">
               {loading ? (
                 <tr>
                   <td colSpan={5} className="px-6 py-4 text-center">
@@ -381,13 +494,13 @@ export default function NotableActivitiesPage() {
                 </tr>
               ) : activities.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={5} className="px-6 py-4 text-center text-themeTeal">
                     No notable activities found
                   </td>
                 </tr>
               ) : (
-                activities.map((activity) => (
-                  <tr key={activity.id} className="hover:bg-gray-50">
+                activities.map((activity, index) => (
+                  <tr key={activity.id} className={index % 2 === 0 ? 'bg-white' : 'bg-themeTealWhite'}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {activity.icon ? (
                         <img
@@ -402,31 +515,35 @@ export default function NotableActivitiesPage() {
                       )}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-900 max-w-xs truncate">
+                      <div className="text-sm text-themeTeal max-w-xs truncate">
                         {activity.description}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-themeTeal">
                         {getActivityTypeNames(activity)}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
                       {formatDate(activity.created_at)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
+                      <div className="flex items-center space-x-1">
                         <button
                           onClick={() => openEditModal(activity)}
-                          className="text-blue-600 hover:text-blue-900"
+                          className="p-2 bg-blue-600 text-white hover:bg-blue-700 rounded transition duration-300 cursor-pointer flex gap-1"
+                          title="Edit Activity"
                         >
-                          Edit
+                          <Edit width={16} height={16}/>
+                          <span className="text-xs font-medium">Edit</span>
                         </button>
                         <button
                           onClick={() => handleDeleteActivity(activity.id)}
-                          className="text-red-600 hover:text-red-900"
+                          className="p-2 bg-red-700 text-themeTealWhite hover:text-red-700 hover:bg-white rounded transition duration-300 cursor-pointer flex gap-1"
+                          title="Delete Activity"
                         >
-                          Delete
+                          <Trash2 width={16} height={16}/>
+                          <span className="text-xs font-medium">Delete</span>
                         </button>
                       </div>
                     </td>
@@ -507,63 +624,83 @@ export default function NotableActivitiesPage() {
 
       {/* Create Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Create Notable Activity</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded w-full max-w-md mx-4 overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Create Notable Activity</h2>
+                </div>
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                >
+                  <X width={20} height={20}/>
+                </button>
+              </div>
+            </div>
             
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={newActivity.description}
-                onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
-                placeholder="Enter activity description..."
-              />
-            </div>
+            {/* Modal Body */}
+            <div className="p-6">
+            
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-themeTeal mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={newActivity.description}
+                    onChange={(e) => setNewActivity({ ...newActivity, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                    rows={3}
+                    placeholder="Enter activity description..."
+                  />
+                </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Activity Types
-              </label>
-              <GenericSearchableMultiSelect
-                options={activityTypes.map(at => ({ value: at.id, label: at.name }))}
-                selectedValues={newActivity.activity_type_ids}
-                onChange={(values) => setNewActivity({ ...newActivity, activity_type_ids: values })}
-                placeholder="Select activity types..."
-                forceAbove={true}
-              />
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-themeTeal mb-2">
+                    Activity Types
+                  </label>
+                  <GenericSearchableMultiSelect
+                    options={activityTypes.map(at => ({ value: at.id, label: at.name }))}
+                    selectedValues={newActivity.activity_type_ids}
+                    onChange={(values) => setNewActivity({ ...newActivity, activity_type_ids: values })}
+                    placeholder="Select activity types..."
+                    forceAbove={true}
+                  />
+                </div>
 
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Icon
-              </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => setNewActivity({ ...newActivity, icon: e.target.files?.[0] || null })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-themeTeal mb-2">
+                    Icon
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setNewActivity({ ...newActivity, icon: e.target.files?.[0] || null })}
+                    className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                  />
+                </div>
+              </div>
 
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowCreateModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateActivity}
-                disabled={!newActivity.description}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                Create
-              </button>
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-themeTealLighter">
+                <button
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-4 py-2 text-themeTeal border border-themeTealLighter rounded-md hover:bg-themeTealWhite transition duration-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateActivity}
+                  disabled={!newActivity.description}
+                  className="px-4 py-2 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+                >
+                  Create
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -571,68 +708,92 @@ export default function NotableActivitiesPage() {
 
       {/* Edit Modal */}
       {showEditModal && editingItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Edit Notable Activity</h2>
-            
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={editingItem.description}
-                onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
-                placeholder="Enter activity description..."
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Activity Types
-              </label>
-              <GenericSearchableMultiSelect
-                options={activityTypes.map(at => ({ value: at.id, label: at.name }))}
-                selectedValues={newActivity.activity_type_ids}
-                onChange={(values: number[]) => setNewActivity({ ...newActivity, activity_type_ids: values })}
-                placeholder="Select activity types..."
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Icon
-              </label>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={(e) => setNewActivity({ ...newActivity, icon: e.target.files?.[0] || null })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              {editingItem.icon && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-500">Current icon:</p>
-                  <img src={editingItem.icon} alt="Current icon" className="h-8 w-8 rounded-full object-cover" />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded w-full max-w-md mx-4 overflow-hidden">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Edit Notable Activity</h2>
                 </div>
-              )}
+                <button
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingItem(null);
+                    setNewActivity({ description: '', activity_type_ids: [], icon: null });
+                  }}
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                >
+                  <X width={20} height={20}/>
+                </button>
+              </div>
             </div>
+            
+            {/* Modal Body */}
+            <div className="p-6">
+            
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-themeTeal mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={editingItem.description}
+                    onChange={(e) => setEditingItem({ ...editingItem, description: e.target.value })}
+                    className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                    rows={3}
+                    placeholder="Enter activity description..."
+                  />
+                </div>
 
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleEditActivity}
-                disabled={!editingItem.description}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                Update
-              </button>
+                <div>
+                  <label className="block text-sm font-medium text-themeTeal mb-2">
+                    Activity Types
+                  </label>
+                  <GenericSearchableMultiSelect
+                    options={activityTypes.map(at => ({ value: at.id, label: at.name }))}
+                    selectedValues={newActivity.activity_type_ids}
+                    onChange={(values: number[]) => setNewActivity({ ...newActivity, activity_type_ids: values })}
+                    placeholder="Select activity types..."
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-themeTeal mb-2">
+                    Icon
+                  </label>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setNewActivity({ ...newActivity, icon: e.target.files?.[0] || null })}
+                    className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                  />
+                  {editingItem.icon && (
+                    <div className="mt-2">
+                      <p className="text-sm text-themeTeal">Current icon:</p>
+                      <img src={editingItem.icon} alt="Current icon" className="h-8 w-8 rounded-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex justify-end gap-2 mt-6 pt-4 border-t border-themeTealLighter">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 text-themeTeal border border-themeTealLighter rounded-md hover:bg-themeTealWhite transition duration-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleEditActivity}
+                  disabled={!editingItem.description}
+                  className="px-4 py-2 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+                >
+                  Update
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -640,66 +801,89 @@ export default function NotableActivitiesPage() {
 
       {/* Activity Type Management Modal */}
       {showActivityTypeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Manage Activity Types</h2>
-              <button
-                onClick={() => setShowActivityTypeModal(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="h-6 w-6" />
-              </button>
-            </div>
-
-            {/* Create New Activity Type */}
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-              <h3 className="text-lg font-semibold mb-3">Create New Activity Type</h3>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={newActivityType.name}
-                  onChange={(e) => setNewActivityType({ name: e.target.value })}
-                  placeholder="Activity type name..."
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded w-full max-w-2xl mx-4 overflow-hidden max-h-[80vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-lg font-semibold text-white">Manage Activity Types</h2>
+                </div>
                 <button
-                  onClick={handleCreateActivityType}
-                  disabled={!newActivityType.name.trim()}
-                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                  onClick={() => setShowActivityTypeModal(false)}
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
                 >
-                  Create
+                  <X width={20} height={20}/>
                 </button>
               </div>
             </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto">
 
-            {/* Activity Types List */}
-            <div>
-              <h3 className="text-lg font-semibold mb-3">Existing Activity Types</h3>
-              <div className="space-y-2">
-                {activityTypes.map((activityType) => (
-                  <div key={activityType.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
-                    <span className="text-gray-900">{activityType.name}</span>
-                    <button
-                      onClick={() => handleDeleteActivityType(activityType.id)}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                ))}
-                {activityTypes.length === 0 && (
-                  <p className="text-gray-500 text-center py-4">No activity types found</p>
-                )}
+              {/* Create New Activity Type */}
+              <div className="mb-6 p-4 border border-themeTealLighter rounded-lg">
+                <h3 className="text-lg font-semibold text-themeTeal mb-3">Create New Activity Type</h3>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newActivityType.name}
+                    onChange={(e) => setNewActivityType({ name: e.target.value })}
+                    placeholder="Activity type name..."
+                    className="flex-1 px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                  />
+                  <button
+                    onClick={handleCreateActivityType}
+                    disabled={!newActivityType.name.trim()}
+                    className="px-4 py-2 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+                  >
+                    Create
+                  </button>
+                </div>
+              </div>
+
+              {/* Activity Types List */}
+              <div>
+                <h3 className="text-lg font-semibold text-themeTeal mb-3">Existing Activity Types</h3>
+                <div className="space-y-2">
+                  {activityTypes.map((activityType) => (
+                    <div key={activityType.id} className="flex items-center justify-between p-3 border border-themeTealLighter rounded-lg">
+                      <span className="text-themeTeal">{activityType.name}</span>
+                      <button
+                        onClick={() => handleDeleteActivityType(activityType.id)}
+                        className="text-red-600 hover:text-red-800 text-sm transition duration-300"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+                  {activityTypes.length === 0 && (
+                    <p className="text-themeTeal text-center py-4">No activity types found</p>
+                  )}
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
 
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setActivityToDelete(null);
+        }}
+        onConfirm={confirmDeleteActivity}
+        title="Delete Notable Activity"
+        message="Are you sure you want to delete this notable activity? This action cannot be undone."
+        confirmText="Delete"
+        type="danger"
+      />
+
       <NotificationContainer 
         notifications={notifications} 
-        onRemove={(id) => setNotifications(prev => prev.filter(n => n.id !== id))}
+        onRemove={removeNotification}
       />
     </div>
   );

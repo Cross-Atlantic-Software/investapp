@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     // Get query parameters from the request
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
-    const backendUrl = `${BACKEND_URL}/api/admin/site-users/stats${queryString ? `?${queryString}` : ''}`;
+    const backendUrl = `${API_BASE_URL}/api/admin/site-users/stats${queryString ? `?${queryString}` : ''}`;
 
     const response = await fetch(backendUrl, {
       method: 'GET',
