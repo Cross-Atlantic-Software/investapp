@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = await request.json();
 
     // Call your backend admin login API
-    const response = await fetch(`${process.env.BACKEND_URL || 'http://localhost:8888'}/api/admin/login`, {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888'}/api/admin/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

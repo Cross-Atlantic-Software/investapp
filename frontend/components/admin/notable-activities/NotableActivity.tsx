@@ -66,7 +66,7 @@ export default function NotableActivity({
       
       setLoading(true);
       try {
-        const response = await fetch('/api/public/notable-activities?limit=4');
+        const response = await fetch('/api/notable-activities?limit=4');
         const data = await response.json();
         
         if (data.success && data.data.activities) {
