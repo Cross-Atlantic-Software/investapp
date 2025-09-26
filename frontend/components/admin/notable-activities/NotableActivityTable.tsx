@@ -102,7 +102,7 @@ const NotableActivityTable: React.FC<NotableActivityTableProps> = ({
                     {activity.activity_types?.map((type) => (
                       <span 
                         key={type.id}
-                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLighter text-themeTeal"
+                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLight text-themeTealWhite"
                       >
                         {type.name}
                       </span>
@@ -116,7 +116,7 @@ const NotableActivityTable: React.FC<NotableActivityTableProps> = ({
                   <div className="flex items-center space-x-1">
                     <button
                       onClick={() => onEdit(activity)}
-                      className="p-2 bg-blue-600 text-white hover:bg-blue-700 rounded transition duration-300 cursor-pointer flex gap-1"
+                      className="p-2 bg-themeTeal text-themeTealWhite hover:bg-themeTealWhite hover:text-themeTeal rounded transition duration-300 cursor-pointer flex gap-1"
                       title="Edit Activity"
                     >
                       <Edit width={16} height={16}/>

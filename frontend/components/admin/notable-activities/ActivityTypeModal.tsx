@@ -20,7 +20,7 @@ const ActivityTypeModal: React.FC<ActivityTypeModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 m-0">
       <div className="bg-white rounded w-full max-w-2xl mx-4 overflow-hidden max-h-[80vh] flex flex-col">
         {/* Modal Header */}
         <div className="bg-themeTeal px-6 py-4 rounded-t flex-shrink-0">
@@ -48,12 +48,12 @@ const ActivityTypeModal: React.FC<ActivityTypeModalProps> = ({
                 value={newActivityType.name}
                 onChange={(e) => setNewActivityType({ name: e.target.value })}
                 placeholder="Activity type name..."
-                className="flex-1 px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                className="flex-1 px-3 py-2 border border-themeTealLighter rounded focus:outline-none text-themeTeal focus:border-themeTeal"
               />
               <button
                 onClick={handleSubmit}
                 disabled={!newActivityType.name.trim()}
-                className="px-4 py-2 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+                className="px-4 py-2 bg-themeTeal text-white rounded hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
               >
                 Create
               </button>
@@ -66,10 +66,10 @@ const ActivityTypeModal: React.FC<ActivityTypeModalProps> = ({
             <div className="space-y-2">
               {activityTypes.map((activityType) => (
                 <div key={activityType.id} className="flex items-center justify-between p-3 border border-themeTealLighter rounded-lg">
-                  <span className="text-themeTeal">{activityType.name}</span>
+                  <span className="text-themeTeal font-medium">{activityType.name}</span>
                   <button
                     onClick={() => onDeleteActivityType(activityType.id)}
-                    className="text-red-600 hover:text-red-800 text-sm transition duration-300"
+                    className="text-red-600 hover:text-red-800 text-sm transition duration-300 cursor-pointer"
                   >
                     Delete
                   </button>

@@ -76,14 +76,14 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
           text-align: left !important;
         }
         .ql-toolbar {
-          border-top: 1px solid #ccc;
-          border-left: 1px solid #ccc;
-          border-right: 1px solid #ccc;
+          border-top: 1px solid #779BA8;
+          border-left: 1px solid #779BA8;
+          border-right: 1px solid #779BA8;
         }
         .ql-container {
-          border-bottom: 1px solid #ccc;
-          border-left: 1px solid #ccc;
-          border-right: 1px solid #ccc;
+          border-bottom: 1px solid #779BA8;
+          border-left: 1px solid #779BA8;
+          border-right: 1px solid #779BA8;
         }
       `}</style>
     </div>

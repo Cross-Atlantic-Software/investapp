@@ -150,7 +150,7 @@ export default function SearchableMultiSelect({
     <div className={`relative ${className}`} ref={dropdownRef}>
       {/* Selected items display */}
       <div
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer min-h-[42px] flex flex-wrap gap-1 items-center"
+        className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none text-themeTeal cursor-pointer min-h-[42px] flex flex-wrap gap-1 items-center placeholder:text-themeTealLighter"
         onClick={handleToggle}
       >
         {selectedOptions.length === 0 ? (

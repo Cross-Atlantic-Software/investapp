@@ -401,7 +401,7 @@ export default function PrivateMarketNewsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-themeTealWhite p-4">
+    <div className="min-h-screen bg-themeTealWhite">
           {/* Header */}
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded p-6 shadow-sm shadow-themeTeal/10 mb-6">
@@ -416,7 +416,7 @@ export default function PrivateMarketNewsPage() {
             <div className="flex flex-col sm:flex-row gap-2">
                   <button
                 onClick={() => setShowTaxonomyModal(true)}
-                className="bg-themeTealLighter text-themeTeal px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
+                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
                   >
                 <Plus width={16} height={16} className='mr-1'/>
                 Manage Taxonomies
@@ -443,7 +443,7 @@ export default function PrivateMarketNewsPage() {
                   placeholder="Search news..."
                   value={searchTerm}
                   onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                  className="pl-10 pr-4 py-2 border border-themeTealLighter rounded-md focus:outline-none text-themeTeal placeholder:text-themeTealLighter focus:border-themeTeal"
                 />
               </div>
               {isSearching && <Loader />}
@@ -461,7 +461,7 @@ export default function PrivateMarketNewsPage() {
         <div className="bg-white rounded shadow-sm shadow-themeTeal/10 mb-6">
           <div className="px-6 py-4 border-b border-themeTealLighter">
             <h2 className="text-lg font-semibold text-themeTeal">News ({totalItems})</h2>
-              </div>
+          </div>
               
           <NewsTable
             news={news}

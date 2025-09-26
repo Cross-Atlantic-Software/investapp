@@ -346,7 +346,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                 value={formData.short_description}
                 onChange={(value) => setFormData({...formData, short_description: value})}
                 placeholder="Enter short description"
-                height="120px"
               />
             </div>
 
@@ -359,7 +358,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                 value={formData.analysis}
                 onChange={(value) => setFormData({...formData, analysis: value})}
                 placeholder="Enter detailed analysis with rich formatting..."
-                height="200px"
               />
             </div>
 

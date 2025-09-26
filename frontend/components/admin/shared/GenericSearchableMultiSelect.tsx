@@ -147,7 +147,7 @@ export default function GenericSearchableMultiSelect({
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       <div
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer bg-white"
+        className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none text-themeTeal cursor-pointer bg-white"
         onClick={() => {
           if (!isOpen) {
             calculateDropdownPosition();
@@ -166,7 +166,7 @@ export default function GenericSearchableMultiSelect({
               selectedLabels.map((label, index) => (
                 <span
                   key={index}
-                  className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800"
+                  className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800"
                 >
                   {label}
                   <button
@@ -197,7 +197,7 @@ export default function GenericSearchableMultiSelect({
       </div>
 
       {isOpen && (
-        <div className={`absolute z-[9999] w-full bg-white border border-gray-300 rounded-md shadow-lg ${
+        <div className={`absolute z-[9999] w-full bg-white border border-gray-300 rounded shadow-lg ${
           dropdownPosition === 'above' ? 'bottom-full mb-1' : 'top-full mt-1'
         }`}>
           <div className="p-2 border-b border-gray-200">
@@ -209,7 +209,7 @@ export default function GenericSearchableMultiSelect({
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                 autoFocus
               />
             </div>

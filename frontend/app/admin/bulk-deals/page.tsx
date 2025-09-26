@@ -304,7 +304,7 @@ export default function BulkDealsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-themeTealWhite p-4">
+    <div className="min-h-screen bg-themeTealWhite">
       {/* Header */}
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded p-6 shadow-sm shadow-themeTeal/10 mb-6">
@@ -339,7 +339,7 @@ export default function BulkDealsPage() {
             placeholder="Search bulk deals..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                  className="pl-10 pr-4 py-2 border border-themeTealLighter rounded-md focus:outline-none text-themeTeal placeholder:text-themeTealLighter focus:border-themeTeal"
           />
         </div>
               {isSearching && <Loader />}
@@ -456,14 +456,14 @@ export default function BulkDealsPage() {
                     <td className="px-6 py-4">
                       <div className="text-sm text-themeTeal">{deal.label}</div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTealLight">
                       {new Date(deal.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex items-center justify-center space-x-1">
                         <button
                           onClick={() => openEditModal(deal)}
-                          className="p-2 bg-blue-600 text-white hover:bg-blue-700 rounded transition duration-300 cursor-pointer flex gap-1"
+                          className="p-2 bg-themeTeal text-themeTealWhite hover:bg-themeTealWhite hover:text-themeTeal rounded transition duration-300 cursor-pointer flex gap-1"
                           title="Edit Bulk Deal"
                         >
                           <Edit width={16} height={16}/>
