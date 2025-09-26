@@ -1,7 +1,7 @@
 export { default as HighDemandStocks } from "./highDemandStocks";
 export { default as LowDemandStocks } from "./lowDemandStocks";
-export { default as NotableActivity } from "./notableActivity";
-export { default as PrivateMarketNews } from "./privateMarketNews";
+export { default as NotableActivity } from "../admin/notable-activities/NotableActivity";
+export { default as PrivateMarketNews } from "../admin/private-market-news/PrivateMarketNews";
 export { default as investmentCTA } from "./investmentCTA";
 export { default as PlatformFeatures } from "./platformFeatures";
 export { default as ScrollToTop } from "./scrollToTop";
