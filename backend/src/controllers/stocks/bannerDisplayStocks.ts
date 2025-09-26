@@ -6,6 +6,9 @@ export const getBannerDisplayStocks = async (req: Request, res: Response) => {
   try {
     console.log("Fetching banner display stocks...");
     
+    // Wait for database to be ready
+    await db.sequelizePromise;
+    
     const stocks = await db.Product.findAll({
       where: {
         bannerDisplay: 'yes'

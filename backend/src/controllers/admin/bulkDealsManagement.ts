@@ -9,12 +9,12 @@ interface MulterRequest extends Request {
 }
 
 export class BulkDealsManagementController {
-  private bulkDealsModel = db.BulkDeals;
-
   private async ensureDbReady(): Promise<void> {
-    if (!this.bulkDealsModel) {
-      throw new Error('Database not ready');
-    }
+    await db.sequelizePromise;
+  }
+
+  private get bulkDealsModel() {
+    return db.BulkDeals;
   }
 
   // Get all bulk deals with pagination

@@ -7,6 +7,9 @@ export const getHomeDisplayStocks = async (req: Request, res: Response) => {
   try {
     console.log("Fetching home display stocks...");
     
+    // Wait for database to be ready
+    await db.sequelizePromise;
+    
     const stocks = await db.Product.findAll({
       where: {
         homeDisplay: 'yes'

@@ -96,34 +96,83 @@ export const sequelizePromise = initializeSequelize();
 export const db = {
   get sequelize() {
     if (!sequelize) {
-      // Try to get sequelize from the promise if it's resolved
-      if (sequelizePromise) {
-        sequelizePromise.then(seq => {
-          sequelize = seq;
-        }).catch(err => {
-          console.error('Error getting sequelize from promise:', err);
-        });
-      }
-      
-      if (!sequelize) {
-        throw new Error('Sequelize not initialized yet. Wait for sequelizePromise to resolve.');
-      }
+      throw new Error('Sequelize not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return sequelize;
   },
   sequelizePromise,
-  User,
-  UserVerification,
-  Product,
-  CmsUser,
-  EmailTemplate,
-  Enquiry,
-  Subscriber,
-  PrivateMarketNews,
-  Taxonomy,
-  NotableActivity,
-  ActivityType,
-  BulkDeals,
+  get User() {
+    if (!User) {
+      throw new Error('User model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return User;
+  },
+  get UserVerification() {
+    if (!UserVerification) {
+      throw new Error('UserVerification model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return UserVerification;
+  },
+  get Product() {
+    if (!Product) {
+      throw new Error('Product model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Product;
+  },
+  get CmsUser() {
+    if (!CmsUser) {
+      throw new Error('CmsUser model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return CmsUser;
+  },
+  get EmailTemplate() {
+    if (!EmailTemplate) {
+      throw new Error('EmailTemplate model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return EmailTemplate;
+  },
+  get Enquiry() {
+    if (!Enquiry) {
+      throw new Error('Enquiry model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Enquiry;
+  },
+  get Subscriber() {
+    if (!Subscriber) {
+      throw new Error('Subscriber model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Subscriber;
+  },
+  get PrivateMarketNews() {
+    if (!PrivateMarketNews) {
+      throw new Error('PrivateMarketNews model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return PrivateMarketNews;
+  },
+  get Taxonomy() {
+    if (!Taxonomy) {
+      throw new Error('Taxonomy model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Taxonomy;
+  },
+  get NotableActivity() {
+    if (!NotableActivity) {
+      throw new Error('NotableActivity model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return NotableActivity;
+  },
+  get ActivityType() {
+    if (!ActivityType) {
+      throw new Error('ActivityType model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return ActivityType;
+  },
+  get BulkDeals() {
+    if (!BulkDeals) {
+      throw new Error('BulkDeals model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return BulkDeals;
+  },
 };
 
 async function initialize() {
