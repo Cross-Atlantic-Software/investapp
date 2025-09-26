@@ -2,14 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const token = request.headers.get('token');
     if (!token) {
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${params.id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${id}`, {
       headers: {
         'token': token,
       },
@@ -23,8 +24,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const token = request.headers.get('token');
     if (!token) {
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
@@ -32,7 +34,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const body = await request.json();
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${params.id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${id}`, {
       method: 'PUT',
       headers: {
         'token': token,
@@ -49,14 +51,15 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const token = request.headers.get('token');
     if (!token) {
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${params.id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${id}`, {
       method: 'DELETE',
       headers: {
         'token': token,
