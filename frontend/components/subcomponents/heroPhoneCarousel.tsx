@@ -75,7 +75,7 @@ async function fetchBannerStocks(): Promise<Slide[]> {
       return {
         logo: stock.logo,
         title: stock.company_name,
-        highlight: undefined, // Keep undefined since we're not using API demand field
+        highlight: stock.demand,
         description: stock.teaser,
         price: `₹ ${stock.price} ${priceChange >= 0 ? '↑' : '↓'}`,
         changePct: `${percentageChange >= 0 ? '+' : ''}${stock.percentage_change}% ${percentageChange >= 0 ? '↑' : '↓'}`,
