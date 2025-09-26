@@ -209,7 +209,7 @@ export const authApi = {
 
   async googleAuth(): Promise<{ authUrl: string }> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/google`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/google`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
