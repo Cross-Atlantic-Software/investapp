@@ -37,32 +37,28 @@ const NewsTable: React.FC<NewsTableProps> = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Icon
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                <SortableHeader
-                  field="title"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSort={onSort}
-                >
-                  Title
-                </SortableHeader>
-              </th>
+              <SortableHeader
+                field="title"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Title
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 URL
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Taxonomies
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                <SortableHeader
-                  field="created_at"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSort={onSort}
-                >
-                  Date Added
-                </SortableHeader>
-              </th>
+              <SortableHeader
+                field="created_at"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Date Added
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Actions
               </th>

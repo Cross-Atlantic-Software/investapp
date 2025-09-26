@@ -17,7 +17,7 @@ const SortableHeader: React.FC<SortableHeaderProps> = ({
   sortBy,
   sortOrder,
   onSort,
-  className = "cursor-pointer hover:bg-themeTeal/80 transition-colors"
+  className = "px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
 }) => {
   const SortIcon = () => {
     if (sortBy !== field) {
@@ -40,7 +40,7 @@ const SortableHeader: React.FC<SortableHeaderProps> = ({
   };
 
   return (
-    <div
+    <th
       className={className}
       onClick={() => onSort(field)}
     >
@@ -48,7 +48,7 @@ const SortableHeader: React.FC<SortableHeaderProps> = ({
         {children}
         <SortIcon />
       </div>
-    </div>
+    </th>
   );
 };
 

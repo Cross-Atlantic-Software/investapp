@@ -44,29 +44,25 @@ const NotableActivityTable: React.FC<NotableActivityTableProps> = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Icon
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                <SortableHeader
-                  field="description"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSort={onSort}
-                >
-                  Description
-                </SortableHeader>
-              </th>
+              <SortableHeader
+                field="description"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Description
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Activity Types
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
-                <SortableHeader
-                  field="created_at"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
-                  onSort={onSort}
-                >
-                  Date Added
-                </SortableHeader>
-              </th>
+              <SortableHeader
+                field="created_at"
+                sortBy={sortBy}
+                sortOrder={sortOrder}
+                onSort={onSort}
+              >
+                Date Added
+              </SortableHeader>
               <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
                 Actions
               </th>
