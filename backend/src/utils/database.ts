@@ -8,6 +8,8 @@ import Enquiry, { initializeEnquiryModel } from "../Models/Enquiry";
 import Subscriber, { initializeSubscriberModel } from "../Models/Subscriber";
 import PrivateMarketNews, { initializePrivateMarketNewsModel } from "../Models/PrivateMarketNews";
 import Taxonomy, { initializeTaxonomyModel } from "../Models/Taxonomy";
+import NotableActivity, { initializeNotableActivityModel } from "../Models/NotableActivity";
+import ActivityType, { initializeActivityTypeModel } from "../Models/ActivityType";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -72,6 +74,12 @@ async function initializeSequelize() {
   // Initialize Taxonomy model
   initializeTaxonomyModel(sequelize);
   
+  // Initialize Notable Activity model
+  initializeNotableActivityModel(sequelize);
+  
+  // Initialize Activity Type model
+  initializeActivityTypeModel(sequelize);
+  
   // No associations needed since only admins handle stocks
   
   return sequelize;
@@ -109,6 +117,8 @@ export const db = {
   Subscriber,
   PrivateMarketNews,
   Taxonomy,
+  NotableActivity,
+  ActivityType,
 };
 
 async function initialize() {

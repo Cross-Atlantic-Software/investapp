@@ -3,14 +3,14 @@
         "host": "localhost",
         "user": "root",
         "password": "root",
-        "database": "invest_app",
+        "database": "investapp",
         "dialect": "mysql"
     },
      "development": {
         "host": "localhost",
         "user": "root",
         "password": "root",
-        "database": "invest_app",
+        "database": "investapp",
         "dialect": "mysql"
     },
     "secret": "fnknwdfnnnfsdklnfslkfsdkfnslkfnksnfnsllsfkfsnfnklsnflnleoiw"

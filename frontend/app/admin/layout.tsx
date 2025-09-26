@@ -347,6 +347,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </div>
                     Private Market News
                   </a>
+
+                  <a
+                    href="/admin/notable-activities"
+                    className={`group flex items-center px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                      pathname === '/admin/notable-activities'
+                        ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
+                        : 'text-gray-600 hover:bg-themeTealWhite hover:text-themeTeal hover:shadow-md'
+                    }`}
+                  >
+                    <div className={`mr-3 p-1.5 rounded-lg ${
+                      pathname === '/admin/notable-activities'
+                        ? 'bg-white/20'
+                        : 'bg-gray-100 group-hover:bg-themeTeal/10'
+                    }`}>
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    Notable Activities
+                  </a>
                 </div>
               </div>  
             </nav>

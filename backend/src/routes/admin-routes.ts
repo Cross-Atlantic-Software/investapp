@@ -33,6 +33,8 @@ import { SiteUserManagementController } from "../controllers/admin/siteUserManag
 import { EmailTemplateManagementController } from "../controllers/admin/emailTemplateManagement";
 import { PrivateMarketNewsManagementController } from "../controllers/admin/privateMarketNewsManagement";
 import { TaxonomyManagementController } from "../controllers/admin/taxonomyManagement";
+import { NotableActivityManagementController } from "../controllers/admin/notableActivityManagement";
+import { ActivityTypeManagementController } from "../controllers/admin/activityTypeManagement";
 
 // Enquiry Management Controllers
 import {
@@ -58,6 +60,8 @@ const siteUserController = new SiteUserManagementController();
 const emailTemplateController = new EmailTemplateManagementController();
 const privateMarketNewsController = new PrivateMarketNewsManagementController();
 const taxonomyController = new TaxonomyManagementController();
+const notableActivityController = new NotableActivityManagementController();
+const activityTypeController = new ActivityTypeManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -136,5 +140,22 @@ router.get("/taxonomies/:id", taxonomyController.getTaxonomyById);
 router.post("/taxonomies", taxonomyController.createTaxonomy);
 router.put("/taxonomies/:id", taxonomyController.updateTaxonomy);
 router.delete("/taxonomies/:id", taxonomyController.deleteTaxonomy);
+
+// Notable Activity Management Routes
+router.get("/notable-activities", notableActivityController.getAllNotableActivities);
+router.get("/notable-activities/stats", notableActivityController.getNotableActivityStats);
+router.get("/notable-activities/:id", notableActivityController.getNotableActivityById);
+router.post("/notable-activities", uploadIcon.any(), notableActivityController.createNotableActivity);
+router.put("/notable-activities/:id", uploadIcon.any(), notableActivityController.updateNotableActivity);
+router.delete("/notable-activities/:id", notableActivityController.deleteNotableActivity);
+
+// Activity Type Management Routes
+router.get("/activity-types", activityTypeController.getAllActivityTypes);
+router.get("/activity-types/stats", activityTypeController.getActivityTypeStats);
+router.get("/activity-types/select", activityTypeController.getAllActivityTypesForSelect);
+router.get("/activity-types/:id", activityTypeController.getActivityTypeById);
+router.post("/activity-types", activityTypeController.createActivityType);
+router.put("/activity-types/:id", activityTypeController.updateActivityType);
+router.delete("/activity-types/:id", activityTypeController.deleteActivityType);
 
 export default router;
