@@ -25,6 +25,11 @@ export class SiteUserManagementController {
 
       const offset = (page - 1) * limit;
 
+      // Validate sort fields to prevent SQL injection
+      const allowedSortFields = ['first_name', 'last_name', 'email', 'phone', 'createdAt', 'updatedAt'];
+      const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
       // Build where clause for search
       const whereClause: any = {};
       if (search) {
@@ -39,7 +44,7 @@ export class SiteUserManagementController {
       // Get total count
       const totalCount = await this.userModel.count({ where: whereClause });
 
-      // Get users with pagination
+      // Get users with pagination and case-insensitive sorting for name fields
       const users = await this.userModel.findAll({
         where: whereClause,
         attributes: [
@@ -47,7 +52,9 @@ export class SiteUserManagementController {
           'role', 'status', 'auth_provider', 'email_verified', 
           'phone_verified', 'country_code', 'createdAt', 'updatedAt'
         ],
-        order: [[sortBy, sortOrder.toUpperCase()]],
+        order: validSortBy === 'first_name' || validSortBy === 'last_name' 
+          ? [[db.sequelize.fn('LOWER', db.sequelize.col(validSortBy)), validSortOrder]]
+          : [[validSortBy, validSortOrder]],
         limit,
         offset,
       });

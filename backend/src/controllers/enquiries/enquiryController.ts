@@ -45,6 +45,8 @@ export const getAllEnquiries = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const status = req.query.status as string;
+    const sortBy = req.query.sort_by as string || 'createdAt';
+    const sortOrder = req.query.sort_order as string || 'DESC';
     const offset = (page - 1) * limit;
 
     // Build where clause
@@ -53,10 +55,15 @@ export const getAllEnquiries = async (req: Request, res: Response) => {
       whereClause.status = status;
     }
 
-    // Get enquiries with pagination
+    // Validate sort fields to prevent SQL injection
+    const allowedSortFields = ['name', 'email', 'status', 'createdAt', 'updatedAt'];
+    const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
+    // Get enquiries with pagination and dynamic sorting
     const { count, rows: enquiries } = await Enquiry.findAndCountAll({
       where: whereClause,
-      order: [['createdAt', 'DESC']],
+      order: [[validSortBy, validSortOrder]],
       limit,
       offset,
     });

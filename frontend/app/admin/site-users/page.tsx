@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Loader, NotificationContainer, NotificationData, ConfirmationModal, SortableHeader, createSortHandler } from '@/components/admin/shared';
 import { Search, Trash2 } from 'lucide-react';
 
 interface SiteUser {
@@ -43,8 +43,28 @@ export default function SiteUsersPage() {
     hasNext: false,
     hasPrev: false
   });
-  const [sortBy] = useState('createdAt');
-  const [sortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<number | null>(null);
+
+  // Refs to store current values to avoid dependency issues
+  const searchRef = useRef(search);
+  const sortByRef = useRef(sortBy);
+  const sortOrderRef = useRef(sortOrder);
+
+  // Update refs when values change
+  useEffect(() => {
+    searchRef.current = search;
+  }, [search]);
+
+  useEffect(() => {
+    sortByRef.current = sortBy;
+  }, [sortBy]);
+
+  useEffect(() => {
+    sortOrderRef.current = sortOrder;
+  }, [sortOrder]);
 
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
@@ -56,17 +76,21 @@ export default function SiteUsersPage() {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
+  // Sort handler using the utility function
+  const handleSort = createSortHandler(setSortBy, setSortOrder);
+
   const fetchUsers = useCallback(async (page: number = 1, showLoading: boolean = true) => {
     try {
-      if (showLoading) setLoading(true);
+      // Only show loading on initial load, not when sorting
+      if (showLoading && sortByRef.current === 'createdAt' && sortOrderRef.current === 'desc') setLoading(true);
       const token = sessionStorage.getItem('adminToken') || '';
       
       const params = new URLSearchParams({
         page: page.toString(),
         limit: '10',
-        search: search,
-        sort_by: sortBy,
-        sort_order: sortOrder.toUpperCase()
+        search: searchRef.current,
+        sort_by: sortByRef.current,
+        sort_order: sortOrderRef.current.toUpperCase()
       });
 
       const response = await fetch(`/api/admin/site-users?${params.toString()}`, {
@@ -81,61 +105,43 @@ export default function SiteUsersPage() {
         setPagination(data.data.pagination);
       } else {
         console.error('Error fetching site users:', data.message);
-        addNotification({
-          type: 'error',
-          title: 'Error',
-          message: data.message || 'Failed to fetch site users',
-          duration: 5000
-        });
+        // Use a stable notification function
+        const id = Date.now().toString();
+        setNotifications(prev => [...prev, { 
+          id, 
+          type: 'error', 
+          title: 'Error', 
+          message: data.message || 'Failed to fetch site users', 
+          duration: 5000 
+        }]);
       }
     } catch (error) {
       console.error('Error fetching site users:', error);
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to fetch site users',
-        duration: 5000
-      });
+      // Use a stable notification function
+      const id = Date.now().toString();
+      setNotifications(prev => [...prev, { 
+        id, 
+        type: 'error', 
+        title: 'Error', 
+        message: 'Failed to fetch site users', 
+        duration: 5000 
+      }]);
     } finally {
       if (showLoading) setLoading(false);
     }
-  }, [search, sortBy, sortOrder]);
+  }, []); // No dependencies - completely stable
 
-  // Separate search function that never touches loading states
-  const searchUsers = useCallback(async () => {
-    try {
-      const token = sessionStorage.getItem('adminToken') || '';
-      
-      const params = new URLSearchParams({
-        page: '1',
-        limit: '10',
-        search: search,
-        sort_by: sortBy,
-        sort_order: sortOrder.toUpperCase()
-      });
-
-      const response = await fetch(`/api/admin/site-users?${params.toString()}`, {
-        headers: {
-          'token': token,
-        },
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        setUsers(data.data.users);
-        setPagination(data.data.pagination);
-      } else {
-        console.error('Error searching site users:', data.message);
-      }
-    } catch (error) {
-      console.error('Error searching site users:', error);
-    }
-  }, [search, sortBy, sortOrder]);
-
+  // Initial load effect
   useEffect(() => {
     fetchUsers();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run once on mount
+  }, []); // Empty dependency array - only run on mount
+
+  // Sorting effect
+  useEffect(() => {
+    if (sortBy !== 'createdAt' || sortOrder !== 'desc') {
+      fetchUsers(1, false); // Don't show loading for sorting
+    }
+  }, [sortBy, sortOrder]); // Remove fetchUsers from dependencies
 
   // Debounced search effect
   useEffect(() => {
@@ -144,7 +150,7 @@ export default function SiteUsersPage() {
     }
     
     const timeoutId = setTimeout(() => {
-      searchUsers(); // Use dedicated search function that never touches loading states
+      fetchUsers(1, false); // Don't show loading for search
       setIsSearching(false);
     }, 300);
 
@@ -152,7 +158,7 @@ export default function SiteUsersPage() {
       clearTimeout(timeoutId);
       setIsSearching(false);
     };
-  }, [search, searchUsers]); // Include searchUsers in dependencies
+  }, [search]); // Remove fetchUsers from dependencies
 
   const handlePageChange = (page: number) => {
     fetchUsers(page);
@@ -160,11 +166,16 @@ export default function SiteUsersPage() {
 
 
   const handleDeleteUser = async (userId: number) => {
-    if (!confirm('Are you sure you want to delete this user?')) return;
+    setUserToDelete(userId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    if (!userToDelete) return;
 
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`/api/admin/site-users/${userId}`, {
+      const response = await fetch(`/api/admin/site-users/${userToDelete}`, {
         method: 'DELETE',
         headers: {
           'token': token,
@@ -196,6 +207,9 @@ export default function SiteUsersPage() {
         message: 'Failed to delete user',
         duration: 5000
       });
+    } finally {
+      setShowDeleteModal(false);
+      setUserToDelete(null);
     }
   };
 
@@ -282,9 +296,14 @@ export default function SiteUsersPage() {
                 <table className="w-full min-w-[800px]">
                   <thead className="bg-themeTeal border-b border-themeTealLighter">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                      <SortableHeader
+                        field="first_name"
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
+                        onSort={handleSort}
+                      >
                         User Name
-                      </th>
+                      </SortableHeader>
                       <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                         Phone
                       </th>
@@ -297,9 +316,14 @@ export default function SiteUsersPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                         Auth Provider
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                      <SortableHeader
+                        field="createdAt"
+                        sortBy={sortBy}
+                        sortOrder={sortOrder}
+                        onSort={handleSort}
+                      >
                         Date Added
-                      </th>
+                      </SortableHeader>
                       <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                         Actions
                       </th>
@@ -437,6 +461,20 @@ export default function SiteUsersPage() {
           </div>
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setUserToDelete(null);
+        }}
+        onConfirm={confirmDeleteUser}
+        title="Delete User"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        confirmText="Delete"
+        type="danger"
+      />
 
       {/* Notifications */}
       <NotificationContainer

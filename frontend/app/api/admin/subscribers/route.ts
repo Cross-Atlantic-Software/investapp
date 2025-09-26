@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+const BACKEND_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,13 +13,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get query parameters
+    // Get query parameters and pass them through
     const { searchParams } = new URL(request.url);
-    const page = searchParams.get('page') || '1';
-    const limit = searchParams.get('limit') || '10';
+    const queryString = searchParams.toString();
 
-    // Call backend API
-    const response = await fetch(`${BACKEND_URL}/api/admin/subscribers?page=${page}&limit=${limit}`, {
+    // Call backend API with all query parameters
+    const response = await fetch(`${BACKEND_URL}/api/admin/subscribers?${queryString}`, {
       method: 'GET',
       headers: {
         'token': token,

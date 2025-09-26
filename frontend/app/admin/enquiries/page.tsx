@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { EnquiryTable, EnquiryModal } from '@/components/admin/enquiries';
-import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
+import { Loader, NotificationContainer, NotificationData, ConfirmationModal } from '@/components/admin/shared';
 
 interface Enquiry {
   id: number;
@@ -31,6 +31,8 @@ export default function EnquiriesPage() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showEnquiryModal, setShowEnquiryModal] = useState(false);
   const [selectedEnquiry, setSelectedEnquiry] = useState<Enquiry | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [enquiryToDelete, setEnquiryToDelete] = useState<number | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
@@ -116,10 +118,12 @@ export default function EnquiriesPage() {
     fetchStats();
   }, [fetchEnquiries, fetchStats]);
 
-  // Status filter effect
+  // Status filter effect - separate from initial load
   useEffect(() => {
-    fetchEnquiries(statusFilter, false);
-  }, [statusFilter, fetchEnquiries]);
+    if (!isInitialLoad) {
+      fetchEnquiries(statusFilter, false);
+    }
+  }, [statusFilter, isInitialLoad]);
 
   const handleStatusFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setStatusFilter(e.target.value);
@@ -185,13 +189,16 @@ export default function EnquiriesPage() {
   };
 
   const handleDeleteEnquiry = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this enquiry?')) {
-      return;
-    }
+    setEnquiryToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteEnquiry = async () => {
+    if (!enquiryToDelete) return;
 
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`/api/admin/enquiries/${id}`, {
+      const response = await fetch(`/api/admin/enquiries/${enquiryToDelete}`, {
         method: 'DELETE',
         headers: {
           'token': token,
@@ -201,7 +208,7 @@ export default function EnquiriesPage() {
       const data = await response.json();
       if (data.success) {
         // Remove the enquiry from the list
-        setEnquiries(prev => prev.filter(enquiry => enquiry.id !== id));
+        setEnquiries(prev => prev.filter(enquiry => enquiry.id !== enquiryToDelete));
         // Update stats
         fetchStats();
         addNotification({
@@ -226,6 +233,9 @@ export default function EnquiriesPage() {
         message: 'Failed to delete enquiry',
         duration: 5000
       });
+    } finally {
+      setShowDeleteModal(false);
+      setEnquiryToDelete(null);
     }
   };
 
@@ -330,6 +340,20 @@ export default function EnquiriesPage() {
           onUpdateStatus={handleUpdateStatus}
         />
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setEnquiryToDelete(null);
+        }}
+        onConfirm={confirmDeleteEnquiry}
+        title="Delete Enquiry"
+        message="Are you sure you want to delete this enquiry? This action cannot be undone."
+        confirmText="Delete"
+        type="danger"
+      />
 
       {/* Notifications */}
       <NotificationContainer

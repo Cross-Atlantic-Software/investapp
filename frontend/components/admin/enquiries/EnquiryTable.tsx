@@ -130,23 +130,15 @@ const EnquiryTable: React.FC<EnquiryTableProps> = ({
               </th>
               <th
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTealLight"
-                onClick={() => onSort('email')}
+                className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider"
               >
-                <div className="flex items-center space-x-1">
-                  <span>Email</span>
-                  <SortIcon field="email" />
-                </div>
+                Email
               </th>
               <th
                 scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTealLight"
-                onClick={() => onSort('status')}
+                className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider"
               >
-                <div className="flex items-center space-x-1">
-                  <span>Status</span>
-                  <SortIcon field="status" />
-                </div>
+                Status
               </th>
               <th
                 scope="col"

@@ -109,7 +109,7 @@ export class UserSearchService {
   }
 
   /**
-   * Build order clause for sorting
+   * Build order clause for sorting with case-insensitive sorting for name fields
    */
   private static buildOrderClause(options: PaginationOptions): any[] {
     const sortBy = options.sort_by || 'createdAt';
@@ -122,6 +122,11 @@ export class UserSearchService {
     ];
     
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    
+    // Use case-insensitive sorting for name fields
+    if (validSortBy === 'first_name' || validSortBy === 'last_name') {
+      return [[db.sequelize.fn('LOWER', db.sequelize.col(validSortBy)), sortOrder]];
+    }
     
     return [[validSortBy, sortOrder]];
   }

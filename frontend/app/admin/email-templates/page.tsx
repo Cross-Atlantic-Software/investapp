@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
+import { Loader, NotificationContainer, NotificationData, ConfirmationModal } from '@/components/admin/shared';
 import { Plus, Search, SquarePen, Trash2, X } from 'lucide-react';
 
 interface EmailTemplate {
@@ -40,6 +40,8 @@ export default function EmailTemplatesPage() {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<EmailTemplate | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     type: '',
     subject: '',
@@ -502,11 +504,16 @@ export default function EmailTemplatesPage() {
   };
 
   const handleDeleteTemplate = async (templateId: number) => {
-    if (!confirm('Are you sure you want to delete this email template?')) return;
+    setTemplateToDelete(templateId);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteTemplate = async () => {
+    if (!templateToDelete) return;
 
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`/api/admin/email-templates/${templateId}`, {
+      const response = await fetch(`/api/admin/email-templates/${templateToDelete}`, {
         method: 'DELETE',
         headers: {
           'token': token,
@@ -538,6 +545,9 @@ export default function EmailTemplatesPage() {
         message: 'Failed to delete email template',
         duration: 5000
       });
+    } finally {
+      setShowDeleteModal(false);
+      setTemplateToDelete(null);
     }
   };
 
@@ -871,6 +881,20 @@ export default function EmailTemplatesPage() {
       )}
         </>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setTemplateToDelete(null);
+        }}
+        onConfirm={confirmDeleteTemplate}
+        title="Delete Email Template"
+        message="Are you sure you want to delete this email template? This action cannot be undone."
+        confirmText="Delete"
+        type="danger"
+      />
 
       {/* Notifications */}
       <NotificationContainer

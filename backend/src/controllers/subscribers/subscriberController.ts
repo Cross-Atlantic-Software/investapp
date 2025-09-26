@@ -52,10 +52,17 @@ export const getAllSubscribers = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const sortBy = req.query.sort_by as string || 'createdAt';
+    const sortOrder = req.query.sort_order as string || 'DESC';
     const offset = (page - 1) * limit;
 
+    // Validate sort fields to prevent SQL injection
+    const allowedSortFields = ['email', 'createdAt', 'updatedAt'];
+    const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
     const { count, rows: subscribers } = await Subscriber.findAndCountAll({
-      order: [['createdAt', 'DESC']],
+      order: [[validSortBy, validSortOrder]],
       limit,
       offset,
     });

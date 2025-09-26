@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
+import { Loader, NotificationContainer, NotificationData, ConfirmationModal } from '@/components/admin/shared';
 
 interface Subscriber {
   id: number;
@@ -22,6 +22,10 @@ export default function SubscribersPage() {
   const [stats, setStats] = useState<SubscriberStats>({
     totalSubscribers: 0,
   });
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [subscriberToDelete, setSubscriberToDelete] = useState<number | null>(null);
 
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
@@ -33,15 +37,55 @@ export default function SubscribersPage() {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
 
+  // Sort handler
+  const handleSort = (field: string) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      // Default to descending for date, ascending for email
+      setSortOrder(field === 'createdAt' ? 'desc' : 'asc');
+    }
+    // Fetch data without loading spinner for sorting
+    fetchSubscribers(false);
+  };
+
+  // Sort icon component
+  const SortIcon = ({ field }: { field: string }) => {
+    if (sortBy !== field) {
+      return (
+        <svg className="w-4 h-4 text-themeTealWhite" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+        </svg>
+      );
+    }
+    
+    return sortOrder === 'asc' ? (
+      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+      </svg>
+    ) : (
+      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+      </svg>
+    );
+  };
+
   const fetchSubscribers = useCallback(async (showLoading: boolean = true) => {
     try {
-      if (showLoading) {
+      // Only show loading on initial load, not when sorting
+      if (showLoading && sortBy === 'createdAt' && sortOrder === 'desc') {
         setLoading(true);
         setIsInitialLoad(true);
       }
       const token = sessionStorage.getItem('adminToken') || '';
       
-      const response = await fetch('/api/admin/subscribers', {
+      const params = new URLSearchParams({
+        sort_by: sortBy,
+        sort_order: sortOrder.toUpperCase()
+      });
+      
+      const response = await fetch(`/api/admin/subscribers?${params.toString()}`, {
         headers: {
           'token': token,
         },
@@ -60,7 +104,7 @@ export default function SubscribersPage() {
         setIsInitialLoad(false);
       }
     }
-  }, []);
+  }, [sortBy, sortOrder]);
 
   const fetchStats = useCallback(async () => {
     try {
@@ -87,13 +131,16 @@ export default function SubscribersPage() {
   }, [fetchSubscribers, fetchStats]);
 
   const handleDeleteSubscriber = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this subscriber?')) {
-      return;
-    }
+    setSubscriberToDelete(id);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteSubscriber = async () => {
+    if (!subscriberToDelete) return;
 
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`/api/admin/subscribers/${id}`, {
+      const response = await fetch(`/api/admin/subscribers/${subscriberToDelete}`, {
         method: 'DELETE',
         headers: {
           'token': token,
@@ -103,7 +150,7 @@ export default function SubscribersPage() {
       const data = await response.json();
       if (data.success) {
         // Remove the subscriber from the list
-        setSubscribers(prev => prev.filter(subscriber => subscriber.id !== id));
+        setSubscribers(prev => prev.filter(subscriber => subscriber.id !== subscriberToDelete));
         // Update stats
         fetchStats();
         addNotification({
@@ -128,6 +175,9 @@ export default function SubscribersPage() {
         message: 'Failed to delete subscriber',
         duration: 5000
       });
+    } finally {
+      setShowDeleteModal(false);
+      setSubscriberToDelete(null);
     }
   };
 
@@ -172,11 +222,23 @@ export default function SubscribersPage() {
                 <table className="w-full min-w-[600px]">
                   <thead className="bg-themeTeal border-b border-themeTealLighter">
                     <tr>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
-                        Email
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
+                        onClick={() => handleSort('email')}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Email</span>
+                          <SortIcon field="email" />
+                        </div>
                       </th>
-                      <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
-                        Subscribed Date
+                      <th 
+                        className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
+                        onClick={() => handleSort('createdAt')}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Subscribed Date</span>
+                          <SortIcon field="createdAt" />
+                        </div>
                       </th>
                       <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                         Actions
@@ -226,6 +288,20 @@ export default function SubscribersPage() {
         </>
       )}
       
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setSubscriberToDelete(null);
+        }}
+        onConfirm={confirmDeleteSubscriber}
+        title="Delete Subscriber"
+        message="Are you sure you want to delete this subscriber? This action cannot be undone."
+        confirmText="Delete"
+        type="danger"
+      />
+
       {/* Notifications */}
       <NotificationContainer
         notifications={notifications}

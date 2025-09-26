@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ConfirmationModal } from '@/components/admin/shared';
+import { ConfirmationModal, Loader, SortableHeader } from '@/components/admin/shared';
 import { ChevronDown, LucideSquarePen, Trash2, X } from 'lucide-react';
 
 interface User {
@@ -157,38 +157,36 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
           <table className="w-full min-w-[800px]">
             <thead className="bg-themeTeal border-b border-themeTealLighter">
               <tr>
-                <th className="w-1/3 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                <SortableHeader
+                  field="first_name"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={onSort || (() => {})}
+                  className="w-1/3 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
+                >
                   User name
-                </th>
+                </SortableHeader>
                 <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Access
                 </th>
-                <th 
-                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('last_active')}
+                <SortableHeader
+                  field="last_active"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={onSort || (() => {})}
+                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
                 >
-                  <div className="flex items-center">
-                    Last active
-                    {sortBy === 'last_active' ? (
-                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('createdAt')}
+                  Last active
+                </SortableHeader>
+                <SortableHeader
+                  field="createdAt"
+                  sortBy={sortBy}
+                  sortOrder={sortOrder}
+                  onSort={onSort || (() => {})}
+                  className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
                 >
-                  <div className="flex items-center">
-                    Date added
-                    {sortBy === 'createdAt' ? (
-                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
-                    )}
-                  </div>
-                </th>
+                  Date added
+                </SortableHeader>
                 <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Actions
                 </th>
@@ -248,7 +246,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                           {new Date(user.last_active).toLocaleDateString('en-US', {
                             month: 'short',
                             day: 'numeric',
-                            year: '2-digit'
+                            year: 'numeric'
                           })}
                         </span>
                       ) : (
@@ -266,7 +264,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                         {new Date(user.createdAt).toLocaleDateString('en-US', { 
                           month: 'short', 
                           day: 'numeric',
-                          year: '2-digit'
+                          year: 'numeric'
                         })}
                       </span>
                     </div>
@@ -394,13 +392,7 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                 className="px-6 py-3 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition-colors duration-200 disabled:opacity-50 font-medium flex items-center"
               >
                 {editLoading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Updating...
-                  </>
+                  <Loader size="sm" text="Updating..." />
                 ) : (
                   'Update User'
                 )}
