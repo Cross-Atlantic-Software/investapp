@@ -109,7 +109,7 @@ export class UserSearchService {
   }
 
   /**
-   * Build order clause for sorting
+   * Build order clause for sorting with case-insensitive sorting for name fields
    */
   private static buildOrderClause(options: PaginationOptions): any[] {
     const sortBy = options.sort_by || 'createdAt';
@@ -122,6 +122,11 @@ export class UserSearchService {
     ];
     
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    
+    // Use case-insensitive sorting for name fields
+    if (validSortBy === 'first_name' || validSortBy === 'last_name') {
+      return [[db.sequelize.fn('LOWER', db.sequelize.col(validSortBy)), sortOrder]];
+    }
     
     return [[validSortBy, sortOrder]];
   }
@@ -175,12 +180,19 @@ export class UserSearchService {
     try {
       const whereConditions = this.buildSearchConditions(filters);
 
+      // Calculate 30-day percentage changes
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
       const [
         totalUsers,
         verifiedUsers,
         activeUsers,
         usersByRole,
-        usersByProvider
+        usersByProvider,
+        totalUsers30DaysAgo,
+        verifiedUsers30DaysAgo,
+        activeUsers30DaysAgo
       ] = await Promise.all([
         db.CmsUser.count({ where: whereConditions }),
         db.CmsUser.count({ where: { ...whereConditions, email_verified: 1 } }),
@@ -202,15 +214,51 @@ export class UserSearchService {
           ],
           group: ['auth_provider'],
           raw: true
+        }),
+        db.CmsUser.count({ 
+          where: { 
+            ...whereConditions,
+            createdAt: { [Op.lte]: thirtyDaysAgo }
+          } 
+        }),
+        db.CmsUser.count({ 
+          where: { 
+            ...whereConditions,
+            email_verified: 1,
+            createdAt: { [Op.lte]: thirtyDaysAgo }
+          } 
+        }),
+        db.CmsUser.count({ 
+          where: { 
+            ...whereConditions,
+            status: 1,
+            createdAt: { [Op.lte]: thirtyDaysAgo }
+          } 
         })
       ]);
+
+      // Calculate percentage changes (growth in last 30 days)
+      const totalUsersChange = totalUsers30DaysAgo > 0 ? 
+        ((totalUsers - totalUsers30DaysAgo) / totalUsers30DaysAgo * 100) : 
+        (totalUsers > 0 ? 100 : 0);
+      
+      const verifiedUsersChange = verifiedUsers30DaysAgo > 0 ? 
+        ((verifiedUsers - verifiedUsers30DaysAgo) / verifiedUsers30DaysAgo * 100) : 
+        (verifiedUsers > 0 ? 100 : 0);
+      
+      const activeUsersChange = activeUsers30DaysAgo > 0 ? 
+        ((activeUsers - activeUsers30DaysAgo) / activeUsers30DaysAgo * 100) : 
+        (activeUsers > 0 ? 100 : 0);
 
       return {
         totalUsers,
         verifiedUsers,
         activeUsers,
         usersByRole,
-        usersByProvider
+        usersByProvider,
+        totalUsersChange: Math.round(totalUsersChange * 100) / 100,
+        verifiedUsersChange: Math.round(verifiedUsersChange * 100) / 100,
+        activeUsersChange: Math.round(activeUsersChange * 100) / 100
       };
     } catch (error) {
       console.error('Error in UserSearchService.getUserStats:', error);

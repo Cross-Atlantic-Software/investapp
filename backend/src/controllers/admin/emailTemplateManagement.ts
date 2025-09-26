@@ -20,6 +20,11 @@ export class EmailTemplateManagementController {
       const sortOrder = req.query.sort_order as string || 'DESC';
       const offset = (page - 1) * limit;
 
+      // Validate sort fields to prevent SQL injection
+      const allowedSortFields = ['type', 'subject', 'createdAt', 'updatedAt'];
+      const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
       const whereClause: any = {};
       if (search) {
         whereClause[Op.or] = [
@@ -35,7 +40,7 @@ export class EmailTemplateManagementController {
           'id', 'type', 'subject', 'body', 
           'created_by', 'updated_by', 'createdAt', 'updatedAt'
         ],
-        order: [[sortBy, sortOrder.toUpperCase()]],
+        order: [[validSortBy, validSortOrder]],
         limit,
         offset,
       });

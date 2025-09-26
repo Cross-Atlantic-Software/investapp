@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       params.append('search', search);
     }
 
-    const response = await fetch(`${BACKEND_URL}/api/stocks?${params.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/api/stocks?${params.toString()}`);
     const data = await response.json();
     
     return NextResponse.json(data);

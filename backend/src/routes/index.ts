@@ -3,6 +3,9 @@ import healthRoutes from "./health-routes";
 import adminRoutes from "./admin-routes";
 import stockRoutes from "./stock-routes";
 import tradingRoutes from "./trading-routes";
+import enquiryRoutes from "./enquiry-routes";
+import subscriberRoutes from "./subscriber-routes";
+import publicRoutes from "./public-routes";
 import express from "express";
 
 const router = express.Router();
@@ -21,5 +24,14 @@ router.use('/trading', tradingRoutes);
 
 // Admin CMS routes (for admin users)
 router.use('/admin', adminRoutes);
+
+// Enquiry routes (public for submission, protected for admin management)
+router.use('/enquiries', enquiryRoutes);
+
+// Subscriber routes (public for newsletter subscription)
+router.use('/subscribers', subscriberRoutes);
+
+// Public routes for frontend display (private market news, notable activities)
+router.use('/', publicRoutes);
 
 export default router;

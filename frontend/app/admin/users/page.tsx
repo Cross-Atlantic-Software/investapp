@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserTable, UserModal, RolesModal } from '@/components/admin/users';
-import { Loader, NotificationContainer, NotificationData } from '@/components/admin/shared';
+import { Loader, NotificationContainer, NotificationData, SortableHeader, createSortHandler } from '@/components/admin/shared';
 import { Info, Plus, Search } from 'lucide-react';
 
 interface SearchFilters {
@@ -28,6 +28,8 @@ export default function UsersPage() {
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [sortBy, setSortBy] = useState('createdAt');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
@@ -38,6 +40,9 @@ export default function UsersPage() {
   const removeNotification = (id: string) => {
     setNotifications(prev => prev.filter(notification => notification.id !== id));
   };
+
+  // Sort handler using the utility function
+  const handleSort = createSortHandler(setSortBy, setSortOrder);
 
   const [searchFilters, setSearchFilters] = useState<SearchFilters>({
     search: '',
@@ -85,15 +90,16 @@ export default function UsersPage() {
     
     params.append('page', page.toString());
     params.append('limit', '10');
-    params.append('sort_by', 'createdAt');
-    params.append('sort_order', 'DESC');
+    params.append('sort_by', sortBy);
+    params.append('sort_order', sortOrder.toUpperCase());
     
     return params.toString();
-  }, []);
+  }, [sortBy, sortOrder]);
 
   const fetchUsers = useCallback(async (page: number = 1, showLoading: boolean = true) => {
     try {
-      if (showLoading) {
+      // Only show loading on initial load, not when sorting
+      if (showLoading && sortBy === 'createdAt' && sortOrder === 'desc') {
         setLoading(true);
         setIsInitialLoad(true);
       }
@@ -194,7 +200,7 @@ export default function UsersPage() {
         <>
           {/* Header */}
           <div className="mb-6">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center gap-2 mb-1">
               <h1 className="text-lg font-bold text-themeTeal">Admin User management</h1>
               <button
                 onClick={() => setIsRolesModalOpen(true)}
@@ -251,6 +257,9 @@ export default function UsersPage() {
             <UserTable 
               users={users} 
               onRefresh={() => fetchUsers(pagination.currentPage)} 
+              onSort={handleSort}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
               onNotification={(type, title, message) => addNotification({ type, title, message, duration: 5000 })}
             />
           </div>

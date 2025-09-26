@@ -98,6 +98,8 @@ export default function ContactForm({
   onSubmit?: (data: ContactFormValues) => void;
   className?: string;
 }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [v, setV] = useState<ContactFormValues>({
     firstName: "",
     lastName: "",
@@ -112,6 +114,51 @@ export default function ContactForm({
     setV((s) => ({ ...s, [k]: val }));
   }
 
+  const submitEnquiry = async (formData: ContactFormValues) => {
+    setIsSubmitting(true);
+    setSubmitStatus('idle');
+
+    try {
+      const response = await fetch('/api/enquiries', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: `${formData.firstName} ${formData.lastName}`,
+          email: formData.email,
+          phone: formData.phone,
+          company: formData.role,
+          subject: `Contact from ${formData.role}`,
+          message: formData.message,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSubmitStatus('success');
+        // Reset form
+        setV({
+          firstName: "",
+          lastName: "",
+          email: "",
+          phone: "",
+          role: "Retail Investor",
+          message: "",
+          agree: false,
+        });
+      } else {
+        setSubmitStatus('error');
+      }
+    } catch (error) {
+      console.error('Error submitting enquiry:', error);
+      setSubmitStatus('error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   type Phase = "form" | "otp";
   const [phase, setPhase] = useState<Phase>("form");
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""));
@@ -122,15 +169,26 @@ export default function ContactForm({
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        // TODO: call your “request OTP” API with v.phone
-        setPhase("otp");
+        submitEnquiry(v);
       }}
       className={["rounded bg-themeTealWhite p-4 sm:p-8", className].join(" ")}
     >
       <h3 className="mb-1 text-lg font-semibold text-themeTeal">Send us a Message</h3>
       <p className="mb-5 text-sm text-themeTealLight">
-        Looking for quick answers? Visit our FAQ’s before submitting a request.
+        Looking for quick answers? Visit our FAQs before submitting a request.
       </p>
+
+      {submitStatus === 'success' && (
+        <div className="mb-4 rounded bg-green-100 border border-green-400 text-green-700 px-4 py-3">
+          Thank you! Your message has been sent successfully. We&apos;ll get back to you soon.
+        </div>
+      )}
+
+      {submitStatus === 'error' && (
+        <div className="mb-4 rounded bg-red-100 border border-red-400 text-red-700 px-4 py-3">
+          Sorry, there was an error sending your message. Please try again.
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <Input label="First Name" value={v.firstName} onChange={(e) => update("firstName", e.target.value)} />
@@ -227,10 +285,10 @@ export default function ContactForm({
       <div className="text-center">
         <button
           type="submit"
-          disabled={!v.agree}
+          disabled={!v.agree || isSubmitting}
           className="mt-6 w-full sm:w-auto rounded-full bg-themeSkyBlue transition duration-500 cursor-pointer px-8 py-4 font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed hover:bg-themeTeal"
         >
-          Send Message
+          {isSubmitting ? 'Sending...' : 'Send Message'}
         </button>
       </div>
     </form>

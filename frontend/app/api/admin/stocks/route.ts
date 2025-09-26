@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/stocks?${queryString}`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/stocks?${queryString}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/stocks`, {
+    const response = await fetch(`${API_BASE_URL}/api/admin/stocks`, {
       method: 'POST',
       headers: {
         'token': token,

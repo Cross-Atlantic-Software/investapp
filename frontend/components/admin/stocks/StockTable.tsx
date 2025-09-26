@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import RichTextEditor from '../RichTextEditor';
 import Image from 'next/image';
+import { Loader } from '@/components/admin/shared';
 import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X } from 'lucide-react';
 
 interface Stock {
@@ -322,22 +323,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 </th>
                 <th 
                   className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('price_change')}
-                >
-                  <div className="flex items-center">
-                    Price Change
-                    {sortBy === 'price_change' ? (
-                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
-                    )}
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
-                  Teaser
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
                   onClick={() => onSort?.('demand')}
                 >
                   <div className="flex items-center">
@@ -354,7 +339,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('homeDisplay')}
                 >
                   <div className="flex items-center">
@@ -371,7 +356,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('bannerDisplay')}
                 >
                   <div className="flex items-center">
@@ -388,7 +373,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('valuation')}
                 >
                   <div className="flex items-center">
@@ -405,24 +390,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
-                  onClick={() => onSort?.('price_per_share')}
-                >
-                  <div className="flex items-center">
-                    Price/Share
-                    {sortBy === 'price_per_share' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-50"
+                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('percentage_change')}
                 >
                   <div className="flex items-center">
@@ -482,22 +450,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <div className="text-xs font-medium text-themeTeal flex items-center"><IndianRupee width={12} height={12}/>{stock.price}</div>
                   </td>
 
-                  {/* Price Change Column */}
-                  <td className="px-4 py-3">
-                    <div className={`text-xs font-medium flex items-center ${stock.price_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {stock.price_change >= 0 ? '+' : '-'}<IndianRupee width={12} height={12}/>{stock.price_change}
-                    </div>
-                  </td>
-
-                  {/* Teaser Column */}
-                  <td className="px-4 py-3">
-                    <div className="text-xs text-themeTealLight truncate max-w-xs">
-                      {stock.teaser}
-                    </div>
-                  </td>
 
                   {/* Demand Column */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-center">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       stock.demand === 'High Demand' 
                         ? 'bg-green-100 text-green-800' 
@@ -508,7 +463,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </td>
 
                   {/* Home Display Column */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-center">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       stock.homeDisplay === 'yes' 
                         ? 'bg-green-100 text-green-800' 
@@ -519,7 +474,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </td>
 
                   {/* Banner Display Column */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-center">
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       stock.bannerDisplay === 'yes' 
                         ? 'bg-green-100 text-green-800' 
@@ -530,19 +485,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </td>
 
                   {/* Valuation Column */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-center">
                     <div className="text-xs font-medium text-gray-900">
                       {stock.valuation || 'N/A'}
                     </div>
                   </td>
 
-                  {/* Price per Share Column */}
-                  <td className="px-4 py-3">
-                    <div className="text-xs font-medium text-gray-900">₹{stock.price_per_share || 0}</div>
-                  </td>
 
                   {/* Percentage Change Column */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-center">
                     <div className={`text-xs font-medium ${(stock.percentage_change || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {(stock.percentage_change || 0) >= 0 ? '+' : ''}{stock.percentage_change || 0}%
                     </div>
@@ -967,13 +918,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 className="px-4 py-3 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50 font-medium cursor-pointer flex gap-1"
               >
                 {editLoading ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <span>Updating...</span>
-                  </>
+                  <Loader size="sm" text="Updating..." />
                 ) : (
                   <>
                     <Check width={20} height={20}/>

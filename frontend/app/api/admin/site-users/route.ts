@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8888';
+const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get('page') || '1';
     const limit = searchParams.get('limit') || '10';
     const search = searchParams.get('search') || '';
-    const sortBy = searchParams.get('sortBy') || 'createdAt';
-    const sortOrder = searchParams.get('sortOrder') || 'DESC';
+    const sortBy = searchParams.get('sort_by') || 'createdAt';
+    const sortOrder = searchParams.get('sort_order') || 'DESC';
 
     const params = new URLSearchParams({
       page,
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       sort_order: sortOrder
     });
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/site-users?${params.toString()}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/site-users?${params.toString()}`, {
       headers: {
         'token': token,
       },
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch(`${BACKEND_URL}/api/admin/site-users`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/site-users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

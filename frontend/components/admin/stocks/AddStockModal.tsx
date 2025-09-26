@@ -3,13 +3,23 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { X } from 'lucide-react';
+import RichTextEditor from '../RichTextEditor';
 
-interface StockData {
+export interface StockData {
   title: string;
   company_name: string;
-  price_per_share: string;
+  logo: string;
+  price: number;
+  price_change: number;
+  teaser: string;
+  short_description: string;
+  analysis: string;
+  demand: 'High Demand' | 'Low Demand';
+  homeDisplay: 'yes' | 'no';
+  bannerDisplay: 'yes' | 'no';
   valuation: string;
-  price_change: string;
+  price_per_share: number;
+  percentage_change: number;
   icon: File | null;
 }
 
@@ -30,9 +40,18 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
   const [formData, setFormData] = useState<StockData>({
     title: '',
     company_name: '',
-    price_per_share: '',
+    logo: '',
+    price: 0,
+    price_change: 0,
+    teaser: '',
+    short_description: '',
+    analysis: '',
+    demand: 'High Demand',
+    homeDisplay: 'no',
+    bannerDisplay: 'no',
     valuation: '',
-    price_change: '',
+    price_per_share: 0,
+    percentage_change: 0,
     icon: null as File | null,
   });
 
@@ -44,7 +63,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
     error: null,
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -253,8 +272,24 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               </div>
             </div>
             
-            {/* Price Change*/}
+            {/* Price and Price Change */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Price <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  required
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
+                  placeholder="0.00"
+                  step="0.01"
+                />
+              </div>
+              
               <div>
                 <label className="block text-xs font-medium text-themeTeal mb-1">
                   Price Change
@@ -269,7 +304,112 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                   step="0.01"
                 />
               </div>
+            </div>
+
+            {/* Percentage Change */}
+            <div>
+              <label className="block text-xs font-medium text-themeTeal mb-1">
+                Percentage Change
+              </label>
+              <input
+                type="number"
+                name="percentage_change"
+                value={formData.percentage_change}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
+                placeholder="0.00"
+                step="0.01"
+              />
+            </div>
+
+            {/* Teaser */}
+            <div>
+              <label className="block text-xs font-medium text-themeTeal mb-1">
+                Teaser
+              </label>
+              <textarea
+                name="teaser"
+                value={formData.teaser}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
+                placeholder="Enter teaser text"
+                rows={3}
+              />
+            </div>
+
+            {/* Short Description */}
+            <div>
+              <label className="block text-xs font-medium text-themeTeal mb-1">
+                Short Description
+              </label>
+              <RichTextEditor
+                value={formData.short_description}
+                onChange={(value) => setFormData({...formData, short_description: value})}
+                placeholder="Enter short description"
+                height="120px"
+              />
+            </div>
+
+            {/* Analysis */}
+            <div>
+              <label className="block text-xs font-medium text-themeTeal mb-1">
+                Analysis
+              </label>
+              <RichTextEditor
+                value={formData.analysis}
+                onChange={(value) => setFormData({...formData, analysis: value})}
+                placeholder="Enter detailed analysis with rich formatting..."
+                height="200px"
+              />
+            </div>
+
+            {/* Demand */}
+            <div>
+              <label className="block text-xs font-medium text-themeTeal mb-1">
+                Demand
+              </label>
+              <select
+                name="demand"
+                value={formData.demand}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
+              >
+                <option value="High Demand">High Demand</option>
+                <option value="Low Demand">Low Demand</option>
+              </select>
+            </div>
+
+            {/* Display Settings */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Home Display
+                </label>
+                <select
+                  name="homeDisplay"
+                  value={formData.homeDisplay}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
+                >
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
               
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Banner Display
+                </label>
+                <select
+                  name="bannerDisplay"
+                  value={formData.bannerDisplay}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
+                >
+                  <option value="yes">Yes</option>
+                  <option value="no">No</option>
+                </select>
+              </div>
             </div>
             
             {/* Stock Icon */}

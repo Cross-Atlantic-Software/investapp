@@ -4,6 +4,13 @@ import UserVerification, { initializeUserVerificationModel } from "../Models/Use
 import Product, { initializeProductModel } from "../Models/Product";
 import CmsUser, { initializeCmsUserModel } from "../Models/CmsUser";
 import EmailTemplate, { initializeEmailTemplateModel } from "../Models/EmailTemplate";
+import Enquiry, { initializeEnquiryModel } from "../Models/Enquiry";
+import Subscriber, { initializeSubscriberModel } from "../Models/Subscriber";
+import PrivateMarketNews, { initializePrivateMarketNewsModel } from "../Models/PrivateMarketNews";
+import Taxonomy, { initializeTaxonomyModel } from "../Models/Taxonomy";
+import NotableActivity, { initializeNotableActivityModel } from "../Models/NotableActivity";
+import ActivityType, { initializeActivityTypeModel } from "../Models/ActivityType";
+import BulkDeals, { initializeBulkDealsModel } from "../Models/BulkDeals";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -56,6 +63,27 @@ async function initializeSequelize() {
   initializeCmsUserModel(sequelize);
   initializeEmailTemplateModel(sequelize);
   
+  // Initialize Enquiry model
+  initializeEnquiryModel(sequelize);
+  
+  // Initialize Subscriber model
+  initializeSubscriberModel(sequelize);
+  
+  // Initialize Private Market News model
+  initializePrivateMarketNewsModel(sequelize);
+  
+  // Initialize Taxonomy model
+  initializeTaxonomyModel(sequelize);
+  
+  // Initialize Notable Activity model
+  initializeNotableActivityModel(sequelize);
+  
+  // Initialize Activity Type model
+  initializeActivityTypeModel(sequelize);
+  
+  // Initialize Bulk Deals model
+  initializeBulkDealsModel(sequelize);
+  
   // No associations needed since only admins handle stocks
   
   return sequelize;
@@ -83,11 +111,19 @@ export const db = {
     }
     return sequelize;
   },
+  sequelizePromise,
   User,
   UserVerification,
   Product,
   CmsUser,
-  EmailTemplate
+  EmailTemplate,
+  Enquiry,
+  Subscriber,
+  PrivateMarketNews,
+  Taxonomy,
+  NotableActivity,
+  ActivityType,
+  BulkDeals,
 };
 
 async function initialize() {

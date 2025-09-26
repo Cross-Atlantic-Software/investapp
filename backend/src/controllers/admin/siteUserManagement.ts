@@ -25,6 +25,11 @@ export class SiteUserManagementController {
 
       const offset = (page - 1) * limit;
 
+      // Validate sort fields to prevent SQL injection
+      const allowedSortFields = ['first_name', 'last_name', 'email', 'phone', 'createdAt', 'updatedAt'];
+      const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+      const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
       // Build where clause for search
       const whereClause: any = {};
       if (search) {
@@ -39,7 +44,7 @@ export class SiteUserManagementController {
       // Get total count
       const totalCount = await this.userModel.count({ where: whereClause });
 
-      // Get users with pagination
+      // Get users with pagination and case-insensitive sorting for name fields
       const users = await this.userModel.findAll({
         where: whereClause,
         attributes: [
@@ -47,7 +52,9 @@ export class SiteUserManagementController {
           'role', 'status', 'auth_provider', 'email_verified', 
           'phone_verified', 'country_code', 'createdAt', 'updatedAt'
         ],
-        order: [[sortBy, sortOrder.toUpperCase()]],
+        order: validSortBy === 'first_name' || validSortBy === 'last_name' 
+          ? [[db.sequelize.fn('LOWER', db.sequelize.col(validSortBy)), validSortOrder]]
+          : [[validSortBy, validSortOrder]],
         limit,
         offset,
       });
@@ -179,6 +186,49 @@ export class SiteUserManagementController {
       const emailUsers = await this.userModel.count({ where: { auth_provider: 'Email' } });
       const activeUsers = await this.userModel.count({ where: { status: 1 } });
 
+      // Calculate 30-day percentage changes
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const totalUsers30DaysAgo = await this.userModel.count({
+        where: {
+          createdAt: {
+            [Op.lte]: thirtyDaysAgo
+          }
+        }
+      });
+
+      const verifiedUsers30DaysAgo = await this.userModel.count({
+        where: {
+          email_verified: 1,
+          createdAt: {
+            [Op.lte]: thirtyDaysAgo
+          }
+        }
+      });
+
+      const activeUsers30DaysAgo = await this.userModel.count({
+        where: {
+          status: 1,
+          createdAt: {
+            [Op.lte]: thirtyDaysAgo
+          }
+        }
+      });
+
+      // Calculate percentage changes (growth in last 30 days)
+      const totalUsersChange = totalUsers30DaysAgo > 0 ? 
+        ((totalUsers - totalUsers30DaysAgo) / totalUsers30DaysAgo * 100) : 
+        (totalUsers > 0 ? 100 : 0);
+      
+      const verifiedUsersChange = verifiedUsers30DaysAgo > 0 ? 
+        ((verifiedUsers - verifiedUsers30DaysAgo) / verifiedUsers30DaysAgo * 100) : 
+        (verifiedUsers > 0 ? 100 : 0);
+      
+      const activeUsersChange = activeUsers30DaysAgo > 0 ? 
+        ((activeUsers - activeUsers30DaysAgo) / activeUsers30DaysAgo * 100) : 
+        (activeUsers > 0 ? 100 : 0);
+
       // Get users by role
       const usersByRole = await this.userModel.findAll({
         attributes: [
@@ -189,17 +239,44 @@ export class SiteUserManagementController {
         raw: true
       });
 
+      // Check if period parameter is provided for new registrations
+      const period = req.query.period as string;
+      let newRegistrations24h = 0;
+      
+      if (period === '24h') {
+        const twentyFourHoursAgo = new Date();
+        twentyFourHoursAgo.setHours(twentyFourHoursAgo.getHours() - 24);
+        
+        newRegistrations24h = await this.userModel.count({
+          where: {
+            createdAt: {
+              [Op.gte]: twentyFourHoursAgo
+            }
+          }
+        });
+      }
+
+      const responseData: any = {
+        totalUsers,
+        verifiedUsers,
+        googleUsers,
+        emailUsers,
+        activeUsers,
+        usersByRole,
+        totalUsersChange: Math.round(totalUsersChange * 100) / 100,
+        verifiedUsersChange: Math.round(verifiedUsersChange * 100) / 100,
+        activeUsersChange: Math.round(activeUsersChange * 100) / 100
+      };
+
+      // Add new registrations data if period is specified
+      if (period === '24h') {
+        responseData.newRegistrations24h = newRegistrations24h;
+      }
+
       res.status(200).json({
         success: true,
         message: "Site user statistics fetched successfully",
-        data: {
-          totalUsers,
-          verifiedUsers,
-          googleUsers,
-          emailUsers,
-          activeUsers,
-          usersByRole
-        }
+        data: responseData
       });
     } catch (error: any) {
       console.error("Get site user stats error:", error);
