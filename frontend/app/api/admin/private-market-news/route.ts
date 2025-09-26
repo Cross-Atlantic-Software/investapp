@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news?${params.toString()}`, {
       headers: {
-        'token': token,
+        ...(token && { 'token': token }),
       },
     });
     const data = await response.json();

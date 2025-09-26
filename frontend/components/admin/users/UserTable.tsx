@@ -159,8 +159,8 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
               <tr>
                 <SortableHeader
                   field="first_name"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
+                  sortBy={sortBy || ''}
+                  sortOrder={sortOrder || 'desc'}
                   onSort={onSort || (() => {})}
                   className="w-1/3 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
                 >
@@ -171,8 +171,8 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                 </th>
                 <SortableHeader
                   field="last_active"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
+                  sortBy={sortBy || ''}
+                  sortOrder={sortOrder || 'desc'}
                   onSort={onSort || (() => {})}
                   className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
                 >
@@ -180,8 +180,8 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                 </SortableHeader>
                 <SortableHeader
                   field="createdAt"
-                  sortBy={sortBy}
-                  sortOrder={sortOrder}
+                  sortBy={sortBy || ''}
+                  sortOrder={sortOrder || 'desc'}
                   onSort={onSort || (() => {})}
                   className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer hover:bg-themeTeal/80 transition-colors"
                 >
