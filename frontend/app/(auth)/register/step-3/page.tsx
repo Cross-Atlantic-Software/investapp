@@ -225,7 +225,7 @@ function Step3Content() {
                 {/* Row: First & Last name */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-themeTeal">First Name</span>
+                    <span className="mb-2 block text-sm font-medium text-themeTeal">First Name <span className="text-red-500">*</span></span>
                     <input
                       type="text"
                       value={firstName}
@@ -234,7 +234,7 @@ function Step3Content() {
                     />
                   </label>
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-themeTeal">Last Name</span>
+                    <span className="mb-2 block text-sm font-medium text-themeTeal">Last Name <span className="text-red-500">*</span></span>
                     <input
                       type="text"
                       value={lastName}
@@ -247,7 +247,7 @@ function Step3Content() {
                 {/* Row: Email & Mobile */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-themeTeal">Email</span>
+                    <span className="mb-2 block text-sm font-medium text-themeTeal">Email <span className="text-red-500">*</span></span>
                     <input
                       type="email"
                       value={email}
@@ -257,7 +257,7 @@ function Step3Content() {
                   </label>
 
                   <label className="block">
-                    <span className="mb-2 block text-sm font-medium text-themeTeal">Mobile</span>
+                    <span className="mb-2 block text-sm font-medium text-themeTeal">Mobile <span className="text-red-500">*</span></span>
                     <div className="flex">
                       {/* Country flag/prefix */}
                       <span className="inline-flex items-center gap-2 rounded-l border border-themeTealLighter bg-white px-3">
@@ -276,7 +276,7 @@ function Step3Content() {
 
                 {/* Source select */}
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-themeTeal">How Did You Hear About Caplight?</span>
+                  <span className="mb-2 block text-sm font-medium text-themeTeal">How Did You Hear About InvestApp? <span className="text-red-500">*</span></span>
                   <select
                     value={source}
                     onChange={(e) => setSource(e.target.value)}
