@@ -41,7 +41,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const formats = [
     'header',
     'bold', 'italic', 'underline',
-    'list', 'bullet',
+    'list',
     'link'
   ];
 
