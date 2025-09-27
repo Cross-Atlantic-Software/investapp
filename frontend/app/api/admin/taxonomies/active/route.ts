@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/active`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/status/active`, {
       headers: {
         'token': token,
       },

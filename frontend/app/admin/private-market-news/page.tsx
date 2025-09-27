@@ -143,7 +143,7 @@ export default function PrivateMarketNewsPage() {
 
   const fetchTaxonomies = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/taxonomies/active');
+      const response = await fetch('/api/admin/taxonomies/status/active');
       const data = await response.json();
 
       if (data.success) {
