@@ -140,7 +140,7 @@ router.delete("/private-market-news/:id", privateMarketNewsController.deletePriv
 // Taxonomy Management Routes
 router.get("/taxonomies", taxonomyController.getAllTaxonomies);
 router.get("/taxonomies/stats", taxonomyController.getTaxonomyStats);
-router.get("/taxonomies/active", taxonomyController.getActiveTaxonomies);
+router.get("/taxonomies/status/active", taxonomyController.getActiveTaxonomies);
 router.get("/taxonomies/:id", taxonomyController.getTaxonomyById);
 router.post("/taxonomies", taxonomyController.createTaxonomy);
 router.put("/taxonomies/:id", taxonomyController.updateTaxonomy);

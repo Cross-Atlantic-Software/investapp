@@ -4,7 +4,7 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http:/
 
 export async function GET(request: NextRequest) {
   try {
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/active`);
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/status/active`);
     const data = await response.json();
     
     return NextResponse.json(data);
