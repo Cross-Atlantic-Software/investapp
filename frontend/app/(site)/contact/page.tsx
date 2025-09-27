@@ -23,7 +23,7 @@ export default function Contact() {
           </div>
         </section>
         
-        <Faq items={FAQS} />
+        {/* <Faq items={FAQS} /> */}
     </>
   );
 }
