@@ -155,7 +155,7 @@ export default function NotableActivitiesPage() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -166,10 +166,12 @@ export default function NotableActivitiesPage() {
         setNewActivity({ description: '', icon: null, activity_type_ids: [] });
         fetchActivities();
       } else {
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to create notable activity';
         addNotification({
           type: 'error',
           title: 'Creation Failed',
-          message: result.message || 'Failed to create notable activity',
+          message: errorMessage,
           duration: 5000
         });
       }
@@ -203,7 +205,7 @@ export default function NotableActivitiesPage() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -215,10 +217,12 @@ export default function NotableActivitiesPage() {
         setNewActivity({ description: '', icon: null, activity_type_ids: [] });
         fetchActivities();
       } else {
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to update notable activity';
         addNotification({
           type: 'error',
           title: 'Update Failed',
-          message: result.message || 'Failed to update notable activity',
+          message: errorMessage,
           duration: 5000
         });
       }
@@ -290,7 +294,7 @@ export default function NotableActivitiesPage() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -300,10 +304,12 @@ export default function NotableActivitiesPage() {
         setNewActivityType({ name: '' });
         fetchActivityTypes();
       } else {
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to create activity type';
         addNotification({
           type: 'error',
           title: 'Creation Failed',
-          message: result.message || 'Failed to create activity type',
+          message: errorMessage,
           duration: 5000
         });
       }

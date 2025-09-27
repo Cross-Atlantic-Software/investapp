@@ -265,15 +265,33 @@ export default function StocksPage() {
       });
 
       const data = await response.json();
-      if (data.success) {
+      if (data.status === true || data.success === true) {
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Stock created successfully!',
+          duration: 5000
+        });
         setShowAddModal(false);
         fetchStocks(); // Refresh the list
       } else {
-        alert(data.message || 'Failed to add stock');
+        // Handle both old and new error formats
+        const errorMessage = data.error?.message || data.message || 'Failed to create stock';
+        addNotification({
+          type: 'error',
+          title: 'Creation Failed',
+          message: errorMessage,
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error adding stock:', error);
-      alert('Error adding stock');
+      addNotification({
+        type: 'error',
+        title: 'Creation Failed',
+        message: 'Error creating stock',
+        duration: 5000
+      });
     }
   };
 
@@ -289,7 +307,7 @@ export default function StocksPage() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -299,10 +317,12 @@ export default function StocksPage() {
         setNewStockMaster({ name: '' });
         fetchStockMasters();
       } else {
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to create stock master';
         addNotification({
           type: 'error',
           title: 'Creation Failed',
-          message: result.message || 'Failed to create stock master',
+          message: errorMessage,
           duration: 5000
         });
       }

@@ -190,7 +190,7 @@ export default function PrivateMarketNewsPage() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -201,10 +201,12 @@ export default function PrivateMarketNewsPage() {
         setNewNews({ title: '', url: '', icon: null, taxonomy_ids: [] });
         fetchNews(searchTerm, false);
       } else {
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to create private market news';
         addNotification({
           type: 'error',
           title: 'Creation Failed',
-          message: result.message || 'Failed to create private market news',
+          message: errorMessage,
           duration: 5000
         });
       }
