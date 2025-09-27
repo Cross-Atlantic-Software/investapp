@@ -18,6 +18,7 @@ interface ProductAttributes {
   sector: string;
   subsector: string;
   headquarters: string;
+  stock_master_ids?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -48,6 +49,7 @@ class Product
   public sector!: string;
   public subsector!: string;
   public headquarters!: string;
+  public stock_master_ids?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -126,6 +128,10 @@ export function initializeProductModel(sequelize: Sequelize) {
       headquarters: {
         type: DataTypes.STRING(200),
         allowNull: false
+      },
+      stock_master_ids: {
+        type: DataTypes.TEXT,
+        allowNull: true
       }
     }, {
       sequelize,

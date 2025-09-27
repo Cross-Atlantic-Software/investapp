@@ -11,6 +11,7 @@ import Taxonomy, { initializeTaxonomyModel } from "../Models/Taxonomy";
 import NotableActivity, { initializeNotableActivityModel } from "../Models/NotableActivity";
 import ActivityType, { initializeActivityTypeModel } from "../Models/ActivityType";
 import BulkDeals, { initializeBulkDealsModel } from "../Models/BulkDeals";
+import StockMaster, { initializeStockMasterModel } from "../Models/StockMaster";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -83,6 +84,9 @@ async function initializeSequelize() {
   
   // Initialize Bulk Deals model
   initializeBulkDealsModel(sequelize);
+  
+  // Initialize Stock Master model
+  initializeStockMasterModel(sequelize);
   
   // No associations needed since only admins handle stocks
   
@@ -172,6 +176,12 @@ export const db = {
       throw new Error('BulkDeals model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return BulkDeals;
+  },
+  get StockMaster() {
+    if (!StockMaster) {
+      throw new Error('StockMaster model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockMaster;
   },
 };
 

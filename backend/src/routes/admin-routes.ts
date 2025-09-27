@@ -36,6 +36,7 @@ import { TaxonomyManagementController } from "../controllers/admin/taxonomyManag
 import { NotableActivityManagementController } from "../controllers/admin/notableActivityManagement";
 import { ActivityTypeManagementController } from "../controllers/admin/activityTypeManagement";
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
+import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 
 // Enquiry Management Controllers
 import {
@@ -64,6 +65,7 @@ const taxonomyController = new TaxonomyManagementController();
 const notableActivityController = new NotableActivityManagementController();
 const activityTypeController = new ActivityTypeManagementController();
 const bulkDealsController = new BulkDealsManagementController();
+const stockMasterController = new StockMasterManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -73,7 +75,7 @@ router.use((req, res, next) => {
   // Skip authentication for new feature routes during testing
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
-      req.path.includes('/bulk-deals')) {
+      req.path.includes('/bulk-deals') || req.path.includes('/stock-masters')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -169,5 +171,14 @@ router.post("/bulk-deals", uploadIcon.any(), bulkDealsController.createBulkDeal)
 router.put("/bulk-deals/:id", uploadIcon.any(), bulkDealsController.updateBulkDeal);
 router.delete("/bulk-deals/:id", bulkDealsController.deleteBulkDeal);
 router.delete("/bulk-deals/bulk", bulkDealsController.bulkDeleteBulkDeals);
+
+// Stock Master Management Routes
+router.get("/stock-masters", stockMasterController.getAllStockMasters);
+router.get("/stock-masters/stats", stockMasterController.getStockMasterStats);
+router.get("/stock-masters/select", stockMasterController.getAllStockMastersForSelect);
+router.get("/stock-masters/:id", stockMasterController.getStockMasterById);
+router.post("/stock-masters", stockMasterController.createStockMaster);
+router.put("/stock-masters/:id", stockMasterController.updateStockMaster);
+router.delete("/stock-masters/:id", stockMasterController.deleteStockMaster);
 
 export default router;

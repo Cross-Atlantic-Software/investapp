@@ -10,7 +10,7 @@ export type ProductItem = {
   id: string;
   company_name: string;
   logo: string;
-  price: number;
+  price_per_share: number;
   price_change: number;
   teaser: string;
   short_description: string;
@@ -170,14 +170,14 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
             <div>Price</div><div>Change</div>
           </div>
           <div className="hidden md:grid grid-cols-2 items-center gap-2 bg-white px-3 py-2 text-sm font-semibold text-themeTeal">
-            <div className="whitespace-nowrap">₹ {formatINR(item.price)}</div>
+            <div className="whitespace-nowrap">₹ {formatINR(item.price_per_share)}</div>
             <div className={pos ? "text-green-700" : "text-rose-600"}>
               {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
             </div>
           </div>
 
           <div className="grid md:hidden grid-cols-2 gap-3 bg-white p-3 text-sm text-themeTeal">
-            <MobileStat label="Price" value={`₹ ${formatINR(item.price)}`} />
+            <MobileStat label="Price" value={`₹ ${formatINR(item.price_per_share)}`} />
             <MobileStat
               label="Change"
               value={<span className={pos ? "text-green-700" : "text-rose-600"}>

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Loader } from '@/components/admin/shared';
 import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X } from 'lucide-react';
 import SimpleRichTextEditor from '../SimpleRichTextEditor';
+import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
 
 interface Stock {
   id: number;
@@ -24,6 +25,10 @@ interface Stock {
   sector: string;
   subsector: string;
   headquarters: string;
+  stock_masters?: Array<{
+    id: number;
+    name: string;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
@@ -35,6 +40,10 @@ interface StockTableProps {
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onNotification?: (type: 'success' | 'error' | 'warning' | 'info', title: string, message: string) => void;
+  stockMasters?: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
 interface ImageUploadState {
@@ -53,12 +62,13 @@ const stripHtmlTags = (html: string): string => {
 };
 
 
-const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification }) => {
+const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification, stockMasters = [] }) => {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Stock>>({});
   const [editLoading, setEditLoading] = useState(false);
   const [editIconFile, setEditIconFile] = useState<File | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
+  const [selectedStockMasterIds, setSelectedStockMasterIds] = useState<number[]>([]);
   const [imageUpload, setImageUpload] = useState<ImageUploadState>({
     file: null,
     preview: null,
@@ -118,6 +128,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       subsector: stock.subsector,
       headquarters: stock.headquarters
     });
+    // Initialize selected stock master IDs
+    setSelectedStockMasterIds(stock.stock_masters?.map(master => master.id) || []);
     setEditIconFile(null); // Reset icon file
     setImageUpload({
       file: null,
@@ -246,6 +258,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       formData.append('sector', editFormData.sector || '');
       formData.append('subsector', editFormData.subsector || '');
       formData.append('headquarters', editFormData.headquarters || '');
+      formData.append('stock_master_ids', JSON.stringify(selectedStockMasterIds));
       
       // Add logo file if selected
       if (editIconFile) {
@@ -475,6 +488,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     )}
                   </div>
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                  Stock Masters
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                   Actions
                 </th>
@@ -586,6 +602,24 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   {/* Headquarters Column */}
                   <td className="px-4 py-3">
                     <div className="text-sm text-themeTeal">{stock.headquarters || 'N/A'}</div>
+                  </td>
+
+                  {/* Stock Masters Column */}
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1">
+                      {stock.stock_masters && stock.stock_masters.length > 0 ? (
+                        stock.stock_masters.map((master) => (
+                          <span 
+                            key={master.id}
+                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLight text-themeTealWhite"
+                          >
+                            {master.name}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-sm text-gray-500">No stock masters</span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Actions Column */}
@@ -900,6 +934,20 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     />
                   </div>
 
+                  {/* Stock Masters Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Stock Masters
+                    </label>
+                    <GenericSearchableMultiSelect
+                      options={stockMasters.map(master => ({ value: master.id, label: master.name }))}
+                      selectedValues={selectedStockMasterIds}
+                      onChange={(values) => setSelectedStockMasterIds(values)}
+                      placeholder="Select stock masters..."
+                      forceAbove={true}
+                    />
+                  </div>
+
                   {/* Company Logo */}
                   <div className="md:col-span-2">
                     <label className="block text-xs font-medium text-themeTeal mb-1">
@@ -1202,6 +1250,25 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       <p className="text-sm text-gray-900 bg-white p-2 rounded border">
                         {viewingStock.headquarters || 'N/A'}
                       </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock Masters</label>
+                      <div className="bg-white p-2 rounded border">
+                        {viewingStock.stock_masters && viewingStock.stock_masters.length > 0 ? (
+                          <div className="flex flex-wrap gap-1">
+                            {viewingStock.stock_masters.map((master) => (
+                              <span 
+                                key={master.id}
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLight text-themeTealWhite"
+                              >
+                                {master.name}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-500">No stock masters assigned</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

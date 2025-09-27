@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { X } from 'lucide-react';
 import SimpleRichTextEditor from '../SimpleRichTextEditor';
+import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
 
 export interface StockData {
   title: string;
@@ -24,6 +25,7 @@ export interface StockData {
   sector: string;
   subsector: string;
   headquarters: string;
+  stock_master_ids: number[];
   icon: File | null;
 }
 
@@ -38,9 +40,13 @@ interface ImageUploadState {
 interface AddStockModalProps {
   onClose: () => void;
   onSubmit: (stockData: StockData) => void;
+  stockMasters?: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
-const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
+const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockMasters = [] }) => {
   const [formData, setFormData] = useState<StockData>({
     title: '',
     company_name: '',
@@ -60,6 +66,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
     sector: 'Technology',
     subsector: 'Software',
     headquarters: '',
+    stock_master_ids: [],
     icon: null as File | null,
   });
 
@@ -483,6 +490,19 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                   required
                   className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
                   placeholder="San Francisco, CA"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Stock Masters
+                </label>
+                <GenericSearchableMultiSelect
+                  options={stockMasters.map(master => ({ value: master.id, label: master.name }))}
+                  selectedValues={formData.stock_master_ids}
+                  onChange={(values) => setFormData({ ...formData, stock_master_ids: values })}
+                  placeholder="Select stock masters..."
+                  forceAbove={true}
                 />
               </div>
             </div>

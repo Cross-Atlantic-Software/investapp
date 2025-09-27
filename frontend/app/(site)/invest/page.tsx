@@ -18,7 +18,7 @@ export default function Invest() {
     id: number;
     company_name: string;
     logo: string;
-    price: number;
+    price_per_share: number;
     price_change: number;
     teaser: string;
     short_description: string;
@@ -30,7 +30,7 @@ export default function Invest() {
       id: stock.id.toString(),
       company_name: stock.company_name,
       logo: stock.logo,
-      price: typeof stock.price === 'string' ? parseFloat(stock.price) : stock.price,
+      price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
       price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
       teaser: stock.teaser,
       short_description: stock.short_description,

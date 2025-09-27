@@ -38,12 +38,46 @@ export const getAllStocks = async (req: Request, res: Response) => {
       order: [[validSortBy, validSortOrder]]
     });
 
+    // Fetch stock master names for each stock
+    const stocksWithMasters = await Promise.all(
+      stocks.map(async (stock: any) => {
+        let stockMasterIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).stock_master_ids || '[]');
+          
+          // Ensure it's an array
+          if (Array.isArray(parsed)) {
+            stockMasterIds = parsed;
+          } else if (typeof parsed === 'number') {
+            stockMasterIds = [parsed];
+          } else if (typeof parsed === 'string' && parsed.includes(',')) {
+            stockMasterIds = parsed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+          } else {
+            stockMasterIds = [];
+          }
+        } catch (error) {
+          console.error('Error parsing stock_master_ids:', (stock as any).stock_master_ids, error);
+          stockMasterIds = [];
+        }
+        
+        const stockMasters = await db.StockMaster.findAll({
+          where: { id: { [Op.in]: stockMasterIds } },
+          attributes: ['id', 'name'],
+        });
+        
+        return {
+          ...stock.toJSON(),
+          stock_masters: stockMasters,
+        };
+      })
+    );
+
     const totalPages = Math.ceil(count / limit);
 
     return res.status(200).json({
       success: true,
       data: {
-        stocks,
+        stocks: stocksWithMasters,
         pagination: {
           currentPage: page,
           totalPages,
@@ -76,9 +110,39 @@ export const getStockById = async (req: Request, res: Response) => {
       });
     }
 
+    // Fetch stock master names
+    let stockMasterIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).stock_master_ids || '[]');
+      
+      // Ensure it's an array
+      if (Array.isArray(parsed)) {
+        stockMasterIds = parsed;
+      } else if (typeof parsed === 'number') {
+        stockMasterIds = [parsed];
+      } else if (typeof parsed === 'string' && parsed.includes(',')) {
+        stockMasterIds = parsed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+      } else {
+        stockMasterIds = [];
+      }
+    } catch (error) {
+      console.error('Error parsing stock_master_ids:', (stock as any).stock_master_ids, error);
+      stockMasterIds = [];
+    }
+    
+    const stockMasters = await db.StockMaster.findAll({
+      where: { id: { [Op.in]: stockMasterIds } },
+      attributes: ['id', 'name'],
+    });
+
+    const stockWithMasters = {
+      ...stock.toJSON(),
+      stock_masters: stockMasters,
+    };
+
     return res.status(200).json({
       success: true,
-      data: stock
+      data: stockWithMasters
     });
   } catch (error) {
     console.error("Error fetching stock:", error);
@@ -107,9 +171,39 @@ export const getStockByName = async (req: Request, res: Response) => {
       });
     }
 
+    // Fetch stock master names
+    let stockMasterIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).stock_master_ids || '[]');
+      
+      // Ensure it's an array
+      if (Array.isArray(parsed)) {
+        stockMasterIds = parsed;
+      } else if (typeof parsed === 'number') {
+        stockMasterIds = [parsed];
+      } else if (typeof parsed === 'string' && parsed.includes(',')) {
+        stockMasterIds = parsed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+      } else {
+        stockMasterIds = [];
+      }
+    } catch (error) {
+      console.error('Error parsing stock_master_ids:', (stock as any).stock_master_ids, error);
+      stockMasterIds = [];
+    }
+    
+    const stockMasters = await db.StockMaster.findAll({
+      where: { id: { [Op.in]: stockMasterIds } },
+      attributes: ['id', 'name'],
+    });
+
+    const stockWithMasters = {
+      ...stock.toJSON(),
+      stock_masters: stockMasters,
+    };
+
     return res.status(200).json({
       success: true,
-      data: stock
+      data: stockWithMasters
     });
   } catch (error) {
     console.error("Error fetching stock by name:", error);
@@ -150,7 +244,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       founded,
       sector,
       subsector,
-      headquarters
+      headquarters,
+      stock_master_ids
     } = cleanedBody;
 
     // Validate required fields
@@ -203,7 +298,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       founded: founded || new Date().getFullYear(),
       sector: sector || 'Technology',
       subsector: subsector || 'Software',
-      headquarters: headquarters || 'N/A'
+      headquarters: headquarters || 'N/A',
+      stock_master_ids: stock_master_ids || '[]'
     });
 
     return res.status(201).json({
@@ -246,7 +342,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       founded,
       sector,
       subsector,
-      headquarters
+      headquarters,
+      stock_master_ids
     } = req.body;
 
     const stock = await db.Product.findByPk(id);
@@ -294,7 +391,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       founded: founded !== undefined ? founded : stock.founded,
       sector: sector !== undefined ? sector : stock.sector,
       subsector: subsector !== undefined ? subsector : stock.subsector,
-      headquarters: headquarters !== undefined ? headquarters : stock.headquarters
+      headquarters: headquarters !== undefined ? headquarters : stock.headquarters,
+      stock_master_ids: stock_master_ids !== undefined ? stock_master_ids : stock.stock_master_ids
     });
 
     return res.status(200).json({

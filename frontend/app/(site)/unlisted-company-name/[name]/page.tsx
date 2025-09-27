@@ -21,6 +21,10 @@ interface StockData {
   sector: string;
   subsector: string;
   headquarters: string;
+  stock_masters?: Array<{
+    id: number;
+    name: string;
+  }>;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -61,6 +65,7 @@ export default function UnlistedCompanyDetails() {
             sector: stock.sector,
             subsector: stock.subsector,
             headquarters: stock.headquarters,
+            stock_masters: stock.stock_masters || [],
             createdAt: stock.createdAt?.toString(),
             updatedAt: stock.updatedAt?.toString()
           };
@@ -109,7 +114,7 @@ export default function UnlistedCompanyDetails() {
         changeAbs={stockData.price_change}
         changePct={0}
         updatedAt={stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "Recently"}
-        tags={["Most Active", "Upcoming IPO", "Unicorn"]}
+        tags={stockData.stock_masters?.map(master => master.name) || []}
         founded={stockData.founded}
         sector={stockData.sector}
         subsector={stockData.subsector}

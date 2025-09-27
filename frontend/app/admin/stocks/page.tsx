@@ -7,18 +7,28 @@ import AddStockModal from '@/components/admin/stocks/AddStockModal';
 import Loader from '@/components/admin/shared/Loader';
 import { NotificationContainer, NotificationData } from '@/components/admin/shared/Notification';
 import { Plus, Search } from 'lucide-react';
+import { 
+  StockMasterModal,
+  StockMasterItem,
+  NewStockMasterForm
+} from '@/components/admin/stock-master';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
+  const [stockMasters, setStockMasters] = useState<StockMasterItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showStockMasterModal, setShowStockMasterModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [newStockMaster, setNewStockMaster] = useState<NewStockMasterForm>({
+    name: ''
+  });
   
   // Refs to store current values to avoid circular dependencies
   const sortByRef = useRef(sortBy);
@@ -124,9 +134,26 @@ export default function StocksPage() {
     }
   }, []);
 
+  const fetchStockMasters = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/stock-masters/select');
+      const data = await response.json();
+
+      console.log('Stock Masters API Response:', data);
+
+      if (data.success) {
+        console.log('Stock Masters Data:', data.data.stockMasters);
+        setStockMasters(data.data.stockMasters);
+      }
+    } catch (error) {
+      console.error('Error fetching stock masters:', error);
+    }
+  }, []);
+
   // Initial load effect
   useEffect(() => {
     fetchStocks();
+    fetchStockMasters();
     getCurrentUserRole();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
@@ -197,6 +224,7 @@ export default function StocksPage() {
     sector: string;
     subsector: string;
     headquarters: string;
+    stock_master_ids: number[];
     icon: File | null;
   }) => {
     try {
@@ -222,6 +250,7 @@ export default function StocksPage() {
       formData.append('sector', stockData.sector);
       formData.append('subsector', stockData.subsector);
       formData.append('headquarters', stockData.headquarters);
+      formData.append('stock_master_ids', JSON.stringify(stockData.stock_master_ids));
       
       // Add logo file if selected
       if (stockData.icon) {
@@ -246,6 +275,81 @@ export default function StocksPage() {
     } catch (error) {
       console.error('Error adding stock:', error);
       alert('Error adding stock');
+    }
+  };
+
+  const handleCreateStockMaster = async (data: NewStockMasterForm) => {
+    try {
+      const response = await fetch('/api/admin/stock-masters', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Stock master created successfully!',
+          duration: 5000
+        });
+        setNewStockMaster({ name: '' });
+        fetchStockMasters();
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Creation Failed',
+          message: result.message || 'Failed to create stock master',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      console.error('Error creating stock master:', error);
+      addNotification({
+        type: 'error',
+        title: 'Creation Failed',
+        message: 'Error creating stock master',
+        duration: 5000
+      });
+    }
+  };
+
+  const handleDeleteStockMaster = async (id: number) => {
+    try {
+      const response = await fetch(`/api/admin/stock-masters/${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Stock master deleted successfully!',
+          duration: 5000
+        });
+        fetchStockMasters();
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Deletion Failed',
+          message: data.message || 'Failed to delete stock master',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting stock master:', error);
+      addNotification({
+        type: 'error',
+        title: 'Deletion Failed',
+        message: 'Error deleting stock master',
+        duration: 5000
+      });
     }
   };
 
@@ -304,6 +408,13 @@ export default function StocksPage() {
                   </button>
                 )}
               </div>
+              <button
+                onClick={() => setShowStockMasterModal(true)}
+                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
+              >
+                <Plus width={16} height={16} className='mr-1'/>
+                Manage Stock Masters
+              </button>
               {canCreateStocks && (
                 <button
                   onClick={() => setShowAddModal(true)}
@@ -324,6 +435,7 @@ export default function StocksPage() {
             sortBy={sortBy} 
             sortOrder={sortOrder}
             onNotification={(type, title, message) => addNotification({ type, title, message, duration: 5000 })}
+            stockMasters={stockMasters}
           />
           </div>
         </>
@@ -332,6 +444,7 @@ export default function StocksPage() {
       {showAddModal && (
         <AddStockModal
           onClose={() => setShowAddModal(false)}
+          stockMasters={stockMasters}
           onSubmit={(stockData) => {
             const adaptedData = {
               title: stockData.title,
@@ -352,6 +465,7 @@ export default function StocksPage() {
               sector: stockData.sector,
               subsector: stockData.subsector,
               headquarters: stockData.headquarters,
+              stock_master_ids: stockData.stock_master_ids,
               icon: stockData.icon
             };
             handleAddStock(adaptedData);
@@ -364,6 +478,16 @@ export default function StocksPage() {
           }}
         />
       )}
+
+      <StockMasterModal
+        isOpen={showStockMasterModal}
+        onClose={() => setShowStockMasterModal(false)}
+        stockMasters={stockMasters}
+        onCreateStockMaster={handleCreateStockMaster}
+        onDeleteStockMaster={handleDeleteStockMaster}
+        newStockMaster={newStockMaster}
+        setNewStockMaster={setNewStockMaster}
+      />
 
       {/* Notifications */}
       <NotificationContainer

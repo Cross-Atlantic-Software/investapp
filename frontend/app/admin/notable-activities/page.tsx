@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Search } from 'lucide-react';
-import { Loader, NotificationContainer, NotificationData, ConfirmationModal, createSortHandler } from '@/components/admin/shared';
+import { NotificationContainer, NotificationData, ConfirmationModal, createSortHandler } from '@/components/admin/shared';
 import { 
   ActivityFormModal, 
   ActivityTypeModal, 
@@ -17,12 +17,10 @@ export default function NotableActivitiesPage() {
   const [activities, setActivities] = useState<NotableActivityItem[]>([]);
   const [activityTypes, setActivityTypes] = useState<ActivityTypeItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showActivityTypeModal, setShowActivityTypeModal] = useState(false);
@@ -105,7 +103,6 @@ export default function NotableActivitiesPage() {
       }]);
     } finally {
       setLoading(false);
-      setIsInitialLoad(false);
     }
   }, []); // No dependencies - completely stable
 
@@ -122,18 +119,19 @@ export default function NotableActivitiesPage() {
     }
   }, []);
 
+
   // Initial load effect
   useEffect(() => {
     fetchActivities();
     fetchActivityTypes();
-  }, []); // Only run once on mount
+  }, [fetchActivities, fetchActivityTypes]); // Include dependencies
 
   // Effect for pagination, search, and sorting changes
   useEffect(() => {
     if (currentPage !== 1 || searchTerm !== '' || sortBy !== 'created_at' || sortOrder !== 'desc') {
       fetchActivities();
     }
-  }, [currentPage, searchTerm, sortBy, sortOrder]); // Trigger when these change
+  }, [currentPage, searchTerm, sortBy, sortOrder, fetchActivities]); // Trigger when these change
 
   const handleSearch = useCallback((term: string) => {
     setSearchTerm(term);
@@ -355,6 +353,7 @@ export default function NotableActivitiesPage() {
     }
   };
 
+
   const openEditModal = (item: NotableActivityItem) => {
     setEditingItem(item);
     setNewActivity({
@@ -411,7 +410,6 @@ export default function NotableActivitiesPage() {
                   className="pl-10 pr-4 py-2 border border-themeTealLighter rounded-md focus:outline-none text-themeTeal placeholder:text-themeTealLighter focus:border-themeTeal"
           />
         </div>
-              {isSearching && <Loader />}
       </div>
 
             <div className="flex items-center gap-4">
@@ -475,6 +473,7 @@ export default function NotableActivitiesPage() {
         activityTypes={activityTypes}
         title="Create Notable Activity"
         submitLabel="Create"
+        initialData={newActivity}
       />
 
       <ActivityFormModal
@@ -488,6 +487,7 @@ export default function NotableActivitiesPage() {
         editingItem={editingItem}
         title="Edit Notable Activity"
         submitLabel="Update"
+        initialData={newActivity}
       />
 
       <ActivityTypeModal
@@ -499,6 +499,7 @@ export default function NotableActivitiesPage() {
         newActivityType={newActivityType}
         setNewActivityType={setNewActivityType}
       />
+
 
       <ConfirmationModal
         isOpen={showDeleteModal}
