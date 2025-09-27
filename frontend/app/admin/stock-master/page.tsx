@@ -56,7 +56,7 @@ export default function StockMasterPage() {
   }, [sortOrder]);
 
   const addNotification = useCallback((notification: Omit<NotificationData, 'id'>) => {
-    const id = Date.now();
+    const id = Date.now().toString();
     setNotifications(prev => [...prev, { ...notification, id }]);
     
     // Auto remove after 5 seconds
@@ -65,7 +65,7 @@ export default function StockMasterPage() {
     }, 5000);
   }, []);
 
-  const removeNotification = useCallback((id: number) => {
+  const removeNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
   }, []);
 
