@@ -487,12 +487,6 @@ export default function StocksPage() {
               icon: stockData.icon
             };
             handleAddStock(adaptedData);
-            addNotification({
-              type: 'success',
-              title: 'Stock Added',
-              message: 'Stock has been added successfully!',
-              duration: 5000
-            });
           }}
         />
       )}
