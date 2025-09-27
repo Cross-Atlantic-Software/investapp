@@ -148,7 +148,7 @@ export default function UnlistedCompanyDetails() {
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Current Price:</span>
-                          <span className="font-medium text-green-600">₹{stockData.price.toFixed(2)}</span>
+                          <span className="font-medium text-green-600">₹{stockData.price_per_share.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Price Change:</span>

@@ -11,7 +11,7 @@ interface StockData {
   id: string;
   company_name: string;
   logo: string;
-  price: number;
+  price_per_share: number;
   price_change: number;
   teaser: string;
   short_description: string;
@@ -47,7 +47,7 @@ function DiscoverDetailsContent() {
             id: stock.id.toString(),
             company_name: stock.company_name,
             logo: stock.logo,
-            price: typeof stock.price === 'string' ? parseFloat(stock.price) : stock.price,
+            price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
             price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
             teaser: stock.teaser,
             short_description: stock.short_description,
@@ -96,7 +96,7 @@ function DiscoverDetailsContent() {
         ]}
         logoUrl={stockData.logo}
         company={stockData.company_name}
-        investPrice={stockData.price}
+        investPrice={stockData.price_per_share}
         changeAbs={stockData.price_change}
         changePct={0}
         updatedAt={stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "Recently"}
@@ -144,7 +144,7 @@ function DiscoverDetailsContent() {
                       <div className="space-y-3">
                         <div className="flex justify-between">
                           <span className="text-gray-600">Current Price:</span>
-                          <span className="font-medium text-green-600">₹{stockData.price.toFixed(2)}</span>
+                          <span className="font-medium text-green-600">₹{stockData.price_per_share.toFixed(2)}</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-600">Price Change:</span>
@@ -203,7 +203,7 @@ function DiscoverDetailsContent() {
         <aside className="lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-5rem)] overflow-y-auto">
           <TradeTabsShell
             company={stockData.company_name}
-            priceINR={stockData.price}
+            priceINR={stockData.price_per_share}
             settlementDate="Aug 21, 2025"
             minUnits={300}
             lotSize={300}

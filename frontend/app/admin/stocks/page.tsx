@@ -209,7 +209,6 @@ export default function StocksPage() {
     title: string;
     company_name: string;
     logo: string;
-    price: number;
     price_change: number;
     teaser: string;
     short_description: string;
@@ -235,7 +234,7 @@ export default function StocksPage() {
       formData.append('title', stockData.title);
       formData.append('company_name', stockData.company_name);
       formData.append('logo', stockData.logo);
-      formData.append('price', stockData.price.toString());
+      formData.append('price_per_share', stockData.price_per_share.toString());
       formData.append('price_change', stockData.price_change.toString());
       formData.append('teaser', stockData.teaser);
       formData.append('short_description', stockData.short_description);
@@ -450,7 +449,6 @@ export default function StocksPage() {
               title: stockData.title,
               company_name: stockData.company_name,
               logo: stockData.logo,
-              price: stockData.price,
               price_change: stockData.price_change,
               teaser: stockData.teaser,
               short_description: stockData.short_description,
