@@ -105,7 +105,9 @@ function Step3Content() {
       }, 3000);
     } catch (err) {
       console.error('Profile completion error:', err);
-      setError("Profile completion failed. Please try again.");
+      // Use the specific error message from the backend
+      const errorMessage = err instanceof Error ? err.message : "Profile completion failed. Please try again.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

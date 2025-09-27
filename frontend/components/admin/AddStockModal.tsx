@@ -6,7 +6,6 @@ import RichTextEditor from './RichTextEditor';
 interface StockData {
   company_name: string;
   logo: string;
-  price: number;
   price_change: number;
   teaser: string;
   short_description: string;
@@ -29,7 +28,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
   const [formData, setFormData] = useState<StockData>({
     company_name: '',
     logo: '',
-    price: 0,
     price_change: 0,
     teaser: '',
     short_description: '',
@@ -65,8 +63,8 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-8 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 my-8 max-h-[90vh] flex flex-col">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-themeTeal to-themeTealLight px-6 py-4">
           <div className="flex items-center justify-between">
@@ -104,48 +102,24 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               />
             </div>
             
-            {/* Price and Price Change */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Price <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 text-sm">₹</span>
-                  </div>
-                  <input
-                    type="number"
-                    name="price"
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: parseFloat(e.target.value) || 0})}
-                    required
-                    className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                    placeholder="0.00"
-                    step="0.01"
-                  />
+            {/* Price Change */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Price Change
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-gray-500 text-sm">₹</span>
                 </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Price Change <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 text-sm">₹</span>
-                  </div>
-                  <input
-                    type="number"
-                    name="price_change"
-                    value={formData.price_change}
-                    onChange={(e) => setFormData({...formData, price_change: parseFloat(e.target.value) || 0})}
-                    required
-                    className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                    placeholder="0.00"
-                    step="0.01"
-                  />
-                </div>
+                <input
+                  type="number"
+                  name="price_change"
+                  value={formData.price_change}
+                  onChange={(e) => setFormData({...formData, price_change: parseFloat(e.target.value) || 0})}
+                  className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
+                  placeholder="0.00"
+                  step="0.01"
+                />
               </div>
             </div>
 
@@ -244,21 +218,43 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
               </div>
             </div>
 
-            {/* Valuation and Price per Share */}
+            {/* Valuation */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Valuation <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="valuation"
+                value={formData.valuation}
+                onChange={handleInputChange}
+                required
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                placeholder="Enter valuation"
+              />
+            </div>
+
+            {/* Percentage Change and Price per Share - Side by Side */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Valuation <span className="text-red-500">*</span>
+                  Percentage Change <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="text"
-                  name="valuation"
-                  value={formData.valuation}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                  placeholder="Enter valuation"
-                />
+                <div className="relative">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 text-sm">%</span>
+                  </div>
+                  <input
+                    type="number"
+                    name="percentage_change"
+                    value={formData.percentage_change}
+                    onChange={(e) => setFormData({...formData, percentage_change: parseFloat(e.target.value) || 0})}
+                    required
+                    className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                    placeholder="0.00"
+                    step="0.01"
+                  />
+                </div>
               </div>
               
               <div>
@@ -280,28 +276,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit }) => {
                     step="0.01"
                   />
                 </div>
-              </div>
-            </div>
-
-            {/* Percentage Change */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Percentage Change <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <span className="text-gray-500 text-sm">%</span>
-                </div>
-                <input
-                  type="number"
-                  name="percentage_change"
-                  value={formData.percentage_change}
-                  onChange={(e) => setFormData({...formData, percentage_change: parseFloat(e.target.value) || 0})}
-                  required
-                  className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                  placeholder="0.00"
-                  step="0.01"
-                />
               </div>
             </div>
 

@@ -117,7 +117,7 @@ export default function ShareIntro(props: ShareIntroProps) {
         {/* RIGHT */}
         <div className="space-y-6">
           {!isAuthenticated && <RegisterCard />}
-          <WishlistCard name={company} sector={sector} priceINR={investPrice} />
+          {/* <WishlistCard name={company} sector={sector} priceINR={investPrice} /> */}
         </div>
       </div>
     </section>

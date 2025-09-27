@@ -10,7 +10,6 @@ export interface StockData {
   title: string;
   company_name: string;
   logo: string;
-  price: number;
   price_change: number;
   teaser: string;
   short_description: string;
@@ -51,7 +50,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
     title: '',
     company_name: '',
     logo: '',
-    price: 0,
     price_change: 0,
     teaser: '',
     short_description: '',
@@ -199,7 +197,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto m-0">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
         {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -252,89 +250,81 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
               />
             </div>
             
-            {/* Price and Valuation */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Price per Share <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="price_per_share"
-                  value={formData.price_per_share}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
-                  placeholder="0.00"
-                  step="0.01"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Valuation <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="valuation"
-                  value={formData.valuation}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
-                  placeholder="0.00"
-                  step="0.01"
-                />
-              </div>
-            </div>
-            
-            {/* Price and Price Change */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Price <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
-                  placeholder="0.00"
-                  step="0.01"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Price Change
-                </label>
-                <input
-                  type="number"
-                  name="price_change"
-                  value={formData.price_change}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
-                  placeholder="0.00"
-                  step="0.01"
-                />
-              </div>
-            </div>
-
-            {/* Percentage Change */}
+            {/* Valuation */}
             <div>
-              <label className="block text-xs font-medium text-themeTeal mb-1">
-                Percentage Change
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Valuation <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
-                name="percentage_change"
-                value={formData.percentage_change}
+                name="valuation"
+                value={formData.valuation}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
+                required
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
                 placeholder="0.00"
                 step="0.01"
               />
+            </div>
+            
+            {/* Price Change */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Price Change
+              </label>
+              <input
+                type="number"
+                name="price_change"
+                value={formData.price_change}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
+                placeholder="0.00"
+                step="0.01"
+              />
+            </div>
+
+            {/* Percentage Change and Price per Share - Side by Side */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Percentage Change <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 text-sm">%</span>
+                  </div>
+                  <input
+                    type="number"
+                    name="percentage_change"
+                    value={formData.percentage_change}
+                    onChange={handleInputChange}
+                    className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                    placeholder="0.00"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Price per Share <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <span className="text-gray-500 text-sm">₹</span>
+                  </div>
+                  <input
+                    type="number"
+                    name="price_per_share"
+                    value={formData.price_per_share}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                    placeholder="0.00"
+                    step="0.01"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Teaser */}
@@ -494,14 +484,14 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Stock Masters
+                <label className="block text-xs font-medium text-gray-700 mb-1">
+                  Stock Tags
                 </label>
                 <GenericSearchableMultiSelect
                   options={stockMasters.map(master => ({ value: master.id, label: master.name }))}
                   selectedValues={formData.stock_master_ids}
                   onChange={(values) => setFormData({ ...formData, stock_master_ids: values })}
-                  placeholder="Select stock masters..."
+                  placeholder="Select stock tags..."
                   forceAbove={true}
                 />
               </div>

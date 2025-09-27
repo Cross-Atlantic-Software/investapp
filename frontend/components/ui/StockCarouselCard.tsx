@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface StockCarouselCardProps {
   stock: {
@@ -55,7 +56,8 @@ function Logo({ name, src }: { name: string; src: string }) {
 
 function StockCarouselCard({ stock }: StockCarouselCardProps) {
   return (
-    <div className="bg-white rounded-lg p-4 shadow-lg border border-gray-200">
+    <Link href={`/unlisted-company-name/${encodeURIComponent(stock.company_name)}`} className="block cursor-pointer">
+      <div className="bg-white rounded-lg p-4 shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-200">
       {/* Header */}
       <div className="flex items-center gap-2 mb-3">
         <Logo name={stock.company_name} src={stock.logo} />
@@ -70,7 +72,7 @@ function StockCarouselCard({ stock }: StockCarouselCardProps) {
       {/* Price Info */}
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <span className="text-xs text-gray-600">Price</span>
+          <span className="text-xs text-gray-600">Price per share</span>
           <span className="text-sm font-semibold text-gray-900">
             ₹{stock.price_per_share}
           </span>
@@ -90,7 +92,8 @@ function StockCarouselCard({ stock }: StockCarouselCardProps) {
       <div className="mt-3 h-16 bg-gradient-to-r from-blue-50 to-green-50 rounded flex items-center justify-center">
         <div className="text-xs text-gray-500">📈 Chart</div>
       </div>
-    </div>
+      </div>
+    </Link>
   );
 }
 

@@ -155,19 +155,19 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
             </h3>
             <p className="mt-1 text-sm text-themeTealLight line-clamp-3 md:line-clamp-1">{item.teaser}</p>
 
-            <div className="mt-2 flex justify-center md:hidden">
+            {/* <div className="mt-2 flex justify-center md:hidden">
               <WishBtn onClick={() => onWishlist?.(item.id)} />
-            </div>
+            </div> */}
           </div>
         </div>
 
-        <div className="hidden md:flex md:items-start md:justify-center md:flex-shrink-0">
+        {/* <div className="hidden md:flex md:items-start md:justify-center md:flex-shrink-0">
           <WishBtn onClick={() => onWishlist?.(item.id)} />
-        </div>
+        </div> */}
 
         <div className="w-full md:w-auto md:min-w-[400px] lg:min-w-full xl:min-w-[500px]">
           <div className="hidden md:grid grid-cols-2 bg-themeTeal px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white">
-            <div>Price</div><div>Change</div>
+            <div>Price per share</div><div>Change</div>
           </div>
           <div className="hidden md:grid grid-cols-2 items-center gap-2 bg-white px-3 py-2 text-sm font-semibold text-themeTeal">
             <div className="whitespace-nowrap">₹ {formatINR(item.price_per_share)}</div>
@@ -177,7 +177,7 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
           </div>
 
           <div className="grid md:hidden grid-cols-2 gap-3 bg-white p-3 text-sm text-themeTeal">
-            <MobileStat label="Price" value={`₹ ${formatINR(item.price_per_share)}`} />
+            <MobileStat label="Price per share" value={`₹ ${formatINR(item.price_per_share)}`} />
             <MobileStat
               label="Change"
               value={<span className={pos ? "text-green-700" : "text-rose-600"}>
@@ -191,7 +191,7 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
   );
 }
 
-function WishBtn({ onClick }: { onClick: () => void }) {
+/* function WishBtn({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
@@ -202,7 +202,7 @@ function WishBtn({ onClick }: { onClick: () => void }) {
       <Heart className="h-4 w-4" /> Add to Wishlist
     </button>
   );
-}
+} */
 function MobileStat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>

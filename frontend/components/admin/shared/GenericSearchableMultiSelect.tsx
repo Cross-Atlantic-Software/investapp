@@ -147,7 +147,7 @@ export default function GenericSearchableMultiSelect({
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       <div
-        className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none text-themeTeal cursor-pointer bg-white"
+        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-themeTeal focus:border-themeTeal transition-all duration-200 text-gray-900 cursor-pointer bg-white"
         onClick={() => {
           if (!isOpen) {
             calculateDropdownPosition();

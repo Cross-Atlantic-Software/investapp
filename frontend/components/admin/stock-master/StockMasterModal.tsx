@@ -79,23 +79,28 @@ const StockMasterModal: React.FC<StockMasterModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden">
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-themeTeal">Manage Stock Masters</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
-          >
-            <X className="h-6 w-6" />
-          </button>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 m-0">
+        <div className="bg-white rounded shadow w-full max-w-4xl mx-4 mt-8 mb-4 max-h-[95vh] flex flex-col">
+        {/* Modal Header */}
+        <div className="bg-themeTeal px-6 py-4 rounded-t flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-base font-semibold text-themeTealWhite">Manage Stock Tags</h3>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-themeTealWhite transition duration-300 cursor-pointer"
+            >
+              <X width={20} height={20}/>
+            </button>
+          </div>
         </div>
-
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        
+        {/* Modal Body */}
+        <div className="p-6 flex-1 overflow-y-auto">
           {/* Create Form */}
-          <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium text-themeTeal">Add New Stock Master</h3>
+          <div className="mb-4">
+            <div className="flex items-center justify-end mb-2">
               <button
                 onClick={() => setIsCreating(!isCreating)}
                 className="flex items-center px-3 py-1 text-sm bg-themeTeal text-white rounded hover:bg-themeTealDark transition duration-200"
@@ -106,16 +111,16 @@ const StockMasterModal: React.FC<StockMasterModalProps> = ({
             </div>
 
             {isCreating && (
-              <form onSubmit={handleSubmit} className="bg-gray-50 p-4 rounded-lg">
+              <form onSubmit={handleSubmit} className="bg-themeTealWhite p-4 rounded-lg border border-themeTealLighter">
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-themeTeal mb-1">
+                  <label className="block text-xs font-medium text-themeTeal mb-1">
                     Name <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={newStockMaster.name}
                     onChange={(e) => setNewStockMaster({ ...newStockMaster, name: e.target.value })}
-                    className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal"
+                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                     placeholder="Enter stock master name"
                     required
                   />
@@ -127,13 +132,13 @@ const StockMasterModal: React.FC<StockMasterModalProps> = ({
                       setIsCreating(false);
                       setNewStockMaster({ name: '' });
                     }}
-                    className="px-4 py-2 text-sm text-gray-600 bg-gray-200 rounded hover:bg-gray-300 transition duration-200"
+                    className="px-4 py-2 text-sm text-themeTeal bg-themeTealWhite border border-themeTealLighter rounded hover:bg-themeTealLighter transition duration-200"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 text-sm text-white bg-themeTeal rounded hover:bg-themeTealDark transition duration-200"
+                    className="px-4 py-2 text-sm text-white bg-themeTeal rounded hover:bg-themeTealLight transition duration-200"
                   >
                     Create
                   </button>
@@ -143,56 +148,69 @@ const StockMasterModal: React.FC<StockMasterModalProps> = ({
           </div>
 
           {/* Stock Masters List */}
-          <div>
-            <h3 className="text-lg font-medium text-themeTeal mb-4">Existing Stock Masters</h3>
+          <div className="space-y-4">
+            <h3 className="text-xs font-medium text-themeTeal uppercase tracking-wider">Existing Stock Tags</h3>
             {stockMasters.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No stock masters found</p>
+              <div className="text-center py-16 min-h-[400px] flex flex-col items-center justify-center">
+                <svg className="mx-auto h-16 w-16 text-themeTealLighter mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+                <h3 className="text-lg font-medium text-themeTeal mb-2">No stock masters found</h3>
+                <p className="text-sm text-themeTealLighter">Get started by adding a new stock master.</p>
+              </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        ID
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Created At
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {stockMasters.map((stockMaster) => (
-                      <tr key={stockMaster.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {stockMaster.id}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {stockMaster.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {formatDate(stockMaster.created_at)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex items-center space-x-2">
-                            <button
-                              onClick={() => handleDelete(stockMaster.id)}
-                              className="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded text-xs"
-                              title="Delete"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </button>
-                          </div>
-                        </td>
+              <div className="bg-white rounded border border-themeTealLighter">
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[600px]">
+                    <thead className="bg-themeTeal border-b border-themeTealLighter">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                          ID
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                          Name
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                          Created At
+                        </th>
+                        <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
+                          Actions
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-themeTealLighter">
+                      {stockMasters.map((stockMaster, index) => (
+                        <tr 
+                          key={stockMaster.id}
+                          className={`hover:bg-themeTealWhite transition duration-300 ${
+                            index % 2 === 0 ? 'bg-white' : 'bg-themeTealWhite'
+                          }`}
+                        >
+                          <td className="px-4 py-3 text-left">
+                            <div className="text-sm text-themeTeal">{stockMaster.id}</div>
+                          </td>
+                          <td className="px-4 py-3 text-left">
+                            <div className="text-sm font-medium text-themeTeal">{stockMaster.name}</div>
+                          </td>
+                          <td className="px-4 py-3 text-left">
+                            <div className="text-sm text-themeTeal">{formatDate(stockMaster.created_at)}</div>
+                          </td>
+                          <td className="px-4 py-3 text-sm font-medium">
+                            <div className="flex items-center space-x-1">
+                              <button
+                                onClick={() => handleDelete(stockMaster.id)}
+                                className="p-2 bg-red-700 text-themeTealWhite hover:text-red-700 hover:bg-white rounded transition duration-300 cursor-pointer"
+                                title="Delete Stock Master"
+                              >
+                                <Trash2 width={16} height={16}/>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

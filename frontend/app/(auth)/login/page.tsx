@@ -37,7 +37,9 @@ export default function Page() {
       router.push("/invest");
     } catch (err) {
       console.error('Login error:', err);
-      setError("Login failed. Please check your credentials and try again.");
+      // Use the specific error message from the backend
+      const errorMessage = err instanceof Error ? err.message : "Login failed. Please check your credentials and try again.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

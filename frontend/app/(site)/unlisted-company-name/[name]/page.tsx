@@ -129,8 +129,7 @@ export default function UnlistedCompanyDetails() {
 
           <div className="space-y-6">
             <Section id="stock-details" title="Company Analysis">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="space-y-6">
+              <div>
                   {/* Company Logo and Name */}
                   {/* <div className="flex items-center gap-4">
                     <div className="h-16 w-16 rounded-lg bg-gray-100 overflow-hidden">
@@ -203,7 +202,6 @@ export default function UnlistedCompanyDetails() {
                     />
                   </div>
                 </div>
-              </div>
             </Section>
           </div>
         </div>

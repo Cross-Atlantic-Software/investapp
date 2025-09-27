@@ -113,7 +113,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     setEditingStock(stock);
     setEditFormData({
       company_name: stock.company_name,
-      price_change: stock.price_change,
       teaser: stock.teaser,
       short_description: stock.short_description,
       analysis: stock.analysis,
@@ -244,7 +243,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       // Create FormData for file upload
       const formData = new FormData();
       formData.append('company_name', editFormData.company_name || '');
-      formData.append('price_change', editFormData.price_change?.toString() || '');
       formData.append('teaser', editFormData.teaser || '');
       formData.append('short_description', editFormData.short_description || '');
       formData.append('analysis', editFormData.analysis || '');
@@ -343,62 +341,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   onClick={() => onSort?.('price_per_share')}
                 >
                   <div className="flex items-center">
-                    Price
+                    Price per share
                     {sortBy === 'price_per_share' ? (
                       <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
                     ) : (
                       <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('demand')}
-                >
-                  <div className="flex items-center">
-                    Demand
-                    {sortBy === 'demand' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('homeDisplay')}
-                >
-                  <div className="flex items-center">
-                    Home Display
-                    {sortBy === 'homeDisplay' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('bannerDisplay')}
-                >
-                  <div className="flex items-center">
-                    Banner Display
-                    {sortBy === 'bannerDisplay' ? (
-                      <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    ) : (
-                      <svg className="ml-1 h-3 w-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
                     )}
                   </div>
                 </th>
@@ -449,48 +396,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     )}
                   </div>
                 </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('sector')}
-                >
-                  <div className="flex items-center">
-                    Sector
-                    {sortBy === 'sector' ? (
-                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('subsector')}
-                >
-                  <div className="flex items-center">
-                    Subsector
-                    {sortBy === 'subsector' ? (
-                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
-                    )}
-                  </div>
-                </th>
-                <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
-                  onClick={() => onSort?.('headquarters')}
-                >
-                  <div className="flex items-center">
-                    Headquarters
-                    {sortBy === 'headquarters' ? (
-                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
-                    ) : (
-                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
-                    )}
-                  </div>
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
-                  Stock Masters
-                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                   Actions
                 </th>
@@ -531,46 +436,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </td>
 
                   {/* Price Column */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-left">
                     <div className="text-xs font-medium text-themeTeal flex items-center"><IndianRupee width={12} height={12}/>{stock.price_per_share}</div>
                   </td>
 
 
-                  {/* Demand Column */}
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      stock.demand === 'High Demand' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {stock.demand || 'N/A'}
-                    </span>
-                  </td>
-
-                  {/* Home Display Column */}
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      stock.homeDisplay === 'yes' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {stock.homeDisplay === 'yes' ? 'Yes' : 'No'}
-                    </span>
-                  </td>
-
-                  {/* Banner Display Column */}
-                  <td className="px-4 py-3 text-center">
-                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      stock.bannerDisplay === 'yes' 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {stock.bannerDisplay === 'yes' ? 'Yes' : 'No'}
-                    </span>
-                  </td>
 
                   {/* Valuation Column */}
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-3 text-left">
                     <div className="text-xs font-medium text-gray-900">
                       {stock.valuation || 'N/A'}
                     </div>
@@ -578,48 +451,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
 
                   {/* Percentage Change Column */}
-                  <td className="px-4 py-3 text-center">
+                  <td className="px-4 py-3 text-left">
                     <div className={`text-xs font-medium ${(stock.percentage_change || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                       {(stock.percentage_change || 0) >= 0 ? '+' : ''}{stock.percentage_change || 0}%
                     </div>
                   </td>
 
                   {/* Founded Column */}
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 text-left">
                     <div className="text-sm text-themeTeal">{stock.founded || 'N/A'}</div>
-                  </td>
-
-                  {/* Sector Column */}
-                  <td className="px-4 py-3">
-                    <div className="text-sm text-themeTeal">{stock.sector || 'N/A'}</div>
-                  </td>
-
-                  {/* Subsector Column */}
-                  <td className="px-4 py-3">
-                    <div className="text-sm text-themeTeal">{stock.subsector || 'N/A'}</div>
-                  </td>
-
-                  {/* Headquarters Column */}
-                  <td className="px-4 py-3">
-                    <div className="text-sm text-themeTeal">{stock.headquarters || 'N/A'}</div>
-                  </td>
-
-                  {/* Stock Masters Column */}
-                  <td className="px-4 py-3">
-                    <div className="flex flex-wrap gap-1">
-                      {stock.stock_masters && stock.stock_masters.length > 0 ? (
-                        stock.stock_masters.map((master) => (
-                          <span 
-                            key={master.id}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLight text-themeTealWhite"
-                          >
-                            {master.name}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-sm text-gray-500">No stock masters</span>
-                      )}
-                    </div>
                   </td>
 
                   {/* Actions Column */}
@@ -675,7 +515,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Edit Stock Modal */}
       {editingStock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
           <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -702,7 +542,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Company Name Field */}
                   <div>
-                    <label className="block text-xs font-medium text-themeTeal mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
                       Company Name <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -714,29 +554,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     />
                   </div>
 
-                  {/* Price Change Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-themeTeal mb-1">
-                      Price Change <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-themeTealLighter"><IndianRupee width={16} height={16} /></span>
-                      </div>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={editFormData.price_change || ''}
-                        onChange={(e) => setEditFormData({...editFormData, price_change: parseFloat(e.target.value) || 0})}
-                        className="w-full pl-8 pr-4 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
 
                   {/* Teaser Field */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-themeTeal mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
                       Teaser <span className="text-red-500">*</span>
                     </label>
                     <textarea
@@ -750,7 +571,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Short Description Field */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-themeTeal mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
                       Short Description <span className="text-red-500">*</span>
                     </label>
                     <SimpleRichTextEditor
@@ -763,7 +584,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Analysis Field */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-themeTeal mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
                       Analysis <span className="text-red-500">*</span>
                     </label>
                     <SimpleRichTextEditor
@@ -836,43 +657,48 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     />
                   </div>
 
-                  {/* Price per Share Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Price per Share <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 text-sm">₹</span>
+                  {/* Percentage Change and Price per Share Fields - Side by Side */}
+                  <div className="md:col-span-2">
+                    <div className="flex gap-4">
+                      {/* Percentage Change Field */}
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Percentage Change <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 text-sm">%</span>
+                          </div>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editFormData.percentage_change || ''}
+                            onChange={(e) => setEditFormData({...editFormData, percentage_change: parseFloat(e.target.value) || 0})}
+                            className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                            placeholder="0.00"
+                          />
+                        </div>
                       </div>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={editFormData.price_per_share || ''}
-                        onChange={(e) => setEditFormData({...editFormData, price_per_share: parseFloat(e.target.value) || 0})}
-                        className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                        placeholder="0.00"
-                      />
-                    </div>
-                  </div>
 
-                  {/* Percentage Change Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Percentage Change <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                        <span className="text-gray-500 text-sm">%</span>
+                      {/* Price per Share Field */}
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Price per Share <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 text-sm">₹</span>
+                          </div>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editFormData.price_per_share || ''}
+                            onChange={(e) => setEditFormData({...editFormData, price_per_share: parseFloat(e.target.value) || 0})}
+                            className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                            placeholder="0.00"
+                          />
+                        </div>
                       </div>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={editFormData.percentage_change || ''}
-                        onChange={(e) => setEditFormData({...editFormData, percentage_change: parseFloat(e.target.value) || 0})}
-                        className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                        placeholder="0.00"
-                      />
                     </div>
                   </div>
 
@@ -929,28 +755,28 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       type="text"
                       value={editFormData.headquarters || ''}
                       onChange={(e) => setEditFormData({...editFormData, headquarters: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
                       placeholder="San Francisco, CA"
                     />
                   </div>
 
-                  {/* Stock Masters Field */}
+                  {/* Stock Tags Field */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Stock Masters
+                      Stock Tags
                     </label>
                     <GenericSearchableMultiSelect
                       options={stockMasters.map(master => ({ value: master.id, label: master.name }))}
                       selectedValues={selectedStockMasterIds}
                       onChange={(values) => setSelectedStockMasterIds(values)}
-                      placeholder="Select stock masters..."
+                      placeholder="Select stock tags..."
                       forceAbove={true}
                     />
                   </div>
 
                   {/* Company Logo */}
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-themeTeal mb-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
                       Company Logo URL
                     </label>
                     {/* Error Message */}
@@ -1108,7 +934,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* View Stock Modal */}
       {viewingStock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
           <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -1149,7 +975,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 {/* Basic Information */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-medium text-themeTeal mb-1">Company Name</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Company Name</label>
                     <input
                       type="text"
                       value={viewingStock.company_name}
@@ -1158,29 +984,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-themeTeal mb-1">Stock ID</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Stock ID</label>
                     <input
                       type="text"
                       value={viewingStock.id}
                       readOnly
                       className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
                     />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-themeTeal mb-1">Price Change</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span className="text-themeTealLighter"><IndianRupee width={16} height={16} /></span>
-                      </div>
-                      <input
-                        type="text"
-                        value={`${viewingStock.price_change >= 0 ? '+' : ''}${viewingStock.price_change}`}
-                        readOnly
-                        className={`w-full pl-8 pr-4 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite focus:outline-none ${
-                          viewingStock.price_change >= 0 ? 'text-green-600' : 'text-red-600'
-                        }`}
-                      />
-                    </div>
                   </div>
                 </div>
 
@@ -1252,7 +1062,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       </p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock Masters</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock Tags</label>
                       <div className="bg-white p-2 rounded border">
                         {viewingStock.stock_masters && viewingStock.stock_masters.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
@@ -1266,7 +1076,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             ))}
                           </div>
                         ) : (
-                          <span className="text-sm text-gray-500">No stock masters assigned</span>
+                          <span className="text-sm text-gray-500">No stock tags assigned</span>
                         )}
                       </div>
                     </div>
@@ -1302,7 +1112,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                 {/* Teaser */}
                 <div>
-                  <label className="block text-xs font-medium text-themeTeal mb-1">Teaser</label>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Teaser</label>
                   <textarea
                     value={viewingStock.teaser}
                     readOnly
@@ -1356,7 +1166,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 {/* Company Logo */}
                 {viewingStock.logo && (
                   <div>
-                    <label className="block text-xs font-medium text-themeTeal mb-1">Company Logo</label>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Company Logo</label>
                     <div className="mt-1 border-2 border-themeTealLighter border-dashed rounded p-4">
                       <div className="flex justify-center">
                         <div className="relative">

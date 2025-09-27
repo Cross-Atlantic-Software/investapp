@@ -104,14 +104,15 @@ export default function HighDemandStocks({
           >
             {items.map((s, i) => (
               <SwiperSlide key={`${s.id}-${i}`} className="h-auto">
-                <article className="h-full rounded-md border border-themeTealLighter bg-brandGradientGreen p-5">
-                  {/* Top */}
-                  <div className="mb-5 flex items-center gap-3">
-                    <Logo name={s.name} src={s.logo} />
-                    <Link href={`/unlisted-company-name/${encodeURIComponent(s.name)}`} className="font-semibold text-themeTeal transition duration-500 hover:text-themeSkyBlue">
-                      {s.name}
-                    </Link>
-                  </div>
+                <Link href={`/unlisted-company-name/${encodeURIComponent(s.name)}`} className="block h-full cursor-pointer">
+                  <article className="h-full rounded-md border border-themeTealLighter bg-brandGradientGreen p-5 hover:shadow-lg transition-all duration-300">
+                    {/* Top */}
+                    <div className="mb-5 flex items-center gap-3">
+                      <Logo name={s.name} src={s.logo} />
+                      <div className="font-semibold text-themeTeal transition duration-500 hover:text-themeSkyBlue">
+                        {s.name}
+                      </div>
+                    </div>
 
                   {/* Metrics */}
                   <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-left text-sm">
@@ -136,7 +137,8 @@ export default function HighDemandStocks({
                       <p className="font-semibold text-themeTeal">{s.valuation}</p>
                     </div>
                   </div>
-                </article>
+                  </article>
+                </Link>
               </SwiperSlide>
             ))}
           </Swiper>

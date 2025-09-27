@@ -141,8 +141,10 @@ export default function Page() {
       
       // Automatically proceed to step 3 after email verification
       router.push("/register/step-3");
-    } catch {
-      setError("Email verification failed. Please check your code and try again.");
+    } catch (error) {
+      // Use the specific error message from the backend
+      const errorMessage = error instanceof Error ? error.message : "Email verification failed. Please check your code and try again.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

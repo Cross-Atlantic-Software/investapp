@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, A11y } from "swiper/modules";
 // If CSS-in-component fails in your setup, move these two lines into globals.css instead.
@@ -239,7 +240,7 @@ function StatRow({ label, value }: { label: string; value?: (string | number) })
 
 function Card({ slide }: { slide: Slide }) {
   return (
-    <div className="h-full w-full flex items-center justify-center">
+    <Link href={`/unlisted-company-name/${encodeURIComponent(slide.title)}`} className="h-full w-full flex items-center justify-center cursor-pointer">
       <div className="flex flex-col p-2">
         {/* Header */}
         <div className="text-center">
@@ -267,6 +268,6 @@ function Card({ slide }: { slide: Slide }) {
 
         <div className="flex-1" />
       </div>
-    </div>
+    </Link>
   );
 }

@@ -40,8 +40,16 @@ export default function Page() {
         localStorage.setItem('pending_token', response.token);
       }
       router.push("/register/step-2");
-    } catch {
-      setError("Registration failed. Please try again.");
+    } catch (error) {
+      // Use the specific error message from the backend
+      let errorMessage = error instanceof Error ? error.message : "Registration failed. Please try again.";
+      
+      // Make the error message more user-friendly
+      if (errorMessage.toLowerCase().includes('already exists')) {
+        errorMessage = "User already exists. Please login instead.";
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

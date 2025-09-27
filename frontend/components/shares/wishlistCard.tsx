@@ -26,13 +26,13 @@ export default function WishlistCard({
         <div className="font-semibold text-themeTeal">₹ {formatINR(priceINR)}</div>
       </div>
 
-      <button
+      {/* <button
         type="button"
         onClick={onAdd}
         className="mt-4 w-full inline-flex items-center justify-center gap-2 rounded-md bg-themeTeal px-4 py-2 font-semibold text-white hover:bg-themeSkyBlue transition duration-500 cursor-pointer"
       >
         Add to Wishlist <Heart className="h-4 w-4" />
-      </button>
+      </button> */}
     </aside>
   );
 }
