@@ -3,6 +3,7 @@
 import { Info } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
 
 type TradeTabsProps = {
   company: string;            // e.g. "Pine Labs"
@@ -42,6 +43,9 @@ export default function TradeTabs({
   
   // Loading state for buy/sell operations
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // Notification state
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
   // Check if user is authenticated
   const isAuthenticated = () => {
@@ -50,6 +54,16 @@ export default function TradeTabs({
       return !!token;
     }
     return false;
+  };
+
+  // Notification helper functions
+  const addNotification = (notification: Omit<NotificationData, 'id'>) => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { ...notification, id }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   // Handle buy button click with authentication check
@@ -92,14 +106,29 @@ export default function TradeTabs({
         // Call the original callback
         onBuySubmit?.({ quantity: qty, investINR: investFromQty });
         
-        // Show success message with email confirmation
-        alert(`✅ Buy order placed successfully!\n\n📧 A confirmation email has been sent to your registered email address.\n\nPlease check your inbox for the transaction details.`);
+        // Show success notification with email confirmation
+        addNotification({
+          type: 'success',
+          title: 'Buy order placed successfully!',
+          message: 'A confirmation email has been sent to your registered email address. Please check your inbox for the transaction details.',
+          duration: 8000
+        });
       } else {
-        alert('❌ Failed to place buy order: ' + data.message);
+        addNotification({
+          type: 'error',
+          title: 'Failed to place buy order',
+          message: data.message || 'An error occurred while placing your order.',
+          duration: 6000
+        });
       }
     } catch (error) {
       console.error('Error placing buy order:', error);
-      alert('❌ Failed to place buy order. Please check your internet connection and try again.');
+      addNotification({
+        type: 'error',
+        title: 'Failed to place buy order',
+        message: 'Please check your internet connection and try again.',
+        duration: 6000
+      });
     } finally {
       setIsLoading(false);
     }
@@ -153,133 +182,141 @@ export default function TradeTabs({
   // };
 
   return (
-    <div className="rounded bg-themeTealWhite">
-      {/* Tabs */}
-      <div className="flex items-center gap-6 border-b border-themeTealLighter px-4 sm:px-5">
-        <TabButton
-          active={tab === "buy"}
-          activeColor="emerald"
-          onClick={() => setTab("buy")}
-          label="Buy"
-        />
-        {/* <TabButton
-          active={tab === "sell"}
-          activeColor="red"
-          onClick={() => setTab("sell")}
-          label="Sell"
-        /> */}
+    <>
+      <div className="rounded bg-themeTealWhite">
+        {/* Tabs */}
+        <div className="flex items-center gap-6 border-b border-themeTealLighter px-4 sm:px-5">
+          <TabButton
+            active={tab === "buy"}
+            activeColor="emerald"
+            onClick={() => setTab("buy")}
+            label="Buy"
+          />
+          {/* <TabButton
+            active={tab === "sell"}
+            activeColor="red"
+            onClick={() => setTab("sell")}
+            label="Sell"
+          /> */}
+        </div>
+
+        {/* BUY */}
+        {tab === "buy" && (
+          <form
+            className="p-4 sm:p-6 space-y-5"
+            onSubmit={handleBuyClick}
+          >
+            <HeaderRow company={company} priceINR={priceINR} />
+
+            <MetaRow
+              settlementDate={settlementDate}
+              minUnits={minUnits}
+              lotSize={lotSize}
+              settlementInfo="Trades settle on T+7 working days. Dates may shift on market/bank holidays."
+            />
+
+            <div className="h-px bg-themeTealLighter" />
+
+            <Field
+              label="Quantity"
+              input={
+                <NumberInput
+                  value={qty}
+                  onChange={(v) => setQty(sanitizeInt(v))}
+                  placeholder="0"
+                />
+              }
+            />
+
+            <Field
+              label="Invest"
+              input={
+                <CurrencyInput
+                  value={invest}
+                  readOnly
+                  prefix="₹"
+                  ariaLabel="Invest amount"
+                />
+              }
+              hint="Auto-calculated from quantity × price"
+            />
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className={`w-full rounded-md px-4 py-3 text-white font-semibold transition duration-500 ${
+                isLoading 
+                  ? 'bg-gray-500 cursor-not-allowed' 
+                  : 'bg-emerald-700 cursor-pointer hover:bg-emerald-800'
+              }`}
+            >
+              {isLoading ? 'Processing...' : 'Invest Now'}
+            </button>
+          </form>
+        )}
+
+        {/* SELL */}
+        {tab === "sell" && (
+          <form
+            className="p-4 sm:p-6 space-y-5"
+            // onSubmit={handleSellClick}
+          >
+            <SellHeaderRow company={company} />
+
+            <Field
+              label="Quantity*"
+              input={
+                <NumberInput
+                  value={sellQty}
+                  onChange={(v) => setSellQty(sanitizeInt(v))}
+                  placeholder="0"
+                  required
+                />
+              }
+            />
+
+            <Field
+              label="Selling Price*"
+              input={
+                <CurrencyInput
+                  value={sellPrice}
+                  onChange={(v) => setSellPrice(sanitizeFloat(v))}
+                  prefix="₹"
+                  placeholder="0"
+                  required
+                />
+              }
+            />
+
+            <Field
+              label="Message*"
+              input={
+                <textarea
+                  required
+                  value={sellMsg}
+                  onChange={(e) => setSellMsg(e.target.value)}
+                  className="w-full min-h-28 rounded border border-themeTealLighter bg-white px-3 py-2 outline-none"
+                  placeholder="Add any details for the buyer"
+                />
+              }
+            />
+
+            <button
+              type="submit"
+              className="w-full rounded-md bg-red-600 px-4 py-3 text-white font-semibold cursor-pointer hover:bg-red-700 transition duration-500"
+            >
+              Sell
+            </button>
+          </form>
+        )}
       </div>
-
-      {/* BUY */}
-      {tab === "buy" && (
-        <form
-          className="p-4 sm:p-6 space-y-5"
-          onSubmit={handleBuyClick}
-        >
-          <HeaderRow company={company} priceINR={priceINR} />
-
-          <MetaRow
-            settlementDate={settlementDate}
-            minUnits={minUnits}
-            lotSize={lotSize}
-            settlementInfo="Trades settle on T+7 working days. Dates may shift on market/bank holidays."
-          />
-
-          <div className="h-px bg-themeTealLighter" />
-
-          <Field
-            label="Quantity"
-            input={
-              <NumberInput
-                value={qty}
-                onChange={(v) => setQty(sanitizeInt(v))}
-                placeholder="0"
-              />
-            }
-          />
-
-          <Field
-            label="Invest"
-            input={
-              <CurrencyInput
-                value={invest}
-                readOnly
-                prefix="₹"
-                ariaLabel="Invest amount"
-              />
-            }
-            hint="Auto-calculated from quantity × price"
-          />
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full rounded-md px-4 py-3 text-white font-semibold transition duration-500 ${
-              isLoading 
-                ? 'bg-gray-500 cursor-not-allowed' 
-                : 'bg-emerald-700 cursor-pointer hover:bg-emerald-800'
-            }`}
-          >
-            {isLoading ? 'Processing...' : 'Invest Now'}
-          </button>
-        </form>
-      )}
-
-      {/* SELL */}
-      {tab === "sell" && (
-        <form
-          className="p-4 sm:p-6 space-y-5"
-          // onSubmit={handleSellClick}
-        >
-          <SellHeaderRow company={company} />
-
-          <Field
-            label="Quantity*"
-            input={
-              <NumberInput
-                value={sellQty}
-                onChange={(v) => setSellQty(sanitizeInt(v))}
-                placeholder="0"
-                required
-              />
-            }
-          />
-
-          <Field
-            label="Selling Price*"
-            input={
-              <CurrencyInput
-                value={sellPrice}
-                onChange={(v) => setSellPrice(sanitizeFloat(v))}
-                prefix="₹"
-                placeholder="0"
-                required
-              />
-            }
-          />
-
-          <Field
-            label="Message*"
-            input={
-              <textarea
-                required
-                value={sellMsg}
-                onChange={(e) => setSellMsg(e.target.value)}
-                className="w-full min-h-28 rounded border border-themeTealLighter bg-white px-3 py-2 outline-none"
-                placeholder="Add any details for the buyer"
-              />
-            }
-          />
-
-          <button
-            type="submit"
-            className="w-full rounded-md bg-red-600 px-4 py-3 text-white font-semibold cursor-pointer hover:bg-red-700 transition duration-500"
-          >
-            Sell
-          </button>
-        </form>
-      )}
-    </div>
+      
+      {/* Notification Container */}
+      <NotificationContainer
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+    </>
   );
 }
 

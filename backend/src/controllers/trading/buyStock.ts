@@ -15,10 +15,13 @@ export class BuyStockService {
 
   buyStock = async (req: Request, res: Response): Promise<void> => {
     try {
+      console.log('🔍 Backend buyStock controller called');
       await this.ensureDbReady();
       
       // Get user from JWT token (set by middleware)
       const userId = (req.user as any)?.user_id;
+      console.log('🔍 User ID from token:', userId, 'Type:', typeof userId);
+      
       if (!userId) {
         return (res as any).error("User not authenticated", HttpStatusCode.UNAUTHORIZED);
       }
@@ -30,11 +33,23 @@ export class BuyStockService {
         return (res as any).error("Missing required fields", HttpStatusCode.BAD_REQUEST);
       }
 
-      // Get user details
-      const user = await this.userModel.findByPk(parseInt(userId));
+      // Get user details - try both string and number
+      console.log('🔍 Searching for user with ID:', userId, 'as integer:', parseInt(userId));
+      let user = await this.userModel.findByPk(parseInt(userId));
       if (!user) {
+        console.log('🔍 User not found with parseInt, trying with string ID');
+        user = await this.userModel.findByPk(userId);
+      }
+      
+      if (!user) {
+        console.log('❌ User not found in database with ID:', userId);
+        // Let's check if there are any users in the database
+        const allUsers = await this.userModel.findAll({ limit: 5 });
+        console.log('🔍 Available users in database:', allUsers.map(u => ({ id: u.id, email: u.email })));
         return (res as any).error("User not found", HttpStatusCode.NOT_FOUND);
       }
+      
+      console.log('✅ User found:', user.email);
 
       // Send confirmation email
       try {
