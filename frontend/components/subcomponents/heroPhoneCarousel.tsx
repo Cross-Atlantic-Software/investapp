@@ -55,7 +55,7 @@ interface ApiResponse {
 // API fetch function
 async function fetchBannerStocks(): Promise<Slide[]> {
   try {
-    const response = await fetch('http://localhost:3000/api/stocks/banner-display');
+    const response = await fetch('/api/stocks/banner-display');
     if (!response.ok) {
       throw new Error('Failed to fetch banner stocks');
     }
