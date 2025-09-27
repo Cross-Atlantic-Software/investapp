@@ -7,7 +7,6 @@ import SimpleRichTextEditor from '../SimpleRichTextEditor';
 import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
 
 export interface StockData {
-  title: string;
   company_name: string;
   logo: string;
   price_change: number;
@@ -47,7 +46,6 @@ interface AddStockModalProps {
 
 const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockMasters = [] }) => {
   const [formData, setFormData] = useState<StockData>({
-    title: '',
     company_name: '',
     logo: '',
     price_change: 0,
@@ -218,22 +216,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
         <div className="p-6 flex-1 overflow-y-auto">
           
           <form id="stock-form" onSubmit={handleSubmit} className="space-y-6">
-            {/* Stock Title */}
-            <div>
-              <label className="block text-xs font-medium text-themeTeal mb-1">
-                Stock Title <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                placeholder="Enter stock title"
-              />
-            </div>
-            
             {/* Company Name */}
             <div>
               <label className="block text-xs font-medium text-themeTeal mb-1">
