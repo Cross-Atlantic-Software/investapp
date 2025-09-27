@@ -206,7 +206,6 @@ export default function StocksPage() {
   };
 
   const handleAddStock = async (stockData: {
-    title: string;
     company_name: string;
     logo: string;
     price_change: number;
@@ -231,7 +230,6 @@ export default function StocksPage() {
       const formData = new FormData();
       
       // Append all stock data to formData
-      formData.append('title', stockData.title);
       formData.append('company_name', stockData.company_name);
       formData.append('logo', stockData.logo);
       formData.append('price_per_share', stockData.price_per_share.toString());
@@ -243,7 +241,6 @@ export default function StocksPage() {
       formData.append('homeDisplay', stockData.homeDisplay);
       formData.append('bannerDisplay', stockData.bannerDisplay);
       formData.append('valuation', stockData.valuation);
-      formData.append('price_per_share', stockData.price_per_share.toString());
       formData.append('percentage_change', stockData.percentage_change.toString());
       formData.append('founded', stockData.founded.toString());
       formData.append('sector', stockData.sector);
@@ -466,7 +463,6 @@ export default function StocksPage() {
           stockMasters={stockMasters}
           onSubmit={(stockData) => {
             const adaptedData = {
-              title: stockData.title,
               company_name: stockData.company_name,
               logo: stockData.logo,
               price_change: stockData.price_change,
