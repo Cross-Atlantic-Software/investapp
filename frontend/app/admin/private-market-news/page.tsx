@@ -328,7 +328,7 @@ export default function PrivateMarketNewsPage() {
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -338,10 +338,12 @@ export default function PrivateMarketNewsPage() {
         setNewTaxonomy({ name: '', color: '#3B82F6' });
         fetchTaxonomies();
       } else {
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to create taxonomy';
         addNotification({
           type: 'error',
           title: 'Creation Failed',
-          message: result.message || 'Failed to create taxonomy',
+          message: errorMessage,
           duration: 5000
         });
       }
@@ -364,7 +366,7 @@ export default function PrivateMarketNewsPage() {
 
       const data = await response.json();
 
-      if (data.success) {
+      if (data.status === true || data.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -373,10 +375,12 @@ export default function PrivateMarketNewsPage() {
         });
         fetchTaxonomies();
       } else {
+        // Handle both old and new error formats
+        const errorMessage = data.error?.message || data.message || 'Failed to delete taxonomy';
         addNotification({
           type: 'error',
           title: 'Deletion Failed',
-          message: data.message || 'Failed to delete taxonomy',
+          message: errorMessage,
           duration: 5000
         });
       }

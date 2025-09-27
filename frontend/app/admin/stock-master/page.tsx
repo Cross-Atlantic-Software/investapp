@@ -172,7 +172,7 @@ export default function StockMasterPage() {
 
       const result = await response.json();
       
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -182,7 +182,9 @@ export default function StockMasterPage() {
         setNewStockMaster({ name: '' });
         fetchStockMasters();
       } else {
-        throw new Error(result.message || 'Failed to create stock master');
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to create stock master';
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error creating stock master:', error);
@@ -214,7 +216,7 @@ export default function StockMasterPage() {
 
       const result = await response.json();
       
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -224,7 +226,9 @@ export default function StockMasterPage() {
         setEditingItem(null);
         fetchStockMasters();
       } else {
-        throw new Error(result.message || 'Failed to update stock master');
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to update stock master';
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error updating stock master:', error);
@@ -255,7 +259,7 @@ export default function StockMasterPage() {
 
       const result = await response.json();
       
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -265,7 +269,9 @@ export default function StockMasterPage() {
         setStockMasterToDelete(null);
         fetchStockMasters();
       } else {
-        throw new Error(result.message || 'Failed to delete stock master');
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to delete stock master';
+        throw new Error(errorMessage);
       }
     } catch (error) {
       console.error('Error deleting stock master:', error);
