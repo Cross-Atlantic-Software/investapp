@@ -73,7 +73,7 @@ export default function TradeTabs({
   };
 
   const getQuantityError = (quantity: number) => {
-    if (quantity <= 0) return "Quantity must be greater than 0";
+    if (quantity <= 0) return
     if (minUnits > 0 && quantity < minUnits) return `Minimum quantity is ${minUnits} units`;
     if (lotSize > 0 && quantity % lotSize !== 0) return `Quantity must be in multiples of ${lotSize}`;
     return null;
@@ -245,7 +245,7 @@ export default function TradeTabs({
                   placeholder="0"
                 />
               }
-              hint={getQuantityError(qty) || "Auto-calculated from quantity × price"}
+              hint={getQuantityError(qty) || ""}
               error={getQuantityError(qty)}
             />
 
