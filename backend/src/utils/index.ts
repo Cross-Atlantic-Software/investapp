@@ -2,9 +2,10 @@ import nodemailer from "nodemailer";
 
 const { SMTP_MAIL, SMTP_PASSWORD } = process.env;
 
-// Function to create buy confirmation email template (simplified like OTP email)
+// Function to create buy confirmation email template (Order Acknowledgement)
 export function createBuyConfirmationEmailTemplate(
   userEmail: string, 
+  userName: string,
   companyName: string, 
   quantity: number, 
   price: number, 
@@ -14,207 +15,195 @@ export function createBuyConfirmationEmailTemplate(
     <!DOCTYPE html>
     <html lang="en">
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Buy Confirmation - Invest App</title>
-        <style>
-            body {
-                margin: 0;
-                padding: 0;
-                font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-                background-color: #ffffff !important;
-                line-height: 1.6;
-            }
-            .container {
-                max-width: 600px;
-                margin: 0 auto;
-                background-color: #ffffff !important;
-                min-height: 100vh;
-            }
-            .header {
-                background-color: #232f3e;
-                padding: 25px;
-                text-align: center;
-            }
-            .header h1 {
-                color: #ffffff;
-                margin: 0;
-                font-size: 26px;
-                font-weight: 600;
-                letter-spacing: 1px;
-                font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-            }
-            .content {
-                padding: 50px 30px;
-                background-color: #ffffff !important;
-                text-align: center;
-                flex: 1;
-            }
-            .main-heading {
-                font-size: 26px;
-                font-weight: 600;
-                color: #000000 !important;
-                margin: 0 0 25px 0;
-                text-align: center;
-                font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-            }
-            .intro-text {
-                font-size: 17px;
-                color: #333333 !important;
-                margin: 0 0 40px 0;
-                line-height: 1.7;
-                text-align: center;
-                max-width: 500px;
-                margin-left: auto;
-                margin-right: auto;
-            }
-            .confirmation-section {
-                margin: 40px 0;
-                text-align: center;
-            }
-            .confirmation-label {
-                font-size: 20px;
-                font-weight: 600;
-                color: #000000 !important;
-                margin: 0 0 15px 0;
-                text-align: center;
-                font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-            }
-            .confirmation-message {
-                font-size: 18px;
-                font-weight: 500;
-                color: #28a745 !important;
-                margin: 0 0 20px 0;
-                text-align: center;
-                font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-                background-color: #f8f9fa;
-                padding: 20px;
-                border-radius: 8px;
-                border-left: 4px solid #28a745;
-            }
-            .transaction-details {
-                background-color: #f8f9fa;
-                border-radius: 8px;
-                padding: 20px;
-                margin: 20px 0;
-                text-align: left;
-            }
-            .detail-row {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 10px;
-                padding: 5px 0;
-            }
-            .detail-row:last-child {
-                margin-bottom: 0;
-                font-weight: bold;
-                color: #28a745;
-                border-top: 1px solid #e9ecef;
-                padding-top: 10px;
-                margin-top: 10px;
-            }
-            .detail-label {
-                font-weight: 600;
-                color: #333333;
-                font-size: 14px;
-            }
-            .detail-value {
-                color: #666666;
-                font-size: 14px;
-            }
-            .footer {
-                background-color: #f8f9fa !important;
-                padding: 30px;
-                text-align: center;
-                border-top: 1px solid #e9ecef;
-                margin-top: auto;
-            }
-            .footer p {
-                margin: 0;
-                color: #6c757d !important;
-                font-size: 14px;
-                line-height: 1.6;
-            }
-            @media (max-width: 600px) {
-                .container {
-                    width: 100%;
-                    margin: 0;
-                }
-                .header {
-                    padding: 20px 15px;
-                }
-                .header h1 {
-                    font-size: 22px;
-                }
-                .content {
-                    padding: 30px 20px;
-                }
-                .main-heading {
-                    font-size: 22px;
-                }
-                .intro-text {
-                    font-size: 15px;
-                    max-width: 100%;
-                }
-                .confirmation-label {
-                    font-size: 18px;
-                }
-                .confirmation-message {
-                    font-size: 16px;
-                }
-                .footer {
-                    padding: 25px 20px;
-                }
-            }
-        </style>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Order Acknowledgement - Invest App</title>
+      <style>
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+          background-color: #ffffff !important;
+          line-height: 1.6;
+        }
+        .container {
+          max-width: 600px;
+          margin: 0 auto;
+          background-color: #ffffff !important;
+          min-height: 100vh;
+        }
+        .header {
+          background-color: #232f3e;
+          padding: 25px;
+          text-align: center;
+        }
+        .header h1 {
+          color: #ffffff;
+          margin: 0;
+          font-size: 26px;
+          font-weight: 600;
+          letter-spacing: 1px;
+          font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        }
+        .content {
+          padding: 50px 30px;
+          background-color: #ffffff !important;
+          text-align: left;
+          flex: 1;
+        }
+        .main-heading {
+          font-size: 26px;
+          font-weight: 600;
+          color: #000000 !important;
+          margin: 0 0 25px 0;
+          text-align: center;
+          font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        }
+        .greeting {
+          font-size: 16px;
+          color: #333333 !important;
+          margin: 0 0 20px 0;
+          line-height: 1.7;
+        }
+        .email-body {
+          font-size: 15px;
+          color: #333333 !important;
+          margin: 0 0 20px 0;
+          line-height: 1.7;
+        }
+        .highlight-section {
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 25px 0;
+          border-left: 4px solid #007bff;
+        }
+        .highlight-text {
+          font-size: 15px;
+          color: #333333 !important;
+          margin: 0;
+          line-height: 1.7;
+          font-weight: 500;
+        }
+        .support-section {
+          background-color: #e8f5e8;
+          border-radius: 8px;
+          padding: 20px;
+          margin: 25px 0;
+          border-left: 4px solid #28a745;
+        }
+        .support-text {
+          font-size: 15px;
+          color: #333333 !important;
+          margin: 0;
+          line-height: 1.7;
+        }
+        .closing {
+          font-size: 15px;
+          color: #333333 !important;
+          margin: 25px 0 0 0;
+          line-height: 1.7;
+        }
+        .signature {
+          font-size: 15px;
+          color: #333333 !important;
+          margin: 20px 0 0 0;
+          line-height: 1.7;
+        }
+        .signature-line {
+          margin: 5px 0;
+        }
+        .footer {
+          background-color: #f8f9fa !important;
+          padding: 30px;
+          text-align: center;
+          border-top: 1px solid #e9ecef;
+          margin-top: auto;
+        }
+        .footer p {
+          margin: 0;
+          color: #6c757d !important;
+          font-size: 14px;
+          line-height: 1.6;
+        }
+        @media (max-width: 600px) {
+          .container {
+            width: 100%;
+            margin: 0;
+          }
+          .header {
+            padding: 20px 15px;
+          }
+          .header h1 {
+            font-size: 22px;
+          }
+          .content {
+            padding: 30px 20px;
+          }
+          .main-heading {
+            font-size: 22px;
+          }
+          .greeting,
+          .email-body,
+          .highlight-text,
+          .support-text,
+          .closing,
+          .signature {
+            font-size: 14px;
+          }
+          .footer {
+            padding: 25px 20px;
+          }
+        }
+      </style>
     </head>
     <body>
-        <div class="container">
-            <div class="header">
-                <h1>Invest App</h1>
-            </div>
-            
-            <div class="content">
-                <h1 class="main-heading">Buy Order Confirmed</h1>
-                
-                <p class="intro-text">
-                    Your buy order has been successfully placed. Here are the details of your transaction:
-                </p>
-                
-                <div class="confirmation-section">
-                    <div class="confirmation-label">Transaction Details</div>
-                    <div class="confirmation-message">
-                        Buy Order Successfully Placed
-                    </div>
-                </div>
-                
-                <div class="transaction-details">
-                    <div class="detail-row">
-                        <span class="detail-label">Company:</span>
-                        <span class="detail-value">${companyName}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Quantity:</span>
-                        <span class="detail-value">${quantity} shares</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Price per Share:</span>
-                        <span class="detail-value">₹${price.toFixed(2)}</span>
-                    </div>
-                    <div class="detail-row">
-                        <span class="detail-label">Total Amount:</span>
-                        <span class="detail-value">₹${totalAmount.toFixed(2)}</span>
-                    </div>
-                </div>
-                
-                <div class="footer">
-                    <p>
-                        Thank you for using Invest App!<br>
-                        © 2025 InvestApp. All rights reserved.
-                    </p>
-                </div>
-            </div>
+      <div class="container">
+        <div class="header">
+          <h1>Invest App</h1>
         </div>
+
+        <div class="content">
+          <h1 class="main-heading">Order Acknowledgement</h1>
+
+          <p class="greeting">Dear ${userName},</p>
+
+          <p class="email-body">
+            Thank you for placing your order for ${companyName} shares on our platform. We have successfully received your request.
+          </p>
+
+          <div class="highlight-section">
+            <p class="highlight-text">
+              Please note that this is only an acknowledgement of your order. The order is not yet confirmed. Our Customer Success team will get in touch with you shortly to verify the details, complete the necessary checks, and guide you through the next steps.
+            </p>
+          </div>
+
+          <p class="email-body">
+            We appreciate your interest in exploring opportunities in the unlisted market and assure you of our support throughout the process.
+          </p>
+
+          <div class="support-section">
+            <p class="support-text">
+              If you have any questions in the meantime, feel free to reach out to us at [support@investapp.com].
+            </p>
+          </div>
+
+          <p class="closing">Warm regards,</p>
+
+          <div class="signature">
+            <div class="signature-line">[John Doe]</div>
+            <div class="signature-line">[CEO]</div>
+            <div class="signature-line">[Invest App]</div>
+          </div>
+
+          <div class="footer">
+            <p>
+              Thank you for using Invest App!<br>
+              © 2025 InvestApp. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
     </body>
     </html>
   `;
