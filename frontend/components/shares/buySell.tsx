@@ -8,7 +8,6 @@ import { NotificationContainer, NotificationData } from "@/components/admin/shar
 type TradeTabsProps = {
   company: string;            // e.g. "Pine Labs"
   priceINR: number;           // e.g. 350.92
-  settlementDate: string;     // e.g. "Aug 21, 2025"
   minUnits?: number;          // e.g. 300
   lotSize?: number;           // e.g. 300
   onBuySubmit?: (p: { quantity: number; investINR: number }) => void;
@@ -18,7 +17,6 @@ type TradeTabsProps = {
 export default function TradeTabs({
   company,
   priceINR,
-  settlementDate,
   minUnits = 0,
   lotSize = 0,
   onBuySubmit,
@@ -66,12 +64,38 @@ export default function TradeTabs({
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  // Validation for quantity based on minUnits and lotSize
+  const validateQuantity = (quantity: number) => {
+    if (quantity <= 0) return false;
+    if (minUnits > 0 && quantity < minUnits) return false;
+    if (lotSize > 0 && quantity % lotSize !== 0) return false;
+    return true;
+  };
+
+  const getQuantityError = (quantity: number) => {
+    if (quantity <= 0) return "Quantity must be greater than 0";
+    if (minUnits > 0 && quantity < minUnits) return `Minimum quantity is ${minUnits} units`;
+    if (lotSize > 0 && quantity % lotSize !== 0) return `Quantity must be in multiples of ${lotSize}`;
+    return null;
+  };
+
   // Handle buy button click with authentication check
   const handleBuyClick = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isAuthenticated()) {
       router.push('/login');
+      return;
+    }
+    
+    // Validate quantity
+    if (!validateQuantity(qty)) {
+      const error = getQuantityError(qty);
+      addNotification({
+        type: 'error',
+        title: error || 'Invalid quantity',
+        duration: 6000
+      });
       return;
     }
     
@@ -110,14 +134,12 @@ export default function TradeTabs({
         addNotification({
           type: 'success',
           title: 'Buy order placed successfully!',
-          message: 'A confirmation email has been sent to your registered email address. Please check your inbox for the transaction details.',
           duration: 8000
         });
       } else {
         addNotification({
           type: 'error',
           title: 'Failed to place buy order',
-          message: data.message || 'An error occurred while placing your order.',
           duration: 6000
         });
       }
@@ -126,7 +148,6 @@ export default function TradeTabs({
       addNotification({
         type: 'error',
         title: 'Failed to place buy order',
-        message: 'Please check your internet connection and try again.',
         duration: 6000
       });
     } finally {
@@ -209,10 +230,8 @@ export default function TradeTabs({
             <HeaderRow company={company} priceINR={priceINR} />
 
             <MetaRow
-              settlementDate={settlementDate}
               minUnits={minUnits}
               lotSize={lotSize}
-              settlementInfo="Trades settle on T+7 working days. Dates may shift on market/bank holidays."
             />
 
             <div className="h-px bg-themeTealLighter" />
@@ -226,6 +245,8 @@ export default function TradeTabs({
                   placeholder="0"
                 />
               }
+              hint={getQuantityError(qty) || "Auto-calculated from quantity × price"}
+              error={getQuantityError(qty)}
             />
 
             <Field
@@ -243,9 +264,9 @@ export default function TradeTabs({
 
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || !validateQuantity(qty)}
               className={`w-full rounded-md px-4 py-3 text-white font-semibold transition duration-500 ${
-                isLoading 
+                isLoading || !validateQuantity(qty)
                   ? 'bg-gray-500 cursor-not-allowed' 
                   : 'bg-emerald-700 cursor-pointer hover:bg-emerald-800'
               }`}
@@ -372,21 +393,24 @@ function SellHeaderRow({ company }: { company: string }) {
 /* === UPDATED: MetaRow with Info popover === */
 
 function MetaRow({
-  settlementDate,
   minUnits,
   lotSize,
-  settlementInfo = "Trades settle on T+7 working days. Dates may shift on market/bank holidays.",
 }: {
-  settlementDate: string;
   minUnits: number;
   lotSize: number;
-  settlementInfo?: string;
 }) {
   return (
     <dl className="space-y-3 text-sm">
-      <RowWithInfo label="Settlement Period" value={settlementDate} info={settlementInfo} />
-      <RowWithInfo label="Min. Units" value={String(minUnits)} />
-      <RowWithInfo label="Lot Size" value={String(lotSize)} />
+      <RowWithInfo 
+        label="Min. Units" 
+        value={String(minUnits)} 
+        info={minUnits > 0 ? `You must buy at least ${minUnits} units of this stock.` : "No minimum unit requirement."}
+      />
+      <RowWithInfo 
+        label="Lot Size" 
+        value={String(lotSize)} 
+        info={lotSize > 0 ? `Quantity must be in multiples of ${lotSize}. For example: ${lotSize}, ${lotSize * 2}, ${lotSize * 3}, etc.` : "No lot size restrictions."}
+      />
     </dl>
   );
 }
@@ -451,16 +475,22 @@ function Field({
   label,
   input,
   hint,
+  error,
 }: {
   label: string;
   input: React.ReactNode;
   hint?: string;
+  error?: string | null;
 }) {
   return (
     <label className="block">
       <div className="mb-1 text-themeTealLight text-base">{label}</div>
       {input}
-      {hint ? <div className="mt-1 text-xs text-themeTealLight">{hint}</div> : null}
+      {error ? (
+        <div className="mt-1 text-xs text-red-600">{error}</div>
+      ) : hint ? (
+        <div className="mt-1 text-xs text-themeTealLight">{hint}</div>
+      ) : null}
     </label>
   );
 }

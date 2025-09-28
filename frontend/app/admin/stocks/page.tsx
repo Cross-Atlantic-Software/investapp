@@ -222,6 +222,8 @@ export default function StocksPage() {
     sector: string;
     subsector: string;
     headquarters: string;
+    min_units: number;
+    lot_size: number;
     stock_master_ids: number[];
     icon: File | null;
   }) => {
@@ -246,6 +248,8 @@ export default function StocksPage() {
       formData.append('sector', stockData.sector);
       formData.append('subsector', stockData.subsector);
       formData.append('headquarters', stockData.headquarters);
+      formData.append('min_units', stockData.min_units.toString());
+      formData.append('lot_size', stockData.lot_size.toString());
       formData.append('stock_master_ids', JSON.stringify(stockData.stock_master_ids));
       
       // Add logo file if selected
@@ -479,6 +483,8 @@ export default function StocksPage() {
               sector: stockData.sector,
               subsector: stockData.subsector,
               headquarters: stockData.headquarters,
+              min_units: stockData.min_units,
+              lot_size: stockData.lot_size,
               stock_master_ids: stockData.stock_master_ids,
               icon: stockData.icon
             };

@@ -25,6 +25,8 @@ interface Stock {
   sector: string;
   subsector: string;
   headquarters: string;
+  min_units: number;
+  lot_size: number;
   stock_masters?: Array<{
     id: number;
     name: string;
@@ -125,7 +127,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       founded: stock.founded,
       sector: stock.sector,
       subsector: stock.subsector,
-      headquarters: stock.headquarters
+      headquarters: stock.headquarters,
+      min_units: stock.min_units,
+      lot_size: stock.lot_size
     });
     // Initialize selected stock master IDs
     setSelectedStockMasterIds(stock.stock_masters?.map(master => master.id) || []);
@@ -256,6 +260,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       formData.append('sector', editFormData.sector || '');
       formData.append('subsector', editFormData.subsector || '');
       formData.append('headquarters', editFormData.headquarters || '');
+      formData.append('min_units', editFormData.min_units?.toString() || '');
+      formData.append('lot_size', editFormData.lot_size?.toString() || '');
       formData.append('stock_master_ids', JSON.stringify(selectedStockMasterIds));
       
       // Add logo file if selected
@@ -760,6 +766,36 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     />
                   </div>
 
+                  {/* Min Units Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Min Units <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editFormData.min_units || ''}
+                      onChange={(e) => setEditFormData({...editFormData, min_units: parseInt(e.target.value) || 1})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="1"
+                    />
+                  </div>
+
+                  {/* Lot Size Field */}
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      Lot Size <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={editFormData.lot_size || ''}
+                      onChange={(e) => setEditFormData({...editFormData, lot_size: parseInt(e.target.value) || 1})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                      placeholder="1"
+                    />
+                  </div>
+
                   {/* Stock Tags Field */}
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">
@@ -1059,6 +1095,18 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       <label className="block text-sm font-medium text-gray-700 mb-1">Headquarters</label>
                       <p className="text-sm text-gray-900 bg-white p-2 rounded border">
                         {viewingStock.headquarters || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Min Units</label>
+                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {viewingStock.min_units || 'N/A'}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Lot Size</label>
+                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
+                        {viewingStock.lot_size || 'N/A'}
                       </p>
                     </div>
                     <div>

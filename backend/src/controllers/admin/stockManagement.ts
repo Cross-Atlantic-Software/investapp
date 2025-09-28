@@ -27,7 +27,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector', 'subsector', 'headquarters', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector', 'subsector', 'headquarters', 'min_units', 'lot_size', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -245,6 +245,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       sector,
       subsector,
       headquarters,
+      min_units,
+      lot_size,
       stock_master_ids
     } = cleanedBody;
 
@@ -299,6 +301,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       sector: sector || 'Technology',
       subsector: subsector || 'Software',
       headquarters: headquarters || 'N/A',
+      min_units: min_units || 1,
+      lot_size: lot_size || 1,
       stock_master_ids: stock_master_ids || '[]'
     });
 
@@ -343,6 +347,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       sector,
       subsector,
       headquarters,
+      min_units,
+      lot_size,
       stock_master_ids
     } = req.body;
 
@@ -392,6 +398,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       sector: sector !== undefined ? sector : stock.sector,
       subsector: subsector !== undefined ? subsector : stock.subsector,
       headquarters: headquarters !== undefined ? headquarters : stock.headquarters,
+      min_units: min_units !== undefined ? min_units : stock.min_units,
+      lot_size: lot_size !== undefined ? lot_size : stock.lot_size,
       stock_master_ids: stock_master_ids !== undefined ? stock_master_ids : stock.stock_master_ids
     });
 

@@ -2,11 +2,12 @@
 import { PageTitle } from '@/components/containers';
 import { FilterSidebar, ProductList } from '@/components/subcomponents';
 import { ProductItem } from '@/components/subcomponents/productsList';
-import { Heading } from '@/components/ui';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 export default function Invest() {
+  const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [stocks, setStocks] = useState<ProductItem[]>([]);
@@ -111,8 +112,10 @@ export default function Invest() {
       <PageTitle
         heading="Explore Our Investment Opportunities"
         description="Find the best opportunities in the private market to diversify and grow your investments."
-        linkText="Sign up to Learn More"
-        linkHref="#"
+        {...(!isAuthenticated && {
+          linkText: "Sign up to Learn More",
+          linkHref: "/register/step-1"
+        })}
       />
 
       <section className="appContainer py-8 md:py-12">

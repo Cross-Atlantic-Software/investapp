@@ -101,7 +101,7 @@ function Step3Content() {
       
       // Redirect to dashboard after 3 seconds
       setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/invest");
       }, 3000);
     } catch (err) {
       console.error('Profile completion error:', err);
@@ -158,12 +158,12 @@ function Step3Content() {
             </li>
           </ul>
 
-          <figure className="mt-auto mb-6 md:mb-10 pt-6 text-sm leading-relaxed">
+          {/* <figure className="mt-auto mb-6 md:mb-10 pt-6 text-sm leading-relaxed">
             <blockquote>
               <i>“My brain is only a receiver, in the Universe there is a core from which we obtain knowledge, strength and inspiration. I have not penetrated into the secrets of this core, but I know that it exists.”</i>
             </blockquote>
             <figcaption className="mt-2">Nikola Tesla</figcaption>
-          </figure>
+          </figure> */}
         </aside>
 
         {/* RIGHT PANEL */}

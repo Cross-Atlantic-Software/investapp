@@ -23,6 +23,8 @@ export interface StockData {
   sector: string;
   subsector: string;
   headquarters: string;
+  min_units: number;
+  lot_size: number;
   stock_master_ids: number[];
   icon: File | null;
 }
@@ -62,6 +64,8 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
     sector: 'Technology',
     subsector: 'Software',
     headquarters: '',
+    min_units: 1,
+    lot_size: 1,
     stock_master_ids: [],
     icon: null as File | null,
   });
@@ -196,25 +200,24 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 m-0">
-          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+      <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
         {/* Modal Header */}
-            <div className="bg-themeTeal px-6 py-4 rounded-t">
-              <div className="flex items-center justify-between">
-                <div>
+        <div className="bg-themeTeal px-6 py-4 rounded-t">
+          <div className="flex items-center justify-between">
+            <div>
               <h3 className="text-base font-semibold text-white">Add New Stock</h3>
             </div>
             <button
               onClick={onClose}
               className="text-themeTealWhite transition duration-300 cursor-pointer"
-                >
-                  <X/>
+            >
+              <X/>
             </button>
           </div>
         </div>
 
         {/* Modal Body */}
         <div className="p-6 flex-1 overflow-y-auto">
-          
           <form id="stock-form" onSubmit={handleSubmit} className="space-y-6">
             {/* Company Name */}
             <div>
@@ -464,19 +467,53 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
                   placeholder="San Francisco, CA"
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Stock Tags
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Min Units <span className="text-red-500">*</span>
                 </label>
-                <GenericSearchableMultiSelect
-                  options={stockMasters.map(master => ({ value: master.id, label: master.name }))}
-                  selectedValues={formData.stock_master_ids}
-                  onChange={(values) => setFormData({ ...formData, stock_master_ids: values })}
-                  placeholder="Select stock tags..."
-                  forceAbove={true}
+                <input
+                  type="number"
+                  name="min_units"
+                  value={formData.min_units}
+                  onChange={handleInputChange}
+                  required
+                  min="1"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
+                  placeholder="1"
                 />
               </div>
+              
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">
+                  Lot Size <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="number"
+                  name="lot_size"
+                  value={formData.lot_size}
+                  onChange={handleInputChange}
+                  required
+                  min="1"
+                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
+                  placeholder="1"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Stock Tags
+              </label>
+              <GenericSearchableMultiSelect
+                options={stockMasters.map(master => ({ value: master.id, label: master.name }))}
+                selectedValues={formData.stock_master_ids}
+                onChange={(values) => setFormData({ ...formData, stock_master_ids: values })}
+                placeholder="Select stock tags..."
+                forceAbove={true}
+              />
             </div>
             
             {/* Stock Icon */}
@@ -581,7 +618,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
                 </div>
               )}
             </div>
-            
           </form>
         </div>
 

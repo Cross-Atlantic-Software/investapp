@@ -21,6 +21,8 @@ interface StockData {
   sector: string;
   subsector: string;
   headquarters: string;
+  min_units: number;
+  lot_size: number;
   stock_masters?: Array<{
     id: number;
     name: string;
@@ -65,6 +67,8 @@ export default function UnlistedCompanyDetails() {
             sector: stock.sector,
             subsector: stock.subsector,
             headquarters: stock.headquarters,
+            min_units: typeof stock.min_units === 'string' ? parseInt(stock.min_units) : stock.min_units,
+            lot_size: typeof stock.lot_size === 'string' ? parseInt(stock.lot_size) : stock.lot_size,
             stock_masters: stock.stock_masters || [],
             createdAt: stock.createdAt?.toString(),
             updatedAt: stock.updatedAt?.toString()
@@ -211,9 +215,8 @@ export default function UnlistedCompanyDetails() {
           <TradeTabsShell
             company={stockData.company_name}
             priceINR={stockData.price_per_share}
-            settlementDate="Aug 21, 2025"
-            minUnits={300}
-            lotSize={300}
+            minUnits={stockData.min_units}
+            lotSize={stockData.lot_size}
           />
         </aside>
       </div>
