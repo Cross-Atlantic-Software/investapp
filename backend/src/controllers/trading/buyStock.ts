@@ -55,6 +55,7 @@ export class BuyStockService {
       try {
         const emailTemplate = await EmailTemplateService.getBuyConfirmationEmail(
           user.email,
+          `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0],
           companyName,
           quantity,
           price,

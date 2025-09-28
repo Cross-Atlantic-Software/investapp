@@ -55,6 +55,7 @@ export class EmailTemplateService {
    */
   static async getBuyConfirmationEmail(
     userEmail: string,
+    userName: string,
     companyName: string,
     quantity: number,
     price: number,
@@ -69,6 +70,7 @@ export class EmailTemplateService {
 
       const variables = {
         userEmail,
+        userName,
         companyName,
         quantity,
         price: price.toFixed(2),
