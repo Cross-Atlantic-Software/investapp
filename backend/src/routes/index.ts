@@ -6,6 +6,7 @@ import tradingRoutes from "./trading-routes";
 import enquiryRoutes from "./enquiry-routes";
 import subscriberRoutes from "./subscriber-routes";
 import publicRoutes from "./public-routes";
+import migrationRoutes from "./migration-routes";
 import express from "express";
 
 const router = express.Router();
@@ -30,6 +31,9 @@ router.use('/enquiries', enquiryRoutes);
 
 // Subscriber routes (public for newsletter subscription)
 router.use('/subscribers', subscriberRoutes);
+
+// Migration routes (for database setup)
+router.use('/migrations', migrationRoutes);
 
 // Public routes for frontend display (private market news, notable activities)
 router.use('/', publicRoutes);

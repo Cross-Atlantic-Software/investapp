@@ -38,6 +38,15 @@ import { ActivityTypeManagementController } from "../controllers/admin/activityT
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 
+// Stock Draft Controllers
+import {
+  saveDraft,
+  getDrafts,
+  getDraftById,
+  deleteDraft,
+  cleanupExpiredDrafts
+} from "../controllers/admin/stockDraftController";
+
 // Enquiry Management Controllers
 import {
   getAllEnquiries,
@@ -180,5 +189,12 @@ router.get("/stock-masters/:id", stockMasterController.getStockMasterById);
 router.post("/stock-masters", stockMasterController.createStockMaster);
 router.put("/stock-masters/:id", stockMasterController.updateStockMaster);
 router.delete("/stock-masters/:id", stockMasterController.deleteStockMaster);
+
+// Stock Draft Management Routes
+router.post("/stock-drafts", saveDraft);
+router.get("/stock-drafts", getDrafts);
+router.get("/stock-drafts/:id", getDraftById);
+router.delete("/stock-drafts/:id", deleteDraft);
+router.post("/stock-drafts/cleanup", cleanupExpiredDrafts);
 
 export default router;

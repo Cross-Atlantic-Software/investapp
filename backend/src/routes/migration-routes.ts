@@ -3,6 +3,58 @@ import { db } from "../utils/database";
 
 const router = express.Router();
 
+// Run migration to create stock_drafts table
+router.post("/create-stock-drafts-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-stock-drafts-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'stock_drafts'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'stock_drafts' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'stock_drafts' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE stock_drafts (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        admin_user_id VARCHAR(255) NOT NULL,
+        draft_data JSON NOT NULL,
+        current_step INT DEFAULT 1,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL 7 DAY),
+        INDEX idx_admin_user (admin_user_id),
+        INDEX idx_expires_at (expires_at)
+      )
+    `);
+    
+    console.log("✅ Created stock_drafts table successfully");
+    
+    res.json({
+      success: true,
+      message: "Stock drafts table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 // Run migration to add last_active column
 router.post("/add-last-active-column", async (req, res) => {
   try {

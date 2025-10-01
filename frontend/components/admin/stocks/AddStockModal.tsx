@@ -1,107 +1,58 @@
 'use client';
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { X } from 'lucide-react';
-import SimpleRichTextEditor from '../SimpleRichTextEditor';
-import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
-
-export interface StockData {
-  company_name: string;
-  logo: string;
-  price_change: number;
-  teaser: string;
-  short_description: string;
-  analysis: string;
-  demand: 'High Demand' | 'Low Demand';
-  homeDisplay: 'yes' | 'no';
-  bannerDisplay: 'yes' | 'no';
-  valuation: string;
-  price_per_share: number;
-  percentage_change: number;
-  founded: number;
-  sector: string;
-  subsector: string;
-  headquarters: string;
-  min_units: number;
-  lot_size: number;
-  stock_master_ids: number[];
-  icon: File | null;
-}
-
-interface ImageUploadState {
-  file: File | null;
-  preview: string | null;
-  uploading: boolean;
-  progress: number;
-  error: string | null;
-}
-
-interface AddStockModalProps {
-  onClose: () => void;
-  onSubmit: (stockData: StockData) => void;
-  stockMasters?: Array<{
-    id: number;
-    name: string;
-  }>;
-}
+import React, { useEffect, useCallback } from 'react';
+import { X, Loader2 } from 'lucide-react';
+import { AddStockModalProps } from './types';
+import { useStockFormState, useStepNavigation, useDraftManagement } from './hooks';
+import { validateStep, validateImageFile } from './validation';
+import StepProgressIndicator from './StepProgressIndicator';
+import ModalFooter from './ModalFooter';
+import Step1 from './steps/Step1';
+import Step2 from './steps/Step2';
+import Step3 from './steps/Step3';
+import Step4 from './steps/Step4';
+import Step5 from './steps/Step5';
 
 const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockMasters = [] }) => {
-  const [formData, setFormData] = useState<StockData>({
-    company_name: '',
-    logo: '',
-    price_change: 0,
-    teaser: '',
-    short_description: '',
-    analysis: '',
-    demand: 'High Demand',
-    homeDisplay: 'no',
-    bannerDisplay: 'no',
-    valuation: '',
-    price_per_share: 0,
-    percentage_change: 0,
-    founded: new Date().getFullYear(),
-    sector: 'Technology',
-    subsector: 'Software',
-    headquarters: '',
-    min_units: 1,
-    lot_size: 1,
-    stock_master_ids: [],
-    icon: null as File | null,
-  });
+  const totalSteps = 5;
+  
+  // Custom hooks
+  const {
+    formData,
+    setFormData,
+    imageUpload,
+    setImageUpload,
+    handleInputChange,
+    handleFormDataChange,
+  } = useStockFormState();
 
-  const [imageUpload, setImageUpload] = useState<ImageUploadState>({
-    file: null,
-    preview: null,
-    uploading: false,
-    progress: 0,
-    error: null,
-  });
+  const {
+    currentStep,
+    setCurrentStep,
+    completedSteps,
+    setCompletedSteps,
+    isStepCompleted,
+    markStepCompleted,
+    markStepIncomplete,
+    nextStep,
+    prevStep,
+    goToStep,
+  } = useStepNavigation(totalSteps);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const {
+    isLoading,
+    isSavingDraft,
+    draftId,
+    saveDraft,
+    loadExistingDraft,
+    deleteDraft,
+  } = useDraftManagement();
 
-  const validateImageFile = (file: File): string | null => {
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      return 'Please select a valid image file (PNG, JPG, GIF, etc.)';
-    }
-    
-    // Check file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > maxSize) {
-      return 'File size must be less than 10MB';
-    }
-    
-    return null;
-  };
+  // Validation function with current formData
+  const validateCurrentStep = useCallback((step: number) => validateStep(step, formData), [formData]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // File handling functions
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
     
     if (!file) {
@@ -112,11 +63,10 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
         progress: 0,
         error: null,
       });
-      setFormData(prev => ({ ...prev, icon: null }));
+      handleFormDataChange({ icon: null });
       return;
     }
 
-    // Validate file
     const validationError = validateImageFile(file);
     if (validationError) {
       setImageUpload(prev => ({
@@ -128,7 +78,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
       return;
     }
 
-    // Create preview
     const preview = URL.createObjectURL(file);
     
     setImageUpload({
@@ -139,28 +88,25 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
       error: null,
     });
     
-    setFormData(prev => ({
-      ...prev,
-      icon: file
-    }));
-  };
+    handleFormDataChange({ icon: file });
+  }, [setImageUpload, handleFormDataChange]);
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-  };
+  }, []);
 
-  const handleDragEnter = (e: React.DragEvent) => {
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-  };
+  }, []);
 
-  const handleDragLeave = (e: React.DragEvent) => {
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-  };
+  }, []);
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     
@@ -168,7 +114,6 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
     if (files && files.length > 0) {
       const file = files[0];
       
-      // Create a synthetic event to reuse the file change handler
       const syntheticEvent = {
         target: {
           files: [file]
@@ -177,9 +122,9 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
       
       handleFileChange(syntheticEvent);
     }
-  };
+  }, [handleFileChange]);
 
-  const removeImage = () => {
+  const removeImage = useCallback(() => {
     if (imageUpload.preview) {
       URL.revokeObjectURL(imageUpload.preview);
     }
@@ -190,12 +135,93 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
       progress: 0,
       error: null,
     });
-    setFormData(prev => ({ ...prev, icon: null }));
-  };
+    handleFormDataChange({ icon: null });
+  }, [imageUpload.preview, setImageUpload, handleFormDataChange]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Step navigation handlers
+  const handleNextStep = useCallback(() => {
+    nextStep(validateCurrentStep);
+  }, [nextStep, validateCurrentStep]);
+
+  const handleSaveAndNext = useCallback(async () => {
+    await saveDraft(formData, currentStep, totalSteps, validateCurrentStep, markStepCompleted, true);
+    if (validateCurrentStep(currentStep) && currentStep < totalSteps) {
+      setCurrentStep((prev: number) => prev + 1);
+    }
+  }, [saveDraft, formData, currentStep, totalSteps, validateCurrentStep, markStepCompleted, setCurrentStep]);
+
+  const handleGoToStep = useCallback((step: number) => {
+    goToStep(step, validateCurrentStep);
+  }, [goToStep, validateCurrentStep]);
+
+  // Form submission
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    if (draftId) {
+      await deleteDraft();
+    }
+    
+    // Debug: Log form data before cleaning
+    console.log('Form data before cleaning:', formData);
+    console.log('Logo field type:', typeof formData.logo);
+    console.log('Logo field value:', formData.logo);
+    
+    // Clean form data - ensure logo is always a string and remove any File objects
+    const { logo: _logo, ...cleanedFormData } = formData;
+    const finalData = { ...cleanedFormData, logo: '', icon: null };
+    
+    console.log('Final data being sent:', finalData);
+    
+    onSubmit(finalData);
+  }, [draftId, deleteDraft, formData, onSubmit]);
+
+  // Load existing draft on mount
+  useEffect(() => {
+    loadExistingDraft(setFormData, setCurrentStep, setCompletedSteps, validateStep);
+  }, [loadExistingDraft, setFormData, setCurrentStep, setCompletedSteps]);
+
+  // Track step completion when form data changes
+  useEffect(() => {
+    if (isStepCompleted(currentStep) && !validateCurrentStep(currentStep)) {
+      markStepIncomplete(currentStep);
+    }
+  }, [formData, currentStep, isStepCompleted, validateCurrentStep, markStepIncomplete]);
+
+  // Render step content
+  const renderStepContent = () => {
+    const stepProps = {
+      formData,
+      onInputChange: handleInputChange,
+      onFormDataChange: handleFormDataChange,
+      stockMasters,
+    };
+
+    switch (currentStep) {
+      case 1:
+        return (
+          <Step1
+            {...stepProps}
+            imageUpload={imageUpload}
+            onFileChange={handleFileChange}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onRemoveImage={removeImage}
+          />
+        );
+      case 2:
+        return <Step2 {...stepProps} />;
+      case 3:
+        return <Step3 {...stepProps} />;
+      case 4:
+        return <Step4 {...stepProps} />;
+      case 5:
+        return <Step5 {...stepProps} />;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -206,431 +232,57 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-semibold text-white">Add New Stock</h3>
+              <p className="text-xs text-themeTealWhite mt-1">Step {currentStep} of {totalSteps}</p>
             </div>
-            <button
-              onClick={onClose}
-              className="text-themeTealWhite transition duration-300 cursor-pointer"
-            >
-              <X/>
-            </button>
+            <div className="flex items-center space-x-2">
+              {isSavingDraft && (
+                <div className="flex items-center text-themeTealWhite text-xs">
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                  Saving...
+                </div>
+              )}
+              <button
+                onClick={onClose}
+                className="text-themeTealWhite transition duration-300 cursor-pointer"
+              >
+                <X/>
+              </button>
+            </div>
           </div>
         </div>
 
+        {/* Step Progress Indicator */}
+        <StepProgressIndicator
+          totalSteps={totalSteps}
+          currentStep={currentStep}
+          isStepCompleted={isStepCompleted}
+          validateStep={validateCurrentStep}
+          goToStep={handleGoToStep}
+        />
+
         {/* Modal Body */}
         <div className="p-6 flex-1 overflow-y-auto">
-          <form id="stock-form" onSubmit={handleSubmit} className="space-y-6">
-            {/* Company Name */}
-            <div>
-              <label className="block text-xs font-medium text-themeTeal mb-1">
-                Company Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="company_name"
-                value={formData.company_name}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                placeholder="Enter company name"
-              />
+          {isLoading ? (
+            <div className="flex items-center justify-center h-64">
+              <Loader2 className="w-8 h-8 animate-spin text-themeTeal" />
             </div>
-            
-            {/* Valuation */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Valuation <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                name="valuation"
-                value={formData.valuation}
-                onChange={handleInputChange}
-                required
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                placeholder="0.00"
-                step="0.01"
-              />
-            </div>
-            
-            {/* Price Change */}
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Price Change
-              </label>
-              <input
-                type="number"
-                name="price_change"
-                value={formData.price_change}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
-                placeholder="0.00"
-                step="0.01"
-              />
-            </div>
-
-            {/* Percentage Change and Price per Share - Side by Side */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Percentage Change <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 text-sm">%</span>
-                  </div>
-                  <input
-                    type="number"
-                    name="percentage_change"
-                    value={formData.percentage_change}
-                    onChange={handleInputChange}
-                    className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                    placeholder="0.00"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">
-                  Price per Share <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <span className="text-gray-500 text-sm">₹</span>
-                  </div>
-                  <input
-                    type="number"
-                    name="price_per_share"
-                    value={formData.price_per_share}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                    placeholder="0.00"
-                    step="0.01"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Teaser */}
-            <div>
-              <label className="block text-xs font-medium text-themeTeal mb-1">
-                Teaser
-              </label>
-              <textarea
-                name="teaser"
-                value={formData.teaser}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
-                placeholder="Enter teaser text"
-                rows={3}
-              />
-            </div>
-
-            {/* Short Description */}
-            <div>
-              <label className="block text-xs font-medium text-themeTeal mb-1">
-                Short Description
-              </label>
-              <SimpleRichTextEditor
-                value={formData.short_description}
-                onChange={(value) => setFormData(prev => ({...prev, short_description: value}))}
-                placeholder="Enter short description"
-                height="120px"
-              />
-            </div>
-
-            {/* Analysis */}
-            <div>
-              <label className="block text-xs font-medium text-themeTeal mb-1">
-                Analysis
-              </label>
-              <SimpleRichTextEditor
-                value={formData.analysis}
-                onChange={(value) => setFormData(prev => ({...prev, analysis: value}))}
-                placeholder="Enter detailed analysis..."
-                height="200px"
-              />
-            </div>
-
-            {/* Demand */}
-            <div>
-              <label className="block text-xs font-medium text-themeTeal mb-1">
-                Demand
-              </label>
-              <select
-                name="demand"
-                value={formData.demand}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-              >
-                <option value="High Demand">High Demand</option>
-                <option value="Low Demand">Low Demand</option>
-              </select>
-            </div>
-
-            {/* Display Settings */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Home Display
-                </label>
-                <select
-                  name="homeDisplay"
-                  value={formData.homeDisplay}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                >
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
-                </select>
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Banner Display
-                </label>
-                <select
-                  name="bannerDisplay"
-                  value={formData.bannerDisplay}
-                  onChange={handleInputChange}
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                >
-                  <option value="yes">Yes</option>
-                  <option value="no">No</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Company Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Founded Year <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="founded"
-                  value={formData.founded}
-                  onChange={handleInputChange}
-                  required
-                  min="1800"
-                  max={new Date().getFullYear()}
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight placeholder-text-themeTealLight"
-                  placeholder="2023"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Sector <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="sector"
-                  value={formData.sector}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                  placeholder="Technology"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Subsector <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="subsector"
-                  value={formData.subsector}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                  placeholder="Software"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Headquarters <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="headquarters"
-                  value={formData.headquarters}
-                  onChange={handleInputChange}
-                  required
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                  placeholder="San Francisco, CA"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Min Units <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="min_units"
-                  value={formData.min_units}
-                  onChange={handleInputChange}
-                  required
-                  min="1"
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                  placeholder="1"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Lot Size <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="number"
-                  name="lot_size"
-                  value={formData.lot_size}
-                  onChange={handleInputChange}
-                  required
-                  min="1"
-                  className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
-                  placeholder="1"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">
-                Stock Tags
-              </label>
-              <GenericSearchableMultiSelect
-                options={stockMasters.map(master => ({ value: master.id, label: master.name }))}
-                selectedValues={formData.stock_master_ids}
-                onChange={(values) => setFormData({ ...formData, stock_master_ids: values })}
-                placeholder="Select stock tags..."
-                forceAbove={true}
-              />
-            </div>
-            
-            {/* Stock Icon */}
-            <div>
-              <label className="block text-xs font-medium text-themeTeal mb-1">
-                Stock Icon
-              </label>
-              
-              {/* Error Message */}
-              {imageUpload.error && (
-                <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-xs text-red-600">{imageUpload.error}</p>
-                </div>
-              )}
-              
-              {/* Upload Area */}
-              <label 
-                htmlFor="icon-upload"
-                className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-themeTealLighter rounded transition-colors duration-200 cursor-pointer ${
-                  imageUpload.error 
-                    ? 'border-red-300 bg-red-50' 
-                    : imageUpload.preview 
-                      ? 'border-green-300 bg-green-50' 
-                      : 'border-gray-300 hover:border-themeTealLighter hover:bg-themeTealWhite'
-                }`}
-                onDragOver={handleDragOver}
-                onDragEnter={handleDragEnter}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                {imageUpload.preview ? (
-                  /* Image Preview */
-                  <div className="space-y-3 text-center">
-                    <div className="relative inline-block">
-                      <Image
-                        src={imageUpload.preview}
-                        alt="Preview"
-                        width={80}
-                        height={80}
-                        className="h-20 w-20 object-cover rounded border border-themeTealLighter mx-auto"
-                      />
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors duration-200"
-                      >
-                        <X/>
-                      </button>
-                    </div>
-                    <div className="text-sm text-themeTealLighter">
-                      <p className="font-medium text-green-600 mb-2">✓ Image selected</p>
-                      <p className="text-xs text-themeTealLighter">{imageUpload.file?.name}</p>
-                      <p className="text-xs text-themeTealLighter">
-                        {imageUpload.file?.size ? (imageUpload.file.size / 1024 / 1024).toFixed(2) : '0'} MB
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      className="bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight transition-colors duration-200 cursor-pointer"
-                    >
-                      Change Image
-                    </button>
-                  </div>
-                ) : (
-                  /* Upload Prompt */
-                  <div className="space-y-1 text-center">
-                    <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                      <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                    <div className="flex text-sm text-gray-600 justify-center">
-                      <span className="bg-white rounded-md font-medium text-themeTeal px-2 py-1">Upload a file</span>
-                      <p className="pl-1">or drag and drop</p>
-                    </div>
-                    <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                  </div>
-                )}
-              </label>
-              
-              {/* Hidden File Input */}
-              <input
-                id="icon-upload"
-                name="icon"
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="sr-only"
-              />
-              
-              {/* Upload Progress */}
-              {imageUpload.uploading && (
-                <div className="mt-2">
-                  <div className="flex items-center justify-between text-xs text-themeTealLighter mb-1">
-                    <span>Uploading...</span>
-                    <span>{imageUpload.progress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-themeTeal h-2 rounded-full transition duration-300"
-                      style={{ width: `${imageUpload.progress}%` }}
-                    ></div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </form>
+          ) : (
+            <form id="stock-form" onSubmit={handleSubmit}>
+              {renderStepContent()}
+            </form>
+          )}
         </div>
 
         {/* Modal Footer */}
-        <div className="px-4 py-3 bg-themeTealWhite flex justify-end flex-shrink-0 rounded-b-2xl">
-          <button
-            type="submit"
-            form="stock-form"
-            className="px-5 py-3 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50 font-medium cursor-pointer"
-          >
-            Add Stock
-          </button>
-        </div>
+        <ModalFooter
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          isSavingDraft={isSavingDraft}
+          validateStep={validateCurrentStep}
+          onPrevStep={prevStep}
+          onNextStep={handleNextStep}
+          onSaveAndNext={handleSaveAndNext}
+        />
       </div>
     </div>
   );
