@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { Loader } from '@/components/admin/shared';
-import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, BarChart3, Plus, Edit3 } from 'lucide-react';
+import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, BarChart3, Plus, Edit3, FileText, AlertTriangle, TrendingUp } from 'lucide-react';
 import SimpleRichTextEditor from '../SimpleRichTextEditor';
 import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
 import CSVUploadModal from './CSVUploadModal';
@@ -43,6 +43,17 @@ interface Scorecard {
   score_value: number;
   score_tag: 'Low Risk' | 'Medium Risk' | 'High Risk';
   analysis: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface InvestmentRationale {
+  id: number;
+  stock_id: number;
+  type: 'pros' | 'risks';
+  title: string;
+  description: string;
+  order_index: number;
   created_at: string;
   updated_at: string;
 }
@@ -97,6 +108,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [scorecardLoading, setScorecardLoading] = useState(false);
   const [editingScorecard, setEditingScorecard] = useState<Scorecard | null>(null);
   const [scorecardFormData, setScorecardFormData] = useState<Partial<Scorecard>>({});
+  
+  // Investment Rationale management state
+  const [rationaleModal, setRationaleModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
+    isOpen: false,
+    stock: null
+  });
+  const [rationales, setRationales] = useState<{ pros: InvestmentRationale[]; risks: InvestmentRationale[] }>({
+    pros: [],
+    risks: []
+  });
+  const [rationaleLoading, setRationaleLoading] = useState(false);
+  const [editingRationale, setEditingRationale] = useState<InvestmentRationale | null>(null);
+  const [rationaleFormData, setRationaleFormData] = useState<Partial<InvestmentRationale>>({});
   const [imageUpload, setImageUpload] = useState<ImageUploadState>({
     file: null,
     preview: null,
@@ -393,6 +417,135 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
+  // Investment Rationale management functions
+  const handleManageRationales = async (stock: Stock) => {
+    setRationaleModal({ isOpen: true, stock });
+    await fetchRationales(stock.id);
+  };
+
+  const fetchRationales = async (stockId: number) => {
+    setRationaleLoading(true);
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/stocks/${stockId}/investment-rationales`, {
+        headers: { 'token': token }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setRationales(data.data.rationales || { pros: [], risks: [] });
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to fetch investment rationales');
+      }
+    } catch (error) {
+      console.error('Error fetching investment rationales:', error);
+      onNotification?.('error', 'Error', 'Failed to fetch investment rationales');
+    } finally {
+      setRationaleLoading(false);
+    }
+  };
+
+  const handleCreateRationale = async () => {
+    if (!rationaleModal.stock) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/stocks/${rationaleModal.stock.id}/investment-rationales`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify({
+          stock_id: rationaleModal.stock.id,
+          type: rationaleFormData.type,
+          title: rationaleFormData.title,
+          description: rationaleFormData.description,
+          order_index: rationaleFormData.order_index || 0
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchRationales(rationaleModal.stock.id);
+        setRationaleFormData({});
+        onNotification?.('success', 'Success', 'Investment rationale created successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to create investment rationale');
+      }
+    } catch (error) {
+      console.error('Error creating investment rationale:', error);
+      onNotification?.('error', 'Error', 'Failed to create investment rationale');
+    }
+  };
+
+  const handleEditRationale = (rationale: InvestmentRationale) => {
+    setEditingRationale(rationale);
+    setRationaleFormData({
+      type: rationale.type,
+      title: rationale.title,
+      description: rationale.description,
+      order_index: rationale.order_index
+    });
+  };
+
+  const handleUpdateRationale = async () => {
+    if (!editingRationale) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/investment-rationales/${editingRationale.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify({
+          type: rationaleFormData.type,
+          title: rationaleFormData.title,
+          description: rationaleFormData.description,
+          order_index: rationaleFormData.order_index
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchRationales(rationaleModal.stock!.id);
+        setEditingRationale(null);
+        setRationaleFormData({});
+        onNotification?.('success', 'Success', 'Investment rationale updated successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to update investment rationale');
+      }
+    } catch (error) {
+      console.error('Error updating investment rationale:', error);
+      onNotification?.('error', 'Error', 'Failed to update investment rationale');
+    }
+  };
+
+  const handleDeleteRationale = async (rationaleId: number) => {
+    if (!confirm('Are you sure you want to delete this investment rationale?')) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/investment-rationales/${rationaleId}`, {
+        method: 'DELETE',
+        headers: { 'token': token }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchRationales(rationaleModal.stock!.id);
+        onNotification?.('success', 'Success', 'Investment rationale deleted successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to delete investment rationale');
+      }
+    } catch (error) {
+      console.error('Error deleting investment rationale:', error);
+      onNotification?.('error', 'Error', 'Failed to delete investment rationale');
+    }
+  };
+
   const handleUpdateStock = async () => {
     if (!editingStock) return;
     
@@ -653,6 +806,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         title="Manage Scorecards"
                       >
                         <BarChart3 width={16} height={16}/>
+                      </button>
+                      
+                      {/* Manage Investment Rationales Button - Available for all users */}
+                      <button
+                        onClick={() => handleManageRationales(stock)}
+                        className="p-2 text-themeTealWhite bg-blue-600 rounded transition duration-300 hover:bg-white hover:text-blue-600 cursor-pointer"
+                        title="Manage Investment Rationales"
+                      >
+                        <FileText width={16} height={16}/>
                       </button>
                       
                       {canManageStocks && (
@@ -1626,6 +1788,234 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Investment Rationale Management Modal */}
+      {rationaleModal.isOpen && rationaleModal.stock && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+          <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Investment Rationales</h3>
+                  <p className="text-themeTealWhite/80 text-sm">{rationaleModal.stock.company_name}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setRationaleModal({ isOpen: false, stock: null });
+                    setRationales({ pros: [], risks: [] });
+                    setEditingRationale(null);
+                    setRationaleFormData({});
+                  }}
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                >
+                  <X/>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Add New Investment Rationale Form */}
+              <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                  <Plus className="w-5 h-5 mr-2" />
+                  {editingRationale ? 'Edit Investment Rationale' : 'Add New Investment Rationale'}
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={rationaleFormData.type || ''}
+                      onChange={(e) => setRationaleFormData({...rationaleFormData, type: e.target.value as 'pros' | 'risks'})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="pros">Pros (Investment Rationale)</option>
+                      <option value="risks">Risks (Key Risks)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Order Index
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={rationaleFormData.order_index || ''}
+                      onChange={(e) => setRationaleFormData({...rationaleFormData, order_index: parseInt(e.target.value) || 0})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="0"
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={rationaleFormData.title || ''}
+                      onChange={(e) => setRationaleFormData({...rationaleFormData, title: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="e.g., Strong Fundamentals, Market Volatility"
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={rationaleFormData.description || ''}
+                      onChange={(e) => setRationaleFormData({...rationaleFormData, description: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="Detailed description of this rationale..."
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-4">
+                  {editingRationale && (
+                    <button
+                      onClick={() => {
+                        setEditingRationale(null);
+                        setRationaleFormData({});
+                      }}
+                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <button
+                    onClick={editingRationale ? handleUpdateRationale : handleCreateRationale}
+                    disabled={!rationaleFormData.type || !rationaleFormData.title || !rationaleFormData.description}
+                    className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTeal/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {editingRationale ? 'Update Rationale' : 'Add Rationale'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Existing Investment Rationales */}
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Existing Investment Rationales</h4>
+                
+                {rationaleLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader />
+                  </div>
+                ) : (rationales.pros.length === 0 && rationales.risks.length === 0) ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No investment rationales found for this stock.</p>
+                    <p className="text-sm">Add your first rationale above.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Pros Section */}
+                    {rationales.pros.length > 0 && (
+                      <div>
+                        <h5 className="text-md font-medium text-green-700 mb-3 flex items-center">
+                          <TrendingUp className="w-4 h-4 mr-2" />
+                          Investment Rationale ({rationales.pros.length})
+                        </h5>
+                        <div className="space-y-3">
+                          {rationales.pros.map((rationale) => (
+                            <div key={rationale.id} className="border border-gray-200 rounded-lg p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3 mb-2">
+                                    <h6 className="font-medium text-gray-900">{rationale.title}</h6>
+                                    <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
+                                      PROS
+                                    </span>
+                                    <span className="text-sm text-gray-500">
+                                      Order: {rationale.order_index}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600 line-clamp-2">{rationale.description}</p>
+                                </div>
+                                <div className="flex items-center space-x-2 ml-4">
+                                  <button
+                                    onClick={() => handleEditRationale(rationale)}
+                                    className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                                    title="Edit Rationale"
+                                  >
+                                    <Edit3 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteRationale(rationale.id)}
+                                    className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                                    title="Delete Rationale"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Risks Section */}
+                    {rationales.risks.length > 0 && (
+                      <div>
+                        <h5 className="text-md font-medium text-red-700 mb-3 flex items-center">
+                          <AlertTriangle className="w-4 h-4 mr-2" />
+                          Key Risks ({rationales.risks.length})
+                        </h5>
+                        <div className="space-y-3">
+                          {rationales.risks.map((rationale) => (
+                            <div key={rationale.id} className="border border-gray-200 rounded-lg p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex-1">
+                                  <div className="flex items-center space-x-3 mb-2">
+                                    <h6 className="font-medium text-gray-900">{rationale.title}</h6>
+                                    <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
+                                      RISKS
+                                    </span>
+                                    <span className="text-sm text-gray-500">
+                                      Order: {rationale.order_index}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-600 line-clamp-2">{rationale.description}</p>
+                                </div>
+                                <div className="flex items-center space-x-2 ml-4">
+                                  <button
+                                    onClick={() => handleEditRationale(rationale)}
+                                    className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                                    title="Edit Rationale"
+                                  >
+                                    <Edit3 className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteRationale(rationale.id)}
+                                    className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                                    title="Delete Rationale"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

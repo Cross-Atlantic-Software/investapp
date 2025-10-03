@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   TriangleAlert,
   AlertTriangle,
@@ -9,68 +9,137 @@ import {
   TrendingUp,
 } from "lucide-react";
 
-type Item = { title: string; body: string };
+interface InvestmentRationaleData {
+  id: number;
+  type: 'pros' | 'risks';
+  title: string;
+  description: string;
+  order_index: number;
+}
 
-export default function InvestmentRationaleSection() {
-  const pros: Item[] = [
-    {
-      title: "Strong Fundamentals",
-      body:
-        "Nam fermentum metus ut eleifend fermentum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec efficitur dui nec erat gravida auctor.",
-    },
-    { title: "Positive Performance", body: sample },
-    { title: "Fair Valuation", body: sample },
-    { title: "Institutional Confidence", body: sample },
-  ];
+interface InvestmentRationaleSectionProps {
+  stockId?: number;
+}
 
-  const risks: Item[] = [
-    {
-      title: "Market Volatility",
-      body:
-        "Nam fermentum metus ut eleifend fermentum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec efficitur dui nec erat gravida auctor.",
-    },
-    { title: "Positive Performance", body: sample },
-    { title: "Fair Valuation", body: sample },
-    { title: "Institutional Confidence", body: sample },
-  ];
+export default function InvestmentRationaleSection({ stockId }: InvestmentRationaleSectionProps) {
+  const [rationales, setRationales] = useState<{ pros: InvestmentRationaleData[]; risks: InvestmentRationaleData[] }>({
+    pros: [],
+    risks: []
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchRationales = async () => {
+      if (!stockId) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/stocks/${stockId}/investment-rationales`);
+        const data = await response.json();
+        
+        if (data.success) {
+          setRationales(data.data.rationales || { pros: [], risks: [] });
+        } else {
+          setError(data.message || 'Failed to fetch investment rationales');
+        }
+      } catch (err) {
+        setError('Failed to fetch investment rationales');
+        console.error('Error fetching investment rationales:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRationales();
+  }, [stockId]);
+
+  if (loading) {
+    return (
+      <div className="grid gap-6 md:grid-cols-2">
+        {[1, 2].map((i) => (
+          <div key={i} className="space-y-4">
+            <div className="flex items-center gap-4 animate-pulse">
+              <div className="h-14 w-14 bg-gray-300 rounded-md"></div>
+              <div className="h-6 w-32 bg-gray-300 rounded"></div>
+            </div>
+            {[1, 2, 3].map((j) => (
+              <div key={j} className="border border-gray-200 rounded bg-white p-4 animate-pulse">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-5 h-5 bg-gray-300 rounded"></div>
+                    <div className="w-24 h-4 bg-gray-300 rounded"></div>
+                  </div>
+                  <div className="w-5 h-5 bg-gray-300 rounded"></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
+        <p className="text-red-600">{error}</p>
+      </div>
+    );
+  }
+
+  if (rationales.pros.length === 0 && rationales.risks.length === 0) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
+        <p className="text-gray-500">No investment rationale data available for this stock.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {/* PROS */}
-      <section className="space-y-4">
-        <GroupHeader
-          icon={<TrendingUp className="h-8 w-8 text-emerald-700" />}
-          label="Investment Rationale"
-          tone="good"
-        />
-        {pros.map((it, i) => (
-          <AccordionRow
-            key={it.title}
-            icon={<TriangleAlert className="h-5 w-5 text-emerald-700" />}
-            title={it.title}
-            body={it.body}
-            defaultOpen={i === 0}
+      {rationales.pros.length > 0 && (
+        <section className="space-y-4">
+          <GroupHeader
+            icon={<TrendingUp className="h-8 w-8 text-emerald-700" />}
+            label="Investment Rationale"
+            tone="good"
           />
-        ))}
-      </section>
+          {rationales.pros.map((rationale, i) => (
+            <AccordionRow
+              key={rationale.id}
+              icon={<TriangleAlert className="h-5 w-5 text-emerald-700" />}
+              title={rationale.title}
+              body={rationale.description}
+              defaultOpen={i === 0}
+            />
+          ))}
+        </section>
+      )}
 
       {/* RISKS */}
-      <section className="space-y-4">
-        <GroupHeader
-          icon={<TriangleAlert className="h-8 w-8 text-rose-600" />}
-          label="Key Risks"
-          tone="risk"
-        />
-        {risks.map((it, i) => (
-          <AccordionRow
-            key={it.title}
-            icon={<AlertTriangle className="h-5 w-5 text-rose-600" />}
-            title={it.title}
-            body={it.body}
-            defaultOpen={i === 0}
+      {rationales.risks.length > 0 && (
+        <section className="space-y-4">
+          <GroupHeader
+            icon={<TriangleAlert className="h-8 w-8 text-rose-600" />}
+            label="Key Risks"
+            tone="risk"
           />
-        ))}
-      </section>
+          {rationales.risks.map((rationale, i) => (
+            <AccordionRow
+              key={rationale.id}
+              icon={<AlertTriangle className="h-5 w-5 text-rose-600" />}
+              title={rationale.title}
+              body={rationale.description}
+              defaultOpen={i === 0}
+            />
+          ))}
+        </section>
+      )}
     </div>
   );
 }
@@ -146,7 +215,3 @@ function AccordionRow({
     </div>
   );
 }
-
-/* ---------- sample text ---------- */
-const sample =
-  "Nam fermentum metus ut eleifend fermentum. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Donec efficitur dui nec erat gravida auctor.";

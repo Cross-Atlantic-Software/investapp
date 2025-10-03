@@ -38,6 +38,7 @@ import { ActivityTypeManagementController } from "../controllers/admin/activityT
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
+import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 
 // Stock Draft Controllers
 import {
@@ -96,7 +97,7 @@ router.use((req, res, next) => {
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
-      req.path.includes('/scorecards')) {
+      req.path.includes('/scorecards') || req.path.includes('/investment-rationales')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -210,6 +211,15 @@ router.post("/stocks/:stockId/scorecards/bulk", StockScorecardManagementControll
 router.put("/scorecards/:id", StockScorecardManagementController.updateScorecard);
 router.delete("/scorecards/:id", StockScorecardManagementController.deleteScorecard);
 router.get("/stocks/:stockId/scorecards/stats", StockScorecardManagementController.getScorecardStats);
+
+// Stock Investment Rationale Management Routes
+router.get("/stocks/:stockId/investment-rationales", StockInvestmentRationaleManagementController.getRationalesByStockId);
+router.get("/investment-rationales/:id", StockInvestmentRationaleManagementController.getRationaleById);
+router.post("/stocks/:stockId/investment-rationales", StockInvestmentRationaleManagementController.createRationale);
+router.post("/stocks/:stockId/investment-rationales/bulk", StockInvestmentRationaleManagementController.bulkCreateRationales);
+router.put("/investment-rationales/:id", StockInvestmentRationaleManagementController.updateRationale);
+router.delete("/investment-rationales/:id", StockInvestmentRationaleManagementController.deleteRationale);
+router.get("/stocks/:stockId/investment-rationales/stats", StockInvestmentRationaleManagementController.getRationaleStats);
 
 // Stock Draft Management Routes
 router.post("/stock-drafts", saveDraft);
