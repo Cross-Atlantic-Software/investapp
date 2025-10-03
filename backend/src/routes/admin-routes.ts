@@ -37,6 +37,7 @@ import { NotableActivityManagementController } from "../controllers/admin/notabl
 import { ActivityTypeManagementController } from "../controllers/admin/activityTypeManagement";
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
+import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 
 // Stock Draft Controllers
 import {
@@ -94,7 +95,8 @@ router.use((req, res, next) => {
   // Skip authentication for new feature routes during testing
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
-      req.path.includes('/bulk-deals') || req.path.includes('/stock-masters')) {
+      req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
+      req.path.includes('/scorecards')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -199,6 +201,15 @@ router.get("/stock-masters/:id", stockMasterController.getStockMasterById);
 router.post("/stock-masters", stockMasterController.createStockMaster);
 router.put("/stock-masters/:id", stockMasterController.updateStockMaster);
 router.delete("/stock-masters/:id", stockMasterController.deleteStockMaster);
+
+// Stock Scorecard Management Routes
+router.get("/stocks/:stockId/scorecards", StockScorecardManagementController.getScorecardsByStockId);
+router.get("/scorecards/:id", StockScorecardManagementController.getScorecardById);
+router.post("/stocks/:stockId/scorecards", StockScorecardManagementController.createScorecard);
+router.post("/stocks/:stockId/scorecards/bulk", StockScorecardManagementController.bulkCreateScorecards);
+router.put("/scorecards/:id", StockScorecardManagementController.updateScorecard);
+router.delete("/scorecards/:id", StockScorecardManagementController.deleteScorecard);
+router.get("/stocks/:stockId/scorecards/stats", StockScorecardManagementController.getScorecardStats);
 
 // Stock Draft Management Routes
 router.post("/stock-drafts", saveDraft);
