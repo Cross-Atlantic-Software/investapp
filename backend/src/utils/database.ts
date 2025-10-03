@@ -12,6 +12,7 @@ import NotableActivity, { initializeNotableActivityModel } from "../Models/Notab
 import ActivityType, { initializeActivityTypeModel } from "../Models/ActivityType";
 import BulkDeals, { initializeBulkDealsModel } from "../Models/BulkDeals";
 import StockMaster, { initializeStockMasterModel } from "../Models/StockMaster";
+import StockScorecardModel, { initializeStockScorecardModel } from "../Models/StockScorecard";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -87,6 +88,9 @@ async function initializeSequelize() {
   
   // Initialize Stock Master model
   initializeStockMasterModel(sequelize);
+  
+  // Initialize Stock Scorecard model
+  initializeStockScorecardModel(sequelize);
   
   // No associations needed since only admins handle stocks
   
@@ -182,6 +186,12 @@ export const db = {
       throw new Error('StockMaster model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockMaster;
+  },
+  get StockScorecard() {
+    if (!StockScorecardModel) {
+      throw new Error('StockScorecard model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockScorecardModel;
   },
 };
 

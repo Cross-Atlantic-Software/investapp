@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Loader } from '@/components/admin/shared';
-import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload } from 'lucide-react';
+import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, BarChart3, Plus, Edit3 } from 'lucide-react';
 import SimpleRichTextEditor from '../SimpleRichTextEditor';
 import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
 import CSVUploadModal from './CSVUploadModal';
@@ -34,6 +34,17 @@ interface Stock {
   }>;
   createdAt: string;
   updatedAt: string;
+}
+
+interface Scorecard {
+  id: number;
+  stock_id: number;
+  category: string;
+  score_value: number;
+  score_tag: 'Low Risk' | 'Medium Risk' | 'High Risk';
+  analysis: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface StockTableProps {
@@ -76,6 +87,16 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     isOpen: false,
     stock: null
   });
+  
+  // Scorecard management state
+  const [scorecardModal, setScorecardModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
+    isOpen: false,
+    stock: null
+  });
+  const [scorecards, setScorecards] = useState<Scorecard[]>([]);
+  const [scorecardLoading, setScorecardLoading] = useState(false);
+  const [editingScorecard, setEditingScorecard] = useState<Scorecard | null>(null);
+  const [scorecardFormData, setScorecardFormData] = useState<Partial<Scorecard>>({});
   const [imageUpload, setImageUpload] = useState<ImageUploadState>({
     file: null,
     preview: null,
@@ -241,6 +262,135 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
   const handleViewStock = (stock: Stock) => {
     setViewingStock(stock);
+  };
+
+  // Scorecard management functions
+  const handleManageScorecards = async (stock: Stock) => {
+    setScorecardModal({ isOpen: true, stock });
+    await fetchScorecards(stock.id);
+  };
+
+  const fetchScorecards = async (stockId: number) => {
+    setScorecardLoading(true);
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/stocks/${stockId}/scorecards`, {
+        headers: { 'token': token }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setScorecards(data.data.scorecards || []);
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to fetch scorecards');
+      }
+    } catch (error) {
+      console.error('Error fetching scorecards:', error);
+      onNotification?.('error', 'Error', 'Failed to fetch scorecards');
+    } finally {
+      setScorecardLoading(false);
+    }
+  };
+
+  const handleCreateScorecard = async () => {
+    if (!scorecardModal.stock) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/stocks/${scorecardModal.stock.id}/scorecards`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify({
+          stock_id: scorecardModal.stock.id,
+          category: scorecardFormData.category,
+          score_value: scorecardFormData.score_value,
+          score_tag: scorecardFormData.score_tag,
+          analysis: scorecardFormData.analysis
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchScorecards(scorecardModal.stock.id);
+        setScorecardFormData({});
+        onNotification?.('success', 'Success', 'Scorecard created successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to create scorecard');
+      }
+    } catch (error) {
+      console.error('Error creating scorecard:', error);
+      onNotification?.('error', 'Error', 'Failed to create scorecard');
+    }
+  };
+
+  const handleEditScorecard = (scorecard: Scorecard) => {
+    setEditingScorecard(scorecard);
+    setScorecardFormData({
+      category: scorecard.category,
+      score_value: scorecard.score_value,
+      score_tag: scorecard.score_tag,
+      analysis: scorecard.analysis
+    });
+  };
+
+  const handleUpdateScorecard = async () => {
+    if (!editingScorecard) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/scorecards/${editingScorecard.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify({
+          category: scorecardFormData.category,
+          score_value: scorecardFormData.score_value,
+          score_tag: scorecardFormData.score_tag,
+          analysis: scorecardFormData.analysis
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchScorecards(scorecardModal.stock!.id);
+        setEditingScorecard(null);
+        setScorecardFormData({});
+        onNotification?.('success', 'Success', 'Scorecard updated successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to update scorecard');
+      }
+    } catch (error) {
+      console.error('Error updating scorecard:', error);
+      onNotification?.('error', 'Error', 'Failed to update scorecard');
+    }
+  };
+
+  const handleDeleteScorecard = async (scorecardId: number) => {
+    if (!confirm('Are you sure you want to delete this scorecard?')) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/scorecards/${scorecardId}`, {
+        method: 'DELETE',
+        headers: { 'token': token }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchScorecards(scorecardModal.stock!.id);
+        onNotification?.('success', 'Success', 'Scorecard deleted successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to delete scorecard');
+      }
+    } catch (error) {
+      console.error('Error deleting scorecard:', error);
+      onNotification?.('error', 'Error', 'Failed to delete scorecard');
+    }
   };
 
   const handleUpdateStock = async () => {
@@ -494,6 +644,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         title="Upload Price Data CSV"
                       >
                         <Upload width={16} height={16}/>
+                      </button>
+                      
+                      {/* Manage Scorecards Button - Available for all users */}
+                      <button
+                        onClick={() => handleManageScorecards(stock)}
+                        className="p-2 text-themeTealWhite bg-purple-600 rounded transition duration-300 hover:bg-white hover:text-purple-600 cursor-pointer"
+                        title="Manage Scorecards"
+                      >
+                        <BarChart3 width={16} height={16}/>
                       </button>
                       
                       {canManageStocks && (
@@ -1295,6 +1454,184 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             onRefresh();
           }}
         />
+      )}
+
+      {/* Scorecard Management Modal */}
+      {scorecardModal.isOpen && scorecardModal.stock && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+          <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Scorecards</h3>
+                  <p className="text-themeTealWhite/80 text-sm">{scorecardModal.stock.company_name}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setScorecardModal({ isOpen: false, stock: null });
+                    setScorecards([]);
+                    setEditingScorecard(null);
+                    setScorecardFormData({});
+                  }}
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                >
+                  <X/>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Add New Scorecard Form */}
+              <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                  <Plus className="w-5 h-5 mr-2" />
+                  {editingScorecard ? 'Edit Scorecard' : 'Add New Scorecard'}
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={scorecardFormData.category || ''}
+                      onChange={(e) => setScorecardFormData({...scorecardFormData, category: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="e.g., Financial Health, Market Position"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Score Value (0-10) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                      value={scorecardFormData.score_value || ''}
+                      onChange={(e) => setScorecardFormData({...scorecardFormData, score_value: parseFloat(e.target.value) || 0})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="8.5"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Risk Tag <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={scorecardFormData.score_tag || ''}
+                      onChange={(e) => setScorecardFormData({...scorecardFormData, score_tag: e.target.value as 'Low Risk' | 'Medium Risk' | 'High Risk'})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                    >
+                      <option value="">Select Risk Level</option>
+                      <option value="Low Risk">Low Risk</option>
+                      <option value="Medium Risk">Medium Risk</option>
+                      <option value="High Risk">High Risk</option>
+                    </select>
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Analysis <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      rows={4}
+                      value={scorecardFormData.analysis || ''}
+                      onChange={(e) => setScorecardFormData({...scorecardFormData, analysis: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="Detailed analysis of this category..."
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-4">
+                  {editingScorecard && (
+                    <button
+                      onClick={() => {
+                        setEditingScorecard(null);
+                        setScorecardFormData({});
+                      }}
+                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <button
+                    onClick={editingScorecard ? handleUpdateScorecard : handleCreateScorecard}
+                    disabled={!scorecardFormData.category || !scorecardFormData.score_value || !scorecardFormData.score_tag || !scorecardFormData.analysis}
+                    className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTeal/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {editingScorecard ? 'Update Scorecard' : 'Add Scorecard'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Existing Scorecards */}
+              <div>
+                <h4 className="text-lg font-medium text-gray-900 mb-4">Existing Scorecards</h4>
+                
+                {scorecardLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader />
+                  </div>
+                ) : scorecards.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No scorecards found for this stock.</p>
+                    <p className="text-sm">Add your first scorecard above.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {scorecards.map((scorecard) => (
+                      <div key={scorecard.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h5 className="font-medium text-gray-900">{scorecard.category}</h5>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                scorecard.score_tag === 'Low Risk' ? 'bg-green-100 text-green-800' :
+                                scorecard.score_tag === 'Medium Risk' ? 'bg-yellow-100 text-yellow-800' :
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {scorecard.score_tag}
+                              </span>
+                              <span className="text-sm font-medium text-gray-600">
+                                {scorecard.score_value}/10
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600 line-clamp-2">{scorecard.analysis}</p>
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            <button
+                              onClick={() => handleEditScorecard(scorecard)}
+                              className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                              title="Edit Scorecard"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteScorecard(scorecard.id)}
+                              className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                              title="Delete Scorecard"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
     </div>
