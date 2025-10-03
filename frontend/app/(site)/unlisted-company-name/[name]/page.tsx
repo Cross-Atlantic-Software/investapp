@@ -1,13 +1,20 @@
 'use client';
 import { Section, SectionNav, ShareIntro, TradeTabsShell } from "@/components/shares";
-import { FaqSection, FinancialPerformanceSection, InvestmentRationaleSection, NewsSection, PerformanceBenchmarkSection, PriceChartSection, ScorecardSection, SectorOutlookSection, ShareholdingSection } from "@/components/shares/sections";
-import PriceChart from "@/components/shares/PriceChart";
-// Removed unused section imports since we only display stock details from our schema
+import { FaqSection, FinancialPerformanceSection, InvestmentRationaleSection, NewsSection, PerformanceBenchmarkSection, ScorecardSection, SectorOutlookSection, ShareholdingSection } from "@/components/shares/sections";
+import PriceChart from "@/components/shares/sections/PriceChart";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 const NAV = [
-  { id: "stock-details", label: "Stock Details" },
+  { id: "price", label: "Price Chart" },
+  { id: "score", label: "Scorecard" },
+  { id: "rationale", label: "Investment Rationale" },
+  { id: "bench", label: "Performance Benchmark" },
+  { id: "outlook", label: "Sector Outlook" },
+  { id: "financials", label: "Financial Performance" },
+  { id: "holders", label: "Shareholding" },
+  { id: "news", label: "News Related to Company" },
+  { id: "faq", label: "Frequently Asked Questions" },
 ];
 
 interface StockData {
@@ -134,7 +141,15 @@ export default function UnlistedCompanyDetails() {
           <SectionNav items={NAV} offset={88} />
 
           <div className="space-y-6">
-          <Section id="price" title="Price Chart" info="Intraday private-market price. Delayed. Not investment advice."><PriceChartSection /></Section>
+            <Section id="price" title="Price Chart" info="Intraday private-market price. Delayed. Not investment advice.">
+              <PriceChart
+                stockId={parseInt(stockData.id)}
+                stockName={stockData.company_name}
+                currentPrice={stockData.price_per_share}
+                priceChange={stockData.price_change}
+                percentageChange={stockData.price_change / stockData.price_per_share * 100}
+              />
+            </Section>
             <Section id="score" title="Scorecard" info="Intraday private-market price. Delayed. Not investment advice."><ScorecardSection /></Section>
             <Section id="rationale" title="Investment Rationale" info="Intraday private-market price. Delayed. Not investment advice."><InvestmentRationaleSection /></Section>
             <Section id="bench" title="Performance Benchmark" info="Intraday private-market price. Delayed. Not investment advice."><PerformanceBenchmarkSection /></Section>
@@ -143,27 +158,6 @@ export default function UnlistedCompanyDetails() {
             <Section id="holders" title="Shareholding" info="Intraday private-market price. Delayed. Not investment advice."><ShareholdingSection /></Section>
             <Section id="news" title="News Related to Company" info="Intraday private-market price. Delayed. Not investment advice."><NewsSection /></Section>
             <Section id="faq" title="Frequently Asked Questions" info="Intraday private-market price. Delayed. Not investment advice."><FaqSection /></Section>
-            <Section id="stock-details" title="Company Analysis">
-              <div>
-                  {/* Analysis */}
-                  <div className="space-y-2">
-                    {/* <h3 className="text-lg font-semibold text-gray-900">Analysis</h3> */}
-                    <div 
-                      className="prose max-w-none text-gray-700"
-                      dangerouslySetInnerHTML={{ __html: stockData.analysis || '' }}
-                    />
-                  </div>
-                </div>
-            </Section>
-
-            {/* Price Chart Section */}
-            <PriceChart
-              stockId={parseInt(stockData.id)}
-              stockName={stockData.company_name}
-              currentPrice={stockData.price_per_share}
-              priceChange={stockData.price_change}
-              percentageChange={stockData.price_change / stockData.price_per_share * 100}
-            />
           </div>
         </div>
 
