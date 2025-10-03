@@ -3,9 +3,10 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { Loader } from '@/components/admin/shared';
-import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X } from 'lucide-react';
+import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload } from 'lucide-react';
 import SimpleRichTextEditor from '../SimpleRichTextEditor';
 import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
+import CSVUploadModal from './CSVUploadModal';
 
 interface Stock {
   id: number;
@@ -71,6 +72,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [editIconFile, setEditIconFile] = useState<File | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
   const [selectedStockMasterIds, setSelectedStockMasterIds] = useState<number[]>([]);
+  const [csvUploadModal, setCsvUploadModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
+    isOpen: false,
+    stock: null
+  });
   const [imageUpload, setImageUpload] = useState<ImageUploadState>({
     file: null,
     preview: null,
@@ -478,6 +483,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         title="View Stock Details"
                       >
                         <Eye width={16} height={16}/>
+                      </button>
+                      
+                      {/* CSV Upload Button - Available for all users */}
+                      <button
+                        onClick={() => setCsvUploadModal({ isOpen: true, stock })}
+                        className="p-2 text-themeTealWhite bg-green-600 rounded transition duration-300 hover:bg-white hover:text-green-600 cursor-pointer"
+                        title="Upload Price Data CSV"
+                      >
+                        <Upload width={16} height={16}/>
                       </button>
                       
                       {canManageStocks && (
@@ -1235,6 +1249,20 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
           </div>
         </div>
+      )}
+
+      {/* CSV Upload Modal */}
+      {csvUploadModal.isOpen && csvUploadModal.stock && (
+        <CSVUploadModal
+          isOpen={csvUploadModal.isOpen}
+          onClose={() => setCsvUploadModal({ isOpen: false, stock: null })}
+          stockId={csvUploadModal.stock.id}
+          stockName={csvUploadModal.stock.company_name}
+          onUploadSuccess={() => {
+            onNotification?.('success', 'Success', 'Price data uploaded successfully!');
+            onRefresh();
+          }}
+        />
       )}
 
     </div>
