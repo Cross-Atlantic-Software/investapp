@@ -1,12 +1,14 @@
 'use client';
-import { Section, ShareIntro, TradeTabsShell } from "@/components/shares";
+import { Section, SectionNav, ShareIntro, TradeTabsShell } from "@/components/shares";
+import { FaqSection, FinancialPerformanceSection, InvestmentRationaleSection, NewsSection, PerformanceBenchmarkSection, PriceChartSection, ScorecardSection, SectorOutlookSection, ShareholdingSection } from "@/components/shares/sections";
+import PriceChart from "@/components/shares/PriceChart";
 // Removed unused section imports since we only display stock details from our schema
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
-// const NAV = [
-//   { id: "stock-details", label: "Stock Details" },
-// ];
+const NAV = [
+  { id: "stock-details", label: "Stock Details" },
+];
 
 interface StockData {
   id: string;
@@ -129,74 +131,20 @@ export default function UnlistedCompanyDetails() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,384px)] p-6">
         {/* LEFT: content */}
         <div className="min-w-0 space-y-6">
-          {/* <SectionNav items={NAV} offset={88} /> */}
+          <SectionNav items={NAV} offset={88} />
 
           <div className="space-y-6">
+          <Section id="price" title="Price Chart" info="Intraday private-market price. Delayed. Not investment advice."><PriceChartSection /></Section>
+            <Section id="score" title="Scorecard" info="Intraday private-market price. Delayed. Not investment advice."><ScorecardSection /></Section>
+            <Section id="rationale" title="Investment Rationale" info="Intraday private-market price. Delayed. Not investment advice."><InvestmentRationaleSection /></Section>
+            <Section id="bench" title="Performance Benchmark" info="Intraday private-market price. Delayed. Not investment advice."><PerformanceBenchmarkSection /></Section>
+            <Section id="outlook" title="Sector Outlook" info="Intraday private-market price. Delayed. Not investment advice."><SectorOutlookSection /></Section>
+            <Section id="financials" title="Financial Performance" info="Intraday private-market price. Delayed. Not investment advice."><FinancialPerformanceSection /></Section>
+            <Section id="holders" title="Shareholding" info="Intraday private-market price. Delayed. Not investment advice."><ShareholdingSection /></Section>
+            <Section id="news" title="News Related to Company" info="Intraday private-market price. Delayed. Not investment advice."><NewsSection /></Section>
+            <Section id="faq" title="Frequently Asked Questions" info="Intraday private-market price. Delayed. Not investment advice."><FaqSection /></Section>
             <Section id="stock-details" title="Company Analysis">
               <div>
-                  {/* Company Logo and Name */}
-                  {/* <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-lg bg-gray-100 overflow-hidden">
-                      <Image src={stockData.logo} alt={`${stockData.company_name} logo`} width={64} height={64} className="h-full w-full object-cover" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">{stockData.company_name}</h2>
-                      <p className="text-gray-600">Stock ID: {stockData.id}</p>
-                    </div>
-                  </div> */}
-
-                  {/* Price Information */}
-                  {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Price Information</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Current Price:</span>
-                          <span className="font-medium text-green-600">₹{stockData.price_per_share.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Price Change:</span>
-                          <span className={`font-medium ${stockData.price_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {stockData.price_change >= 0 ? '+' : ''}₹{stockData.price_change.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Timestamps</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Created:</span>
-                          <span className="font-medium text-sm">
-                            {stockData.createdAt ? new Date(stockData.createdAt).toLocaleDateString() : 'N/A'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Last Updated:</span>
-                          <span className="font-medium text-sm">
-                            {stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString() : 'N/A'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div> */}
-
-                  {/* Teaser */}
-                  {/* <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Teaser</h3>
-                    <p className="text-gray-700 text-lg">{stockData.teaser}</p>
-                  </div> */}
-
-                  {/* Short Description */}
-                  {/* <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Short Description</h3>
-                    <div 
-                      className="text-gray-700 prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: stockData.short_description || '' }}
-                    />
-                  </div> */}
-
                   {/* Analysis */}
                   <div className="space-y-2">
                     {/* <h3 className="text-lg font-semibold text-gray-900">Analysis</h3> */}
@@ -207,6 +155,15 @@ export default function UnlistedCompanyDetails() {
                   </div>
                 </div>
             </Section>
+
+            {/* Price Chart Section */}
+            <PriceChart
+              stockId={parseInt(stockData.id)}
+              stockName={stockData.company_name}
+              currentPrice={stockData.price_per_share}
+              priceChange={stockData.price_change}
+              percentageChange={stockData.price_change / stockData.price_per_share * 100}
+            />
           </div>
         </div>
 

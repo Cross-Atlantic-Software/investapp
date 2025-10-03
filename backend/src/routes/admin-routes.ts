@@ -47,6 +47,16 @@ import {
   cleanupExpiredDrafts
 } from "../controllers/admin/stockDraftController";
 
+// Stock Price Data Controllers
+import { 
+  uploadPriceDataCSV, 
+  getPriceData, 
+  getLatestPriceData, 
+  deleteAllPriceData, 
+  checkPriceDataExists,
+  upload 
+} from "../controllers/admin/stockPriceController";
+
 // Enquiry Management Controllers
 import {
   getAllEnquiries,
@@ -196,5 +206,12 @@ router.get("/stock-drafts", getDrafts);
 router.get("/stock-drafts/:id", getDraftById);
 router.delete("/stock-drafts/:id", deleteDraft);
 router.post("/stock-drafts/cleanup", cleanupExpiredDrafts);
+
+// Stock Price Data Management Routes
+router.post("/stocks/:id/price-data/upload", upload.single('csvFile'), uploadPriceDataCSV);
+router.get("/stocks/:id/price-data", getPriceData);
+router.get("/stocks/:id/price-data/latest", getLatestPriceData);
+router.delete("/stocks/:id/price-data", deleteAllPriceData);
+router.get("/stocks/:id/price-data/exists", checkPriceDataExists);
 
 export default router;

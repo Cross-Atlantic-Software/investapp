@@ -3,6 +3,8 @@ export { default as StockTable } from './StockTable';
 export { default as ImageUpload } from './ImageUpload';
 export { default as StepProgressIndicator } from './StepProgressIndicator';
 export { default as ModalFooter } from './ModalFooter';
+export { default as CSVUpload } from './CSVUpload';
+export { default as CSVUploadModal } from './CSVUploadModal';
 export { default as Step1 } from './steps/Step1';
 export { default as Step2 } from './steps/Step2';
 export { default as Step3 } from './steps/Step3';
