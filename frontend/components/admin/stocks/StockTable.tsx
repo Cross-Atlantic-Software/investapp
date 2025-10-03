@@ -128,6 +128,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       bannerDisplay: stock.bannerDisplay,
       valuation: stock.valuation,
       price_per_share: stock.price_per_share,
+      price_change: stock.price_change,
       percentage_change: stock.percentage_change,
       founded: stock.founded,
       sector: stock.sector,
@@ -260,6 +261,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       formData.append('bannerDisplay', editFormData.bannerDisplay || '');
       formData.append('valuation', editFormData.valuation || '');
       formData.append('price_per_share', editFormData.price_per_share?.toString() || '');
+      formData.append('price_change', editFormData.price_change?.toString() || '');
       formData.append('percentage_change', editFormData.percentage_change?.toString() || '');
       formData.append('founded', editFormData.founded?.toString() || '');
       formData.append('sector', editFormData.sector || '');
@@ -677,31 +679,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     />
                   </div>
 
-                  {/* Percentage Change and Price per Share Fields - Side by Side */}
+                  {/* Price Fields - Three columns */}
                   <div className="md:col-span-2">
-                    <div className="flex gap-4">
-                      {/* Percentage Change Field */}
-                      <div className="flex-1">
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Percentage Change <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <span className="text-gray-500 text-sm">%</span>
-                          </div>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={editFormData.percentage_change || ''}
-                            onChange={(e) => setEditFormData({...editFormData, percentage_change: parseFloat(e.target.value) || 0})}
-                            className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                            placeholder="0.00"
-                          />
-                        </div>
-                      </div>
-
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       {/* Price per Share Field */}
-                      <div className="flex-1">
+                      <div>
                         <label className="block text-xs font-medium text-gray-700 mb-1">
                           Price per Share <span className="text-red-500">*</span>
                         </label>
@@ -715,6 +697,46 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             value={editFormData.price_per_share || ''}
                             onChange={(e) => setEditFormData({...editFormData, price_per_share: parseFloat(e.target.value) || 0})}
                             className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Price Change Field */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Price Change <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 text-sm">₹</span>
+                          </div>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editFormData.price_change || ''}
+                            onChange={(e) => setEditFormData({...editFormData, price_change: parseFloat(e.target.value) || 0})}
+                            className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+                            placeholder="0.00"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Percentage Change Field */}
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">
+                          Percentage Change <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span className="text-gray-500 text-sm">%</span>
+                          </div>
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={editFormData.percentage_change || ''}
+                            onChange={(e) => setEditFormData({...editFormData, percentage_change: parseFloat(e.target.value) || 0})}
+                            className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
                             placeholder="0.00"
                           />
                         </div>
@@ -1068,6 +1090,16 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       <label className="block text-sm font-medium text-gray-700 mb-1">Price per Share</label>
                       <p className="text-sm text-gray-900 bg-white p-2 rounded border">
                         ₹{viewingStock.price_per_share || 0}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Price Change</label>
+                      <p className={`text-sm bg-white p-2 rounded border ${
+                        (viewingStock.price_change || 0) >= 0 
+                          ? 'text-green-600' 
+                          : 'text-red-600'
+                      }`}>
+                        {(viewingStock.price_change || 0) >= 0 ? '+' : ''}₹{Math.abs(viewingStock.price_change || 0)}
                       </p>
                     </div>
                     <div>

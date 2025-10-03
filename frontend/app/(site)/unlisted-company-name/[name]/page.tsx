@@ -1,7 +1,6 @@
 'use client';
 import { Section, SectionNav, ShareIntro, TradeTabsShell } from "@/components/shares";
-import { FaqSection, FinancialPerformanceSection, InvestmentRationaleSection, NewsSection, PerformanceBenchmarkSection, ScorecardSection, SectorOutlookSection, ShareholdingSection } from "@/components/shares/sections";
-import PriceChart from "@/components/shares/sections/PriceChart";
+import { FaqSection, FinancialPerformanceSection, InvestmentRationaleSection, NewsSection, PerformanceBenchmarkSection, PriceChart, ScorecardSection, SectorOutlookSection, ShareholdingSection } from "@/components/shares/sections";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 

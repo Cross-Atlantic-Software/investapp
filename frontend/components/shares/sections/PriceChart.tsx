@@ -229,34 +229,41 @@ const PriceChart: React.FC<PriceChartProps> = ({
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">{stockName}</h2>
-          <div className="flex items-center space-x-4 mt-2">
-            <span className="text-2xl font-bold text-gray-900">
-              {formatPrice(currentPrice)}
+      <div className="mb-6">
+        {/* <h2 className="text-xl font-semibold text-gray-900">{stockName}</h2> */}
+        <div className="flex items-center space-x-4 mt-2">
+          <span className="text-2xl font-bold text-gray-900">
+            {formatPrice(currentPrice)}
+          </span>
+          <div className={`flex items-center space-x-1 ${
+            priceChange >= 0 ? 'text-green-600' : 'text-red-600'
+          }`}>
+            {priceChange >= 0 ? (
+              <TrendingUp className="w-4 h-4" />
+            ) : (
+              <TrendingDown className="w-4 h-4" />
+            )}
+            {/* <span className="font-medium">
+              {percentageChange >= 0 ? '+' : ''}{percentageChange.toFixed(2)}%
+            </span> */}
+            <span className="font-medium">
+              {priceChange >= 0 ? '+' : ''}{formatPrice(Math.abs(priceChange))}
             </span>
-            <div className={`flex items-center space-x-1 ${
-              priceChange >= 0 ? 'text-green-600' : 'text-red-600'
-            }`}>
-              {priceChange >= 0 ? (
-                <TrendingUp className="w-4 h-4" />
-              ) : (
-                <TrendingDown className="w-4 h-4" />
-              )}
-              <span className="font-medium">
-                {priceChange >= 0 ? '+' : ''}{formatPrice(Math.abs(priceChange))}
-              </span>
-              <span className="text-sm">
-                ({percentageChange >= 0 ? '+' : ''}{percentageChange.toFixed(2)}%)
-              </span>
-            </div>
           </div>
         </div>
         
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-4 h-4 text-gray-400" />
-          <span className="text-sm text-gray-600">As of {new Date().toLocaleDateString()}</span>
+        {/* Date/Time below the price */}
+        <div className="mt-2">
+          <span className="text-sm text-gray-600">
+            {new Date().toLocaleDateString('en-US', { 
+              month: 'short', 
+              day: 'numeric',
+              hour: 'numeric',
+              minute: '2-digit',
+              second: '2-digit',
+              hour12: true
+            })} UTC+5:30 INR NSE Disclaimer
+          </span>
         </div>
       </div>
 
