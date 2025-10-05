@@ -40,6 +40,9 @@ import { StockMasterManagementController } from "../controllers/admin/stockMaste
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
+import { StockSectorOutlookManagementController } from "../controllers/admin/stockSectorOutlookManagement";
+import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
+import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
 import {
@@ -99,7 +102,8 @@ router.use((req, res, next) => {
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
-      req.path.includes('/performance-pdfs')) {
+      req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
+      req.path.includes('/sector-insights-pdfs')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -232,6 +236,23 @@ router.put("/performance-pdfs/:id", StockPerformancePdfManagementController.upda
 router.put("/performance-pdfs/:id/replace", uploadMiddleware, StockPerformancePdfManagementController.replacePdf);
 router.delete("/performance-pdfs/:id", StockPerformancePdfManagementController.deletePdf);
 router.get("/stocks/:stockId/performance-pdfs/stats", StockPerformancePdfManagementController.getPdfStats);
+
+// Stock Sector Outlook Management Routes
+router.get("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.getSectorOutlookByStockId);
+router.post("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.createOrUpdateSectorOutlook);
+router.delete("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.deleteSectorOutlook);
+router.get("/stocks/:stockId/sector-outlooks/stats", StockSectorOutlookManagementController.getSectorOutlookStats);
+
+// Stock Sector Insights PDF Management Routes
+router.get("/stocks/:stockId/sector-insights-pdfs", StockSectorInsightsPdfManagementController.getPdfsByStockId);
+router.get("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.getPdfById);
+router.post("/stocks/:stockId/sector-insights-pdfs", uploadPdf.single('pdf'), StockSectorInsightsPdfManagementController.createPdf);
+router.post("/stocks/:stockId/sector-insights-pdfs/bulk", StockSectorInsightsPdfManagementController.bulkCreatePdfs);
+router.put("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.updatePdf);
+router.put("/sector-insights-pdfs/:id/replace", uploadPdf.single('pdf'), StockSectorInsightsPdfManagementController.replacePdf);
+router.put("/sector-insights-pdfs/:id/set-active", StockSectorInsightsPdfManagementController.setActivePdf);
+router.delete("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.deletePdf);
+router.get("/stocks/:stockId/sector-insights-pdfs/stats", StockSectorInsightsPdfManagementController.getPdfStats);
 
 // Stock Draft Management Routes
 router.post("/stock-drafts", saveDraft);

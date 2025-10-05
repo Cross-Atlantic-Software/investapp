@@ -73,6 +73,21 @@ interface PerformancePdf {
   updated_at: string;
 }
 
+interface SectorInsightsPdf {
+  id: number;
+  stock_id: number;
+  title: string;
+  description?: string;
+  pdf_url: string;
+  file_name: string;
+  file_size: number;
+  page_count: number;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 interface StockTableProps {
   stocks: Stock[];
   onRefresh: () => void;
@@ -148,6 +163,31 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [pdfFormData, setPdfFormData] = useState<Partial<PerformancePdf>>({});
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [replacingPdf, setReplacingPdf] = useState<PerformancePdf | null>(null);
+  
+  // Sector Outlook management state
+  const [sectorOutlookModal, setSectorOutlookModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
+    isOpen: false,
+    stock: null
+  });
+  const [sectorOutlook, setSectorOutlook] = useState<{ description: string; accordions: Array<{ title: string; analysis: string; order_index: number }> } | null>(null);
+  const [sectorOutlookLoading, setSectorOutlookLoading] = useState(false);
+  const [sectorOutlookFormData, setSectorOutlookFormData] = useState<{ description: string; accordions: Array<{ title: string; analysis: string; order_index: number }> }>({
+    description: '',
+    accordions: []
+  });
+  
+  // Sector Insights PDF management state
+  const [sectorInsightsPdfModal, setSectorInsightsPdfModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
+    isOpen: false,
+    stock: null
+  });
+  const [sectorInsightsPdfs, setSectorInsightsPdfs] = useState<SectorInsightsPdf[]>([]);
+  const [sectorInsightsPdfLoading, setSectorInsightsPdfLoading] = useState(false);
+  const [editingSectorInsightsPdf, setEditingSectorInsightsPdf] = useState<SectorInsightsPdf | null>(null);
+  const [sectorInsightsPdfFormData, setSectorInsightsPdfFormData] = useState<Partial<SectorInsightsPdf>>({});
+  const [sectorInsightsPdfFile, setSectorInsightsPdfFile] = useState<File | null>(null);
+  const [replacingSectorInsightsPdf, setReplacingSectorInsightsPdf] = useState<SectorInsightsPdf | null>(null);
+  
   const [imageUpload, setImageUpload] = useState<ImageUploadState>({
     file: null,
     preview: null,
@@ -773,6 +813,282 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
+  // Sector Outlook Management Functions
+  const handleManageSectorOutlook = async (stock: Stock) => {
+    setSectorOutlookModal({ isOpen: true, stock });
+    await fetchSectorOutlook(stock.id);
+  };
+
+  const fetchSectorOutlook = async (stockId: number) => {
+    setSectorOutlookLoading(true);
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/stocks/${stockId}/sector-outlooks`, {
+        headers: { 'token': token }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        if (data.data) {
+          setSectorOutlook({
+            description: data.data.description || '',
+            accordions: data.data.accordions || []
+          });
+          setSectorOutlookFormData({
+            description: data.data.description || '',
+            accordions: data.data.accordions || []
+          });
+        } else {
+          setSectorOutlook(null);
+          setSectorOutlookFormData({
+            description: '',
+            accordions: []
+          });
+        }
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to fetch sector outlook');
+      }
+    } catch (error) {
+      console.error('Error fetching sector outlook:', error);
+      onNotification?.('error', 'Error', 'Failed to fetch sector outlook');
+    } finally {
+      setSectorOutlookLoading(false);
+    }
+  };
+
+  const handleSaveSectorOutlook = async () => {
+    if (!sectorOutlookModal.stock) return;
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/stocks/${sectorOutlookModal.stock.id}/sector-outlooks`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify({
+          stock_id: sectorOutlookModal.stock.id,
+          description: sectorOutlookFormData.description,
+          accordions: sectorOutlookFormData.accordions
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchSectorOutlook(sectorOutlookModal.stock.id);
+        onNotification?.('success', 'Success', 'Sector outlook saved successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to save sector outlook');
+      }
+    } catch (error) {
+      console.error('Error saving sector outlook:', error);
+      onNotification?.('error', 'Error', 'Failed to save sector outlook');
+    }
+  };
+
+  const addAccordionItem = () => {
+    setSectorOutlookFormData(prev => ({
+      ...prev,
+      accordions: [...prev.accordions, { title: '', analysis: '', order_index: prev.accordions.length }]
+    }));
+  };
+
+  const removeAccordionItem = (index: number) => {
+    setSectorOutlookFormData(prev => ({
+      ...prev,
+      accordions: prev.accordions.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateAccordionItem = (index: number, field: 'title' | 'analysis', value: string) => {
+    setSectorOutlookFormData(prev => ({
+      ...prev,
+      accordions: prev.accordions.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }));
+  };
+
+  // Sector Insights PDF Management Functions
+  const handleManageSectorInsightsPdfs = async (stock: Stock) => {
+    setSectorInsightsPdfModal({ isOpen: true, stock });
+    await fetchSectorInsightsPdfs(stock.id);
+  };
+
+  const fetchSectorInsightsPdfs = async (stockId: number) => {
+    setSectorInsightsPdfLoading(true);
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/stocks/${stockId}/sector-insights-pdfs`, {
+        headers: { 'token': token }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setSectorInsightsPdfs(data.data.pdfs || []);
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to fetch sector insights PDFs');
+      }
+    } catch (error) {
+      console.error('Error fetching sector insights PDFs:', error);
+      onNotification?.('error', 'Error', 'Failed to fetch sector insights PDFs');
+    } finally {
+      setSectorInsightsPdfLoading(false);
+    }
+  };
+
+  const handleUploadSectorInsightsPdf = async () => {
+    if (!sectorInsightsPdfModal.stock || !sectorInsightsPdfFile) return;
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const formData = new FormData();
+      formData.append('pdf', sectorInsightsPdfFile);
+      formData.append('stock_id', sectorInsightsPdfModal.stock.id.toString());
+      formData.append('title', sectorInsightsPdfFormData.title || 'Sector Insights PDF');
+      formData.append('description', sectorInsightsPdfFormData.description || '');
+      
+      const response = await fetch(`/api/admin/stocks/${sectorInsightsPdfModal.stock.id}/sector-insights-pdfs`, {
+        method: 'POST',
+        headers: { 'token': token },
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock.id);
+        setSectorInsightsPdfFormData({});
+        setSectorInsightsPdfFile(null);
+        onNotification?.('success', 'Success', 'Sector insights PDF uploaded successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to upload sector insights PDF');
+      }
+    } catch (error) {
+      console.error('Error uploading sector insights PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to upload sector insights PDF');
+    }
+  };
+
+  const handleEditSectorInsightsPdf = (pdf: SectorInsightsPdf) => {
+    setEditingSectorInsightsPdf(pdf);
+    setSectorInsightsPdfFormData({
+      title: pdf.title,
+      description: pdf.description || '',
+      order_index: pdf.order_index
+    });
+  };
+
+  const handleUpdateSectorInsightsPdf = async () => {
+    if (!editingSectorInsightsPdf) return;
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/sector-insights-pdfs/${editingSectorInsightsPdf.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify(sectorInsightsPdfFormData)
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock?.id || 0);
+        setEditingSectorInsightsPdf(null);
+        setSectorInsightsPdfFormData({});
+        onNotification?.('success', 'Success', 'Sector insights PDF updated successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to update sector insights PDF');
+      }
+    } catch (error) {
+      console.error('Error updating sector insights PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to update sector insights PDF');
+    }
+  };
+
+  const handleDeleteSectorInsightsPdf = async (pdfId: number) => {
+    if (!confirm('Are you sure you want to delete this sector insights PDF?')) return;
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/sector-insights-pdfs/${pdfId}`, {
+        method: 'DELETE',
+        headers: { 'token': token }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock?.id || 0);
+        onNotification?.('success', 'Success', 'Sector insights PDF deleted successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to delete sector insights PDF');
+      }
+    } catch (error) {
+      console.error('Error deleting sector insights PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to delete sector insights PDF');
+    }
+  };
+
+  const handleSetActiveSectorInsightsPdf = async (pdfId: number) => {
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/sector-insights-pdfs/${pdfId}/set-active`, {
+        method: 'PUT',
+        headers: { 'token': token }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock?.id || 0);
+        onNotification?.('success', 'Success', 'Sector insights PDF set as active!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to set PDF as active');
+      }
+    } catch (error) {
+      console.error('Error setting sector insights PDF as active:', error);
+      onNotification?.('error', 'Error', 'Failed to set PDF as active');
+    }
+  };
+
+  const handleReplaceSectorInsightsPdf = async () => {
+    if (!replacingSectorInsightsPdf || !sectorInsightsPdfFile) return;
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const formData = new FormData();
+      formData.append('pdf', sectorInsightsPdfFile);
+      
+      const response = await fetch(`/api/admin/sector-insights-pdfs/${replacingSectorInsightsPdf.id}/replace`, {
+        method: 'PUT',
+        headers: { 'token': token },
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        if (sectorInsightsPdfModal.stock?.id) {
+          await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock.id);
+        }
+        setReplacingSectorInsightsPdf(null);
+        setSectorInsightsPdfFile(null);
+        onNotification?.('success', 'Success', 'Sector insights PDF replaced successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to replace sector insights PDF');
+      }
+    } catch (error) {
+      console.error('Error replacing sector insights PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to replace sector insights PDF');
+    }
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -1059,6 +1375,24 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         title="Manage Performance PDFs"
                       >
                         <Upload width={16} height={16}/>
+                      </button>
+                      
+                      {/* Manage Sector Outlook Button - Available for all users */}
+                      <button
+                        onClick={() => handleManageSectorOutlook(stock)}
+                        className="p-2 text-themeTealWhite bg-purple-600 rounded transition duration-300 hover:bg-white hover:text-purple-600 cursor-pointer"
+                        title="Manage Sector Outlook"
+                      >
+                        <TrendingUp width={16} height={16}/>
+                      </button>
+                      
+                      {/* Manage Sector Insights PDFs Button - Available for all users */}
+                      <button
+                        onClick={() => handleManageSectorInsightsPdfs(stock)}
+                        className="p-2 text-themeTealWhite bg-indigo-600 rounded transition duration-300 hover:bg-white hover:text-indigo-600 cursor-pointer"
+                        title="Manage Sector Insights PDFs"
+                      >
+                        <FileText width={16} height={16}/>
                       </button>
                       
                       {canManageStocks && (
@@ -2552,6 +2886,424 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 <button
                   onClick={handleReplacePdf}
                   disabled={!pdfFile}
+                  className="px-4 py-2 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Replace PDF
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sector Outlook Management Modal */}
+      {sectorOutlookModal.isOpen && sectorOutlookModal.stock && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+          <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-purple-500 px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-white">Manage Sector Outlook</h3>
+                  <p className="text-white/80 text-sm">{sectorOutlookModal.stock.company_name}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSectorOutlookModal({ isOpen: false, stock: null });
+                    setSectorOutlook(null);
+                    setSectorOutlookFormData({ description: '', accordions: [] });
+                  }}
+                  className="text-white transition duration-300 cursor-pointer"
+                >
+                  <X/>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {sectorOutlookLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Description */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Sector Outlook Description
+                    </label>
+                    <textarea
+                      value={sectorOutlookFormData.description}
+                      onChange={(e) => setSectorOutlookFormData(prev => ({ ...prev, description: e.target.value }))}
+                      rows={4}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      placeholder="Enter sector outlook description..."
+                    />
+                  </div>
+
+                  {/* Accordion Items */}
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <h4 className="text-lg font-medium text-gray-900">Accordion Items</h4>
+                      <button
+                        onClick={addAccordionItem}
+                        className="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+                      >
+                        Add Item
+                      </button>
+                    </div>
+
+                    {sectorOutlookFormData.accordions.map((item, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h5 className="font-medium text-gray-900">Item {index + 1}</h5>
+                          <button
+                            onClick={() => removeAccordionItem(index)}
+                            className="text-red-600 hover:text-red-800"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                        
+                        <div className="space-y-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Title
+                            </label>
+                            <input
+                              type="text"
+                              value={item.title}
+                              onChange={(e) => updateAccordionItem(index, 'title', e.target.value)}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder="Enter accordion title..."
+                            />
+                          </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Analysis
+                            </label>
+                            <textarea
+                              value={item.analysis}
+                              onChange={(e) => updateAccordionItem(index, 'analysis', e.target.value)}
+                              rows={3}
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              placeholder="Enter analysis content..."
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {sectorOutlookFormData.accordions.length === 0 && (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>No accordion items added yet. Click "Add Item" to start.</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Save Button */}
+                  <div className="flex justify-end">
+                    <button
+                      onClick={handleSaveSectorOutlook}
+                      className="px-6 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
+                    >
+                      Save Sector Outlook
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sector Insights PDF Management Modal */}
+      {sectorInsightsPdfModal.isOpen && sectorInsightsPdfModal.stock && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+          <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-indigo-500 px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-white">Manage Sector Insights PDFs</h3>
+                  <p className="text-white/80 text-sm">{sectorInsightsPdfModal.stock.company_name}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setSectorInsightsPdfModal({ isOpen: false, stock: null });
+                    setSectorInsightsPdfs([]);
+                    setEditingSectorInsightsPdf(null);
+                    setSectorInsightsPdfFormData({});
+                    setSectorInsightsPdfFile(null);
+                  }}
+                  className="text-white transition duration-300 cursor-pointer"
+                >
+                  <X/>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {sectorInsightsPdfLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader />
+                </div>
+              ) : (
+                <div className="space-y-6">
+                {/* Upload New PDF */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                    <Upload className="w-5 h-5 mr-2" />
+                    {editingSectorInsightsPdf ? 'Edit Sector Insights PDF' : 'Upload New Sector Insights PDF'}
+                  </h4>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Title <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          value={sectorInsightsPdfFormData.title || ''}
+                          onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, title: e.target.value }))}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="e.g., Q3 2024 Sector Insights Report"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Order Index
+                        </label>
+                        <input
+                          type="number"
+                          value={sectorInsightsPdfFormData.order_index || 0}
+                          onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="0"
+                        />
+                      </div>
+                      
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          value={sectorInsightsPdfFormData.description || ''}
+                          onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, description: e.target.value }))}
+                          rows={3}
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          placeholder="Brief description of this PDF document..."
+                        />
+                      </div>
+                      
+                      {!editingSectorInsightsPdf && (
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            PDF File <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="file"
+                            accept=".pdf"
+                            onChange={(e) => setSectorInsightsPdfFile(e.target.files?.[0] || null)}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">Maximum file size: 10MB</p>
+                        </div>
+                      )}
+                      
+                      {editingSectorInsightsPdf && (
+                        <div className="md:col-span-2">
+                          <label className="flex items-center space-x-2">
+                            <input
+                              type="checkbox"
+                              checked={sectorInsightsPdfFormData.is_active || false}
+                              onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, is_active: e.target.checked }))}
+                              className="rounded border-gray-300 text-indigo-500 focus:ring-indigo-500"
+                            />
+                            <span className="text-sm text-gray-700">Active (visible to users)</span>
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="flex justify-end space-x-3 mt-4">
+                      {editingSectorInsightsPdf && (
+                        <button
+                          onClick={() => {
+                            setEditingSectorInsightsPdf(null);
+                            setSectorInsightsPdfFormData({});
+                          }}
+                          className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                        >
+                          Cancel
+                        </button>
+                      )}
+                      <button
+                        onClick={editingSectorInsightsPdf ? handleUpdateSectorInsightsPdf : handleUploadSectorInsightsPdf}
+                        disabled={!sectorInsightsPdfFormData.title || (!editingSectorInsightsPdf && !sectorInsightsPdfFile)}
+                        className="px-4 py-2 text-sm bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {editingSectorInsightsPdf ? 'Update PDF' : 'Upload PDF'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Existing PDFs */}
+                  <div>
+                    <div className="mb-4">
+                      <h4 className="text-lg font-medium text-gray-900">Existing Sector Insights PDFs</h4>
+                      <p className="text-sm text-gray-600 mt-1">
+                        All PDFs are shown below. Only one PDF can be active at a time. 
+                        Click "✓ Set Active" to switch which PDF is displayed on the frontend.
+                      </p>
+                    </div>
+                    
+                    {sectorInsightsPdfs.length === 0 ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <p>No sector insights PDFs uploaded yet.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {sectorInsightsPdfs.map((pdf) => (
+                          <div key={pdf.id} className="border border-gray-200 rounded-lg p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-3 mb-2">
+                                  <h5 className="font-medium text-gray-900">{pdf.title}</h5>
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                    pdf.is_active ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'
+                                  }`}>
+                                    {pdf.is_active ? '✓ ACTIVE' : '✗ INACTIVE'}
+                                  </span>
+                                  <span className="text-sm text-gray-500">
+                                    Order: {pdf.order_index}
+                                  </span>
+                                </div>
+                                {pdf.description && (
+                                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">{pdf.description}</p>
+                                )}
+                                <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                  <span>{pdf.file_name}</span>
+                                  <span>{formatFileSize(pdf.file_size)}</span>
+                                  <span>{pdf.page_count} pages</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center space-x-2 ml-4">
+                                {!pdf.is_active && (
+                                  <button
+                                    onClick={() => handleSetActiveSectorInsightsPdf(pdf.id)}
+                                    className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium shadow-sm"
+                                    title="Set as Active PDF"
+                                  >
+                                    ✓ Set Active
+                                  </button>
+                                )}
+                                <a
+                                  href={pdf.pdf_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"
+                                  title="View PDF"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </a>
+                                <button
+                                  onClick={() => {
+                                    setReplacingSectorInsightsPdf(pdf);
+                                    setSectorInsightsPdfFile(null);
+                                  }}
+                                  className="p-2 text-orange-600 bg-orange-50 rounded hover:bg-orange-100"
+                                  title="Replace PDF File"
+                                >
+                                  <Upload className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleEditSectorInsightsPdf(pdf)}
+                                  className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                                  title="Edit PDF"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteSectorInsightsPdf(pdf.id)}
+                                  className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                                  title="Delete PDF"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Replace Sector Insights PDF Modal */}
+      {replacingSectorInsightsPdf && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
+            {/* Modal Header */}
+            <div className="bg-orange-500 px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-white">Replace PDF File</h3>
+                  <p className="text-white/80 text-sm">{replacingSectorInsightsPdf.title}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setReplacingSectorInsightsPdf(null);
+                    setSectorInsightsPdfFile(null);
+                  }}
+                  className="text-white transition duration-300 cursor-pointer"
+                >
+                  <X/>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select New PDF File
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setSectorInsightsPdfFile(e.target.files?.[0] || null)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+                {sectorInsightsPdfFile && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Selected: {sectorInsightsPdfFile.name} ({(sectorInsightsPdfFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setReplacingSectorInsightsPdf(null);
+                    setSectorInsightsPdfFile(null);
+                  }}
+                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleReplaceSectorInsightsPdf}
+                  disabled={!sectorInsightsPdfFile}
                   className="px-4 py-2 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Replace PDF

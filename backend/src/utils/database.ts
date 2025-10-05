@@ -15,6 +15,9 @@ import StockMaster, { initializeStockMasterModel } from "../Models/StockMaster";
 import StockScorecardModel, { initializeStockScorecardModel } from "../Models/StockScorecard";
 import StockInvestmentRationaleModel, { initializeStockInvestmentRationaleModel } from "../Models/StockInvestmentRationale";
 import StockPerformancePdfModel, { initializeStockPerformancePdfModel } from "../Models/StockPerformancePdf";
+import { StockSectorOutlookModel, initializeStockSectorOutlookModel } from "../Models/StockSectorOutlook";
+import { StockSectorOutlookAccordionModel, initializeStockSectorOutlookAccordionModel } from "../Models/StockSectorOutlookAccordion";
+import { StockSectorInsightsPdfModel, initializeStockSectorInsightsPdfModel } from "../Models/StockSectorInsightsPdf";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -99,6 +102,21 @@ async function initializeSequelize() {
   
   // Initialize Stock Performance PDF model
   initializeStockPerformancePdfModel(sequelize);
+  
+  // Initialize Stock Sector Outlook models
+  initializeStockSectorOutlookModel(sequelize);
+  initializeStockSectorOutlookAccordionModel(sequelize);
+  initializeStockSectorInsightsPdfModel(sequelize);
+  
+  // Set up associations for Sector Outlook
+  StockSectorOutlookModel.hasMany(StockSectorOutlookAccordionModel, {
+    foreignKey: 'sector_outlook_id',
+    as: 'accordions',
+  });
+  StockSectorOutlookAccordionModel.belongsTo(StockSectorOutlookModel, {
+    foreignKey: 'sector_outlook_id',
+    as: 'sectorOutlook',
+  });
   
   // No associations needed since only admins handle stocks
   
@@ -212,6 +230,24 @@ export const db = {
       throw new Error('StockPerformancePdf model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockPerformancePdfModel;
+  },
+  get StockSectorOutlook() {
+    if (!StockSectorOutlookModel) {
+      throw new Error('StockSectorOutlook model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockSectorOutlookModel;
+  },
+  get StockSectorOutlookAccordion() {
+    if (!StockSectorOutlookAccordionModel) {
+      throw new Error('StockSectorOutlookAccordion model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockSectorOutlookAccordionModel;
+  },
+  get StockSectorInsightsPdf() {
+    if (!StockSectorInsightsPdfModel) {
+      throw new Error('StockSectorInsightsPdf model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockSectorInsightsPdfModel;
   },
 };
 
