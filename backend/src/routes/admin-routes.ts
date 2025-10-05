@@ -39,6 +39,7 @@ import { BulkDealsManagementController } from "../controllers/admin/bulkDealsMan
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
+import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
 
 // Stock Draft Controllers
 import {
@@ -97,7 +98,8 @@ router.use((req, res, next) => {
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
-      req.path.includes('/scorecards') || req.path.includes('/investment-rationales')) {
+      req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
+      req.path.includes('/performance-pdfs')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -220,6 +222,16 @@ router.post("/stocks/:stockId/investment-rationales/bulk", StockInvestmentRation
 router.put("/investment-rationales/:id", StockInvestmentRationaleManagementController.updateRationale);
 router.delete("/investment-rationales/:id", StockInvestmentRationaleManagementController.deleteRationale);
 router.get("/stocks/:stockId/investment-rationales/stats", StockInvestmentRationaleManagementController.getRationaleStats);
+
+// Stock Performance PDF Management Routes
+router.get("/stocks/:stockId/performance-pdfs", StockPerformancePdfManagementController.getPdfsByStockId);
+router.get("/performance-pdfs/:id", StockPerformancePdfManagementController.getPdfById);
+router.post("/stocks/:stockId/performance-pdfs", uploadMiddleware, StockPerformancePdfManagementController.createPdf);
+router.post("/stocks/:stockId/performance-pdfs/bulk", StockPerformancePdfManagementController.bulkCreatePdfs);
+router.put("/performance-pdfs/:id", StockPerformancePdfManagementController.updatePdf);
+router.put("/performance-pdfs/:id/replace", uploadMiddleware, StockPerformancePdfManagementController.replacePdf);
+router.delete("/performance-pdfs/:id", StockPerformancePdfManagementController.deletePdf);
+router.get("/stocks/:stockId/performance-pdfs/stats", StockPerformancePdfManagementController.getPdfStats);
 
 // Stock Draft Management Routes
 router.post("/stock-drafts", saveDraft);

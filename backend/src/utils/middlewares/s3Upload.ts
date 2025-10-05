@@ -40,3 +40,28 @@ export const uploadIcon = multer({
     }
   }
 });
+
+export const uploadPdf = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.S3_BUCKET!,
+    contentType: (req, file, cb) => {
+      cb(null, file.mimetype);
+    },
+    key: (_req: Request, file: any, cb: (error: any, key?: string) => void) => {
+      const uniqueName = `pdfs/${Date.now()}-${file.originalname}`;
+      cb(null, uniqueName);
+    },
+  }),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    // Only accept PDF files
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  }
+});

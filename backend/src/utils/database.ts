@@ -14,6 +14,7 @@ import BulkDeals, { initializeBulkDealsModel } from "../Models/BulkDeals";
 import StockMaster, { initializeStockMasterModel } from "../Models/StockMaster";
 import StockScorecardModel, { initializeStockScorecardModel } from "../Models/StockScorecard";
 import StockInvestmentRationaleModel, { initializeStockInvestmentRationaleModel } from "../Models/StockInvestmentRationale";
+import StockPerformancePdfModel, { initializeStockPerformancePdfModel } from "../Models/StockPerformancePdf";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -95,6 +96,9 @@ async function initializeSequelize() {
   
   // Initialize Stock Investment Rationale model
   initializeStockInvestmentRationaleModel(sequelize);
+  
+  // Initialize Stock Performance PDF model
+  initializeStockPerformancePdfModel(sequelize);
   
   // No associations needed since only admins handle stocks
   
@@ -202,6 +206,12 @@ export const db = {
       throw new Error('StockInvestmentRationale model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockInvestmentRationaleModel;
+  },
+  get StockPerformancePdf() {
+    if (!StockPerformancePdfModel) {
+      throw new Error('StockPerformancePdf model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockPerformancePdfModel;
   },
 };
 

@@ -58,6 +58,21 @@ interface InvestmentRationale {
   updated_at: string;
 }
 
+interface PerformancePdf {
+  id: number;
+  stock_id: number;
+  title: string;
+  description?: string;
+  pdf_url: string;
+  file_name: string;
+  file_size: number;
+  page_count: number;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 interface StockTableProps {
   stocks: Stock[];
   onRefresh: () => void;
@@ -121,6 +136,18 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [rationaleLoading, setRationaleLoading] = useState(false);
   const [editingRationale, setEditingRationale] = useState<InvestmentRationale | null>(null);
   const [rationaleFormData, setRationaleFormData] = useState<Partial<InvestmentRationale>>({});
+  
+  // Performance PDF management state
+  const [pdfModal, setPdfModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
+    isOpen: false,
+    stock: null
+  });
+  const [pdfs, setPdfs] = useState<PerformancePdf[]>([]);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [editingPdf, setEditingPdf] = useState<PerformancePdf | null>(null);
+  const [pdfFormData, setPdfFormData] = useState<Partial<PerformancePdf>>({});
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [replacingPdf, setReplacingPdf] = useState<PerformancePdf | null>(null);
   const [imageUpload, setImageUpload] = useState<ImageUploadState>({
     file: null,
     preview: null,
@@ -546,6 +573,214 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
+  // Performance PDF management functions
+  const handleManagePdfs = async (stock: Stock) => {
+    setPdfModal({ isOpen: true, stock });
+    await fetchPdfs(stock.id);
+  };
+
+  const fetchPdfs = async (stockId: number) => {
+    setPdfLoading(true);
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/stocks/${stockId}/performance-pdfs`, {
+        headers: { 'token': token }
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setPdfs(data.data.pdfs || []);
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to fetch performance PDFs');
+      }
+    } catch (error) {
+      console.error('Error fetching performance PDFs:', error);
+      onNotification?.('error', 'Error', 'Failed to fetch performance PDFs');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const handleCreatePdf = async () => {
+    if (!pdfModal.stock || !pdfFile) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const formData = new FormData();
+      formData.append('pdf', pdfFile);
+      formData.append('stock_id', pdfModal.stock.id.toString());
+      formData.append('title', pdfFormData.title || '');
+      formData.append('description', pdfFormData.description || '');
+      formData.append('order_index', (pdfFormData.order_index || 0).toString());
+      
+      const response = await fetch(`/api/admin/stocks/${pdfModal.stock.id}/performance-pdfs`, {
+        method: 'POST',
+        headers: { 'token': token },
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchPdfs(pdfModal.stock.id);
+        setPdfFormData({});
+        setPdfFile(null);
+        onNotification?.('success', 'Success', 'Performance PDF uploaded successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to upload performance PDF');
+      }
+    } catch (error) {
+      console.error('Error uploading performance PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to upload performance PDF');
+    }
+  };
+
+  const handleEditPdf = (pdf: PerformancePdf) => {
+    setEditingPdf(pdf);
+    setPdfFormData({
+      title: pdf.title,
+      description: pdf.description,
+      order_index: pdf.order_index,
+      is_active: pdf.is_active
+    });
+  };
+
+  const handleUpdatePdf = async () => {
+    if (!editingPdf) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/performance-pdfs/${editingPdf.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify({
+          title: pdfFormData.title,
+          description: pdfFormData.description,
+          order_index: pdfFormData.order_index,
+          is_active: pdfFormData.is_active
+        })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchPdfs(pdfModal.stock!.id);
+        setEditingPdf(null);
+        setPdfFormData({});
+        onNotification?.('success', 'Success', 'Performance PDF updated successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to update performance PDF');
+      }
+    } catch (error) {
+      console.error('Error updating performance PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to update performance PDF');
+    }
+  };
+
+  const handleDeletePdf = async (pdfId: number) => {
+    if (!confirm('Are you sure you want to delete this performance PDF?')) return;
+    
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/performance-pdfs/${pdfId}`, {
+        method: 'DELETE',
+        headers: { 'token': token }
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchPdfs(pdfModal.stock!.id);
+        onNotification?.('success', 'Success', 'Performance PDF deleted successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to delete performance PDF');
+      }
+    } catch (error) {
+      console.error('Error deleting performance PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to delete performance PDF');
+    }
+  };
+
+  const handleSetActivePdf = async (pdfId: number) => {
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      // First, set all PDFs to inactive
+      const allPdfs = pdfs.filter(pdf => pdf.is_active);
+      for (const pdf of allPdfs) {
+        await fetch(`/api/admin/performance-pdfs/${pdf.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': token
+          },
+          body: JSON.stringify({ is_active: false })
+        });
+      }
+      
+      // Then set the selected PDF to active
+      const response = await fetch(`/api/admin/performance-pdfs/${pdfId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token
+        },
+        body: JSON.stringify({ is_active: true })
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        await fetchPdfs(pdfModal.stock!.id);
+        onNotification?.('success', 'Success', 'PDF set as active successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to set PDF as active');
+      }
+    } catch (error) {
+      console.error('Error setting PDF as active:', error);
+      onNotification?.('error', 'Error', 'Failed to set PDF as active');
+    }
+  };
+
+  const handleReplacePdf = async () => {
+    if (!replacingPdf || !pdfFile) return;
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const formData = new FormData();
+      formData.append('pdf', pdfFile);
+      
+      const response = await fetch(`/api/admin/performance-pdfs/${replacingPdf.id}/replace`, {
+        method: 'PUT',
+        headers: { 'token': token },
+        body: formData
+      });
+      
+      const data = await response.json();
+      if (data.success) {
+        if (pdfModal.stock?.id) {
+          await fetchPdfs(pdfModal.stock.id);
+        }
+        setReplacingPdf(null);
+        setPdfFile(null);
+        onNotification?.('success', 'Success', 'PDF replaced successfully!');
+      } else {
+        onNotification?.('error', 'Error', data.message || 'Failed to replace PDF');
+      }
+    } catch (error) {
+      console.error('Error replacing PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to replace PDF');
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
   const handleUpdateStock = async () => {
     if (!editingStock) return;
     
@@ -815,6 +1050,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         title="Manage Investment Rationales"
                       >
                         <FileText width={16} height={16}/>
+                      </button>
+                      
+                      {/* Manage Performance PDFs Button - Available for all users */}
+                      <button
+                        onClick={() => handleManagePdfs(stock)}
+                        className="p-2 text-themeTealWhite bg-orange-600 rounded transition duration-300 hover:bg-white hover:text-orange-600 cursor-pointer"
+                        title="Manage Performance PDFs"
+                      >
+                        <Upload width={16} height={16}/>
                       </button>
                       
                       {canManageStocks && (
@@ -2018,6 +2262,300 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     )}
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Performance PDF Management Modal */}
+      {pdfModal.isOpen && pdfModal.stock && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+          <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Performance PDFs</h3>
+                  <p className="text-themeTealWhite/80 text-sm">{pdfModal.stock.company_name}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setPdfModal({ isOpen: false, stock: null });
+                    setPdfs([]);
+                    setEditingPdf(null);
+                    setPdfFormData({});
+                    setPdfFile(null);
+                  }}
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                >
+                  <X/>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {/* Upload New PDF Form */}
+              <div className="mb-6 p-4 border border-gray-200 rounded-lg">
+                <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                  <Upload className="w-5 h-5 mr-2" />
+                  {editingPdf ? 'Edit Performance PDF' : 'Upload New Performance PDF'}
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={pdfFormData.title || ''}
+                      onChange={(e) => setPdfFormData({...pdfFormData, title: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="e.g., Q3 2024 Performance Report"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Order Index
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={pdfFormData.order_index || ''}
+                      onChange={(e) => setPdfFormData({...pdfFormData, order_index: parseInt(e.target.value) || 0})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="0"
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={pdfFormData.description || ''}
+                      onChange={(e) => setPdfFormData({...pdfFormData, description: e.target.value})}
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      placeholder="Brief description of this PDF document..."
+                    />
+                  </div>
+                  
+                  {!editingPdf && (
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        PDF File <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">Maximum file size: 10MB</p>
+                    </div>
+                  )}
+                  
+                  {editingPdf && (
+                    <div className="md:col-span-2">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={pdfFormData.is_active || false}
+                          onChange={(e) => setPdfFormData({...pdfFormData, is_active: e.target.checked})}
+                          className="rounded border-gray-300 text-themeTeal focus:ring-themeTeal"
+                        />
+                        <span className="text-sm text-gray-700">Active (visible to users)</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex justify-end space-x-3 mt-4">
+                  {editingPdf && (
+                    <button
+                      onClick={() => {
+                        setEditingPdf(null);
+                        setPdfFormData({});
+                      }}
+                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                  )}
+                  <button
+                    onClick={editingPdf ? handleUpdatePdf : handleCreatePdf}
+                    disabled={!pdfFormData.title || (!editingPdf && !pdfFile)}
+                    className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTeal/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {editingPdf ? 'Update PDF' : 'Upload PDF'}
+                  </button>
+                </div>
+              </div>
+
+              {/* Existing PDFs */}
+              <div>
+                <div className="mb-4">
+                  <h4 className="text-lg font-medium text-gray-900">Existing Performance PDFs</h4>
+                  <p className="text-sm text-gray-600 mt-1">
+                    All PDFs are shown below. Only one PDF can be active at a time. 
+                    Click "✓ Set Active" to switch which PDF is displayed on the frontend.
+                  </p>
+                </div>
+                
+                {pdfLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader />
+                  </div>
+                ) : pdfs.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500">
+                    <Upload className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No performance PDFs found for this stock.</p>
+                    <p className="text-sm">Upload your first PDF above.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {pdfs.map((pdf) => (
+                      <div key={pdf.id} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h5 className="font-medium text-gray-900">{pdf.title}</h5>
+                              <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                pdf.is_active ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'
+                              }`}>
+                                {pdf.is_active ? '✓ ACTIVE' : '✗ INACTIVE'}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                Order: {pdf.order_index}
+                              </span>
+                            </div>
+                            {pdf.description && (
+                              <p className="text-sm text-gray-600 line-clamp-2 mb-2">{pdf.description}</p>
+                            )}
+                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                              <span>{pdf.file_name}</span>
+                              <span>{formatFileSize(pdf.file_size)}</span>
+                              <span>{pdf.page_count} pages</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            {!pdf.is_active && (
+                              <button
+                                onClick={() => handleSetActivePdf(pdf.id)}
+                                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium shadow-sm"
+                                title="Set as Active PDF"
+                              >
+                                ✓ Set Active
+                              </button>
+                            )}
+                            <a
+                              href={pdf.pdf_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"
+                              title="View PDF"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </a>
+                            <button
+                              onClick={() => {
+                                setReplacingPdf(pdf);
+                                setPdfFile(null);
+                              }}
+                              className="p-2 text-orange-600 bg-orange-50 rounded hover:bg-orange-100"
+                              title="Replace PDF File"
+                            >
+                              <Upload className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleEditPdf(pdf)}
+                              className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                              title="Edit PDF"
+                            >
+                              <Edit3 className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeletePdf(pdf.id)}
+                              className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                              title="Delete PDF"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Replace PDF Modal */}
+      {replacingPdf && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
+            {/* Modal Header */}
+            <div className="bg-orange-500 px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-semibold text-white">Replace PDF File</h3>
+                  <p className="text-white/80 text-sm">{replacingPdf.title}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setReplacingPdf(null);
+                    setPdfFile(null);
+                  }}
+                  className="text-white transition duration-300 cursor-pointer"
+                >
+                  <X/>
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6">
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Select New PDF File
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
+                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                />
+                {pdfFile && (
+                  <p className="text-sm text-gray-600 mt-2">
+                    Selected: {pdfFile.name} ({(pdfFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </p>
+                )}
+              </div>
+
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setReplacingPdf(null);
+                    setPdfFile(null);
+                  }}
+                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleReplacePdf}
+                  disabled={!pdfFile}
+                  className="px-4 py-2 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Replace PDF
+                </button>
               </div>
             </div>
           </div>
