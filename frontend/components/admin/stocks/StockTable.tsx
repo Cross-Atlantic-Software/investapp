@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+
 import Image from 'next/image';
 import { Loader } from '@/components/admin/shared';
-import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, BarChart3, Plus, Edit3, FileText, AlertTriangle, TrendingUp } from 'lucide-react';
+import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, BarChart3, Plus, Edit3, FileText, AlertTriangle, TrendingUp, MoreVertical } from 'lucide-react';
 import SimpleRichTextEditor from '../SimpleRichTextEditor';
 import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
 import CSVUploadModal from './CSVUploadModal';
@@ -169,7 +170,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     isOpen: false,
     stock: null
   });
-  const [sectorOutlook, setSectorOutlook] = useState<{ description: string; accordions: Array<{ title: string; analysis: string; order_index: number }> } | null>(null);
+  const [, setSectorOutlook] = useState<{ description: string; accordions: Array<{ title: string; analysis: string; order_index: number }> } | null>(null);
   const [sectorOutlookLoading, setSectorOutlookLoading] = useState(false);
   const [sectorOutlookFormData, setSectorOutlookFormData] = useState<{ description: string; accordions: Array<{ title: string; analysis: string; order_index: number }> }>({
     description: '',
@@ -187,6 +188,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [sectorInsightsPdfFormData, setSectorInsightsPdfFormData] = useState<Partial<SectorInsightsPdf>>({});
   const [sectorInsightsPdfFile, setSectorInsightsPdfFile] = useState<File | null>(null);
   const [replacingSectorInsightsPdf, setReplacingSectorInsightsPdf] = useState<SectorInsightsPdf | null>(null);
+  
+  // Dropdown state for module management
+  const [dropdownOpen, setDropdownOpen] = useState<{ [key: number]: boolean }>({});
   
   const [imageUpload, setImageUpload] = useState<ImageUploadState>({
     file: null,
@@ -1089,6 +1093,29 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
+  // Toggle dropdown for module management
+  const toggleDropdown = (stockId: number) => {
+    setDropdownOpen(prev => ({
+      ...prev,
+      [stockId]: !prev[stockId]
+    }));
+  };
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.dropdown-container')) {
+        setDropdownOpen({});
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -1186,12 +1213,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       {/* Modern Table */}
       <div className="bg-white rounded border border-themeTealLighter">
         {/* Table Container */}
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-visible">
           <table className="w-full min-w-[800px]">
             <thead className="bg-themeTeal border-b border-themeTealLighter">
               <tr>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('company_name')}
                 >
                   <div className="flex items-center">
@@ -1204,7 +1231,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('price_per_share')}
                 >
                   <div className="flex items-center">
@@ -1217,7 +1244,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('valuation')}
                 >
                   <div className="flex items-center">
@@ -1234,7 +1261,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('percentage_change')}
                 >
                   <div className="flex items-center">
@@ -1251,7 +1278,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                 </th>
                 <th 
-                  className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider cursor-pointer"
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer"
                   onClick={() => onSort?.('founded')}
                 >
                   <div className="flex items-center">
@@ -1263,7 +1290,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     )}
                   </div>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
+                <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-32">
                   Actions
                 </th>
               </tr>
@@ -1289,7 +1316,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             height={32}
                           />
                         ) : (
-                          <span className="text-xs font-bold text-themeTealWhite bg-themeTeal p-2 rounded">
+                          <span className="text-xs font-bold text-white bg-themeTeal p-2 rounded">
                             {stock.company_name.charAt(0).toUpperCase()}
                           </span>
                         )}
@@ -1335,78 +1362,107 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       {/* View Button - Available for all users */}
                       <button
                         onClick={() => handleViewStock(stock)}
-                        className="p-2 text-themeTealWhite bg-themeSkyBlue rounded transition duration-300 hover:bg-white hover:text-themeSkyBlue cursor-pointer"
+                        className="p-2 text-white bg-themeSkyBlue rounded transition duration-300 hover:bg-white hover:text-themeSkyBlue cursor-pointer"
                         title="View Stock Details"
                       >
                         <Eye width={16} height={16}/>
                       </button>
                       
-                      {/* CSV Upload Button - Available for all users */}
-                      <button
-                        onClick={() => setCsvUploadModal({ isOpen: true, stock })}
-                        className="p-2 text-themeTealWhite bg-green-600 rounded transition duration-300 hover:bg-white hover:text-green-600 cursor-pointer"
-                        title="Upload Price Data CSV"
-                      >
-                        <Upload width={16} height={16}/>
-                      </button>
-                      
-                      {/* Manage Scorecards Button - Available for all users */}
-                      <button
-                        onClick={() => handleManageScorecards(stock)}
-                        className="p-2 text-themeTealWhite bg-purple-600 rounded transition duration-300 hover:bg-white hover:text-purple-600 cursor-pointer"
-                        title="Manage Scorecards"
-                      >
-                        <BarChart3 width={16} height={16}/>
-                      </button>
-                      
-                      {/* Manage Investment Rationales Button - Available for all users */}
-                      <button
-                        onClick={() => handleManageRationales(stock)}
-                        className="p-2 text-themeTealWhite bg-blue-600 rounded transition duration-300 hover:bg-white hover:text-blue-600 cursor-pointer"
-                        title="Manage Investment Rationales"
-                      >
-                        <FileText width={16} height={16}/>
-                      </button>
-                      
-                      {/* Manage Performance PDFs Button - Available for all users */}
-                      <button
-                        onClick={() => handleManagePdfs(stock)}
-                        className="p-2 text-themeTealWhite bg-orange-600 rounded transition duration-300 hover:bg-white hover:text-orange-600 cursor-pointer"
-                        title="Manage Performance PDFs"
-                      >
-                        <Upload width={16} height={16}/>
-                      </button>
-                      
-                      {/* Manage Sector Outlook Button - Available for all users */}
-                      <button
-                        onClick={() => handleManageSectorOutlook(stock)}
-                        className="p-2 text-themeTealWhite bg-purple-600 rounded transition duration-300 hover:bg-white hover:text-purple-600 cursor-pointer"
-                        title="Manage Sector Outlook"
-                      >
-                        <TrendingUp width={16} height={16}/>
-                      </button>
-                      
-                      {/* Manage Sector Insights PDFs Button - Available for all users */}
-                      <button
-                        onClick={() => handleManageSectorInsightsPdfs(stock)}
-                        className="p-2 text-themeTealWhite bg-indigo-600 rounded transition duration-300 hover:bg-white hover:text-indigo-600 cursor-pointer"
-                        title="Manage Sector Insights PDFs"
-                      >
-                        <FileText width={16} height={16}/>
-                      </button>
+                      {/* Module Management Dropdown - Available for all users */}
+                      <div className="relative dropdown-container">
+                        <button
+                          onClick={() => toggleDropdown(stock.id)}
+                          className="p-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg transition duration-300 hover:from-blue-600 hover:to-purple-700 cursor-pointer shadow-md hover:shadow-lg"
+                          title="Manage Stock Modules"
+                        >
+                          <MoreVertical width={16} height={16}/>
+                        </button>
+                        
+                        {dropdownOpen[stock.id] && (
+                          <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-[100] max-h-96 overflow-y-auto">
+                            <div className="py-2">
+                              <button
+                                onClick={() => {
+                                  setCsvUploadModal({ isOpen: true, stock });
+                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
+                              >
+                                <Upload className="w-4 h-4 mr-3 text-green-600" />
+                                Upload Price Data CSV
+                              </button>
+                              
+                              <button
+                                onClick={() => {
+                                  handleManageScorecards(stock);
+                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
+                              >
+                                <BarChart3 className="w-4 h-4 mr-3 text-purple-600" />
+                                Manage Scorecards
+                              </button>
+                              
+                              <button
+                                onClick={() => {
+                                  handleManageRationales(stock);
+                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
+                              >
+                                <FileText className="w-4 h-4 mr-3 text-blue-600" />
+                                Manage Investment Rationales
+                              </button>
+                              
+                              <button
+                                onClick={() => {
+                                  handleManagePdfs(stock);
+                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
+                              >
+                                <Upload className="w-4 h-4 mr-3 text-orange-600" />
+                                Manage Performance PDFs
+                              </button>
+                              
+                              <button
+                                onClick={() => {
+                                  handleManageSectorOutlook(stock);
+                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
+                              >
+                                <TrendingUp className="w-4 h-4 mr-3 text-purple-600" />
+                                Manage Sector Outlook
+                              </button>
+                              
+                              <button
+                                onClick={() => {
+                                  handleManageSectorInsightsPdfs(stock);
+                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
+                                }}
+                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
+                              >
+                                <FileText className="w-4 h-4 mr-3 text-indigo-600" />
+                                Manage Sector Insights PDFs
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                       
                       {canManageStocks && (
                         <>
                           <button
                             onClick={() => handleEditStock(stock)}
-                            className="p-2 bg-themeTeal text-themeTealWhite rounded transition duration-300 hover:bg-white hover:text-themeTeal cursor-pointer"
+                            className="p-2 bg-themeTeal text-white rounded transition duration-300 hover:bg-white hover:text-themeTeal cursor-pointer"
                             title="Edit Stock"
                           >
                             <SquarePen width={16} height={16}/>
                           </button>
                           <button
                             onClick={() => handleDelete(stock.id)}
-                            className="p-2 bg-red-700 text-themeTealWhite hover:text-red-700 hover:bg-white rounded transition duration-300 cursor-pointer"
+                            className="p-2 bg-red-700 text-white hover:text-red-700 hover:bg-white rounded transition duration-300 cursor-pointer"
                             title="Delete Stock"
                           >
                             <Trash2 width={16} height={16}/>
@@ -1436,13 +1492,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Edit Stock Modal */}
       {editingStock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
           <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-themeTealWhite">Edit Stock</h3>
+                  <h3 className="text-base font-semibold text-white">Edit Stock</h3>
                 </div>
                 <button
                   onClick={() => {
@@ -1450,7 +1506,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setEditFormData({});
                     setEditIconFile(null);
                   }}
-                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                  className="text-white transition duration-300 cursor-pointer"
                 >
                   <X/>
                 </button>
@@ -1905,7 +1961,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* View Stock Modal */}
       {viewingStock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
           <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -1921,19 +1977,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         className="h-12 w-12 rounded-full object-cover"
                       />
                     ) : (
-                      <span className="text-lg font-bold text-themeTealWhite">
+                      <span className="text-lg font-bold text-white">
                         {viewingStock.company_name.charAt(0).toUpperCase()}
                       </span>
                     )}
                   </div>
                   <div>
-                    <h3 className="text-base font-semibold text-themeTealWhite">Stock Details</h3>
-                    <p className="text-themeTealWhite/80 text-sm">{viewingStock.company_name}</p>
+                    <h3 className="text-base font-semibold text-white">Stock Details</h3>
+                    <p className="text-white/80 text-sm">{viewingStock.company_name}</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setViewingStock(null)}
-                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                  className="text-white transition duration-300 cursor-pointer"
                 >
                   <X/>
                 </button>
@@ -2062,7 +2118,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             {viewingStock.stock_masters.map((master) => (
                               <span 
                                 key={master.id}
-                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLight text-themeTealWhite"
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLight text-white"
                               >
                                 {master.name}
                               </span>
@@ -2198,14 +2254,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Scorecard Management Modal */}
       {scorecardModal.isOpen && scorecardModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Scorecards</h3>
-                  <p className="text-themeTealWhite/80 text-sm">{scorecardModal.stock.company_name}</p>
+                  <h3 className="text-base font-semibold text-white">Manage Scorecards</h3>
+                  <p className="text-white/80 text-sm">{scorecardModal.stock.company_name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -2214,7 +2270,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setEditingScorecard(null);
                     setScorecardFormData({});
                   }}
-                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                  className="text-white transition duration-300 cursor-pointer"
                 >
                   <X/>
                 </button>
@@ -2297,7 +2353,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         setEditingScorecard(null);
                         setScorecardFormData({});
                       }}
-                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
                     >
                       Cancel
                     </button>
@@ -2376,14 +2432,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Investment Rationale Management Modal */}
       {rationaleModal.isOpen && rationaleModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Investment Rationales</h3>
-                  <p className="text-themeTealWhite/80 text-sm">{rationaleModal.stock.company_name}</p>
+                  <h3 className="text-base font-semibold text-white">Manage Investment Rationales</h3>
+                  <p className="text-white/80 text-sm">{rationaleModal.stock.company_name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -2392,7 +2448,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setEditingRationale(null);
                     setRationaleFormData({});
                   }}
-                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                  className="text-white transition duration-300 cursor-pointer"
                 >
                   <X/>
                 </button>
@@ -2472,7 +2528,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         setEditingRationale(null);
                         setRationaleFormData({});
                       }}
-                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
                     >
                       Cancel
                     </button>
@@ -2604,14 +2660,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Performance PDF Management Modal */}
       {pdfModal.isOpen && pdfModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Performance PDFs</h3>
-                  <p className="text-themeTealWhite/80 text-sm">{pdfModal.stock.company_name}</p>
+                  <h3 className="text-base font-semibold text-white">Manage Performance PDFs</h3>
+                  <p className="text-white/80 text-sm">{pdfModal.stock.company_name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -2621,7 +2677,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setPdfFormData({});
                     setPdfFile(null);
                   }}
-                  className="text-themeTealWhite transition duration-300 cursor-pointer"
+                  className="text-white transition duration-300 cursor-pointer"
                 >
                   <X/>
                 </button>
@@ -2715,7 +2771,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         setEditingPdf(null);
                         setPdfFormData({});
                       }}
-                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
                     >
                       Cancel
                     </button>
@@ -2736,7 +2792,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   <h4 className="text-lg font-medium text-gray-900">Existing Performance PDFs</h4>
                   <p className="text-sm text-gray-600 mt-1">
                     All PDFs are shown below. Only one PDF can be active at a time. 
-                    Click "✓ Set Active" to switch which PDF is displayed on the frontend.
+                    Click &quot;✓ Set Active&quot; to switch which PDF is displayed on the frontend.
                   </p>
                 </div>
                 
@@ -2833,7 +2889,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Replace PDF Modal */}
       {replacingPdf && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] max-h-96 overflow-y-auto">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
             {/* Modal Header */}
             <div className="bg-orange-500 px-6 py-4 rounded-t">
@@ -2879,7 +2935,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setReplacingPdf(null);
                     setPdfFile(null);
                   }}
-                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
                 >
                   Cancel
                 </button>
@@ -2898,7 +2954,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Sector Outlook Management Modal */}
       {sectorOutlookModal.isOpen && sectorOutlookModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-purple-500 px-6 py-4 rounded-t">
@@ -2998,7 +3054,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                     {sectorOutlookFormData.accordions.length === 0 && (
                       <div className="text-center py-8 text-gray-500">
-                        <p>No accordion items added yet. Click "Add Item" to start.</p>
+                        <p>No accordion items added yet. Click &quot;Add Item&quot; to start.</p>
                       </div>
                     )}
                   </div>
@@ -3021,7 +3077,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Sector Insights PDF Management Modal */}
       {sectorInsightsPdfModal.isOpen && sectorInsightsPdfModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-indigo-500 px-6 py-4 rounded-t">
@@ -3137,7 +3193,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             setEditingSectorInsightsPdf(null);
                             setSectorInsightsPdfFormData({});
                           }}
-                          className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                          className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
                         >
                           Cancel
                         </button>
@@ -3158,7 +3214,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       <h4 className="text-lg font-medium text-gray-900">Existing Sector Insights PDFs</h4>
                       <p className="text-sm text-gray-600 mt-1">
                         All PDFs are shown below. Only one PDF can be active at a time. 
-                        Click "✓ Set Active" to switch which PDF is displayed on the frontend.
+                        Click &quot;✓ Set Active&quot; to switch which PDF is displayed on the frontend.
                       </p>
                     </div>
                     
@@ -3251,7 +3307,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Replace Sector Insights PDF Modal */}
       {replacingSectorInsightsPdf && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] max-h-96 overflow-y-auto">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
             {/* Modal Header */}
             <div className="bg-orange-500 px-6 py-4 rounded-t">
@@ -3297,7 +3353,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setReplacingSectorInsightsPdf(null);
                     setSectorInsightsPdfFile(null);
                   }}
-                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
                 >
                   Cancel
                 </button>
