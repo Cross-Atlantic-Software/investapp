@@ -14,6 +14,7 @@ interface InvestmentRationaleData {
   type: 'pros' | 'risks';
   title: string;
   description: string;
+  icon?: string;
   order_index: number;
 }
 
@@ -113,6 +114,7 @@ export default function InvestmentRationaleSection({ stockId }: InvestmentRation
             <AccordionRow
               key={rationale.id}
               icon={<TriangleAlert className="h-4 w-4 text-emerald-700" />}
+              customIcon={rationale.icon}
               title={rationale.title}
               body={rationale.description}
               defaultOpen={i === 0}
@@ -133,6 +135,7 @@ export default function InvestmentRationaleSection({ stockId }: InvestmentRation
             <AccordionRow
               key={rationale.id}
               icon={<AlertTriangle className="h-4 w-4 text-rose-600" />}
+              customIcon={rationale.icon}
               title={rationale.title}
               body={rationale.description}
               defaultOpen={i === 0}
@@ -174,11 +177,13 @@ function GroupHeader({
 
 function AccordionRow({
   icon,
+  customIcon,
   title,
   body,
   defaultOpen = false,
 }: {
   icon: React.ReactNode;
+  customIcon?: string;
   title: string;
   body: string;
   defaultOpen?: boolean;
@@ -194,7 +199,15 @@ function AccordionRow({
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
       >
         <div className="flex items-center gap-3">
-          {icon}
+          {customIcon ? (
+            <img 
+              src={customIcon} 
+              alt={`${title} icon`}
+              className="h-4 w-4 rounded object-cover"
+            />
+          ) : (
+            icon
+          )}
           <span className="text-sm font-semibold text-themeTeal">{title}</span>
         </div>
         {open ? (

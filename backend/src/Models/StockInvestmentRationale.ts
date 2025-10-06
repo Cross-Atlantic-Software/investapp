@@ -7,6 +7,7 @@ export interface StockInvestmentRationaleAttributes {
   type: 'pros' | 'risks';
   title: string;
   description: string;
+  icon?:string;
   order_index: number;
   created_at?: Date;
   updated_at?: Date;
@@ -22,6 +23,7 @@ export class StockInvestmentRationaleModel extends Model<StockInvestmentRational
   public type!: 'pros' | 'risks';
   public title!: string;
   public description!: string;
+  public icon?:string;
   public order_index!: number;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -56,6 +58,10 @@ export const initializeStockInvestmentRationaleModel = (sequelize: Sequelize) =>
       description: {
         type: DataTypes.TEXT,
         allowNull: false,
+      },
+      icon: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
       },
       order_index: {
         type: DataTypes.INTEGER,

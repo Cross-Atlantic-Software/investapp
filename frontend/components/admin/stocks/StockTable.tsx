@@ -54,6 +54,7 @@ interface InvestmentRationale {
   type: 'pros' | 'risks';
   title: string;
   description: string;
+  icon?: string;
   order_index: number;
   created_at: string;
   updated_at: string;
@@ -152,6 +153,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [rationaleLoading, setRationaleLoading] = useState(false);
   const [editingRationale, setEditingRationale] = useState<InvestmentRationale | null>(null);
   const [rationaleFormData, setRationaleFormData] = useState<Partial<InvestmentRationale>>({});
+  const [rationaleIconFile, setRationaleIconFile] = useState<File | null>(null);
   
   // Performance PDF management state
   const [pdfModal, setPdfModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
@@ -521,25 +523,33 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     
     try {
       const token = sessionStorage.getItem('adminToken') || '';
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('stock_id', rationaleModal.stock.id.toString());
+      formData.append('type', rationaleFormData.type || '');
+      formData.append('title', rationaleFormData.title || '');
+      formData.append('description', rationaleFormData.description || '');
+      formData.append('order_index', (rationaleFormData.order_index || 0).toString());
+      
+      // Add icon file if provided
+      if (rationaleIconFile) {
+        formData.append('icon', rationaleIconFile);
+      }
+      
       const response = await fetch(`/api/admin/stocks/${rationaleModal.stock.id}/investment-rationales`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'token': token
         },
-        body: JSON.stringify({
-          stock_id: rationaleModal.stock.id,
-          type: rationaleFormData.type,
-          title: rationaleFormData.title,
-          description: rationaleFormData.description,
-          order_index: rationaleFormData.order_index || 0
-        })
+        body: formData
       });
       
       const data = await response.json();
       if (data.success) {
         await fetchRationales(rationaleModal.stock.id);
         setRationaleFormData({});
+        setRationaleIconFile(null);
         onNotification?.('success', 'Success', 'Investment rationale created successfully!');
       } else {
         onNotification?.('error', 'Error', data.message || 'Failed to create investment rationale');
@@ -556,8 +566,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       type: rationale.type,
       title: rationale.title,
       description: rationale.description,
+      icon: rationale.icon,
       order_index: rationale.order_index
     });
+    setRationaleIconFile(null); // Reset icon file
   };
 
   const handleUpdateRationale = async () => {
@@ -565,18 +577,25 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     
     try {
       const token = sessionStorage.getItem('adminToken') || '';
+      
+      // Create FormData for file upload
+      const formData = new FormData();
+      formData.append('type', rationaleFormData.type || '');
+      formData.append('title', rationaleFormData.title || '');
+      formData.append('description', rationaleFormData.description || '');
+      formData.append('order_index', (rationaleFormData.order_index || 0).toString());
+      
+      // Add icon file if provided
+      if (rationaleIconFile) {
+        formData.append('icon', rationaleIconFile);
+      }
+      
       const response = await fetch(`/api/admin/investment-rationales/${editingRationale.id}`, {
         method: 'PUT',
         headers: {
-          'Content-Type': 'application/json',
           'token': token
         },
-        body: JSON.stringify({
-          type: rationaleFormData.type,
-          title: rationaleFormData.title,
-          description: rationaleFormData.description,
-          order_index: rationaleFormData.order_index
-        })
+        body: formData
       });
       
       const data = await response.json();
@@ -584,6 +603,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         await fetchRationales(rationaleModal.stock!.id);
         setEditingRationale(null);
         setRationaleFormData({});
+        setRationaleIconFile(null);
         onNotification?.('success', 'Success', 'Investment rationale updated successfully!');
       } else {
         onNotification?.('error', 'Error', data.message || 'Failed to update investment rationale');
@@ -2519,6 +2539,36 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       placeholder="Detailed description of this rationale..."
                     />
                   </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Icon
+                    </label>
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setRationaleIconFile(file);
+                          }
+                        }}
+                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-themeTeal file:text-white hover:file:bg-themeTeal/80"
+                      />
+                      {rationaleFormData.icon && (
+                        <div className="flex items-center space-x-2">
+                          <img 
+                            src={rationaleFormData.icon} 
+                            alt="Current icon" 
+                            className="w-8 h-8 rounded object-cover"
+                          />
+                          <span className="text-sm text-gray-500">Current icon</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Upload an icon for this rationale (optional)</p>
+                  </div>
                 </div>
                 
                 <div className="flex justify-end space-x-3 mt-4">
@@ -2572,6 +2622,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                               <div className="flex items-center justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-3 mb-2">
+                                    {rationale.icon && (
+                                      <img 
+                                        src={rationale.icon} 
+                                        alt={`${rationale.title} icon`}
+                                        className="w-6 h-6 rounded object-cover"
+                                      />
+                                    )}
                                     <h6 className="font-medium text-gray-900">{rationale.title}</h6>
                                     <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
                                       PROS
@@ -2618,6 +2675,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                               <div className="flex items-center justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-3 mb-2">
+                                    {rationale.icon && (
+                                      <img 
+                                        src={rationale.icon} 
+                                        alt={`${rationale.title} icon`}
+                                        className="w-6 h-6 rounded object-cover"
+                                      />
+                                    )}
                                     <h6 className="font-medium text-gray-900">{rationale.title}</h6>
                                     <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
                                       RISKS

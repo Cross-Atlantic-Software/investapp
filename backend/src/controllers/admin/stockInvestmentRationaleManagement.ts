@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { StockInvestmentRationaleModel } from '../../Models/StockInvestmentRationale';
 import { Op } from 'sequelize';
+import { uploadIcon } from '../../utils/middlewares/s3Upload';
 
 export class StockInvestmentRationaleManagementController {
   // Get all investment rationales for a specific stock
@@ -129,11 +130,19 @@ export class StockInvestmentRationaleManagementController {
       // Set order index: 0 for first item, +1 for subsequent items
       const order_index = lastRationale ? lastRationale.order_index + 1 : 0;
 
+      // Handle icon upload if provided
+      let iconUrl = null;
+      if (req.file) {
+        const s3File = req.file as any;
+        iconUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
+      }
+
       const rationale = await StockInvestmentRationaleModel.create({
         stock_id,
         type,
         title,
         description,
+        icon: iconUrl,
         order_index,
       });
 
@@ -214,10 +223,18 @@ export class StockInvestmentRationaleManagementController {
         }
       }
 
+      // Handle icon upload if provided
+      let iconUrl = rationale.icon; // Keep existing icon by default
+      if (req.file) {
+        const s3File = req.file as any;
+        iconUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
+      }
+
       await rationale.update({
         type: type || rationale.type,
         title: title || rationale.title,
         description: description || rationale.description,
+        icon: iconUrl,
         order_index: order_index !== undefined ? order_index : rationale.order_index,
       });
 

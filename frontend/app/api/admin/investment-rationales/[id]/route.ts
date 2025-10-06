@@ -35,17 +35,18 @@ export async function PUT(
 ) {
   try {
     const { id } = await params;
-    const body = await request.json();
     
     const token = request.headers.get('token') || '';
+    
+    // Forward the FormData directly to the backend
+    const formData = await request.formData();
     
     const response = await fetch(`${API_BASE_URL}/backend/api/admin/investment-rationales/${id}`, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json',
         'token': token,
       },
-      body: JSON.stringify(body),
+      body: formData,
     });
     
     const data = await response.json();

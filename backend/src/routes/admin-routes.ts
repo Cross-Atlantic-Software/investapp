@@ -223,9 +223,9 @@ router.get("/stocks/:stockId/scorecards/stats", StockScorecardManagementControll
 // Stock Investment Rationale Management Routes
 router.get("/stocks/:stockId/investment-rationales", StockInvestmentRationaleManagementController.getRationalesByStockId);
 router.get("/investment-rationales/:id", StockInvestmentRationaleManagementController.getRationaleById);
-router.post("/stocks/:stockId/investment-rationales", StockInvestmentRationaleManagementController.createRationale);
+router.post("/stocks/:stockId/investment-rationales", uploadIcon.single('icon'), StockInvestmentRationaleManagementController.createRationale);
 router.post("/stocks/:stockId/investment-rationales/bulk", StockInvestmentRationaleManagementController.bulkCreateRationales);
-router.put("/investment-rationales/:id", StockInvestmentRationaleManagementController.updateRationale);
+router.put("/investment-rationales/:id", uploadIcon.single('icon'), StockInvestmentRationaleManagementController.updateRationale);
 router.delete("/investment-rationales/:id", StockInvestmentRationaleManagementController.deleteRationale);
 router.get("/stocks/:stockId/investment-rationales/stats", StockInvestmentRationaleManagementController.getRationaleStats);
 
