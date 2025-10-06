@@ -1492,8 +1492,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Edit Stock Modal */}
       {editingStock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
-          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
@@ -1961,8 +1961,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* View Stock Modal */}
       {viewingStock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
-          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
@@ -2254,7 +2254,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Scorecard Management Modal */}
       {scorecardModal.isOpen && scorecardModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -2432,7 +2432,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Investment Rationale Management Modal */}
       {rationaleModal.isOpen && rationaleModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -2660,7 +2660,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Performance PDF Management Modal */}
       {pdfModal.isOpen && pdfModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -2889,7 +2889,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Replace PDF Modal */}
       {replacingPdf && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] max-h-96 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
             {/* Modal Header */}
             <div className="bg-orange-500 px-6 py-4 rounded-t">
@@ -2954,7 +2954,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Sector Outlook Management Modal */}
       {sectorOutlookModal.isOpen && sectorOutlookModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-purple-500 px-6 py-4 rounded-t">
@@ -3077,7 +3077,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Sector Insights PDF Management Modal */}
       {sectorInsightsPdfModal.isOpen && sectorInsightsPdfModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[100] max-h-96 overflow-y-auto p-4">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-indigo-500 px-6 py-4 rounded-t">
@@ -3307,7 +3307,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Replace Sector Insights PDF Modal */}
       {replacingSectorInsightsPdf && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] max-h-96 overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
             {/* Modal Header */}
             <div className="bg-orange-500 px-6 py-4 rounded-t">

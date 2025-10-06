@@ -18,7 +18,7 @@ export async function GET(
       queryParams.append(key, value);
     });
     
-    const url = `${API_BASE_URL}/api/admin/stocks/${id}/investment-rationales?${queryParams.toString()}`;
+    const url = `${API_BASE_URL}/backend/api/admin/stocks/${id}/investment-rationales?${queryParams.toString()}`;
     
     const response = await fetch(url, {
       headers: {
@@ -48,7 +48,7 @@ export async function POST(
     
     const token = request.headers.get('token') || '';
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/stocks/${id}/investment-rationales`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stocks/${id}/investment-rationales`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
