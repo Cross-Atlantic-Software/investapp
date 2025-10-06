@@ -42,6 +42,7 @@ import { StockInvestmentRationaleManagementController } from "../controllers/adm
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
 import { StockSectorOutlookManagementController } from "../controllers/admin/stockSectorOutlookManagement";
 import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
+import { MethodologyNotesManagementController } from "../controllers/admin/methodologyNotesManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -91,6 +92,7 @@ const notableActivityController = new NotableActivityManagementController();
 const activityTypeController = new ActivityTypeManagementController();
 const bulkDealsController = new BulkDealsManagementController();
 const stockMasterController = new StockMasterManagementController();
+const methodologyNotesController = new MethodologyNotesManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -103,7 +105,7 @@ router.use((req, res, next) => {
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
-      req.path.includes('/sector-insights-pdfs')) {
+      req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -267,5 +269,13 @@ router.get("/stocks/:id/price-data", getPriceData);
 router.get("/stocks/:id/price-data/latest", getLatestPriceData);
 router.delete("/stocks/:id/price-data", deleteAllPriceData);
 router.get("/stocks/:id/price-data/exists", checkPriceDataExists);
+
+// Methodology Notes Management Routes
+router.get("/methodology-notes", methodologyNotesController.getAllMethodologyNotes);
+router.get("/methodology-notes/active", methodologyNotesController.getAllActiveMethodologyNotes);
+router.get("/methodology-notes/:id", methodologyNotesController.getMethodologyNoteById);
+router.post("/methodology-notes", methodologyNotesController.createMethodologyNote);
+router.put("/methodology-notes/:id", methodologyNotesController.updateMethodologyNote);
+router.delete("/methodology-notes/:id", methodologyNotesController.deleteMethodologyNote);
 
 export default router;

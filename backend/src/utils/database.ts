@@ -18,6 +18,7 @@ import StockPerformancePdfModel, { initializeStockPerformancePdfModel } from "..
 import { StockSectorOutlookModel, initializeStockSectorOutlookModel } from "../Models/StockSectorOutlook";
 import { StockSectorOutlookAccordionModel, initializeStockSectorOutlookAccordionModel } from "../Models/StockSectorOutlookAccordion";
 import { StockSectorInsightsPdfModel, initializeStockSectorInsightsPdfModel } from "../Models/StockSectorInsightsPdf";
+import { MethodologyNote, initializeMethodologyNoteModel } from "../Models/MethodologyNote";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -107,6 +108,9 @@ async function initializeSequelize() {
   initializeStockSectorOutlookModel(sequelize);
   initializeStockSectorOutlookAccordionModel(sequelize);
   initializeStockSectorInsightsPdfModel(sequelize);
+  
+  // Initialize Methodology Note model
+  initializeMethodologyNoteModel(sequelize);
   
   // Set up associations for Sector Outlook
   StockSectorOutlookModel.hasMany(StockSectorOutlookAccordionModel, {
@@ -248,6 +252,12 @@ export const db = {
       throw new Error('StockSectorInsightsPdf model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockSectorInsightsPdfModel;
+  },
+  get MethodologyNote() {
+    if (!MethodologyNote) {
+      throw new Error('MethodologyNote model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return MethodologyNote;
   },
 };
 
