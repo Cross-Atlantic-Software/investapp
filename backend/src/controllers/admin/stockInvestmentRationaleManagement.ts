@@ -84,7 +84,7 @@ export class StockInvestmentRationaleManagementController {
   // Create a new investment rationale
   static async createRationale(req: Request, res: Response) {
     try {
-      const { stock_id, type, title, description, order_index = 0 } = req.body;
+      const { stock_id, type, title, description } = req.body;
 
       // Validation
       if (!stock_id || !type || !title || !description) {
@@ -116,6 +116,18 @@ export class StockInvestmentRationaleManagementController {
           message: 'Title already exists for this stock and type',
         });
       }
+
+      // Get the highest order index for this stock and type
+      const lastRationale = await StockInvestmentRationaleModel.findOne({
+        where: {
+          stock_id,
+          type,
+        },
+        order: [['order_index', 'DESC']],
+      });
+
+      // Set order index: 0 for first item, +1 for subsequent items
+      const order_index = lastRationale ? lastRationale.order_index + 1 : 0;
 
       const rationale = await StockInvestmentRationaleModel.create({
         stock_id,
@@ -179,6 +191,26 @@ export class StockInvestmentRationaleManagementController {
             success: false,
             message: 'Title already exists for this stock and type',
           });
+        }
+      }
+
+      // Handle order index conflicts if order_index is being updated
+      if (order_index !== undefined && order_index !== rationale.order_index) {
+        const currentType = type || rationale.type;
+        
+        // Check if another item already has this order index
+        const conflictingItem = await StockInvestmentRationaleModel.findOne({
+          where: {
+            stock_id: rationale.stock_id,
+            type: currentType,
+            order_index: order_index,
+            id: { [Op.ne]: id },
+          },
+        });
+
+        if (conflictingItem) {
+          // Move the conflicting item to the old position of the current item
+          await conflictingItem.update({ order_index: rationale.order_index });
         }
       }
 
@@ -291,16 +323,48 @@ export class StockInvestmentRationaleManagementController {
         });
       }
 
-      // Create all rationales
-      const createdRationales = await StockInvestmentRationaleModel.bulkCreate(
-        rationales.map((rationale, index) => ({
-          stock_id,
-          type: rationale.type,
-          title: rationale.title,
-          description: rationale.description,
-          order_index: rationale.order_index || index,
-        }))
-      );
+      // Group rationales by type and assign proper order indices
+      const rationalesByType = rationales.reduce((acc, rationale) => {
+        if (!acc[rationale.type]) {
+          acc[rationale.type] = [];
+        }
+        acc[rationale.type].push(rationale);
+        return acc;
+      }, {} as Record<string, any[]>);
+
+      // Get current highest order index for each type
+      const orderIndices: Record<string, number> = {};
+      for (const type of ['pros', 'risks']) {
+        const lastRationale = await StockInvestmentRationaleModel.findOne({
+          where: { stock_id, type },
+          order: [['order_index', 'DESC']],
+        });
+        orderIndices[type] = lastRationale ? lastRationale.order_index + 1 : 0;
+      }
+
+      // Create all rationales with proper order indices
+      const rationalesToCreate: Array<{
+        stock_id: number;
+        type: 'pros' | 'risks';
+        title: string;
+        description: string;
+        order_index: number;
+      }> = [];
+      for (const type of ['pros', 'risks']) {
+        if (rationalesByType[type]) {
+          rationalesByType[type].forEach((rationale: any, index: number) => {
+            rationalesToCreate.push({
+              stock_id,
+              type: rationale.type as 'pros' | 'risks',
+              title: rationale.title,
+              description: rationale.description,
+              order_index: orderIndices[type] + index,
+            });
+          });
+        }
+      }
+
+      const createdRationales = await StockInvestmentRationaleModel.bulkCreate(rationalesToCreate);
 
       res.status(201).json({
         success: true,

@@ -4,6 +4,7 @@ import { NotableActivityManagementController } from "../controllers/admin/notabl
 import { getPriceData } from "../controllers/admin/stockPriceController";
 import { StockSectorOutlookManagementController } from "../controllers/admin/stockSectorOutlookManagement";
 import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
+import { StockDisplayController } from "../controllers/stocks/stockDisplayController";
 
 const router = express.Router();
 
@@ -12,6 +13,10 @@ const privateMarketNewsController = new PrivateMarketNewsManagementController();
 const notableActivityController = new NotableActivityManagementController();
 
 // Public routes for frontend display (no authentication required)
+
+// Stock Display Routes
+router.get("/stocks/banner-display", StockDisplayController.getBannerDisplayStocks);
+router.get("/stocks/home-display", StockDisplayController.getHomeDisplayStocks);
 
 // Private Market News Routes
 router.get("/private-market-news", privateMarketNewsController.getAllPrivateMarketNews);

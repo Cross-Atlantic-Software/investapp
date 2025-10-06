@@ -82,7 +82,7 @@ export class StockPerformancePdfManagementController {
   // Upload and create a new performance PDF
   static async createPdf(req: Request, res: Response) {
     try {
-      const { stock_id, title, description, order_index = 0 } = req.body;
+      const { stock_id, title, description } = req.body;
 
       if (!req.file) {
         return res.status(400).json({
@@ -114,6 +114,17 @@ export class StockPerformancePdfManagementController {
         });
       }
 
+      // Get the highest order index for this stock
+      const lastPdf = await StockPerformancePdfModel.findOne({
+        where: {
+          stock_id: parseInt(stock_id),
+        },
+        order: [['order_index', 'DESC']],
+      });
+
+      // Set order index: 0 for first item, +1 for subsequent items
+      const order_index = lastPdf ? lastPdf.order_index + 1 : 0;
+
       // Get S3 URL
       const s3File = req.file as any;
       const pdfUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
@@ -135,7 +146,7 @@ export class StockPerformancePdfManagementController {
         file_name: req.file.originalname,
         file_size: req.file.size,
         page_count: 0, // Will be updated later if needed
-        order_index: parseInt(order_index) || 0,
+        order_index,
         is_active: isActive,
       });
 
@@ -171,8 +182,17 @@ export class StockPerformancePdfManagementController {
         where: { stock_id: parseInt(stock_id) }
       });
 
+      // Get the highest order index for this stock
+      const lastPdf = await StockPerformancePdfModel.findOne({
+        where: {
+          stock_id: parseInt(stock_id),
+        },
+        order: [['order_index', 'DESC']],
+      });
+
       const createdPdfs = [];
       let isFirstNewPdf = true;
+      let currentOrderIndex = lastPdf ? lastPdf.order_index + 1 : 0;
 
       for (const pdfData of pdfs) {
         // Only the first PDF (if no existing PDFs) should be active
@@ -187,11 +207,12 @@ export class StockPerformancePdfManagementController {
           file_name: pdfData.file_name,
           file_size: pdfData.file_size,
           page_count: pdfData.page_count || 0,
-          order_index: pdfData.order_index || 0,
+          order_index: currentOrderIndex,
           is_active: isActive,
         });
 
         createdPdfs.push(pdf);
+        currentOrderIndex++;
       }
 
       res.status(201).json({
@@ -238,6 +259,23 @@ export class StockPerformancePdfManagementController {
             success: false,
             message: 'Title already exists for this stock',
           });
+        }
+      }
+
+      // Handle order index conflicts if order_index is being updated
+      if (order_index !== undefined && order_index !== pdf.order_index) {
+        // Check if another PDF already has this order index
+        const conflictingPdf = await StockPerformancePdfModel.findOne({
+          where: {
+            stock_id: pdf.stock_id,
+            order_index: order_index,
+            id: { [Op.ne]: id },
+          },
+        });
+
+        if (conflictingPdf) {
+          // Move the conflicting PDF to the old position of the current PDF
+          await conflictingPdf.update({ order_index: pdf.order_index });
         }
       }
 
