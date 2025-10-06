@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/taxonomies/${id}`, {
       headers: {
         'token': token,
       },
@@ -34,7 +34,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const body = await request.json();
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/taxonomies/${id}`, {
       method: 'PUT',
       headers: {
         'token': token,
@@ -59,7 +59,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/taxonomies/${id}`, {
       method: 'DELETE',
       headers: {
         'token': token,

@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/bulk-deals?${queryString}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/bulk-deals?${queryString}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/bulk-deals`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/bulk-deals`, {
       method: 'POST',
       headers: {
         'token': token,

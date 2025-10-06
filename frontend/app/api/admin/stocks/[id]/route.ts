@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/api/admin/stocks/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stocks/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error in /api/admin/stocks/[id]:', error);
+    console.error('Error in /backend/api/admin/stocks/[id]:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -36,7 +36,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const formData = await request.formData();
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/stocks/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stocks/${id}`, {
       method: 'PUT',
       headers: {
         'token': token,
@@ -47,7 +47,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error in /api/admin/stocks/[id] PUT:', error);
+    console.error('Error in /backend/api/admin/stocks/[id] PUT:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }
@@ -60,7 +60,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     }
 
     const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/api/admin/stocks/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stocks/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -71,7 +71,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error in /api/admin/stocks/[id] DELETE:', error);
+    console.error('Error in /backend/api/admin/stocks/[id] DELETE:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

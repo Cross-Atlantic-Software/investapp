@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch(`${API_BASE_URL}/api/trading/sell`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/trading/sell`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

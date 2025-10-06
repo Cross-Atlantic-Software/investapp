@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       sort_order: sortOrder
     });
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/site-users?${params.toString()}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/site-users?${params.toString()}`, {
       headers: {
         'token': token,
       },
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/site-users`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/site-users`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -26,7 +26,7 @@ export async function DELETE(
     }
 
     // Call backend API
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/subscribers/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/subscribers/${id}`, {
       method: 'DELETE',
       headers: {
         'token': token,

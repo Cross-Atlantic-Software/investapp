@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     
     const token = request.headers.get('authorization');
     
-    const response = await fetch(`${BACKEND_URL}/api/admin/stock-masters?${queryString}`, {
+    const response = await fetch(`${BACKEND_URL}/backend/api/admin/stock-masters?${queryString}`, {
       method: 'GET',
       headers: {
         'Authorization': token || '',
@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const token = request.headers.get('authorization');
     
-    const response = await fetch(`${BACKEND_URL}/api/admin/stock-masters`, {
+    const response = await fetch(`${BACKEND_URL}/backend/api/admin/stock-masters`, {
       method: 'POST',
       headers: {
         'Authorization': token || '',

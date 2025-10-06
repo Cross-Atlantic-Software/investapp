@@ -13,7 +13,7 @@ export async function GET(
     }
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
-    const backendUrl = `${API_BASE_URL}/api/admin/sector-insights-pdfs/${id}`;
+    const backendUrl = `${API_BASE_URL}/backend/api/admin/sector-insights-pdfs/${id}`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',
@@ -49,7 +49,7 @@ export async function PUT(
     }
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
-    const backendUrl = `${API_BASE_URL}/api/admin/sector-insights-pdfs/${id}`;
+    const backendUrl = `${API_BASE_URL}/backend/api/admin/sector-insights-pdfs/${id}`;
     
     const body = await request.json();
     
@@ -88,7 +88,7 @@ export async function DELETE(
     }
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
-    const backendUrl = `${API_BASE_URL}/api/admin/sector-insights-pdfs/${id}`;
+    const backendUrl = `${API_BASE_URL}/backend/api/admin/sector-insights-pdfs/${id}`;
     
     const response = await fetch(backendUrl, {
       method: 'DELETE',

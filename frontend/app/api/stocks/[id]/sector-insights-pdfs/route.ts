@@ -8,7 +8,7 @@ export async function GET(
     const { id } = await params;
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
-    const backendUrl = `${API_BASE_URL}/api/public/stocks/${id}/sector-insights-pdfs?is_active=true`;
+    const backendUrl = `${API_BASE_URL}/backend/api/public/stocks/${id}/sector-insights-pdfs?is_active=true`;
     
     const response = await fetch(backendUrl, {
       method: 'GET',

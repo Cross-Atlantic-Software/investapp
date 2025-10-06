@@ -4,16 +4,7 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http:/
 
 export async function GET(request: NextRequest) {
   try {
-    const token = request.headers.get('token');
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
-    }
-
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/taxonomies/status/active`, {
-      headers: {
-        'token': token,
-      },
-    });
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/taxonomies/status/active`);
     const data = await response.json();
     
     return NextResponse.json(data);

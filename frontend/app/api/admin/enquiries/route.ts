@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
     
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/enquiries?${queryString}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/enquiries?${queryString}`, {
       headers: {
         'token': token,
       },

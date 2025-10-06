@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/notable-activities?${queryString}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/notable-activities?${queryString}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/notable-activities`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/notable-activities`, {
       method: 'POST',
       body: formData,
     });

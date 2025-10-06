@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/users?${queryString}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/users?${queryString}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

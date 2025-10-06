@@ -14,7 +14,7 @@ export async function PUT(
 
     // Forward the request to the backend
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
-    const backendUrl = `${API_BASE_URL}/api/admin/performance-pdfs/${id}/replace`;
+    const backendUrl = `${API_BASE_URL}/backend/api/admin/performance-pdfs/${id}/replace`;
     
     const formData = await request.formData();
     

@@ -9,7 +9,7 @@ export async function PUT(
     const token = request.headers.get('token') || '';
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
-    const backendUrl = `${API_BASE_URL}/api/admin/sector-insights-pdfs/${id}/set-active`;
+    const backendUrl = `${API_BASE_URL}/backend/api/admin/sector-insights-pdfs/${id}/set-active`;
     
     const response = await fetch(backendUrl, {
       method: 'PUT',

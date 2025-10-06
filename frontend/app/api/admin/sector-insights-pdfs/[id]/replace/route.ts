@@ -13,7 +13,7 @@ export async function PUT(
     }
 
     const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
-    const backendUrl = `${API_BASE_URL}/api/admin/sector-insights-pdfs/${id}/replace`;
+    const backendUrl = `${API_BASE_URL}/backend/api/admin/sector-insights-pdfs/${id}/replace`;
     
     const formData = await request.formData();
     

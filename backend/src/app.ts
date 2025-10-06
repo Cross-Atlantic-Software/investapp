@@ -39,16 +39,16 @@ app.use(morgan("dev"));
 // 📌 Use morgan for logging HTTP requests
 
 
-app.use('/api', routes);
-app.use('/api/migration', migrationRoutes);
-app.use('/api/public', publicRoutes);
+app.use('/backend/api', routes);
+app.use('/backend/api/migration', migrationRoutes);
+app.use('/backend/api/public', publicRoutes);
 app.get('/', (req, res) => {
   res.send('Welcome to you');
 });
 
 app.listen(port, () => {
   console.log(`🚀 Server started at http://localhost:${port}`);
-  console.log(`📊 Health check available at http://localhost:${port}/api/health/health`);
+  console.log(`📊 Health check available at http://localhost:${port}/backend/api/health/health`);
   
   // Pool monitoring disabled - not required for this application
   // setTimeout(() => {

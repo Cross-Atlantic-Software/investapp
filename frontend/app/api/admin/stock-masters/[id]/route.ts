@@ -10,7 +10,7 @@ export async function GET(
     const { id } = await params;
     const token = request.headers.get('authorization');
     
-    const response = await fetch(`${BACKEND_URL}/api/admin/stock-masters/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/backend/api/admin/stock-masters/${id}`, {
       method: 'GET',
       headers: {
         'Authorization': token || '',
@@ -39,7 +39,7 @@ export async function PUT(
     const body = await request.json();
     const token = request.headers.get('authorization');
     
-    const response = await fetch(`${BACKEND_URL}/api/admin/stock-masters/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/backend/api/admin/stock-masters/${id}`, {
       method: 'PUT',
       headers: {
         'Authorization': token || '',
@@ -68,7 +68,7 @@ export async function DELETE(
     const { id } = await params;
     const token = request.headers.get('authorization');
     
-    const response = await fetch(`${BACKEND_URL}/api/admin/stock-masters/${id}`, {
+    const response = await fetch(`${BACKEND_URL}/backend/api/admin/stock-masters/${id}`, {
       method: 'DELETE',
       headers: {
         'Authorization': token || '',

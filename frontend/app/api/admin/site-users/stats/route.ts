@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     // Get query parameters from the request
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
-    const backendUrl = `${API_BASE_URL}/api/admin/site-users/stats${queryString ? `?${queryString}` : ''}`;
+    const backendUrl = `${API_BASE_URL}/backend/api/admin/site-users/stats${queryString ? `?${queryString}` : ''}`;
 
     const response = await fetch(backendUrl, {
       method: 'GET',
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error in /api/admin/site-users/stats:', error);
+    console.error('Error in /backend/api/admin/site-users/stats:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

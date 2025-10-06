@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
-// GET /api/admin/stock-drafts/[id] - Get specific draft by ID
+// GET /backend/api/admin/stock-drafts/[id] - Get specific draft by ID
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -15,7 +15,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/api/admin/stock-drafts/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stock-drafts/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -34,7 +34,7 @@ export async function GET(
   }
 }
 
-// DELETE /api/admin/stock-drafts/[id] - Delete draft
+// DELETE /backend/api/admin/stock-drafts/[id] - Delete draft
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -47,7 +47,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/api/admin/stock-drafts/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stock-drafts/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
-// GET /api/admin/stock-drafts - Get user's drafts
+// GET /backend/api/admin/stock-drafts - Get user's drafts
 export async function GET(request: NextRequest) {
   try {
     const token = request.headers.get('token');
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/stock-drafts`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stock-drafts`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/admin/stock-drafts - Create or update draft
+// POST /backend/api/admin/stock-drafts - Create or update draft
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('token');
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/stock-drafts`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stock-drafts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
