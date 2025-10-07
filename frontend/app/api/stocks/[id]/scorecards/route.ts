@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/stocks/${id}/scorecards`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/stocks/${id}/scorecards`, {
       headers: {
         'token': '', // No token needed for public access
       },

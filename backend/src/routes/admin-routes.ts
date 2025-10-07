@@ -38,6 +38,12 @@ import { ActivityTypeManagementController } from "../controllers/admin/activityT
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
+import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
+import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
+import { StockSectorOutlookManagementController } from "../controllers/admin/stockSectorOutlookManagement";
+import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
+import { MethodologyNotesManagementController } from "../controllers/admin/methodologyNotesManagement";
+import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
 import {
@@ -86,6 +92,7 @@ const notableActivityController = new NotableActivityManagementController();
 const activityTypeController = new ActivityTypeManagementController();
 const bulkDealsController = new BulkDealsManagementController();
 const stockMasterController = new StockMasterManagementController();
+const methodologyNotesController = new MethodologyNotesManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -96,7 +103,9 @@ router.use((req, res, next) => {
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
-      req.path.includes('/scorecards')) {
+      req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
+      req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
+      req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -211,6 +220,42 @@ router.put("/scorecards/:id", StockScorecardManagementController.updateScorecard
 router.delete("/scorecards/:id", StockScorecardManagementController.deleteScorecard);
 router.get("/stocks/:stockId/scorecards/stats", StockScorecardManagementController.getScorecardStats);
 
+// Stock Investment Rationale Management Routes
+router.get("/stocks/:stockId/investment-rationales", StockInvestmentRationaleManagementController.getRationalesByStockId);
+router.get("/investment-rationales/:id", StockInvestmentRationaleManagementController.getRationaleById);
+router.post("/stocks/:stockId/investment-rationales", uploadIcon.single('icon'), StockInvestmentRationaleManagementController.createRationale);
+router.post("/stocks/:stockId/investment-rationales/bulk", StockInvestmentRationaleManagementController.bulkCreateRationales);
+router.put("/investment-rationales/:id", uploadIcon.single('icon'), StockInvestmentRationaleManagementController.updateRationale);
+router.delete("/investment-rationales/:id", StockInvestmentRationaleManagementController.deleteRationale);
+router.get("/stocks/:stockId/investment-rationales/stats", StockInvestmentRationaleManagementController.getRationaleStats);
+
+// Stock Performance PDF Management Routes
+router.get("/stocks/:stockId/performance-pdfs", StockPerformancePdfManagementController.getPdfsByStockId);
+router.get("/performance-pdfs/:id", StockPerformancePdfManagementController.getPdfById);
+router.post("/stocks/:stockId/performance-pdfs", uploadMiddleware, StockPerformancePdfManagementController.createPdf);
+router.post("/stocks/:stockId/performance-pdfs/bulk", StockPerformancePdfManagementController.bulkCreatePdfs);
+router.put("/performance-pdfs/:id", StockPerformancePdfManagementController.updatePdf);
+router.put("/performance-pdfs/:id/replace", uploadMiddleware, StockPerformancePdfManagementController.replacePdf);
+router.delete("/performance-pdfs/:id", StockPerformancePdfManagementController.deletePdf);
+router.get("/stocks/:stockId/performance-pdfs/stats", StockPerformancePdfManagementController.getPdfStats);
+
+// Stock Sector Outlook Management Routes
+router.get("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.getSectorOutlookByStockId);
+router.post("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.createOrUpdateSectorOutlook);
+router.delete("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.deleteSectorOutlook);
+router.get("/stocks/:stockId/sector-outlooks/stats", StockSectorOutlookManagementController.getSectorOutlookStats);
+
+// Stock Sector Insights PDF Management Routes
+router.get("/stocks/:stockId/sector-insights-pdfs", StockSectorInsightsPdfManagementController.getPdfsByStockId);
+router.get("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.getPdfById);
+router.post("/stocks/:stockId/sector-insights-pdfs", uploadPdf.single('pdf'), StockSectorInsightsPdfManagementController.createPdf);
+router.post("/stocks/:stockId/sector-insights-pdfs/bulk", StockSectorInsightsPdfManagementController.bulkCreatePdfs);
+router.put("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.updatePdf);
+router.put("/sector-insights-pdfs/:id/replace", uploadPdf.single('pdf'), StockSectorInsightsPdfManagementController.replacePdf);
+router.put("/sector-insights-pdfs/:id/set-active", StockSectorInsightsPdfManagementController.setActivePdf);
+router.delete("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.deletePdf);
+router.get("/stocks/:stockId/sector-insights-pdfs/stats", StockSectorInsightsPdfManagementController.getPdfStats);
+
 // Stock Draft Management Routes
 router.post("/stock-drafts", saveDraft);
 router.get("/stock-drafts", getDrafts);
@@ -224,5 +269,13 @@ router.get("/stocks/:id/price-data", getPriceData);
 router.get("/stocks/:id/price-data/latest", getLatestPriceData);
 router.delete("/stocks/:id/price-data", deleteAllPriceData);
 router.get("/stocks/:id/price-data/exists", checkPriceDataExists);
+
+// Methodology Notes Management Routes
+router.get("/methodology-notes", methodologyNotesController.getAllMethodologyNotes);
+router.get("/methodology-notes/active", methodologyNotesController.getAllActiveMethodologyNotes);
+router.get("/methodology-notes/:id", methodologyNotesController.getMethodologyNoteById);
+router.post("/methodology-notes", methodologyNotesController.createMethodologyNote);
+router.put("/methodology-notes/:id", methodologyNotesController.updateMethodologyNote);
+router.delete("/methodology-notes/:id", methodologyNotesController.deleteMethodologyNote);
 
 export default router;

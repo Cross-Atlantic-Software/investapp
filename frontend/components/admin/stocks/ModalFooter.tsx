@@ -9,6 +9,7 @@ interface ModalFooterProps {
   onPrevStep: () => void;
   onNextStep: () => void;
   onSaveAndNext: () => void;
+  isEditMode?: boolean;
 }
 
 const ModalFooter: React.FC<ModalFooterProps> = ({
@@ -19,6 +20,7 @@ const ModalFooter: React.FC<ModalFooterProps> = ({
   onPrevStep,
   onNextStep,
   onSaveAndNext,
+  isEditMode = false,
 }) => {
   return (
     <div className="px-6 py-4 bg-themeTealWhite flex justify-between items-center flex-shrink-0 rounded-b-2xl">
@@ -37,38 +39,26 @@ const ModalFooter: React.FC<ModalFooterProps> = ({
       
       <div className="flex space-x-2">
         {currentStep < totalSteps ? (
-          <>
-            <button
-              type="button"
-              onClick={onSaveAndNext}
-              disabled={isSavingDraft}
-              className="px-4 py-2 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200 disabled:opacity-50 font-medium cursor-pointer flex items-center"
-            >
-              {isSavingDraft ? (
-                <Loader2 className="w-4 h-4 mr-1 animate-spin" />
-              ) : (
-                <Save className="w-4 h-4 mr-1" />
-              )}
-              Save & Next
-            </button>
-            
-            <button
-              type="button"
-              onClick={onNextStep}
-              disabled={!validateStep(currentStep)}
-              className="px-5 py-2 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50 font-medium cursor-pointer flex items-center"
-            >
-              Next
-              <ChevronRight className="w-4 h-4 ml-1" />
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={onSaveAndNext}
+            disabled={isSavingDraft || !validateStep(currentStep)}
+            className="px-5 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200 disabled:opacity-50 font-medium cursor-pointer flex items-center"
+          >
+            {isSavingDraft ? (
+              <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-1" />
+            )}
+            Save & Next
+          </button>
         ) : (
           <button
             type="submit"
-            form="stock-form"
+            form={isEditMode ? "edit-stock-form" : "stock-form"}
             className="px-5 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition duration-200 font-medium cursor-pointer"
           >
-            Add Stock
+            {isEditMode ? 'Update Stock' : 'Add Stock'}
           </button>
         )}
       </div>

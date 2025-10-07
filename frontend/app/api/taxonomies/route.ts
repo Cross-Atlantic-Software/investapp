@@ -5,9 +5,9 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || process.env.API_BAS
 export async function GET(request: NextRequest) {
   try {
     console.log('API_BASE_URL:', API_BASE_URL);
-    console.log('Fetching from:', `${API_BASE_URL}/api/admin/taxonomies/status/active`);
+    console.log('Fetching from:', `${API_BASE_URL}/backend/api/admin/taxonomies/status/active`);
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/taxonomies/status/active`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/taxonomies/status/active`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error in /api/taxonomies:', error);
+    console.error('Error in /backend/api/taxonomies:', error);
     return NextResponse.json({ 
       success: false, 
       message: 'Internal server error',

@@ -4,9 +4,8 @@ import { StepProps } from '../types';
 const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h4 className="text-lg font-semibold text-themeTeal mb-2">Financial Details</h4>
-        <p className="text-sm text-gray-600">Enter the financial information for the stock</p>
+      <div className="text-center mb-4">
+        <h4 className="text-lg font-semibold text-themeTeal">Financial Details</h4>
       </div>
       
       {/* Valuation */}
@@ -29,13 +28,14 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
       {/* Price Change */}
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Price Change
+          Price Change <span className="text-red-500">*</span>
         </label>
         <input
           type="number"
           name="price_change"
           value={formData.price_change}
           onChange={onInputChange}
+          required
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
           placeholder="0.00"
           step="0.01"

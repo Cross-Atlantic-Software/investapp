@@ -39,12 +39,39 @@ interface StockData {
   updatedAt?: string;
 }
 
+interface MethodologyNote {
+  id: number;
+  section_key: string;
+  section_name: string;
+  methodology_text: string;
+  is_active: boolean;
+}
+
 export default function UnlistedCompanyDetails() {
   const params = useParams();
   const companyName = params.name as string;
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [methodologyNotes, setMethodologyNotes] = useState<MethodologyNote[]>([]);
+
+  const fetchMethodologyNotes = async () => {
+    try {
+      const response = await fetch('/api/methodology-notes');
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setMethodologyNotes(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching methodology notes:', err);
+    }
+  };
+
+  const getMethodologyText = (sectionKey: string): string => {
+    const note = methodologyNotes.find(note => note.section_key === sectionKey);
+    return note ? note.methodology_text : 'Intraday private-market price. Delayed. Not investment advice.';
+  };
 
   useEffect(() => {
     const fetchStockData = async () => {
@@ -94,6 +121,7 @@ export default function UnlistedCompanyDetails() {
     };
 
     fetchStockData();
+    fetchMethodologyNotes();
   }, [companyName]);
 
   if (loading) {
@@ -140,7 +168,7 @@ export default function UnlistedCompanyDetails() {
           <SectionNav items={NAV} offset={88} />
 
           <div className="space-y-6">
-            <Section id="price" title="Price Chart" info="Intraday private-market price. Delayed. Not investment advice.">
+            <Section id="price" title="Price Chart" info={getMethodologyText('price')}>
               <PriceChart
                 stockId={parseInt(stockData.id)}
                 stockName={stockData.company_name}
@@ -149,14 +177,14 @@ export default function UnlistedCompanyDetails() {
                 percentageChange={stockData.price_change / stockData.price_per_share * 100}
               />
             </Section>
-            <Section id="score" title="Scorecard" info="Intraday private-market price. Delayed. Not investment advice."><ScorecardSection stockId={parseInt(stockData.id)} /></Section>
-            <Section id="rationale" title="Investment Rationale" info="Intraday private-market price. Delayed. Not investment advice."><InvestmentRationaleSection /></Section>
-            <Section id="bench" title="Performance Benchmark" info="Intraday private-market price. Delayed. Not investment advice."><PerformanceBenchmarkSection /></Section>
-            <Section id="outlook" title="Sector Outlook" info="Intraday private-market price. Delayed. Not investment advice."><SectorOutlookSection /></Section>
-            <Section id="financials" title="Financial Performance" info="Intraday private-market price. Delayed. Not investment advice."><FinancialPerformanceSection /></Section>
-            <Section id="holders" title="Shareholding" info="Intraday private-market price. Delayed. Not investment advice."><ShareholdingSection /></Section>
-            <Section id="news" title="News Related to Company" info="Intraday private-market price. Delayed. Not investment advice."><NewsSection /></Section>
-            <Section id="faq" title="Frequently Asked Questions" info="Intraday private-market price. Delayed. Not investment advice."><FaqSection /></Section>
+            <Section id="score" title="Scorecard" info={getMethodologyText('score')}><ScorecardSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="rationale" title="Investment Rationale" info={getMethodologyText('rationale')}><InvestmentRationaleSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="bench" title="Performance Benchmark" info={getMethodologyText('bench')}><PerformanceBenchmarkSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="outlook" title="Sector Outlook" info={getMethodologyText('outlook')}><SectorOutlookSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="financials" title="Financial Performance" info={getMethodologyText('financials')}><FinancialPerformanceSection /></Section>
+            <Section id="holders" title="Shareholding" info={getMethodologyText('holders')}><ShareholdingSection /></Section>
+            <Section id="news" title="News Related to Company" info={getMethodologyText('news')}><NewsSection /></Section>
+            <Section id="faq" title="Frequently Asked Questions" info={getMethodologyText('faq')}><FaqSection /></Section>
           </div>
         </div>
 

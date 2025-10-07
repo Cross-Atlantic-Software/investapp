@@ -25,9 +25,8 @@ const Step1: React.FC<Step1Props> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h4 className="text-lg font-semibold text-themeTeal mb-2">Basic Company Information</h4>
-        <p className="text-sm text-gray-600">Enter the basic details about the company</p>
+      <div className="text-center mb-4">
+        <h4 className="text-lg font-semibold text-themeTeal">Basic Company Information</h4>
       </div>
 
       {/* Company Name */}

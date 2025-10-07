@@ -164,17 +164,19 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
     
     // Debug: Log form data before cleaning
     console.log('Form data before cleaning:', formData);
-    console.log('Logo field type:', typeof formData.logo);
-    console.log('Logo field value:', formData.logo);
+    console.log('Image upload state:', imageUpload);
     
-    // Clean form data - ensure logo is always a string and remove any File objects
-    const { logo: _logo, ...cleanedFormData } = formData;
-    const finalData = { ...cleanedFormData, logo: '', icon: null };
+    // Prepare form data with proper image handling
+    const submitData = {
+      ...formData,
+      logo: '', // Don't send preview URL - backend will handle the file
+      icon: imageUpload.file, // Send the actual file object
+    };
     
-    console.log('Final data being sent:', finalData);
+    console.log('Final data being sent:', submitData);
     
-    onSubmit(finalData);
-  }, [draftId, deleteDraft, formData, onSubmit]);
+    onSubmit(submitData);
+  }, [draftId, deleteDraft, formData, imageUpload, onSubmit]);
 
   // Load existing draft on mount
   useEffect(() => {
@@ -218,14 +220,14 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
       case 4:
         return <Step4 {...stepProps} />;
       case 5:
-        return <Step5 {...stepProps} />;
+        return <Step5 {...stepProps} imageUpload={imageUpload} />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 m-0">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[60] p-4 m-0">
       <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
         {/* Modal Header */}
         <div className="bg-themeTeal px-6 py-4 rounded-t">

@@ -4,7 +4,7 @@ const NEXT_PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http:/
 
 export async function GET() {
   try {
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/auth/google`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/auth/google`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -14,7 +14,7 @@ export async function GET() {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error in /api/auth/google:', error);
+    console.error('Error in /backend/api/auth/google:', error);
     return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
   }
 }

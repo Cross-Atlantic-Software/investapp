@@ -12,6 +12,7 @@ import {
   StockMasterItem,
   NewStockMasterForm
 } from '@/components/admin/stock-master';
+import MethodologyModal from '@/components/admin/methodology/MethodologyModal';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
@@ -20,6 +21,7 @@ export default function StocksPage() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showStockMasterModal, setShowStockMasterModal] = useState(false);
+  const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
@@ -435,6 +437,13 @@ export default function StocksPage() {
                 <Plus width={16} height={16} className='mr-1'/>
                 Manage Stock Masters
               </button>
+              <button
+                onClick={() => setShowMethodologyModal(true)}
+                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
+              >
+                <Plus width={16} height={16} className='mr-1'/>
+                Methodology Notes
+              </button>
               {canCreateStocks && (
                 <button
                   onClick={() => setShowAddModal(true)}
@@ -501,6 +510,11 @@ export default function StocksPage() {
         onDeleteStockMaster={handleDeleteStockMaster}
         newStockMaster={newStockMaster}
         setNewStockMaster={setNewStockMaster}
+      />
+
+      <MethodologyModal
+        isOpen={showMethodologyModal}
+        onClose={() => setShowMethodologyModal(false)}
       />
 
       {/* Notifications */}

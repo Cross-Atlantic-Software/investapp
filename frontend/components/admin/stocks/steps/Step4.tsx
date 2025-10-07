@@ -5,20 +5,20 @@ import { StepProps } from '../types';
 const Step4: React.FC<StepProps> = ({ formData, onInputChange, onFormDataChange, stockMasters = [] }) => {
   return (
     <div className="space-y-6">
-      <div className="text-center mb-6">
-        <h4 className="text-lg font-semibold text-themeTeal mb-2">Display Settings & Tags</h4>
-        <p className="text-sm text-gray-600">Configure how the stock will be displayed</p>
+      <div className="text-center mb-4">
+        <h4 className="text-lg font-semibold text-themeTeal">Display Settings & Tags</h4>
       </div>
       
       {/* Demand */}
       <div>
         <label className="block text-xs font-medium text-themeTeal mb-1">
-          Demand
+          Demand <span className="text-red-500">*</span>
         </label>
         <select
           name="demand"
           value={formData.demand}
           onChange={onInputChange}
+          required
           className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
         >
           <option value="High Demand">High Demand</option>
@@ -30,12 +30,13 @@ const Step4: React.FC<StepProps> = ({ formData, onInputChange, onFormDataChange,
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-themeTeal mb-1">
-            Home Display
+            Home Display <span className="text-red-500">*</span>
           </label>
           <select
             name="homeDisplay"
             value={formData.homeDisplay}
             onChange={onInputChange}
+            required
             className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
           >
             <option value="yes">Yes</option>
@@ -45,12 +46,13 @@ const Step4: React.FC<StepProps> = ({ formData, onInputChange, onFormDataChange,
         
         <div>
           <label className="block text-xs font-medium text-themeTeal mb-1">
-            Banner Display
+            Banner Display <span className="text-red-500">*</span>
           </label>
           <select
             name="bannerDisplay"
             value={formData.bannerDisplay}
             onChange={onInputChange}
+            required
             className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal transition duration-200 text-themeTealLight"
           >
             <option value="yes">Yes</option>
@@ -62,7 +64,7 @@ const Step4: React.FC<StepProps> = ({ formData, onInputChange, onFormDataChange,
       {/* Stock Tags */}
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Stock Tags
+          Stock Tags <span className="text-red-500">*</span>
         </label>
         <GenericSearchableMultiSelect
           options={stockMasters.map(master => ({ value: master.id, label: master.name }))}

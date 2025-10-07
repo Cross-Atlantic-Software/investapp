@@ -16,7 +16,7 @@ export async function PUT(
     const { id } = await params;
     const body = await request.json();
     
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/enquiries/${id}/status`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/enquiries/${id}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/private-market-news/${id}`, {
       headers: {
         'token': token,
       },
@@ -34,7 +34,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const formData = await request.formData();
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/private-market-news/${id}`, {
       method: 'PUT',
       headers: {
         'token': token,
@@ -58,7 +58,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/private-market-news/${id}`, {
       method: 'DELETE',
       headers: {
         'token': token,

@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🔍 Frontend API route /api/trading/buy called');
+    console.log('🔍 Frontend API route /backend/api/trading/buy called');
     const token = request.headers.get('token');
     
     if (!token) {
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('📦 Request body:', body);
 
-    const response = await fetch(`${API_BASE_URL}/api/trading/buy`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/trading/buy`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8888';
 
 export async function GET(request: NextRequest) {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/admin/activity-types/select`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/activity-types/select`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

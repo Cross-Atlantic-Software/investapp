@@ -142,20 +142,18 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
-          Upload Price Data
-        </h3>
-        {uploadStatus.message && (
+    <div className="space-y-6">
+      {uploadStatus.message && (
+        <div className="flex items-center justify-between">
+          <div></div>
           <button
             onClick={resetUploadStatus}
             className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       <div className="mb-4">
         <p className="text-sm text-gray-600 mb-2">

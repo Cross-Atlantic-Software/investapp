@@ -11,7 +11,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/bulk-deals/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/bulk-deals/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -38,7 +38,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     const formData = await request.formData();
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/bulk-deals/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/bulk-deals/${id}`, {
       method: 'PUT',
       headers: {
         'token': token,
@@ -63,7 +63,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/bulk-deals/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/bulk-deals/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

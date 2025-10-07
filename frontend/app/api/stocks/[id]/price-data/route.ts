@@ -12,7 +12,7 @@ export async function GET(
     
     // Forward query parameters to backend
     const queryString = searchParams.toString();
-    const url = `${API_BASE_URL}/api/public/stocks/${id}/price-data${queryString ? `?${queryString}` : ''}`;
+    const url = `${API_BASE_URL}/backend/api/public/stocks/${id}/price-data${queryString ? `?${queryString}` : ''}`;
     
     const response = await fetch(url, {
       method: 'GET',

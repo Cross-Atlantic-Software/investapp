@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       params.append('search', search);
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/private-market-news?${params.toString()}`);
+    const response = await fetch(`${API_BASE_URL}/backend/api/private-market-news?${params.toString()}`);
     const data = await response.json();
     
     return NextResponse.json(data);

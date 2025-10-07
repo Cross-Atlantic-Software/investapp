@@ -11,7 +11,7 @@ export async function GET(
     const { id } = await params;
     const token = request.headers.get('token') || '';
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/scorecards/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/scorecards/${id}`, {
       headers: {
         'token': token,
       },
@@ -39,7 +39,7 @@ export async function PUT(
     
     const token = request.headers.get('token') || '';
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/scorecards/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/scorecards/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -68,7 +68,7 @@ export async function DELETE(
     const { id } = await params;
     const token = request.headers.get('token') || '';
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/scorecards/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/scorecards/${id}`, {
       method: 'DELETE',
       headers: {
         'token': token,

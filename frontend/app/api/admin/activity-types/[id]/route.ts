@@ -5,7 +5,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8888';
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/api/admin/activity-types/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/activity-types/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/activity-types/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/activity-types/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -52,7 +52,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/api/admin/activity-types/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/activity-types/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',

@@ -183,8 +183,22 @@ export default function PrivateMarketNewsPage() {
         formData.append('icon', data.icon);
       }
 
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch('/api/admin/private-market-news', {
         method: 'POST',
+        headers: {
+          'token': token,
+        },
         body: formData,
       });
 
@@ -234,8 +248,22 @@ export default function PrivateMarketNewsPage() {
         formData.append('icon', data.icon);
       }
 
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch(`/api/admin/private-market-news/${editingItem.id}`, {
         method: 'PUT',
+        headers: {
+          'token': token,
+        },
         body: formData,
       });
 
@@ -280,8 +308,22 @@ export default function PrivateMarketNewsPage() {
     if (!newsToDelete) return;
 
     try {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch(`/api/admin/private-market-news/${newsToDelete}`, {
         method: 'DELETE',
+        headers: {
+          'token': token,
+        },
       });
 
       const data = await response.json();
@@ -318,10 +360,22 @@ export default function PrivateMarketNewsPage() {
 
   const createTaxonomy = async (data: NewTaxonomyForm) => {
     try {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch('/api/admin/taxonomies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'token': token,
         },
         body: JSON.stringify(data),
       });
@@ -360,8 +414,22 @@ export default function PrivateMarketNewsPage() {
 
   const deleteTaxonomy = async (id: number) => {
     try {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch(`/api/admin/taxonomies/${id}`, {
         method: 'DELETE',
+        headers: {
+          'token': token,
+        },
       });
 
       const data = await response.json();

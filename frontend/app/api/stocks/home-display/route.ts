@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     console.log('API_BASE_URL:', API_BASE_URL);
     
-    const response = await fetch(`${API_BASE_URL}/api/stocks/home-display`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/stocks/home-display`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error in /api/stocks/home-display:', error);
+    console.error('Error in /backend/api/stocks/home-display:', error);
     return NextResponse.json({ 
       success: false, 
       message: 'Internal server error',
