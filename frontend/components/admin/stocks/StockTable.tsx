@@ -10,6 +10,8 @@ import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearc
 import CSVUploadModal from './CSVUploadModal';
 import ConfirmationModal from '@/components/admin/shared/ConfirmationModal';
 import EditStockModal from './EditStockModal';
+import ViewStockModal from './ViewStockModal';
+import StockModulesSidebar from './StockModulesSidebar';
 
 interface Stock {
   id: number;
@@ -205,6 +207,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   
   // Dropdown state for module management
   const [dropdownOpen, setDropdownOpen] = useState<{ [key: number]: boolean }>({});
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarStock, setSidebarStock] = useState<Stock | null>(null);
   
   const [imageUpload, setImageUpload] = useState<ImageUploadState>({
     file: null,
@@ -1133,6 +1137,43 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }));
   };
 
+  const handleOpenSidebar = (stock: Stock) => {
+    setSidebarStock(stock);
+    setSidebarOpen(true);
+  };
+
+  const handleCloseSidebar = () => {
+    setSidebarOpen(false);
+    setTimeout(() => setSidebarStock(null), 300); // Delay to allow animation
+  };
+
+  const handleSelectModule = (moduleId: string) => {
+    if (!sidebarStock) return;
+
+    // Keep sidebar open - don't close it
+    // Open corresponding modal based on module ID
+    switch (moduleId) {
+      case 'price-data':
+        setCsvUploadModal({ isOpen: true, stock: sidebarStock });
+        break;
+      case 'scorecards':
+        handleManageScorecards(sidebarStock);
+        break;
+      case 'rationales':
+        handleManageRationales(sidebarStock);
+        break;
+      case 'performance-pdfs':
+        handleManagePdfs(sidebarStock);
+        break;
+      case 'sector-outlook':
+        handleManageSectorOutlook(sidebarStock);
+        break;
+      case 'sector-insights':
+        handleManageSectorInsightsPdfs(sidebarStock);
+        break;
+    }
+  };
+
   // Close dropdowns when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -1412,88 +1453,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         <Eye width={16} height={16}/>
                       </button>
                       
-                      {/* Module Management Dropdown - Available for all users */}
-                      <div className="relative dropdown-container">
+                      {/* Module Management Sidebar Button - Available for all users */}
                         <button
-                          onClick={() => toggleDropdown(stock.id)}
-                          className="p-2 text-white bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg transition duration-300 hover:from-blue-600 hover:to-purple-700 cursor-pointer shadow-md hover:shadow-lg"
+                        onClick={() => handleOpenSidebar(stock)}
+                        className="p-2 text-white bg-themeTeal rounded-lg transition-all duration-200 hover:bg-themeTealLight cursor-pointer shadow-sm hover:shadow-md"
                           title="Manage Stock Modules"
                         >
                           <MoreVertical width={16} height={16}/>
                         </button>
-                        
-                        {dropdownOpen[stock.id] && (
-                          <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 z-[100] max-h-96 overflow-y-auto">
-                            <div className="py-2">
-                              <button
-                                onClick={() => {
-                                  setCsvUploadModal({ isOpen: true, stock });
-                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
-                                }}
-                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
-                              >
-                                <Upload className="w-4 h-4 mr-3 text-green-600" />
-                                Upload Price Data CSV
-                              </button>
-                              
-                              <button
-                                onClick={() => {
-                                  handleManageScorecards(stock);
-                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
-                                }}
-                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
-                              >
-                                <BarChart3 className="w-4 h-4 mr-3 text-themeTeal" />
-                                Manage Scorecards
-                              </button>
-                              
-                              <button
-                                onClick={() => {
-                                  handleManageRationales(stock);
-                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
-                                }}
-                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
-                              >
-                                <FileText className="w-4 h-4 mr-3 text-blue-600" />
-                                Manage Investment Rationales
-                              </button>
-                              
-                              <button
-                                onClick={() => {
-                                  handleManagePdfs(stock);
-                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
-                                }}
-                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
-                              >
-                                <Upload className="w-4 h-4 mr-3 text-orange-600" />
-                                Manage Performance PDFs
-                              </button>
-                              
-                              <button
-                                onClick={() => {
-                                  handleManageSectorOutlook(stock);
-                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
-                                }}
-                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
-                              >
-                                <TrendingUp className="w-4 h-4 mr-3 text-themeTeal" />
-                                Manage Sector Outlook
-                              </button>
-                              
-                              <button
-                                onClick={() => {
-                                  handleManageSectorInsightsPdfs(stock);
-                                  setDropdownOpen(prev => ({ ...prev, [stock.id]: false }));
-                                }}
-                                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
-                              >
-                                <FileText className="w-4 h-4 mr-3 text-themeTeal" />
-                                Manage Sector Insights PDFs
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
                       
                       {canManageStocks && (
                         <>
@@ -1550,281 +1517,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* View Stock Modal */}
       {viewingStock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="bg-themeTeal px-6 py-4 rounded-t">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="h-12 w-12 rounded-full bg-themeTealWhite flex items-center justify-center overflow-hidden">
-                    {viewingStock.logo ? (
-                      <Image
-                        src={viewingStock.logo}
-                        alt={viewingStock.company_name}
-                        width={48}
-                        height={48}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-lg font-bold text-white">
-                        {viewingStock.company_name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                  <div>
-                    <h3 className="text-base font-semibold text-white">Stock Details</h3>
-                    <p className="text-white/80 text-sm">{viewingStock.company_name}</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setViewingStock(null)}
-                  className="text-white transition duration-300 cursor-pointer"
-                >
-                  <X/>
-                </button>
-              </div>
-            </div>
-            
-            {/* Modal Body */}
-            <div className="p-6 flex-1 overflow-y-auto">
-              <div className="space-y-4">
-                {/* Basic Information */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Company Name</label>
-                    <input
-                      type="text"
-                      value={viewingStock.company_name}
-                      readOnly
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Stock ID</label>
-                    <input
-                      type="text"
-                      value={viewingStock.id}
-                      readOnly
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                {/* Additional Stock Information */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Stock Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Demand</label>
-                      <p className={`text-sm bg-white p-2 rounded border ${
-                        viewingStock.demand === 'High Demand' 
-                          ? 'text-green-600 font-semibold' 
-                          : 'text-red-600 font-semibold'
-                      }`}>
-                        {viewingStock.demand || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Valuation</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {viewingStock.valuation || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Price per Share</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        ₹{viewingStock.price_per_share || 0}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Price Change</label>
-                      <p className={`text-sm bg-white p-2 rounded border ${
-                        (viewingStock.price_change || 0) >= 0 
-                          ? 'text-green-600' 
-                          : 'text-red-600'
-                      }`}>
-                        {(viewingStock.price_change || 0) >= 0 ? '+' : ''}₹{Math.abs(viewingStock.price_change || 0)}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Percentage Change</label>
-                      <p className={`text-sm bg-white p-2 rounded border ${
-                        (viewingStock.percentage_change || 0) >= 0 
-                          ? 'text-green-600' 
-                          : 'text-red-600'
-                      }`}>
-                        {(viewingStock.percentage_change || 0) >= 0 ? '+' : ''}{viewingStock.percentage_change || 0}%
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Company Information */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Company Information</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Founded Year</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {viewingStock.founded || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Sector</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {viewingStock.sector || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Subsector</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {viewingStock.subsector || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Headquarters</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {viewingStock.headquarters || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Min Units</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {viewingStock.min_units || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Lot Size</label>
-                      <p className="text-sm text-gray-900 bg-white p-2 rounded border">
-                        {viewingStock.lot_size || 'N/A'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Stock Tags</label>
-                      <div className="bg-white p-2 rounded border">
-                        {viewingStock.stock_masters && viewingStock.stock_masters.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {viewingStock.stock_masters.map((master) => (
-                              <span 
-                                key={master.id}
-                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-themeTealLight text-white"
-                              >
-                                {master.name}
-                              </span>
-                            ))}
-                          </div>
-                        ) : (
-                          <span className="text-sm text-gray-500">No stock tags assigned</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Display Settings */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Display Settings</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Home Display</label>
-                      <p className={`text-sm bg-white p-2 rounded border ${
-                        viewingStock.homeDisplay === 'yes' 
-                          ? 'text-green-600 font-semibold' 
-                          : 'text-gray-600'
-                      }`}>
-                        {viewingStock.homeDisplay === 'yes' ? 'Yes' : 'No'}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Banner Display</label>
-                      <p className={`text-sm bg-white p-2 rounded border ${
-                        viewingStock.bannerDisplay === 'yes' 
-                          ? 'text-green-600 font-semibold' 
-                          : 'text-gray-600'
-                      }`}>
-                        {viewingStock.bannerDisplay === 'yes' ? 'Yes' : 'No'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Teaser */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Teaser</label>
-                  <textarea
-                    value={viewingStock.teaser}
-                    readOnly
-                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none"
-                    rows={2}
-                  />
-                </div>
-
-                {/* Short Description */}
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-xs font-medium text-themeTeal">Short Description</label>
-                    <button
-                      onClick={() => {
-                        const plainText = stripHtmlTags(viewingStock.short_description || '');
-                        navigator.clipboard.writeText(plainText);
-                        onNotification?.('success', 'Copied', 'Short description copied as plain text');
-                      }}
-                      className="text-xs bg-themeTeal text-white px-2 py-1 rounded hover:bg-themeTealLight transition duration-200"
-                    >
-                      Copy as Plain Text
-                    </button>
-                  </div>
-                  <div
-                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none min-h-[80px]"
-                    dangerouslySetInnerHTML={{ __html: viewingStock.short_description || '' }}
-                  />
-                </div>
-
-                {/* Analysis */}
-                <div>
-                  <div className="flex justify-between items-center mb-2">
-                    <label className="block text-xs font-medium text-themeTeal">Analysis</label>
-                    <button
-                      onClick={() => {
-                        const plainText = stripHtmlTags(viewingStock.analysis || '');
-                        navigator.clipboard.writeText(plainText);
-                        onNotification?.('success', 'Copied', 'Analysis copied as plain text');
-                      }}
-                      className="text-xs bg-themeTeal text-white px-2 py-1 rounded hover:bg-themeTealLight transition duration-200"
-                    >
-                      Copy as Plain Text
-                    </button>
-                  </div>
-                  <div
-                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded bg-themeTealWhite text-themeTeal focus:outline-none min-h-[120px]"
-                    dangerouslySetInnerHTML={{ __html: viewingStock.analysis || '' }}
-                  />
-                </div>
-
-                {/* Company Logo */}
-                {viewingStock.logo && (
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Company Logo</label>
-                    <div className="mt-1 border-2 border-themeTealLighter border-dashed rounded p-4">
-                      <div className="flex justify-center">
-                        <div className="relative">
-                          <Image
-                            src={viewingStock.logo}
-                            alt={`${viewingStock.company_name} logo`}
-                            width={120}
-                            height={120}
-                            className="h-30 w-30 rounded-lg object-cover shadow-sm shadow-themeTeal/20"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-          </div>
-        </div>
+        <ViewStockModal
+          stock={viewingStock}
+          onClose={() => setViewingStock(null)}
+          stockMasters={stockMasters}
+        />
       )}
 
       {/* CSV Upload Modal */}
@@ -3016,6 +2713,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         loading={deleteLoading}
       />
 
+      {/* Stock Modules Sidebar */}
+      <StockModulesSidebar
+        isOpen={sidebarOpen}
+        onClose={handleCloseSidebar}
+        stock={sidebarStock}
+        onSelectModule={handleSelectModule}
+      />
     </div>
   );
 };

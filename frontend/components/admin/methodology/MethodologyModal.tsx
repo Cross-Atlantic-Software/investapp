@@ -189,7 +189,7 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 m-0">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[60] p-4 m-0">
       <div className="bg-white rounded shadow w-full max-w-4xl mx-4 mt-8 mb-4 max-h-[95vh] flex flex-col">
         {/* Modal Header */}
         <div className="bg-themeTeal px-6 py-4 rounded-t flex-shrink-0">
