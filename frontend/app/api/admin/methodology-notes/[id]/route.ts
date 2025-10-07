@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8888';
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/methodology-notes/${params.id}`, {
+    const { id } = await params;
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/methodology-notes/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -22,11 +23,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const body = await request.json();
 
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/methodology-notes/${params.id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/methodology-notes/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -45,9 +47,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/methodology-notes/${params.id}`, {
+    const { id } = await params;
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/methodology-notes/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
