@@ -8,6 +8,8 @@ import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, Bar
 import SimpleRichTextEditor from '../SimpleRichTextEditor';
 import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
 import CSVUploadModal from './CSVUploadModal';
+import ConfirmationModal from '@/components/admin/shared/ConfirmationModal';
+import EditStockModal from './EditStockModal';
 
 interface Stock {
   id: number;
@@ -29,6 +31,8 @@ interface Stock {
   headquarters: string;
   min_units: number;
   lot_size: number;
+  stock_master_ids: number[];
+  icon: File | null;
   stock_masters?: Array<{
     id: number;
     name: string;
@@ -190,6 +194,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [sectorInsightsPdfFormData, setSectorInsightsPdfFormData] = useState<Partial<SectorInsightsPdf>>({});
   const [sectorInsightsPdfFile, setSectorInsightsPdfFile] = useState<File | null>(null);
   const [replacingSectorInsightsPdf, setReplacingSectorInsightsPdf] = useState<SectorInsightsPdf | null>(null);
+  
+  // Delete confirmation modal state
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{ isOpen: boolean; stockId: number | null; stockName: string }>({
+    isOpen: false,
+    stockId: null,
+    stockName: ''
+  });
+  const [deleteLoading, setDeleteLoading] = useState(false);
   
   // Dropdown state for module management
   const [dropdownOpen, setDropdownOpen] = useState<{ [key: number]: boolean }>({});
@@ -1203,28 +1215,40 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm('Are you sure you want to delete this stock?')) {
+  const handleDelete = (id: number, stockName: string) => {
+    setDeleteConfirmation({
+        isOpen: true,
+      stockId: id,
+      stockName: stockName
+      });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmation.stockId) return;
+    
+    setDeleteLoading(true);
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-        const response = await fetch(`/api/admin/stocks/${id}`, {
-          method: 'DELETE',
+      const response = await fetch(`/api/admin/stocks/${deleteConfirmation.stockId}`, {
+        method: 'DELETE',
         headers: {
           'token': token,
         },
       });
         
-        const data = await response.json();
-        if (data.success) {
-          onRefresh();
-          onNotification?.('success', 'Stock Deleted', 'Stock has been deleted successfully!');
-        } else {
-          onNotification?.('error', 'Delete Failed', data.message || 'Failed to delete stock');
-        }
-      } catch (error) {
-        console.error('Error deleting stock:', error);
-        onNotification?.('error', 'Delete Failed', 'Error deleting stock');
+      const data = await response.json();
+      if (data.success) {
+        onRefresh();
+        onNotification?.('success', 'Stock Deleted', 'Stock has been deleted successfully!');
+        setDeleteConfirmation({ isOpen: false, stockId: null, stockName: '' });
+      } else {
+        onNotification?.('error', 'Delete Failed', data.message || 'Failed to delete stock');
       }
+    } catch (error) {
+      console.error('Error deleting stock:', error);
+      onNotification?.('error', 'Delete Failed', 'Error deleting stock');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -1419,7 +1443,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 }}
                                 className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
                               >
-                                <BarChart3 className="w-4 h-4 mr-3 text-purple-600" />
+                                <BarChart3 className="w-4 h-4 mr-3 text-themeTeal" />
                                 Manage Scorecards
                               </button>
                               
@@ -1452,7 +1476,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 }}
                                 className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
                               >
-                                <TrendingUp className="w-4 h-4 mr-3 text-purple-600" />
+                                <TrendingUp className="w-4 h-4 mr-3 text-themeTeal" />
                                 Manage Sector Outlook
                               </button>
                               
@@ -1463,7 +1487,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 }}
                                 className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 flex items-center transition-colors duration-200"
                               >
-                                <FileText className="w-4 h-4 mr-3 text-indigo-600" />
+                                <FileText className="w-4 h-4 mr-3 text-themeTeal" />
                                 Manage Sector Insights PDFs
                               </button>
                             </div>
@@ -1481,7 +1505,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             <SquarePen width={16} height={16}/>
                           </button>
                           <button
-                            onClick={() => handleDelete(stock.id)}
+                            onClick={() => handleDelete(stock.id, stock.company_name)}
                             className="p-2 bg-red-700 text-white hover:text-red-700 hover:bg-white rounded transition duration-300 cursor-pointer"
                             title="Delete Stock"
                           >
@@ -1512,471 +1536,16 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Edit Stock Modal */}
       {editingStock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 max-h-[90vh] flex flex-col">
-            {/* Modal Header */}
-            <div className="bg-themeTeal px-6 py-4 rounded-t">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-base font-semibold text-white">Edit Stock</h3>
-                </div>
-                <button
-                  onClick={() => {
+        <EditStockModal
+          stock={editingStock}
+          onClose={() => {
                     setEditingStock(null);
                     setEditFormData({});
                     setEditIconFile(null);
                   }}
-                  className="text-white transition duration-300 cursor-pointer"
-                >
-                  <X/>
-                </button>
-              </div>
-            </div>
-            
-            {/* Modal Body */}
-            <div className="p-6 flex-1 overflow-y-auto">
-              <form id="edit-stock-form" className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Company Name Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Company Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={editFormData.company_name || ''}
-                      onChange={(e) => setEditFormData({...editFormData, company_name: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
-                      placeholder="Enter company name"
-                    />
-                  </div>
-
-
-                  {/* Teaser Field */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Teaser <span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      value={editFormData.teaser || ''}
-                      onChange={(e) => setEditFormData({...editFormData, teaser: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
-                      placeholder="Enter teaser text"
-                      rows={2}
-                    />
-                  </div>
-
-                  {/* Short Description Field */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Short Description <span className="text-red-500">*</span>
-                    </label>
-                    <SimpleRichTextEditor
-                      value={editFormData.short_description || ''}
-                      onChange={(value) => setEditFormData(prev => ({...prev, short_description: value}))}
-                      placeholder="Enter short description"
-                      height="120px"
-                    />
-                  </div>
-
-                  {/* Analysis Field */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Analysis <span className="text-red-500">*</span>
-                    </label>
-                    <SimpleRichTextEditor
-                      value={editFormData.analysis || ''}
-                      onChange={(value) => setEditFormData(prev => ({...prev, analysis: value}))}
-                      placeholder="Enter detailed analysis..."
-                      height="200px"
-                    />
-                  </div>
-
-                  {/* Demand Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Demand <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={editFormData.demand || ''}
-                      onChange={(e) => setEditFormData({...editFormData, demand: e.target.value as 'High Demand' | 'Low Demand'})}
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
-                    >
-                      <option value="">Select Demand</option>
-                      <option value="High Demand">High Demand</option>
-                      <option value="Low Demand">Low Demand</option>
-                    </select>
-                  </div>
-
-                  {/* Home Display Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Home Display <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={editFormData.homeDisplay || ''}
-                      onChange={(e) => setEditFormData({...editFormData, homeDisplay: e.target.value as 'yes' | 'no'})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                    >
-                      <option value="">Select Display</option>
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
-                  </div>
-
-                  {/* Banner Display Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Banner Display <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={editFormData.bannerDisplay || ''}
-                      onChange={(e) => setEditFormData({...editFormData, bannerDisplay: e.target.value as 'yes' | 'no'})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                    >
-                      <option value="">Select Display</option>
-                      <option value="yes">Yes</option>
-                      <option value="no">No</option>
-                    </select>
-                  </div>
-
-                  {/* Valuation Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Valuation <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={editFormData.valuation || ''}
-                      onChange={(e) => setEditFormData({...editFormData, valuation: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                      placeholder="Enter valuation"
-                    />
-                  </div>
-
-                  {/* Price Fields - Three columns */}
-                  <div className="md:col-span-2">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {/* Price per Share Field */}
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Price per Share <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-gray-500 text-sm">₹</span>
-                          </div>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={editFormData.price_per_share || ''}
-                            onChange={(e) => setEditFormData({...editFormData, price_per_share: parseFloat(e.target.value) || 0})}
-                            className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                            placeholder="0.00"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Price Change Field */}
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Price Change <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-gray-500 text-sm">₹</span>
-                          </div>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={editFormData.price_change || ''}
-                            onChange={(e) => setEditFormData({...editFormData, price_change: parseFloat(e.target.value) || 0})}
-                            className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                            placeholder="0.00"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Percentage Change Field */}
-                      <div>
-                        <label className="block text-xs font-medium text-gray-700 mb-1">
-                          Percentage Change <span className="text-red-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <span className="text-gray-500 text-sm">%</span>
-                          </div>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={editFormData.percentage_change || ''}
-                            onChange={(e) => setEditFormData({...editFormData, percentage_change: parseFloat(e.target.value) || 0})}
-                            className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                            placeholder="0.00"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Founded Year Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Founded Year <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="1800"
-                      max={new Date().getFullYear()}
-                      value={editFormData.founded || ''}
-                      onChange={(e) => setEditFormData({...editFormData, founded: parseInt(e.target.value) || 0})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                      placeholder="2023"
-                    />
-                  </div>
-
-                  {/* Sector Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Sector <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={editFormData.sector || ''}
-                      onChange={(e) => setEditFormData({...editFormData, sector: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                      placeholder="Technology"
-                    />
-                  </div>
-
-                  {/* Subsector Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Subsector <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={editFormData.subsector || ''}
-                      onChange={(e) => setEditFormData({...editFormData, subsector: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                      placeholder="Software"
-                    />
-                  </div>
-                  
-                  {/* Headquarters Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Headquarters <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      value={editFormData.headquarters || ''}
-                      onChange={(e) => setEditFormData({...editFormData, headquarters: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
-                      placeholder="San Francisco, CA"
-                    />
-                  </div>
-
-                  {/* Min Units Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Min Units <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={editFormData.min_units || ''}
-                      onChange={(e) => setEditFormData({...editFormData, min_units: parseInt(e.target.value) || 1})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                      placeholder="1"
-                    />
-                  </div>
-
-                  {/* Lot Size Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Lot Size <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={editFormData.lot_size || ''}
-                      onChange={(e) => setEditFormData({...editFormData, lot_size: parseInt(e.target.value) || 1})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-                      placeholder="1"
-                    />
-                  </div>
-
-                  {/* Stock Tags Field */}
-                  <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Stock Tags
-                    </label>
-                    <GenericSearchableMultiSelect
-                      options={stockMasters.map(master => ({ value: master.id, label: master.name }))}
-                      selectedValues={selectedStockMasterIds}
-                      onChange={(values) => setSelectedStockMasterIds(values)}
-                      placeholder="Select stock tags..."
-                      forceAbove={true}
-                    />
-                  </div>
-
-                  {/* Company Logo */}
-                  <div className="md:col-span-2">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      Company Logo URL
-                    </label>
-                    {/* Error Message */}
-                    {imageUpload.error && (
-                      <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                        <p className="text-xs text-red-600">{imageUpload.error}</p>
-                      </div>
-                    )}
-                    
-                    <label 
-                      htmlFor="edit-icon-upload"
-                      className={`mt-1 border-2 block border-dashed rounded transition duration-200 cursor-pointer ${
-                        imageUpload.error 
-                          ? 'border-red-300 bg-red-50' 
-                          : imageUpload.preview 
-                            ? 'border-green-300 bg-green-50' 
-                            : 'border-gray-300 hover:border-themeTealLighter hover:bg-themeTealWhite'
-                      }`}
-                      onDragOver={handleDragOver}
-                      onDragEnter={handleDragEnter}
-                      onDragLeave={handleDragLeave}
-                      onDrop={handleDrop}
-                    >
-                      {imageUpload.preview ? (
-                        /* New Image Preview */
-                        <div className="p-4">
-                          <div className="space-y-3 text-center">
-                            <div className="relative inline-block">
-                              <Image
-                                src={imageUpload.preview}
-                                alt="New preview"
-                                width={80}
-                                height={80}
-                                className="h-20 w-20 object-cover rounded border border-themeTealLighter mx-auto"
-                              />
-                              <button
-                                type="button"
-                                onClick={removeImage}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors duration-200"
-                              >
-                                <X/>
-                              </button>
-                            </div>
-                            <div className="text-sm text-themeTealLighter">
-                              <p className="font-medium text-green-600">✓ New image selected</p>
-                              <p className="text-xs text-themeTealLighter">{imageUpload.file?.name}</p>
-                              <p className="text-xs text-themeTealLighter">
-                                {imageUpload.file?.size ? (imageUpload.file.size / 1024 / 1024).toFixed(2) : '0'} MB
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              className="bg-themeTeal text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-themeTealLight transition duration-200 cursor-pointer"
-                            >
-                              Change Image
-                            </button>
-                          </div>
-                        </div>
-                      ) : editingStock?.logo ? (
-                        /* Current Icon Display */
-                        <div className="p-4">
-                          <div className="flex items-center space-x-4">
-                            <div className="flex-shrink-0">
-                              <Image
-                                src={editingStock.logo}
-                                alt="Current icon"
-                                width={60}
-                                height={60}
-                                className="h-15 w-15 rounded object-cover border-2 border-themeTealLighter/30"
-                              />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-themeTeal mb-2">Current Icon</p>
-                              <div className="flex items-center space-x-3">
-                                <button
-                                  type="button"
-                                  className="bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight transition-colors duration-200"
-                                >
-                                  Change Icon
-                                </button>
-                                <p className="text-xs text-themeTealLighter">PNG, JPG, GIF up to 10MB</p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ) : (
-                        /* Upload Prompt */
-                        <div className="p-4">
-                          <div className="space-y-1 text-center">
-                            <svg className="mx-auto h-10 w-10 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                              <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            <div className="flex text-sm text-gray-600 justify-center">
-                              <span className="bg-white rounded-md font-medium text-themeTeal px-2 py-1">Upload a file</span>
-                              <p className="pl-1">or drag and drop</p>
-                            </div>
-                            <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
-                          </div>
-                        </div>
-                      )}
-                    </label>
-                    
-                    {/* Hidden File Input */}
-                    <input
-                      id="edit-icon-upload"
-                      name="edit-icon-upload"
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileChange}
-                      className="sr-only"
-                    />
-                    
-                    {/* Upload Progress */}
-                    {imageUpload.uploading && (
-                      <div className="mt-2">
-                        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
-                          <span>Uploading...</span>
-                          <span>{imageUpload.progress}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-themeTeal h-2 rounded-full transition-all duration-300"
-                            style={{ width: `${imageUpload.progress}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </form>
-            </div>
-
-            {/* Modal Footer */}
-            <div className="px-4 py-3 bg-themeTealWhite flex justify-end flex-shrink-0 rounded-b-2xl">
-              <button
-                type="submit"
-                form="edit-stock-form"
-                onClick={handleUpdateStock}
-                disabled={editLoading}
-                className="px-4 py-3 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50 font-medium cursor-pointer flex gap-1"
-              >
-                {editLoading ? (
-                  <Loader size="sm" text="Updating..." />
-                ) : (
-                  <>
-                    <Check width={20} height={20}/>
-                    <span>Update Stock</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
+          onSubmit={handleUpdateStock}
+          stockMasters={stockMasters}
+        />
       )}
 
       {/* View Stock Modal */}
@@ -3021,11 +2590,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
-            <div className="bg-purple-500 px-6 py-4 rounded-t">
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-semibold text-white">Manage Sector Outlook</h3>
-                  <p className="text-white/80 text-sm">{sectorOutlookModal.stock.company_name}</p>
+                  <p className="text-themeTealWhite text-sm">{sectorOutlookModal.stock.company_name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -3033,7 +2602,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setSectorOutlook(null);
                     setSectorOutlookFormData({ description: '', accordions: [] });
                   }}
-                  className="text-white transition duration-300 cursor-pointer"
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
                 >
                   <X/>
                 </button>
@@ -3057,7 +2626,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       value={sectorOutlookFormData.description}
                       onChange={(e) => setSectorOutlookFormData(prev => ({ ...prev, description: e.target.value }))}
                       rows={4}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
                       placeholder="Enter sector outlook description..."
                     />
                   </div>
@@ -3068,7 +2637,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       <h4 className="text-lg font-medium text-gray-900">Accordion Items</h4>
                       <button
                         onClick={addAccordionItem}
-                        className="px-3 py-1 bg-purple-500 text-white rounded text-sm hover:bg-purple-600"
+                        className="px-3 py-1 bg-themeTeal text-white rounded text-sm hover:bg-themeTealLight"
                       >
                         Add Item
                       </button>
@@ -3095,7 +2664,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                               type="text"
                               value={item.title}
                               onChange={(e) => updateAccordionItem(index, 'title', e.target.value)}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
                               placeholder="Enter accordion title..."
                             />
                           </div>
@@ -3108,7 +2677,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                               value={item.analysis}
                               onChange={(e) => updateAccordionItem(index, 'analysis', e.target.value)}
                               rows={3}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
                               placeholder="Enter analysis content..."
                             />
                           </div>
@@ -3127,7 +2696,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   <div className="flex justify-end">
                     <button
                       onClick={handleSaveSectorOutlook}
-                      className="px-6 py-2 bg-purple-500 text-white rounded-md hover:bg-purple-600"
+                      className="px-6 py-2 bg-themeTeal text-white rounded-md hover:bg-themeTealLight"
                     >
                       Save Sector Outlook
                     </button>
@@ -3144,11 +2713,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
-            <div className="bg-indigo-500 px-6 py-4 rounded-t">
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-semibold text-white">Manage Sector Insights PDFs</h3>
-                  <p className="text-white/80 text-sm">{sectorInsightsPdfModal.stock.company_name}</p>
+                  <p className="text-themeTealWhite text-sm">{sectorInsightsPdfModal.stock.company_name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -3158,7 +2727,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setSectorInsightsPdfFormData({});
                     setSectorInsightsPdfFile(null);
                   }}
-                  className="text-white transition duration-300 cursor-pointer"
+                  className="text-themeTealWhite transition duration-300 cursor-pointer"
                 >
                   <X/>
                 </button>
@@ -3189,7 +2758,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                           type="text"
                           value={sectorInsightsPdfFormData.title || ''}
                           onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, title: e.target.value }))}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
                           placeholder="e.g., Q3 2024 Sector Insights Report"
                         />
                       </div>
@@ -3202,7 +2771,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                           type="number"
                           value={sectorInsightsPdfFormData.order_index || 0}
                           onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
                           placeholder="0"
                         />
                       </div>
@@ -3215,7 +2784,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                           value={sectorInsightsPdfFormData.description || ''}
                           onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, description: e.target.value }))}
                           rows={3}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
                           placeholder="Brief description of this PDF document..."
                         />
                       </div>
@@ -3229,7 +2798,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             type="file"
                             accept=".pdf"
                             onChange={(e) => setSectorInsightsPdfFile(e.target.files?.[0] || null)}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
                           />
                           <p className="text-xs text-gray-500 mt-1">Maximum file size: 10MB</p>
                         </div>
@@ -3242,7 +2811,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                               type="checkbox"
                               checked={sectorInsightsPdfFormData.is_active || false}
                               onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, is_active: e.target.checked }))}
-                              className="rounded border-gray-300 text-indigo-500 focus:ring-indigo-500"
+                              className="rounded border-gray-300 text-themeTeal focus:ring-themeTeal"
                             />
                             <span className="text-sm text-gray-700">Active (visible to users)</span>
                           </label>
@@ -3265,7 +2834,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       <button
                         onClick={editingSectorInsightsPdf ? handleUpdateSectorInsightsPdf : handleUploadSectorInsightsPdf}
                         disabled={!sectorInsightsPdfFormData.title || (!editingSectorInsightsPdf && !sectorInsightsPdfFile)}
-                        className="px-4 py-2 text-sm bg-indigo-500 text-white rounded-md hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {editingSectorInsightsPdf ? 'Update PDF' : 'Upload PDF'}
                       </button>
@@ -3433,6 +3002,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={deleteConfirmation.isOpen}
+        onClose={() => setDeleteConfirmation({ isOpen: false, stockId: null, stockName: '' })}
+        onConfirm={confirmDelete}
+        title="Delete Stock"
+        message={`Are you sure you want to delete "${deleteConfirmation.stockName}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+        loading={deleteLoading}
+      />
 
     </div>
   );

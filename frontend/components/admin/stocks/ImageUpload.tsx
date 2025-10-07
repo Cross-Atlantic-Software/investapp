@@ -15,7 +15,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
   return (
     <div>
       <label className="block text-xs font-medium text-themeTeal mb-1">
-        Stock Icon
+        Stock Icon <span className="text-red-500">*</span>
       </label>
       
       {/* Error Message */}
@@ -62,12 +62,10 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <div className="text-sm text-themeTealLighter">
               <p className="font-medium text-green-600 mb-2">✓ Image selected</p>
               <p className="text-xs text-themeTealLighter">{imageUpload.file?.name}</p>
-              <p className="text-xs text-themeTealLighter">
-                {imageUpload.file?.size ? (imageUpload.file.size / 1024 / 1024).toFixed(2) : '0'} MB
-              </p>
             </div>
             <button
               type="button"
+              onClick={() => document.getElementById('icon-upload')?.click()}
               className="bg-themeTeal text-white px-3 py-1.5 rounded-md text-sm font-medium hover:bg-themeTealLight transition-colors duration-200 cursor-pointer"
             >
               Change Image

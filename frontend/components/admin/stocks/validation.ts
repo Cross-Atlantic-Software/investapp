@@ -11,9 +11,12 @@ const validateAllSteps = (formData: StockData): boolean => {
     formData.subsector && 
     formData.headquarters &&
     formData.headquarters.trim() !== '' &&
+    formData.icon && // Image upload is required
     // Step 2: Financial Details
     formData.valuation && 
     formData.valuation.toString().trim() !== '' &&
+    formData.price_change !== null && 
+    formData.price_change !== undefined &&
     formData.price_per_share && 
     formData.price_per_share > 0 &&
     formData.percentage_change !== null && 
@@ -23,9 +26,9 @@ const validateAllSteps = (formData: StockData): boolean => {
     formData.lot_size && 
     formData.lot_size > 0 &&
     // Step 3: Content & Description
-    formData.teaser.trim() !== '' &&
-    formData.short_description.trim() !== '' &&
-    formData.analysis.trim() !== '' &&
+    formData.teaser && formData.teaser.trim() !== '' &&
+    formData.short_description && formData.short_description.trim() !== '' &&
+    formData.analysis && formData.analysis.trim() !== '' &&
     // Step 4: Display Settings & Tags
     formData.demand && 
     formData.homeDisplay && 
@@ -44,12 +47,15 @@ export const validateStep = (step: number, formData: StockData): boolean => {
         formData.sector && 
         formData.subsector && 
         formData.headquarters &&
-        formData.headquarters.trim() !== ''
+        formData.headquarters.trim() !== '' &&
+        formData.icon // Image upload is required
       );
     case 2: // Financial Details
       return !!(
         formData.valuation && 
         formData.valuation.toString().trim() !== '' &&
+        formData.price_change !== null && 
+        formData.price_change !== undefined &&
         formData.price_per_share && 
         formData.price_per_share > 0 &&
         formData.percentage_change !== null && 
@@ -61,16 +67,16 @@ export const validateStep = (step: number, formData: StockData): boolean => {
       );
     case 3: // Content & Description
       return !!(
-        formData.teaser.trim() !== '' &&
-        formData.short_description.trim() !== '' &&
-        formData.analysis.trim() !== ''
+        formData.teaser && formData.teaser.trim() !== '' &&
+        formData.short_description && formData.short_description.trim() !== '' &&
+        formData.analysis && formData.analysis.trim() !== ''
       );
     case 4: // Display Settings & Tags
       return !!(
         formData.demand && 
         formData.homeDisplay && 
         formData.bannerDisplay && 
-        formData.stock_master_ids.length > 0
+        Array.isArray(formData.stock_master_ids) && formData.stock_master_ids.length > 0
       );
     case 5: // Review & Submit
       return validateAllSteps(formData);

@@ -2,8 +2,8 @@
 
 import React, { useEffect, useCallback } from 'react';
 import { X, Loader2 } from 'lucide-react';
-import { AddStockModalProps } from './types';
-import { useStockFormState, useStepNavigation, useDraftManagement } from './hooks';
+import { StockData, ImageUploadState } from './types';
+import { useStepNavigation } from './hooks';
 import { validateStep, validateImageFile } from './validation';
 import StepProgressIndicator from './StepProgressIndicator';
 import ModalFooter from './ModalFooter';
@@ -13,18 +13,50 @@ import Step3 from './steps/Step3';
 import Step4 from './steps/Step4';
 import Step5 from './steps/Step5';
 
-const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockMasters = [] }) => {
+interface EditStockModalProps {
+  stock: StockData;
+  onClose: () => void;
+  onSubmit: (stockData: StockData) => void;
+  stockMasters?: Array<{
+    id: number;
+    name: string;
+  }>;
+}
+
+const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmit, stockMasters = [] }) => {
   const totalSteps = 5;
   
-  // Custom hooks
-  const {
-    formData,
-    setFormData,
-    imageUpload,
-    setImageUpload,
-    handleInputChange,
-    handleFormDataChange,
-  } = useStockFormState();
+  // Initialize form data with existing stock data
+  const [formData, setFormData] = React.useState<StockData>({
+    company_name: stock.company_name || '',
+    logo: stock.logo || '',
+    price_change: stock.price_change || 0,
+    teaser: stock.teaser || '',
+    short_description: stock.short_description || '',
+    analysis: stock.analysis || '',
+    demand: stock.demand || 'High Demand',
+    homeDisplay: stock.homeDisplay || 'no',
+    bannerDisplay: stock.bannerDisplay || 'no',
+    valuation: stock.valuation || '',
+    price_per_share: stock.price_per_share || 0,
+    percentage_change: stock.percentage_change || 0,
+    founded: stock.founded || new Date().getFullYear(),
+    sector: stock.sector || 'Technology',
+    subsector: stock.subsector || 'Software',
+    headquarters: stock.headquarters || '',
+    min_units: stock.min_units || 1,
+    lot_size: stock.lot_size || 1,
+    stock_master_ids: Array.isArray(stock.stock_master_ids) ? stock.stock_master_ids : [],
+    icon: null as File | null,
+  });
+
+  const [imageUpload, setImageUpload] = React.useState<ImageUploadState>({
+    file: null,
+    preview: stock.logo ? stock.logo : null,
+    uploading: false,
+    progress: 0,
+    error: null,
+  });
 
   const {
     currentStep,
@@ -39,17 +71,27 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
     goToStep,
   } = useStepNavigation(totalSteps);
 
-  const {
-    isLoading,
-    isSavingDraft,
-    draftId,
-    saveDraft,
-    loadExistingDraft,
-    deleteDraft,
-  } = useDraftManagement();
+  // Mark all steps as completed initially since we're editing existing data
+  useEffect(() => {
+    setCompletedSteps(new Set([1, 2, 3, 4, 5]));
+  }, [setCompletedSteps]);
 
   // Validation function with current formData
   const validateCurrentStep = useCallback((step: number) => validateStep(step, formData), [formData]);
+
+  // Input change handler
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }, []);
+
+  // Form data change handler
+  const handleFormDataChange = useCallback((updates: Partial<StockData>) => {
+    setFormData(prev => ({ ...prev, ...updates }));
+  }, []);
 
   // File handling functions
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +131,7 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
     });
     
     handleFormDataChange({ icon: file });
-  }, [setImageUpload, handleFormDataChange]);
+  }, [stock.logo, handleFormDataChange]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -111,23 +153,35 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
     e.stopPropagation();
     
     const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
+    if (files && files[0]) {
       const file = files[0];
+      const validationError = validateImageFile(file);
       
-      const syntheticEvent = {
-        target: {
-          files: [file]
-        }
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      if (validationError) {
+        setImageUpload(prev => ({
+          ...prev,
+          error: validationError,
+          file: null,
+          preview: null,
+        }));
+        return;
+      }
+
+      const preview = URL.createObjectURL(file);
       
-      handleFileChange(syntheticEvent);
+      setImageUpload({
+        file,
+        preview,
+        uploading: false,
+        progress: 0,
+        error: null,
+      });
+      
+      handleFormDataChange({ icon: file });
     }
-  }, [handleFileChange]);
+  }, [handleFormDataChange]);
 
   const removeImage = useCallback(() => {
-    if (imageUpload.preview) {
-      URL.revokeObjectURL(imageUpload.preview);
-    }
     setImageUpload({
       file: null,
       preview: null,
@@ -136,35 +190,29 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
       error: null,
     });
     handleFormDataChange({ icon: null });
-  }, [imageUpload.preview, setImageUpload, handleFormDataChange]);
+  }, [handleFormDataChange]);
 
-  // Step navigation handlers
-  const handleNextStep = useCallback(() => {
-    nextStep(validateCurrentStep);
-  }, [nextStep, validateCurrentStep]);
-
-  const handleSaveAndNext = useCallback(async () => {
-    await saveDraft(formData, currentStep, totalSteps, validateCurrentStep, markStepCompleted, true);
-    if (validateCurrentStep(currentStep) && currentStep < totalSteps) {
-      setCurrentStep((prev: number) => prev + 1);
-    }
-  }, [saveDraft, formData, currentStep, totalSteps, validateCurrentStep, markStepCompleted, setCurrentStep]);
-
+  // Navigation handlers
   const handleGoToStep = useCallback((step: number) => {
     goToStep(step, validateCurrentStep);
   }, [goToStep, validateCurrentStep]);
 
+  const handleNextStep = useCallback(() => {
+    nextStep(validateCurrentStep);
+  }, [nextStep, validateCurrentStep]);
+
+  const handlePrevStep = useCallback(() => {
+    prevStep();
+  }, [prevStep]);
+
+  const handleSaveAndNext = useCallback(() => {
+    // For edit modal, we don't need to save drafts, just proceed to next step
+    handleNextStep();
+  }, [handleNextStep]);
+
   // Form submission
-  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+  const handleSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (draftId) {
-      await deleteDraft();
-    }
-    
-    // Debug: Log form data before cleaning
-    console.log('Form data before cleaning:', formData);
-    console.log('Image upload state:', imageUpload);
     
     // Prepare form data with proper image handling
     const submitData = {
@@ -173,22 +221,8 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
       icon: imageUpload.file, // Send the actual file object
     };
     
-    console.log('Final data being sent:', submitData);
-    
     onSubmit(submitData);
-  }, [draftId, deleteDraft, formData, imageUpload, onSubmit]);
-
-  // Load existing draft on mount
-  useEffect(() => {
-    loadExistingDraft(setFormData, setCurrentStep, setCompletedSteps, validateStep);
-  }, [loadExistingDraft, setFormData, setCurrentStep, setCompletedSteps]);
-
-  // Track step completion when form data changes
-  useEffect(() => {
-    if (isStepCompleted(currentStep) && !validateCurrentStep(currentStep)) {
-      markStepIncomplete(currentStep);
-    }
-  }, [formData, currentStep, isStepCompleted, validateCurrentStep, markStepIncomplete]);
+  }, [formData, imageUpload, onSubmit]);
 
   // Render step content
   const renderStepContent = () => {
@@ -233,23 +267,15 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
         <div className="bg-themeTeal px-6 py-4 rounded-t">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-white">Add New Stock</h3>
+              <h3 className="text-base font-semibold text-white">Edit Stock</h3>
               <p className="text-xs text-themeTealWhite mt-1">Step {currentStep} of {totalSteps}</p>
             </div>
-            <div className="flex items-center space-x-2">
-              {isSavingDraft && (
-                <div className="flex items-center text-themeTealWhite text-xs">
-                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                  Saving...
-                </div>
-              )}
-              <button
-                onClick={onClose}
-                className="text-themeTealWhite transition duration-300 cursor-pointer"
-              >
-                <X/>
-              </button>
-            </div>
+            <button
+              onClick={onClose}
+              className="text-themeTealWhite transition duration-300 cursor-pointer"
+            >
+              <X/>
+            </button>
           </div>
         </div>
 
@@ -264,30 +290,25 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
 
         {/* Modal Body */}
         <div className="p-6 flex-1 overflow-y-auto">
-          {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <Loader2 className="w-8 h-8 animate-spin text-themeTeal" />
-            </div>
-          ) : (
-            <form id="stock-form" onSubmit={handleSubmit}>
-              {renderStepContent()}
-            </form>
-          )}
+          <form id="edit-stock-form" onSubmit={handleSubmit}>
+            {renderStepContent()}
+          </form>
         </div>
 
         {/* Modal Footer */}
         <ModalFooter
           currentStep={currentStep}
           totalSteps={totalSteps}
-          isSavingDraft={isSavingDraft}
+          isSavingDraft={false}
           validateStep={validateCurrentStep}
-          onPrevStep={prevStep}
+          onPrevStep={handlePrevStep}
           onNextStep={handleNextStep}
           onSaveAndNext={handleSaveAndNext}
+          isEditMode={true}
         />
       </div>
     </div>
   );
 };
 
-export default AddStockModal;
+export default EditStockModal;
