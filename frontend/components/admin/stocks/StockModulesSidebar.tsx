@@ -83,6 +83,17 @@ const modules = [
     iconColor: 'text-emerald-600',
     borderColor: 'border-emerald-500',
   },
+  {
+    id: 'financial-data',
+    title: 'Upload Financial Data',
+    description: 'Import income statement, balance sheet & cash flow',
+    icon: BarChart3,
+    color: 'green',
+    bgColor: 'bg-green-50',
+    hoverBg: 'hover:bg-green-100',
+    iconColor: 'text-green-600',
+    borderColor: 'border-green-500',
+  },
 ];
 
 const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({

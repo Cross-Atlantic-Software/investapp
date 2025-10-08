@@ -5,6 +5,7 @@ import { getPriceData } from "../controllers/admin/stockPriceController";
 import { StockSectorOutlookManagementController } from "../controllers/admin/stockSectorOutlookManagement";
 import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
 import { StockDisplayController } from "../controllers/stocks/stockDisplayController";
+import { FinancialDataController } from "../controllers/admin/financialDataController";
 
 const router = express.Router();
 
@@ -32,5 +33,8 @@ router.get("/stocks/:id/sector-outlooks", StockSectorOutlookManagementController
 
 // Public Sector Insights PDF Routes (no authentication required)
 router.get("/stocks/:id/sector-insights-pdfs", StockSectorInsightsPdfManagementController.getPdfsByStockIdPublic);
+
+// Public Financial Data Routes (no authentication required)
+router.get("/stocks/:id/financial-data/:category", FinancialDataController.getStockFinancialDataPublic);
 
 export default router;
