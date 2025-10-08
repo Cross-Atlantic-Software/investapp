@@ -1,10 +1,18 @@
 import { Request, Response } from 'express';
 import Product from '../../Models/Product';
+import db from '../../utils/database';
 
 export class StockDisplayController {
+  private async ensureDbReady() {
+    await db.sequelizePromise;
+  }
+
   // Get stocks for banner display
   static async getBannerDisplayStocks(req: Request, res: Response) {
     try {
+      const controller = new StockDisplayController();
+      await controller.ensureDbReady();
+      
       const stocks = await Product.findAll({
         where: {
           bannerDisplay: 'yes'
@@ -40,6 +48,9 @@ export class StockDisplayController {
   // Get stocks for home display
   static async getHomeDisplayStocks(req: Request, res: Response) {
     try {
+      const controller = new StockDisplayController();
+      await controller.ensureDbReady();
+      
       const stocks = await Product.findAll({
         where: {
           homeDisplay: 'yes'

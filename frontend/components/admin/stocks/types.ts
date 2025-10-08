@@ -57,3 +57,52 @@ export interface ImageUploadProps {
   onDrop: (e: React.DragEvent) => void;
   onRemoveImage: () => void;
 }
+
+// Financial Data Types
+export interface FinancialKpi {
+  id: number;
+  category: 'income_statement' | 'balance_sheet' | 'cash_flow';
+  name: string;
+  display_order: number;
+  unit: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockFinancialData {
+  kpi_id: number;
+  name: string;
+  unit: string;
+  display_order: number;
+  values: Record<number, number | null>;
+}
+
+export interface FinancialDataResponse {
+  success: boolean;
+  data: {
+    kpis: StockFinancialData[];
+    years: number[];
+    category: string;
+  };
+}
+
+export interface FinancialDataUploadResponse {
+  success: boolean;
+  message: string;
+  data: {
+    inserted: number;
+    updated: number;
+    totalProcessed: number;
+  };
+}
+
+// Component Props
+export interface FinancialPerformanceSectionProps {
+  stockId: string;
+}
+
+export interface FinancialDataUploadProps {
+  stockId: string;
+  stockName: string;
+  onUploadSuccess?: () => void;
+}

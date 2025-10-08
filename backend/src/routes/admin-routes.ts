@@ -43,6 +43,7 @@ import { StockPerformancePdfManagementController, uploadMiddleware } from "../co
 import { StockSectorOutlookManagementController } from "../controllers/admin/stockSectorOutlookManagement";
 import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
 import { MethodologyNotesManagementController } from "../controllers/admin/methodologyNotesManagement";
+import { FinancialDataController } from "../controllers/admin/financialDataController";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -269,6 +270,11 @@ router.get("/stocks/:id/price-data", getPriceData);
 router.get("/stocks/:id/price-data/latest", getLatestPriceData);
 router.delete("/stocks/:id/price-data", deleteAllPriceData);
 router.get("/stocks/:id/price-data/exists", checkPriceDataExists);
+
+// Financial Data Management Routes
+router.get("/financial-kpis/:category", FinancialDataController.getKpisByCategory);
+router.get("/stocks/:stockId/financial-data/:category", FinancialDataController.getStockFinancialData);
+router.post("/stocks/:stockId/financial-data/:category/upload", upload.single('csvFile'), FinancialDataController.uploadFinancialDataCSV);
 
 // Methodology Notes Management Routes
 router.get("/methodology-notes", methodologyNotesController.getAllMethodologyNotes);

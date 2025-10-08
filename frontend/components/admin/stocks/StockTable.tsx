@@ -12,6 +12,7 @@ import ConfirmationModal from '@/components/admin/shared/ConfirmationModal';
 import EditStockModal from './EditStockModal';
 import ViewStockModal from './ViewStockModal';
 import StockModulesSidebar from './StockModulesSidebar';
+import FinancialDataUpload from './FinancialDataUpload';
 
 interface Stock {
   id: number;
@@ -187,6 +188,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   
   // Sector Insights PDF management state
   const [sectorInsightsPdfModal, setSectorInsightsPdfModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
+    isOpen: false,
+    stock: null
+  });
+  const [financialDataModal, setFinancialDataModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
     isOpen: false,
     stock: null
   });
@@ -1171,6 +1176,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       case 'sector-insights':
         handleManageSectorInsightsPdfs(sidebarStock);
         break;
+      case 'financial-data':
+        setFinancialDataModal({ isOpen: true, stock: sidebarStock });
+        break;
     }
   };
 
@@ -1536,6 +1544,38 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             onRefresh();
           }}
         />
+      )}
+
+      {/* Financial Data Upload Modal */}
+      {financialDataModal.isOpen && financialDataModal.stock && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t-lg">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-white">Upload Financial Data</h2>
+                <button
+                  onClick={() => setFinancialDataModal({ isOpen: false, stock: null })}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <FinancialDataUpload
+                stockId={financialDataModal.stock.id.toString()}
+                stockName={financialDataModal.stock.company_name}
+                onUploadSuccess={() => {
+                  onNotification?.('success', 'Success', 'Financial data uploaded successfully!');
+                  setFinancialDataModal({ isOpen: false, stock: null });
+                }}
+              />
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Scorecard Management Modal */}
