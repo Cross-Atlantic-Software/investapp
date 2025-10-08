@@ -86,13 +86,24 @@ const modules = [
   {
     id: 'financial-data',
     title: 'Upload Financial Data',
-    description: 'Import income statement, balance sheet & cash flow',
-    icon: BarChart3,
+    description: 'Import financial statements',
+    icon: Upload,
     color: 'green',
     bgColor: 'bg-green-50',
     hoverBg: 'hover:bg-green-100',
     iconColor: 'text-green-600',
     borderColor: 'border-green-500',
+  },
+  {
+    id: 'shareholding',
+    title: 'Manage Shareholding',
+    description: 'Configure shareholding distribution',
+    icon: BarChart3,
+    color: 'cyan',
+    bgColor: 'bg-cyan-50',
+    hoverBg: 'hover:bg-cyan-100',
+    iconColor: 'text-cyan-600',
+    borderColor: 'border-cyan-500',
   },
 ];
 

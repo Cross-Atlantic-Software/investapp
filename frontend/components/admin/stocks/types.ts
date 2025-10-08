@@ -106,3 +106,27 @@ export interface FinancialDataUploadProps {
   stockName: string;
   onUploadSuccess?: () => void;
 }
+
+// Shareholding Types
+export interface StockShareholding {
+  id: number;
+  stock_id: number;
+  holder_name: string;
+  percentage: number;
+  holder_type?: string;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShareholdingFormData {
+  holder_name: string;
+  percentage: number;
+  holder_type?: string;
+}
+
+export interface ShareholdingManagementProps {
+  stockId: string;
+  stockName: string;
+  onClose: () => void;
+}

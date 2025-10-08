@@ -44,6 +44,7 @@ import { StockSectorOutlookManagementController } from "../controllers/admin/sto
 import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
 import { MethodologyNotesManagementController } from "../controllers/admin/methodologyNotesManagement";
 import { FinancialDataController } from "../controllers/admin/financialDataController";
+import { StockShareholdingController } from "../controllers/admin/stockShareholdingController";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -283,5 +284,11 @@ router.get("/methodology-notes/:id", methodologyNotesController.getMethodologyNo
 router.post("/methodology-notes", methodologyNotesController.createMethodologyNote);
 router.put("/methodology-notes/:id", methodologyNotesController.updateMethodologyNote);
 router.delete("/methodology-notes/:id", methodologyNotesController.deleteMethodologyNote);
+
+// Stock Shareholding Management Routes
+router.get("/stocks/:id/shareholding", StockShareholdingController.getStockShareholding);
+router.post("/stocks/:id/shareholding", StockShareholdingController.createShareholding);
+router.put("/shareholding/:id", StockShareholdingController.updateShareholding);
+router.delete("/shareholding/:id", StockShareholdingController.deleteShareholding);
 
 export default router;

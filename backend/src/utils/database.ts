@@ -19,6 +19,7 @@ import { StockSectorOutlookModel, initializeStockSectorOutlookModel } from "../M
 import { StockSectorOutlookAccordionModel, initializeStockSectorOutlookAccordionModel } from "../Models/StockSectorOutlookAccordion";
 import { StockSectorInsightsPdfModel, initializeStockSectorInsightsPdfModel } from "../Models/StockSectorInsightsPdf";
 import { MethodologyNote, initializeMethodologyNoteModel } from "../Models/MethodologyNote";
+import StockShareholding, { initializeStockShareholdingModel } from "../Models/StockShareholding";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -111,6 +112,9 @@ async function initializeSequelize() {
   
   // Initialize Methodology Note model
   initializeMethodologyNoteModel(sequelize);
+  
+  // Initialize Stock Shareholding model
+  initializeStockShareholdingModel(sequelize);
   
   // Set up associations for Sector Outlook
   StockSectorOutlookModel.hasMany(StockSectorOutlookAccordionModel, {
@@ -258,6 +262,12 @@ export const db = {
       throw new Error('MethodologyNote model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return MethodologyNote;
+  },
+  get StockShareholding() {
+    if (!StockShareholding) {
+      throw new Error('StockShareholding model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockShareholding;
   },
 };
 
