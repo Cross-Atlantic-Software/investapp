@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Upload, FileText, X, CheckCircle, AlertCircle, Download, Trash2 } from 'lucide-react';
 import { FinancialDataUploadProps } from './types';
 
 export default function FinancialDataUpload({ stockId, stockName, onUploadSuccess }: FinancialDataUploadProps) {
@@ -14,12 +14,133 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
   const [selectedCategory, setSelectedCategory] = useState<string>('income_statement');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [dataExists, setDataExists] = useState<{[key: string]: boolean}>({
+    income_statement: false,
+    balance_sheet: false,
+    cash_flow: false
+  });
+  const [checkingData, setCheckingData] = useState(false);
 
   const categories = [
     { value: 'income_statement', label: 'Income Statement' },
     { value: 'balance_sheet', label: 'Balance Sheet' },
     { value: 'cash_flow', label: 'Cash Flow' }
   ];
+
+  // Check if financial data exists for all categories
+  const checkDataExists = async () => {
+    setCheckingData(true);
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const newDataExists = { ...dataExists };
+      
+      for (const category of categories) {
+        const response = await fetch(`/api/admin/stocks/${stockId}/financial-data/${category.value}/exists`, {
+          method: 'GET',
+          headers: {
+            'token': token,
+          },
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          newDataExists[category.value] = result.success && result.data?.exists;
+        }
+      }
+      
+      setDataExists(newDataExists);
+    } catch (error) {
+      console.error('Error checking data existence:', error);
+    } finally {
+      setCheckingData(false);
+    }
+  };
+
+  // Check for existing data when component mounts
+  useEffect(() => {
+    checkDataExists();
+  }, [stockId]);
+
+  // Handle CSV download for a specific category
+  const handleDownloadCSV = async (category: string) => {
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/stocks/${stockId}/financial-data/${category}/export`, {
+        method: 'GET',
+        headers: {
+          'token': token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download CSV');
+      }
+
+      // Get the CSV content
+      const csvContent = await response.text();
+      
+      // Create a blob and download it
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `stock_${stockId}_${category}_data.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      setUploadStatus({
+        status: 'error',
+        message: `Failed to download ${category.replace('_', ' ')} CSV`
+      });
+    }
+  };
+
+  // Handle CSV delete for a specific category
+  const handleDeleteCSV = async (category: string) => {
+    const categoryName = category.replace('_', ' ');
+    if (!window.confirm(`Are you sure you want to delete all ${categoryName} data for this stock? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/stocks/${stockId}/financial-data/${category}/delete`, {
+        method: 'DELETE',
+        headers: {
+          'token': token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete CSV data');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setUploadStatus({
+          status: 'success',
+          message: `${categoryName} data deleted successfully`
+        });
+        // Refresh data existence check after successful deletion
+        checkDataExists();
+        onUploadSuccess?.();
+      } else {
+        throw new Error(result.message || 'Failed to delete data');
+      }
+    } catch (error) {
+      console.error('Error deleting CSV:', error);
+      setUploadStatus({
+        status: 'error',
+        message: `Failed to delete ${categoryName} data`
+      });
+    }
+  };
 
   const handleFileUpload = async (file: File) => {
     if (!file) return;
@@ -49,6 +170,8 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
         });
         setSelectedFile(null);
         onUploadSuccess?.();
+        // Refresh data existence check after successful upload
+        checkDataExists();
       } else {
         setUploadStatus({
           status: 'error',
@@ -203,6 +326,57 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
                 'Upload CSV'
               )}
             </button>
+          </div>
+        )}
+
+        {/* Download and Delete Buttons Section - Only show if there's data or checking */}
+        {(checkingData || Object.values(dataExists).some(exists => exists)) && (
+          <div className="mt-6 pt-6 border-t border-gray-200">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Manage Existing Data</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {categories.map((category) => (
+                <div key={category.value} className="flex flex-col gap-2">
+                  {/* Only show buttons if data exists for this category or checking */}
+                  {(checkingData || dataExists[category.value]) && (
+                    <>
+                      <button
+                        onClick={() => handleDownloadCSV(category.value)}
+                        disabled={!dataExists[category.value] || uploadStatus.status === 'uploading' || checkingData}
+                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          dataExists[category.value] && !checkingData
+                            ? 'bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        {checkingData ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+                        ) : (
+                          <Download className="w-4 h-4" />
+                        )}
+                        {checkingData ? 'Checking...' : `Download ${category.label}`}
+                      </button>
+                      <button
+                        onClick={() => handleDeleteCSV(category.value)}
+                        disabled={!dataExists[category.value] || uploadStatus.status === 'uploading' || checkingData}
+                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          dataExists[category.value] && !checkingData
+                            ? 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
+                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        }`}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        Delete {category.label}
+                      </button>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            {!checkingData && Object.values(dataExists).every(exists => !exists) && (
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                No financial data available
+              </p>
+            )}
           </div>
         )}
 

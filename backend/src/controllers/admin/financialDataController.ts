@@ -240,23 +240,18 @@ export class FinancialDataController {
         }
       }
 
-      // Get all existing data for this stock and category to avoid duplicates
-      const existingDataMap = new Map<string, any>();
-      const existingData = await StockFinancialData.findAll({
+      // Clear existing data for this stock and category (replace mode)
+      await StockFinancialData.destroy({
         where: { 
           stock_id: stockId,
           category
         }
       });
 
-      existingData.forEach((data: any) => {
-        const key = `${data.kpi_id}-${data.year}`;
-        existingDataMap.set(key, data);
-      });
+      console.log(`Cleared existing ${category} data for stock ${stockId}`);
 
-      // Process each row
+      // Process each row and prepare data for bulk insert
       const dataToInsert: any[] = [];
-      const dataToUpdate: any[] = [];
 
       for (const row of dataRows) {
         const kpiName = row[kpiColumn];
@@ -272,35 +267,20 @@ export class FinancialDataController {
           const value = parseFloat(row[yearCol]);
 
           if (!isNaN(year) && !isNaN(value)) {
-            const key = `${kpiId}-${year}`;
-            const existingRecord = existingDataMap.get(key);
-
-            if (existingRecord) {
-              dataToUpdate.push({ id: existingRecord.id, value });
-            } else {
-              dataToInsert.push({
-                stock_id: stockId,
-                kpi_id: kpiId,
-                category: category as 'income_statement' | 'balance_sheet' | 'cash_flow',
-                year,
-                value
-              });
-            }
+            dataToInsert.push({
+              stock_id: stockId,
+              kpi_id: kpiId,
+              category: category as 'income_statement' | 'balance_sheet' | 'cash_flow',
+              year,
+              value
+            });
           }
         }
       }
 
-      // Insert new data
+      // Bulk insert new data
       if (dataToInsert.length > 0) {
         await StockFinancialData.bulkCreate(dataToInsert);
-      }
-
-      // Update existing data
-      for (const updateData of dataToUpdate) {
-        await StockFinancialData.update(
-          { value: updateData.value },
-          { where: { id: updateData.id } }
-        );
       }
 
       res.json({
@@ -308,8 +288,7 @@ export class FinancialDataController {
         message: 'Financial data uploaded successfully',
         data: {
           inserted: dataToInsert.length,
-          updated: dataToUpdate.length,
-          totalProcessed: dataToInsert.length + dataToUpdate.length
+          totalProcessed: dataToInsert.length
         }
       });
     } catch (error) {
@@ -419,6 +398,175 @@ export class FinancialDataController {
         success: false,
         message: 'Failed to fetch financial data',
         error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  // Export financial data as CSV for a specific category
+  static async exportFinancialDataCSV(req: Request, res: Response) {
+    try {
+      const controller = new FinancialDataController();
+      await controller.ensureDbReady();
+      
+      const { stockId, category } = req.params;
+
+      if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid category. Must be income_statement, balance_sheet, or cash_flow'
+        });
+      }
+
+      // Get KPIs for the category
+      const kpis = await FinancialKpi.findAll({
+        where: { category },
+        order: [['display_order', 'ASC']]
+      });
+
+      if (kpis.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: `No KPIs found for ${category}`
+        });
+      }
+
+      // Get financial data for the stock and category
+      const financialData = await StockFinancialData.findAll({
+        where: {
+          stock_id: stockId,
+          category
+        },
+        order: [
+          ['kpi_id', 'ASC'],
+          ['year', 'ASC']
+        ]
+      });
+
+      if (financialData.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: `No financial data found for ${category}`
+        });
+      }
+
+      // Organize data by KPI and year
+      const organizedData: any = {};
+      const years = new Set<number>();
+
+      financialData.forEach((data: any) => {
+        const kpiName = kpis.find(kpi => kpi.id === data.kpi_id)?.name;
+        if (!kpiName) return;
+        
+        if (!organizedData[kpiName]) {
+          organizedData[kpiName] = {};
+        }
+        organizedData[kpiName][data.year] = data.value;
+        years.add(data.year);
+      });
+
+      // Convert to CSV format
+      const sortedYears = Array.from(years).sort((a, b) => a - b);
+      const csvHeaders = [...sortedYears, 'KPI Name'].join(',') + '\n';
+      
+      const csvRows = Object.entries(organizedData).map(([kpiName, values]: [string, any]) => {
+        const row = sortedYears.map(year => values[year] || '');
+        return [...row, kpiName].join(',');
+      }).join('\n');
+
+      const csvContent = csvHeaders + csvRows;
+
+      // Set headers for CSV download
+      const categoryName = category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename="stock_${stockId}_${category}_data.csv"`);
+      res.setHeader('Content-Length', Buffer.byteLength(csvContent));
+
+      res.send(csvContent);
+
+    } catch (error) {
+      console.error('Error exporting financial data CSV:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to export financial data CSV'
+      });
+    }
+  }
+
+  // Check if financial data exists for a specific stock and category
+  static async checkFinancialDataExists(req: Request, res: Response) {
+    try {
+      const controller = new FinancialDataController();
+      await controller.ensureDbReady();
+      
+      const { stockId, category } = req.params;
+
+      if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid category. Must be income_statement, balance_sheet, or cash_flow'
+        });
+      }
+
+      const count = await StockFinancialData.count({
+        where: {
+          stock_id: stockId,
+          category
+        }
+      });
+
+      res.json({
+        success: true,
+        message: 'Financial data existence checked successfully',
+        data: {
+          exists: count > 0,
+          count
+        }
+      });
+
+    } catch (error) {
+      console.error('Error checking financial data existence:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to check financial data existence'
+      });
+    }
+  }
+
+  // Delete financial data for a specific stock and category
+  static async deleteFinancialData(req: Request, res: Response) {
+    try {
+      const controller = new FinancialDataController();
+      await controller.ensureDbReady();
+      
+      const { stockId, category } = req.params;
+
+      if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid category. Must be income_statement, balance_sheet, or cash_flow'
+        });
+      }
+
+      const deletedCount = await StockFinancialData.destroy({
+        where: {
+          stock_id: stockId,
+          category
+        }
+      });
+
+      res.json({
+        success: true,
+        message: `${category.replace('_', ' ')} data deleted successfully`,
+        data: {
+          deletedCount
+        }
+      });
+
+    } catch (error) {
+      console.error('Error deleting financial data:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete financial data'
       });
     }
   }

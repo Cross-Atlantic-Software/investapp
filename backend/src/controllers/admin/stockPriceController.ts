@@ -8,7 +8,7 @@ import { ExcelDateConverter } from '../../utils/excelDateConverter';
 const stockPriceDataModel = new StockPriceDataModel();
 
 // Configure multer for CSV upload
-const upload = multer({
+export const upload = multer({
   storage: multer.memoryStorage(),
   fileFilter: (req, file, cb) => {
     if (file.mimetype === 'text/csv' || file.originalname.endsWith('.csv')) {
@@ -278,4 +278,74 @@ export const checkPriceDataExists = async (req: Request, res: Response) => {
   }
 };
 
-export { upload };
+// Export price data as CSV
+export const exportPriceDataCSV = async (req: Request, res: Response) => {
+  try {
+    const { id: stockId } = req.params;
+
+    // Get all price data for the stock
+    const priceData = await stockPriceDataModel.getPriceDataByStockId(parseInt(stockId));
+    
+    if (!priceData || priceData.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No price data found for this stock'
+      });
+    }
+
+    // Convert to CSV format
+    const csvHeaders = 'Date,Open,High,Low,Close*,Volume\n';
+    const csvRows = priceData.map(row => {
+      // Convert date to Excel serial number format
+      // Handle both Date objects and date strings
+      const dateObj = row.date instanceof Date ? row.date : new Date(row.date);
+      const excelSerial = ExcelDateConverter.dateToExcelSerial(dateObj);
+      return `${excelSerial},${row.open_price},${row.high_price},${row.low_price},${row.close_price},${row.volume}`;
+    }).join('\n');
+
+    const csvContent = csvHeaders + csvRows;
+
+    // Set headers for CSV download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="stock_${stockId}_price_data.csv"`);
+    res.setHeader('Content-Length', Buffer.byteLength(csvContent));
+
+    res.send(csvContent);
+
+  } catch (error) {
+    console.error('Error exporting price data CSV:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to export price data CSV'
+    });
+  }
+};
+
+// Delete all price data for a stock (admin function)
+export const deletePriceDataAdmin = async (req: Request, res: Response) => {
+  try {
+    const { id: stockId } = req.params;
+
+    const success = await stockPriceDataModel.deleteAllPriceData(parseInt(stockId));
+
+    if (!success) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to delete price data'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'All price data deleted successfully'
+    });
+
+  } catch (error) {
+    console.error('Error deleting price data:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete price data'
+    });
+  }
+};
+

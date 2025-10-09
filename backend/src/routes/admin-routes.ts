@@ -63,6 +63,8 @@ import {
   getLatestPriceData, 
   deleteAllPriceData, 
   checkPriceDataExists,
+  exportPriceDataCSV,
+  deletePriceDataAdmin,
   upload 
 } from "../controllers/admin/stockPriceController";
 
@@ -268,14 +270,19 @@ router.post("/stock-drafts/cleanup", cleanupExpiredDrafts);
 // Stock Price Data Management Routes
 router.post("/stocks/:id/price-data/upload", upload.single('csvFile'), uploadPriceDataCSV);
 router.get("/stocks/:id/price-data", getPriceData);
+router.get("/stocks/:id/price-data/export", exportPriceDataCSV);
 router.get("/stocks/:id/price-data/latest", getLatestPriceData);
 router.delete("/stocks/:id/price-data", deleteAllPriceData);
+router.delete("/stocks/:id/price-data/admin", deletePriceDataAdmin);
 router.get("/stocks/:id/price-data/exists", checkPriceDataExists);
 
 // Financial Data Management Routes
 router.get("/financial-kpis/:category", FinancialDataController.getKpisByCategory);
 router.get("/stocks/:stockId/financial-data/:category", FinancialDataController.getStockFinancialData);
 router.post("/stocks/:stockId/financial-data/:category/upload", upload.single('csvFile'), FinancialDataController.uploadFinancialDataCSV);
+router.get("/stocks/:stockId/financial-data/:category/export", FinancialDataController.exportFinancialDataCSV);
+router.delete("/stocks/:stockId/financial-data/:category", FinancialDataController.deleteFinancialData);
+router.get("/stocks/:stockId/financial-data/:category/exists", FinancialDataController.checkFinancialDataExists);
 
 // Methodology Notes Management Routes
 router.get("/methodology-notes", methodologyNotesController.getAllMethodologyNotes);

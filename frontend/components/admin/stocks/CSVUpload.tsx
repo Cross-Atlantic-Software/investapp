@@ -1,5 +1,5 @@
-import React, { useState, useRef } from 'react';
-import { Upload, FileText, X, CheckCircle, AlertCircle } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Upload, FileText, X, CheckCircle, AlertCircle, Download, Trash2 } from 'lucide-react';
 
 interface CSVUploadProps {
   stockId: number;
@@ -24,7 +24,39 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
     message: ''
   });
   const [dragActive, setDragActive] = useState(false);
+  const [hasPriceData, setHasPriceData] = useState(false);
+  const [checkingData, setCheckingData] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Check if price data exists for this stock
+  const checkPriceDataExists = useCallback(async () => {
+    setCheckingData(true);
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/stocks/${stockId}/price-data/exists`, {
+        method: 'GET',
+        headers: {
+          'token': token,
+        },
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setHasPriceData(result.success && result.data?.exists);
+      }
+    } catch (error) {
+      console.error('Error checking price data existence:', error);
+      setHasPriceData(false);
+    } finally {
+      setCheckingData(false);
+    }
+  }, [stockId]);
+
+  // Check for existing data when component mounts
+  useEffect(() => {
+    checkPriceDataExists();
+  }, [stockId, checkPriceDataExists]);
 
   const handleFileSelect = async (file: File) => {
     if (!file) return;
@@ -85,6 +117,8 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
           recordsProcessed: result.data?.recordsProcessed
         });
         onUploadSuccess?.();
+        // Refresh data existence check after successful upload
+        checkPriceDataExists();
       } else {
         setUploadStatus({
           isUploading: false,
@@ -139,6 +173,90 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
       isError: false,
       message: ''
     });
+  };
+
+  const handleDownloadCSV = async () => {
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/stocks/${stockId}/price-data/export`, {
+        method: 'GET',
+        headers: {
+          'token': token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to download CSV');
+      }
+
+      // Get the CSV content
+      const csvContent = await response.text();
+      
+      // Create a blob and download it
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `stock_${stockId}_price_data.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading CSV:', error);
+      setUploadStatus({
+        isUploading: false,
+        isSuccess: false,
+        isError: true,
+        message: 'Failed to download CSV file'
+      });
+    }
+  };
+
+  const handleDeleteCSV = async () => {
+    if (!window.confirm('Are you sure you want to delete all price data for this stock? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      
+      const response = await fetch(`/api/admin/stocks/${stockId}/price-data/delete`, {
+        method: 'DELETE',
+        headers: {
+          'token': token,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete CSV data');
+      }
+
+      const result = await response.json();
+      
+      if (result.success) {
+        setUploadStatus({
+          isUploading: false,
+          isSuccess: true,
+          isError: false,
+          message: 'Price data deleted successfully'
+        });
+        // Refresh data existence check after successful deletion
+        checkPriceDataExists();
+        onUploadSuccess?.();
+      } else {
+        throw new Error(result.message || 'Failed to delete data');
+      }
+    } catch (error) {
+      console.error('Error deleting CSV:', error);
+      setUploadStatus({
+        isUploading: false,
+        isSuccess: false,
+        isError: true,
+        message: 'Failed to delete price data'
+      });
+    }
   };
 
   return (
@@ -232,6 +350,45 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
           </div>
         )}
       </div>
+
+      {/* Download and Delete Buttons - Only show if checking or data exists */}
+      {(checkingData || hasPriceData) && (
+        <div className="flex justify-center gap-3">
+          <button
+            onClick={handleDownloadCSV}
+            disabled={!hasPriceData || uploadStatus.isUploading || checkingData}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              hasPriceData && !checkingData
+                ? 'bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {checkingData ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
+            {checkingData ? 'Checking...' : 'Download CSV'}
+          </button>
+          <button
+            onClick={handleDeleteCSV}
+            disabled={!hasPriceData || uploadStatus.isUploading || checkingData}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              hasPriceData && !checkingData
+                ? 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
+                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete CSV
+          </button>
+        </div>
+      )}
+      {!checkingData && !hasPriceData && (
+        <p className="text-xs text-gray-500 text-center mt-2">
+          No price data available
+        </p>
+      )}
 
       {/* Status Message */}
       {uploadStatus.message && !uploadStatus.isUploading && (
