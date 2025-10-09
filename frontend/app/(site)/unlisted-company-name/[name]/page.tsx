@@ -143,6 +143,7 @@ export default function UnlistedCompanyDetails() {
   return (
     <>
       <ShareIntro
+        stockId={stockData.id}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Invest", href: "/invest" },
@@ -152,7 +153,6 @@ export default function UnlistedCompanyDetails() {
         company={stockData.company_name}
         investPrice={stockData.price_per_share}
         changeAbs={stockData.price_change}
-        changePct={0}
         updatedAt={stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "Recently"}
         tags={stockData.stock_masters?.map(master => master.name) || []}
         founded={stockData.founded}

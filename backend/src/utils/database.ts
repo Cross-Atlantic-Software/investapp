@@ -20,6 +20,7 @@ import { StockSectorOutlookAccordionModel, initializeStockSectorOutlookAccordion
 import { StockSectorInsightsPdfModel, initializeStockSectorInsightsPdfModel } from "../Models/StockSectorInsightsPdf";
 import { MethodologyNote, initializeMethodologyNoteModel } from "../Models/MethodologyNote";
 import StockShareholding, { initializeStockShareholdingModel } from "../Models/StockShareholding";
+import Wishlist, { initializeWishlistModel } from "../Models/Wishlist";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -116,6 +117,9 @@ async function initializeSequelize() {
   // Initialize Stock Shareholding model
   initializeStockShareholdingModel(sequelize);
   
+  // Initialize Wishlist model
+  initializeWishlistModel(sequelize);
+  
   // Set up associations for Sector Outlook
   StockSectorOutlookModel.hasMany(StockSectorOutlookAccordionModel, {
     foreignKey: 'sector_outlook_id',
@@ -124,6 +128,27 @@ async function initializeSequelize() {
   StockSectorOutlookAccordionModel.belongsTo(StockSectorOutlookModel, {
     foreignKey: 'sector_outlook_id',
     as: 'sectorOutlook',
+  });
+  
+  // Set up associations for Wishlist
+  Wishlist.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user'
+  });
+
+  Wishlist.belongsTo(Product, {
+    foreignKey: 'stock_id',
+    as: 'stock'
+  });
+
+  User.hasMany(Wishlist, {
+    foreignKey: 'user_id',
+    as: 'userWishlist'
+  });
+
+  Product.hasMany(Wishlist, {
+    foreignKey: 'stock_id',
+    as: 'stockWishlist'
   });
   
   // No associations needed since only admins handle stocks
@@ -268,6 +293,12 @@ export const db = {
       throw new Error('StockShareholding model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockShareholding;
+  },
+  get Wishlist() {
+    if (!Wishlist) {
+      throw new Error('Wishlist model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Wishlist;
   },
 };
 
