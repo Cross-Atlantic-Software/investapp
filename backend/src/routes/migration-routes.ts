@@ -211,4 +211,112 @@ router.post("/add-last-active-column", async (req, res) => {
   }
 });
 
+// Run migration to create shareholder_types table
+router.post("/create-shareholder-types-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-shareholder-types-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'shareholder_types'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'shareholder_types' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'shareholder_types' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE shareholder_types (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // Insert default shareholder types
+    await db.sequelize.query(`
+      INSERT INTO shareholder_types (name) VALUES
+      ('Promoters'),
+      ('Institutional Investors'),
+      ('Foreign Institutional Investors'),
+      ('Retail Investors'),
+      ('High Net Worth Individuals'),
+      ('Employee Stock Ownership'),
+      ('Government'),
+      ('Other')
+    `);
+    
+    console.log("✅ Created shareholder_types table successfully");
+    
+    res.json({
+      success: true,
+      message: "Shareholder types table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Run migration to add shareholder_type_id column to stock_shareholding
+router.post("/add-shareholder-type-to-stock-shareholding", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: add-shareholder-type-to-stock-shareholding");
+    
+    // Check if column already exists
+    const [results] = await db.sequelize.query(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'stock_shareholding' 
+      AND COLUMN_NAME = 'shareholder_type_id'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Column 'shareholder_type_id' already exists");
+      return res.json({
+        success: true,
+        message: "Column 'shareholder_type_id' already exists"
+      });
+    }
+
+    // Add the column
+    await db.sequelize.query(`
+      ALTER TABLE stock_shareholding 
+      ADD COLUMN shareholder_type_id INT NULL,
+      ADD CONSTRAINT fk_stock_shareholding_shareholder_type 
+      FOREIGN KEY (shareholder_type_id) REFERENCES shareholder_types(id) 
+      ON DELETE SET NULL ON UPDATE CASCADE
+    `);
+    
+    console.log("✅ Added shareholder_type_id column successfully");
+    
+    res.json({
+      success: true,
+      message: "Shareholder type column added successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;

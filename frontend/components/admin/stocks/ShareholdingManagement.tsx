@@ -1,19 +1,72 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Plus, Edit2, Trash2, Save, XCircle } from 'lucide-react';
-import { StockShareholding, ShareholdingFormData, ShareholdingManagementProps } from './types';
+import { X, Plus, Edit2, Trash2, Save, XCircle, Settings, ToggleLeft, ToggleRight } from 'lucide-react';
+import { StockShareholding, ShareholdingFormData, ShareholdingManagementProps, ShareholderType } from './types';
 
 export default function ShareholdingManagement({ stockId, stockName, onClose }: ShareholdingManagementProps) {
   const [shareholdingData, setShareholdingData] = useState<StockShareholding[]>([]);
+  const [shareholderTypes, setShareholderTypes] = useState<ShareholderType[]>([]);
+  const [activeShareholderTypes, setActiveShareholderTypes] = useState<ShareholderType[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showShareholderTypeManagement, setShowShareholderTypeManagement] = useState(false);
   const [formData, setFormData] = useState<ShareholdingFormData>({
     holder_name: '',
-    percentage: 0
+    percentage: 0,
+    shareholder_type_id: undefined
   });
+
+  const loadShareholderTypes = useCallback(async () => {
+    try {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        console.warn('No admin token found. User needs to be logged in as admin.');
+        setShareholderTypes([]);
+        return;
+      }
+      
+      const response = await fetch('/api/admin/shareholder-types', {
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token,
+        },
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setShareholderTypes(result.data || []);
+      } else {
+        console.error('Failed to load shareholder types:', result.message);
+        setShareholderTypes([]);
+      }
+    } catch (error) {
+      console.error('Error loading shareholder types:', error);
+      setShareholderTypes([]);
+    }
+  }, []);
+
+  const loadActiveShareholderTypes = useCallback(async () => {
+    try {
+      const response = await fetch('/api/shareholder-types', {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        setActiveShareholderTypes(result.data || []);
+      } else {
+        console.error('Failed to load active shareholder types:', result.message);
+        setActiveShareholderTypes([]);
+      }
+    } catch (error) {
+      console.error('Error loading active shareholder types:', error);
+    }
+  }, []);
 
   const loadShareholdingData = useCallback(async () => {
     try {
@@ -43,7 +96,9 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
 
   useEffect(() => {
     loadShareholdingData();
-  }, [loadShareholdingData]);
+    loadShareholderTypes();
+    loadActiveShareholderTypes();
+  }, [loadShareholdingData, loadShareholderTypes, loadActiveShareholderTypes]);
 
   const handleAdd = async () => {
     if (!formData.holder_name.trim() || formData.percentage <= 0) {
@@ -62,7 +117,8 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         },
         body: JSON.stringify({
           holder_name: formData.holder_name,
-          percentage: formData.percentage
+          percentage: formData.percentage,
+          shareholder_type_id: formData.shareholder_type_id
         }),
       });
 
@@ -70,7 +126,7 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
       if (result.success) {
         await loadShareholdingData();
         setShowAddForm(false);
-        setFormData({ holder_name: '', percentage: 0 });
+        setFormData({ holder_name: '', percentage: 0, shareholder_type_id: undefined });
       } else {
         alert(result.message || 'Failed to add shareholding entry');
       }
@@ -99,7 +155,8 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         },
         body: JSON.stringify({
           holder_name: formData.holder_name,
-          percentage: formData.percentage
+          percentage: formData.percentage,
+          shareholder_type_id: formData.shareholder_type_id
         }),
       });
 
@@ -107,7 +164,7 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
       if (result.success) {
         await loadShareholdingData();
         setEditingId(null);
-        setFormData({ holder_name: '', percentage: 0 });
+        setFormData({ holder_name: '', percentage: 0, shareholder_type_id: undefined });
       } else {
         alert(result.message || 'Failed to update shareholding entry');
       }
@@ -154,14 +211,159 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
     setFormData({
       holder_name: item.holder_name,
       percentage: item.percentage,
-      holder_type: item.holder_type
+      holder_type: item.holder_type,
+      shareholder_type_id: item.shareholder_type_id
     });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setShowAddForm(false);
-    setFormData({ holder_name: '', percentage: 0 });
+    setFormData({ holder_name: '', percentage: 0, shareholder_type_id: undefined });
+  };
+
+  // ShareholderType management functions
+  const [shareholderTypeFormData, setShareholderTypeFormData] = useState({ name: '' });
+  const [editingShareholderTypeId, setEditingShareholderTypeId] = useState<number | null>(null);
+
+  const handleAddShareholderType = async () => {
+    if (!shareholderTypeFormData.name.trim()) {
+      alert('Please enter a shareholder type name');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const token = sessionStorage.getItem('adminToken');
+      const response = await fetch('/api/admin/shareholder-types', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'token': token }),
+        },
+        body: JSON.stringify({
+          name: shareholderTypeFormData.name.trim()
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        await loadShareholderTypes();
+        await loadActiveShareholderTypes();
+        setShareholderTypeFormData({ name: '' });
+        alert('Shareholder type added successfully');
+      } else {
+        alert(result.message || 'Failed to add shareholder type');
+      }
+    } catch (error) {
+      console.error('Error adding shareholder type:', error);
+      alert('Failed to add shareholder type');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteShareholderType = async (id: number) => {
+    try {
+      setSaving(true);
+      const token = sessionStorage.getItem('adminToken');
+      const response = await fetch(`/api/admin/shareholder-types/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'token': token }),
+        },
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        await loadShareholderTypes();
+        await loadActiveShareholderTypes();
+      } else {
+        alert(result.message || 'Failed to delete shareholder type');
+      }
+    } catch (error) {
+      console.error('Error deleting shareholder type:', error);
+      alert('Failed to delete shareholder type');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleToggleShareholderTypeStatus = async (id: number) => {
+    try {
+      setSaving(true);
+      const token = sessionStorage.getItem('adminToken');
+      const response = await fetch(`/api/admin/shareholder-types/${id}/toggle-status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'token': token }),
+        },
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        await loadShareholderTypes();
+        await loadActiveShareholderTypes();
+        alert('Shareholder type status updated successfully');
+      } else {
+        alert(result.message || 'Failed to toggle shareholder type status');
+      }
+    } catch (error) {
+      console.error('Error toggling shareholder type status:', error);
+      alert('Failed to toggle shareholder type status');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const startEditShareholderType = (type: ShareholderType) => {
+    setEditingShareholderTypeId(type.id);
+    setShareholderTypeFormData({ name: type.name });
+  };
+
+  const handleUpdateShareholderType = async (id: number) => {
+    if (!shareholderTypeFormData.name.trim()) {
+      alert('Please enter a shareholder type name');
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const token = sessionStorage.getItem('adminToken');
+      const response = await fetch(`/api/admin/shareholder-types/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token && { 'token': token }),
+        },
+        body: JSON.stringify({
+          name: shareholderTypeFormData.name.trim()
+        }),
+      });
+
+      const result = await response.json();
+      if (result.success) {
+        await loadShareholderTypes();
+        await loadActiveShareholderTypes();
+        setEditingShareholderTypeId(null);
+        setShareholderTypeFormData({ name: '' });
+        alert('Shareholder type updated successfully');
+      } else {
+        alert(result.message || 'Failed to update shareholder type');
+      }
+    } catch (error) {
+      console.error('Error updating shareholder type:', error);
+      alert('Failed to update shareholder type');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const cancelEditShareholderType = () => {
+    setEditingShareholderTypeId(null);
+    setShareholderTypeFormData({ name: '' });
   };
 
   const totalPercentage = shareholdingData.reduce((sum, item) => {
@@ -203,22 +405,44 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
             </div>
           </div>
 
-          {/* Add Button */}
-          <div className="mb-6">
+          {/* Add Buttons */}
+          <div className="mb-6 flex gap-3">
             <button
-              onClick={() => setShowAddForm(true)}
+              onClick={() => {
+                setShowAddForm(true);
+                setShowShareholderTypeManagement(false);
+              }}
               className="flex items-center gap-2 px-4 py-2 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition-colors"
             >
               <Plus className="w-4 h-4" />
               Add Shareholding Entry
+            </button>
+            <button
+              onClick={() => {
+                setShowShareholderTypeManagement(!showShareholderTypeManagement);
+                setShowAddForm(false);
+              }}
+              className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+            >
+              <Settings className="w-4 h-4" />
+              Manage Shareholder Types
             </button>
           </div>
 
           {/* Add Form */}
           {showAddForm && (
             <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-              <h3 className="text-base font-semibold mb-4">Add New Shareholding Entry</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-semibold">Add New Shareholding Entry</h3>
+                <button
+                  onClick={() => setShowAddForm(false)}
+                  className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Holder Name *
@@ -246,6 +470,23 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                     placeholder="0.00"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Shareholder Type
+                  </label>
+                  <select
+                    value={formData.shareholder_type_id || ''}
+                    onChange={(e) => setFormData({ ...formData, shareholder_type_id: e.target.value ? parseInt(e.target.value) : undefined })}
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                  >
+                    <option value="">Select Type</option>
+                    {activeShareholderTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="flex gap-2 mt-4">
                 <button
@@ -263,6 +504,129 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                   <XCircle className="w-4 h-4" />
                   Cancel
                 </button>
+              </div>
+            </div>
+          )}
+
+          {/* Shareholder Type Management */}
+          {showShareholderTypeManagement && (
+            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-base font-semibold">Manage Shareholder Types</h3>
+                <button
+                  onClick={() => setShowShareholderTypeManagement(false)}
+                  className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                  title="Close"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              
+              {/* Add New Type Form */}
+              <div className="mb-4 p-3 bg-white rounded-lg border">
+                <h4 className="text-sm font-medium mb-2">Add New Type</h4>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={shareholderTypeFormData.name}
+                    onChange={(e) => setShareholderTypeFormData({ name: e.target.value })}
+                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                    placeholder="Enter shareholder type name"
+                  />
+                  <button
+                    onClick={handleAddShareholderType}
+                    disabled={saving}
+                    className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Types List */}
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium">Existing Types</h4>
+                {shareholderTypes.length === 0 ? (
+                  <p className="text-sm text-gray-500">No shareholder types found. Please log in as admin to manage types.</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-2">
+                    {shareholderTypes.map((type) => (
+                      <div key={type.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                        {editingShareholderTypeId === type.id ? (
+                          // Edit Mode
+                          <div className="flex items-center gap-2 flex-1">
+                            <input
+                              type="text"
+                              value={shareholderTypeFormData.name}
+                              onChange={(e) => setShareholderTypeFormData({ name: e.target.value })}
+                              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded"
+                            />
+                            <button
+                              onClick={() => handleUpdateShareholderType(type.id)}
+                              disabled={saving}
+                              className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                            >
+                              <Save className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={cancelEditShareholderType}
+                              className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
+                            >
+                              <XCircle className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ) : (
+                          // Display Mode
+                          <>
+                            <div className="flex items-center gap-2">
+                              <span className="text-sm font-medium">{type.name}</span>
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                type.is_active 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-red-100 text-red-800'
+                              }`}>
+                                {type.is_active ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <button
+                                onClick={() => startEditShareholderType(type)}
+                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                title="Edit"
+                              >
+                                <Edit2 className="w-3 h-3" />
+                              </button>
+                              <button
+                                onClick={() => handleToggleShareholderTypeStatus(type.id)}
+                                disabled={saving}
+                                className={`p-1 rounded ${
+                                  type.is_active 
+                                    ? 'text-orange-600 hover:bg-orange-50' 
+                                    : 'text-green-600 hover:bg-green-50'
+                                }`}
+                                title={type.is_active ? 'Deactivate' : 'Activate'}
+                              >
+                                {type.is_active ? (
+                                  <ToggleRight className="w-3 h-3" />
+                                ) : (
+                                  <ToggleLeft className="w-3 h-3" />
+                                )}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteShareholderType(type.id)}
+                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                title="Delete"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -285,7 +649,7 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                     // Edit Form
                     <div>
                       <h3 className="text-base font-semibold mb-4">Edit Shareholding Entry</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Holder Name *
@@ -311,6 +675,23 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
                           />
                         </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Shareholder Type
+                          </label>
+                          <select
+                            value={formData.shareholder_type_id || ''}
+                            onChange={(e) => setFormData({ ...formData, shareholder_type_id: e.target.value ? parseInt(e.target.value) : undefined })}
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                          >
+                            <option value="">Select Type</option>
+                            {activeShareholderTypes.map((type) => (
+                              <option key={type.id} value={type.id}>
+                                {type.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
                       <div className="flex gap-2 mt-4">
                         <button
@@ -335,6 +716,11 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h3 className="text-sm font-medium text-gray-900">{item.holder_name}</h3>
+                        {item.shareholder_type_id && (
+                          <p className="text-xs text-gray-600 mt-1">
+                            {shareholderTypes.find(type => type.id === item.shareholder_type_id)?.name || 'Unknown Type'}
+                          </p>
+                        )}
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">

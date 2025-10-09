@@ -146,9 +146,9 @@ export default function FinancialPerformanceSection({ stockId }: FinancialPerfor
             ) : (
               financialData.map((kpi) => (
                 <tr key={kpi.kpi_id} className="border-b border-themeTealLighter last:border-0">
-                  <th className="text-left font-semibold py-4">{kpi.name}</th>
+                  <th className="text-left font-semibold text-md py-4">{kpi.name}</th>
                   {years.map((year) => (
-                    <td key={year} className="py-4 text-center text-themeTealLight">
+                    <td key={year} className="py-4 text-center text-sm text-themeTealLight">
                       {formatValue(kpi.values[year], kpi.unit)}
                     </td>
                 ))}

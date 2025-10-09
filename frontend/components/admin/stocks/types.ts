@@ -114,7 +114,16 @@ export interface StockShareholding {
   holder_name: string;
   percentage: number;
   holder_type?: string;
+  shareholder_type_id?: number;
   display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShareholderType {
+  id: number;
+  name: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -123,6 +132,7 @@ export interface ShareholdingFormData {
   holder_name: string;
   percentage: number;
   holder_type?: string;
+  shareholder_type_id?: number;
 }
 
 export interface ShareholdingManagementProps {

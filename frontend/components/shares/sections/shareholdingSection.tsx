@@ -3,6 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { StockShareholding } from '../../admin/stocks/types';
 
+interface ShareholderType {
+  id: number;
+  name: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 interface ShareholdingSectionProps {
   stockId: string;
 }
@@ -89,8 +97,8 @@ const PieChart: React.FC<{ data: StockShareholding[] }> = ({ data }) => {
                 y={labelY}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="text-xs font-medium fill-gray-600"
-                fontSize="10"
+                className="text-md font-semibold fill-gray-700"
+                fontSize="16"
               >
                 {item.holder_name}: {itemPercentage.toFixed(1)}%
               </text>
@@ -104,12 +112,30 @@ const PieChart: React.FC<{ data: StockShareholding[] }> = ({ data }) => {
 
 export default function ShareholdingSection({ stockId }: ShareholdingSectionProps) {
   const [shareholdingData, setShareholdingData] = useState<StockShareholding[]>([]);
+  const [shareholderTypes, setShareholderTypes] = useState<ShareholderType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     loadShareholdingData();
+    loadShareholderTypes();
   }, [stockId]);
+
+  const loadShareholderTypes = async () => {
+    try {
+      const response = await fetch('/api/shareholder-types');
+      const result = await response.json();
+      
+      if (result.success) {
+        setShareholderTypes(result.data || []);
+      } else {
+        console.error('Failed to load shareholder types:', result.message);
+        setShareholderTypes([]);
+      }
+    } catch (error) {
+      console.error('Error loading shareholder types:', error);
+    }
+  };
 
   const loadShareholdingData = async () => {
     try {
@@ -227,6 +253,7 @@ export default function ShareholdingSection({ stockId }: ShareholdingSectionProp
             <thead>
               <tr className="border-b border-gray-200">
                 <th className="text-left py-3 px-4 font-semibold text-gray-700">Shareholders</th>
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">Holder Type</th>
                 <th className="text-right py-3 px-4 font-semibold text-gray-700">Percentage Holding</th>
               </tr>
             </thead>
@@ -239,6 +266,14 @@ export default function ShareholdingSection({ stockId }: ShareholdingSectionProp
                       {item.holder_type && (
                         <p className="text-xs text-gray-600">{item.holder_type}</p>
                       )}
+                    </div>
+                  </td>
+                  <td className="py-2 px-3">
+                    <div className="text-sm text-gray-700">
+                      {item.shareholder_type_id 
+                        ? shareholderTypes.find(type => type.id === item.shareholder_type_id)?.name || 'Unknown Type'
+                        : '-'
+                      }
                     </div>
                   </td>
                   <td className="py-2 px-3 text-right">

@@ -20,6 +20,7 @@ import { StockSectorOutlookAccordionModel, initializeStockSectorOutlookAccordion
 import { StockSectorInsightsPdfModel, initializeStockSectorInsightsPdfModel } from "../Models/StockSectorInsightsPdf";
 import { MethodologyNote, initializeMethodologyNoteModel } from "../Models/MethodologyNote";
 import StockShareholding, { initializeStockShareholdingModel } from "../Models/StockShareholding";
+import ShareholderType, { initializeShareholderTypeModel } from "../Models/ShareholderType";
 import Wishlist, { initializeWishlistModel } from "../Models/Wishlist";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
@@ -117,6 +118,9 @@ async function initializeSequelize() {
   // Initialize Stock Shareholding model
   initializeStockShareholdingModel(sequelize);
   
+  // Initialize Shareholder Type model
+  initializeShareholderTypeModel(sequelize);
+  
   // Initialize Wishlist model
   initializeWishlistModel(sequelize);
   
@@ -149,6 +153,17 @@ async function initializeSequelize() {
   Product.hasMany(Wishlist, {
     foreignKey: 'stock_id',
     as: 'stockWishlist'
+  });
+
+  // Set up associations for ShareholderType
+  ShareholderType.hasMany(StockShareholding, {
+    foreignKey: 'shareholder_type_id',
+    as: 'shareholdings'
+  });
+
+  StockShareholding.belongsTo(ShareholderType, {
+    foreignKey: 'shareholder_type_id',
+    as: 'shareholderType'
   });
   
   // No associations needed since only admins handle stocks
@@ -299,6 +314,12 @@ export const db = {
       throw new Error('Wishlist model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return Wishlist;
+  },
+  get ShareholderType() {
+    if (!ShareholderType) {
+      throw new Error('ShareholderType model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return ShareholderType;
   },
 };
 

@@ -6,6 +6,7 @@ import { StockSectorOutlookManagementController } from "../controllers/admin/sto
 import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
 import { StockDisplayController } from "../controllers/stocks/stockDisplayController";
 import { FinancialDataController } from "../controllers/admin/financialDataController";
+import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
 
 const router = express.Router();
 
@@ -41,5 +42,8 @@ router.get("/stocks/:id/financial-data/:category", FinancialDataController.getSt
 
 // Public Shareholding Routes (no authentication required)
 router.get("/stocks/:id/shareholding", StockShareholdingController.getStockShareholding);
+
+// Public Shareholder Type Routes (no authentication required)
+router.get("/shareholder-types", ShareholderTypeController.getAllShareholderTypes);
 
 export default router;

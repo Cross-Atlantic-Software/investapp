@@ -46,6 +46,7 @@ import { MethodologyNotesManagementController } from "../controllers/admin/metho
 import { FinancialDataController } from "../controllers/admin/financialDataController";
 import { StockShareholdingController } from "../controllers/admin/stockShareholdingController";
 import { WishlistController } from "../controllers/stocks/wishlistController";
+import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -301,5 +302,12 @@ router.delete("/shareholding/:id", StockShareholdingController.deleteShareholdin
 
 // Wishlist Management Routes
 router.get("/wishlist/user/:userId", WishlistController.getUserWishlistAdmin);
+
+// Shareholder Type Management Routes
+router.get("/shareholder-types", ShareholderTypeController.getAllShareholderTypesAdmin);
+router.post("/shareholder-types", ShareholderTypeController.createShareholderType);
+router.put("/shareholder-types/:id", ShareholderTypeController.updateShareholderType);
+router.delete("/shareholder-types/:id", ShareholderTypeController.deleteShareholderType);
+router.patch("/shareholder-types/:id/toggle-status", ShareholderTypeController.toggleActiveStatus);
 
 export default router;

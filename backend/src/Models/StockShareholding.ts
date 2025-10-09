@@ -6,6 +6,7 @@ export interface StockShareholdingAttributes {
   holder_name: string;
   percentage: number;
   holder_type?: string;
+  shareholder_type_id?: number;
   display_order: number;
   created_at?: Date;
   updated_at?: Date;
@@ -19,6 +20,7 @@ export class StockShareholding extends Model<StockShareholdingAttributes, StockS
   public holder_name!: string;
   public percentage!: number;
   public holder_type?: string;
+  public shareholder_type_id?: number;
   public display_order!: number;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -48,6 +50,14 @@ export function initializeStockShareholdingModel(sequelize: Sequelize) {
       percentage: {
         type: DataTypes.DECIMAL(5, 2),
         allowNull: false,
+      },
+      shareholder_type_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'shareholder_types',
+          key: 'id',
+        },
       },
       display_order: {
         type: DataTypes.INTEGER,
