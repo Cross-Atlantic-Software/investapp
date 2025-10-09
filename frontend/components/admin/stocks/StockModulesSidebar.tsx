@@ -142,8 +142,8 @@ const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({
               <BarChart3 className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-white">Stock Modules</h2>
-              <p className="text-xs text-white/80">{stock.company_name}</p>
+              <h2 className="text-base font-semibold text-white">Stock Modules</h2>
+              <p className="text-xs text-white/80" style={{ fontSize: '10px' }}>{stock.company_name}</p>
             </div>
           </div>
           <button
@@ -176,7 +176,7 @@ const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({
                     {/* Content */}
                     <div className="flex-1 text-left">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-sm font-semibold text-gray-900 group-hover:text-gray-700">
+                        <h3 className="text-xs font-semibold text-gray-900 group-hover:text-gray-700">
                           {module.title}
                         </h3>
                         <div className="flex items-center gap-2">
@@ -186,7 +186,7 @@ const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({
                           <ChevronRight className={`w-4 h-4 ${module.iconColor} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
                         </div>
                       </div>
-                      <p className="text-xs text-gray-600 mt-1">
+                      <p className="text-xs text-gray-600 mt-1" style={{ fontSize: '10px' }}>
                         {module.description}
                       </p>
                     </div>
