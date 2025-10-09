@@ -34,7 +34,12 @@ router.get("/stocks/:id/sector-outlooks", StockSectorOutlookManagementController
 // Public Sector Insights PDF Routes (no authentication required)
 router.get("/stocks/:id/sector-insights-pdfs", StockSectorInsightsPdfManagementController.getPdfsByStockIdPublic);
 
+import { StockShareholdingController } from "../controllers/admin/stockShareholdingController";
+
 // Public Financial Data Routes (no authentication required)
 router.get("/stocks/:id/financial-data/:category", FinancialDataController.getStockFinancialDataPublic);
+
+// Public Shareholding Routes (no authentication required)
+router.get("/stocks/:id/shareholding", StockShareholdingController.getStockShareholding);
 
 export default router;

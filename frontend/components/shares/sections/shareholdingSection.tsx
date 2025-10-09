@@ -1,150 +1,258 @@
-"use client";
+'use client';
 
-import Image from "next/image";
-import { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { StockShareholding } from '../../admin/stocks/types';
 
-export type CompareTile = {
-  id: string;
-  title: string;
-  line2?: string;
-  line3?: string;
-};
+interface ShareholdingSectionProps {
+  stockId: string;
+}
 
-type Props = {
-  /* left */
-  pieSrc?: string;
-  pieHeading?: string;          // e.g., "Shareholding Snapshot"
-  pieSub?: string;              // e.g., "July 2025"
-  pieInfo?: string;
+// Simple pie chart component using CSS
+const PieChart: React.FC<{ data: StockShareholding[] }> = ({ data }) => {
+  const total = data.reduce((sum, item) => {
+    const percentage = typeof item.percentage === 'number' ? item.percentage : parseFloat(item.percentage) || 0;
+    return sum + percentage;
+  }, 0);
+  
+  if (total === 0) {
+    return (
+      <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+        <p className="text-gray-500">No shareholding data available</p>
+      </div>
+    );
+  }
 
-  /* right */
-  compareHeading?: string;      // e.g., "Shareholding Compare (1% Holding)"
-  compareInfo?: string;
-  items?: CompareTile[];
-  editable?: boolean;
-  onChange?: (next: CompareTile[]) => void;
-};
+  // Generate colors for pie slices - matching the image colors
+  const colors = [
+    '#87CEEB', // Light blue (Lithuania)
+    '#9370DB', // Purple (Czechia)
+    '#8A2BE2', // Darker purple (Ireland)
+    '#4B0082', // Even darker purple (Germany)
+    '#FF69B4', // Pink (Australia)
+    '#FFB6C1', // Light pink (Austria)
+    '#DDA0DD', // Lightest pink (UK)
+    '#98FB98', // Light green
+    '#F0E68C', // Khaki
+    '#FFA07A', // Light salmon
+  ];
 
-export default function ShareholdingSection({
-  pieSrc = "/images/pie-chart.webp",
-  pieHeading = "Shareholding Snapshot",
-  pieSub = "",
-  compareHeading = "Shareholding Compare (1% Holding)",
-  items = DEFAULT_ITEMS,
-  editable = false,
-  onChange,
-}: Props) {
-  const [data, setData] = useState<CompareTile[]>(items);
-
-  const update = (id: string, key: keyof CompareTile, val: string) => {
-    const next = data.map((t) => (t.id === id ? { ...t, [key]: val } : t));
-    setData(next);
-    onChange?.(next);
-  };
+  let cumulativePercentage = 0;
 
   return (
+    <div className="w-full h-80 relative">
+      <svg viewBox="0 0 600 500" className="w-full h-full">
+        {data.map((item, index) => {
+          const itemPercentage = typeof item.percentage === 'number' ? item.percentage : parseFloat(item.percentage) || 0;
+          const percentage = (itemPercentage / total) * 100;
+          const startAngle = (cumulativePercentage / 100) * 360;
+          const endAngle = ((cumulativePercentage + percentage) / 100) * 360;
+          
+          const startAngleRad = (startAngle - 90) * (Math.PI / 180);
+          const endAngleRad = (endAngle - 90) * (Math.PI / 180);
+          
+          const largeArcFlag = percentage > 50 ? 1 : 0;
+          
+          const x1 = 300 + 160 * Math.cos(startAngleRad);
+          const y1 = 250 + 160 * Math.sin(startAngleRad);
+          const x2 = 300 + 160 * Math.cos(endAngleRad);
+          const y2 = 250 + 160 * Math.sin(endAngleRad);
+          
+          const pathData = [
+            `M 300 250`,
+            `L ${x1} ${y1}`,
+            `A 160 160 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+            'Z'
+          ].join(' ');
+
+          // Calculate label position (outside the pie with better spacing)
+          const midAngle = (startAngle + endAngle) / 2;
+          const midAngleRad = (midAngle - 90) * (Math.PI / 180);
+          
+          // Label position (further out with more space)
+          const labelX = 300 + 220 * Math.cos(midAngleRad);
+          const labelY = 250 + 220 * Math.sin(midAngleRad);
+
+          cumulativePercentage += percentage;
+
+          return (
+            <g key={item.id}>
+              <path
+                d={pathData}
+                fill={colors[index % colors.length]}
+                stroke="white"
+                strokeWidth="3"
+                className="hover:opacity-80 transition-opacity cursor-pointer"
+              />
+              {/* Label outside the pie */}
+              <text
+                x={labelX}
+                y={labelY}
+                textAnchor="middle"
+                dominantBaseline="middle"
+                className="text-xs font-medium fill-gray-600"
+                fontSize="10"
+              >
+                {item.holder_name}: {itemPercentage.toFixed(1)}%
+              </text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+};
+
+export default function ShareholdingSection({ stockId }: ShareholdingSectionProps) {
+  const [shareholdingData, setShareholdingData] = useState<StockShareholding[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadShareholdingData();
+  }, [stockId]);
+
+  const loadShareholdingData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`/api/stocks/${stockId}/shareholding`);
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('Shareholding data received in ShareholdingSection:', result.data);
+        setShareholdingData(result.data || []);
+      } else {
+        setError(result.message || 'Failed to load shareholding data');
+      }
+    } catch (error) {
+      console.error('Error loading shareholding data:', error);
+      setError('Failed to load shareholding data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+  return (
     <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-      {/* LEFT: PIE IMAGE */}
       <div className="rounded bg-white p-4 md:p-5">
         <div className="mb-3">
-          <h3 className="text-md font-semibold text-themeTeal">
-            {pieHeading}
-            {pieSub ? `: ${pieSub}` : ""}
-          </h3>
+            <h3 className="text-md font-semibold text-themeTeal">Shareholding Distribution</h3>
         </div>
-        <div className="relative  w-full overflow-hidden">
-          <Image
-            src={pieSrc}
-            alt={`${pieHeading} ${pieSub}`.trim()}
-            width={500}
-            height={339}
-            className="object-contain"
-            priority
-          />
+          <div className="w-full h-64 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal"></div>
         </div>
       </div>
-
-      {/* RIGHT: TEXT TILES */}
       <div className="rounded bg-white p-4 md:p-5">
         <div className="mb-4">
-          <h3 className="text-md font-semibold text-themeTeal">
-            {compareHeading}
-          </h3>
+            <h3 className="text-md font-semibold text-themeTeal">Shareholding Details</h3>
         </div>
-
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {data.map((t) => (
-            <div
-              key={t.id}
-              className="rounded bg-themeTealWhite p-3"
-            >
-              <Editable
-                text={t.title}
-                editable={editable}
-                onChange={(v) => update(t.id, "title", v)}
-                className="text-themeTeal text-sm font-semibold leading-5"
-              />
-              {t.line2 !== undefined && (
-                <Editable
-                  text={t.line2}
-                  editable={editable}
-                  onChange={(v) => update(t.id, "line2", v)}
-                  className="mt-2 text-themeTealLight text-sm"
-                />
-              )}
-              {t.line3 !== undefined && (
-                <Editable
-                  text={t.line3}
-                  editable={editable}
-                  onChange={(v) => update(t.id, "line3", v)}
-                  className="text-themeTealLight text-sm"
-                />
-              )}
-            </div>
-          ))}
-        </div>
+          <div className="text-center py-8 text-gray-500">Loading...</div>
       </div>
     </section>
   );
 }
 
-/* inline editor */
-function Editable({
-  text,
-  editable,
-  onChange,
-  className,
-}: {
-  text: string;
-  editable: boolean;
-  onChange: (v: string) => void;
-  className?: string;
-}) {
+  if (error) {
+    return (
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded bg-white p-4 md:p-5">
+          <div className="mb-3">
+            <h3 className="text-md font-semibold text-themeTeal">Shareholding Distribution</h3>
+          </div>
+          <div className="w-full h-64 flex items-center justify-center text-red-600">
+            Error: {error}
+          </div>
+        </div>
+        <div className="rounded bg-white p-4 md:p-5">
+          <div className="mb-4">
+            <h3 className="text-md font-semibold text-themeTeal">Shareholding Details</h3>
+          </div>
+          <div className="text-center py-8 text-red-600">Error: {error}</div>
+        </div>
+      </section>
+    );
+  }
+
+  if (shareholdingData.length === 0) {
   return (
-    <div
-      className={className}
-      contentEditable={editable}
-      suppressContentEditableWarning
-      onBlur={(e) => onChange(e.currentTarget.textContent ?? "")}
-      role={editable ? "textbox" : undefined}
-      aria-label={editable ? "Edit text" : undefined}
-    >
-      {text}
+      <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded bg-white p-4 md:p-5">
+          <div className="mb-3">
+            <h3 className="text-md font-semibold text-themeTeal">Shareholding Distribution</h3>
+          </div>
+          <div className="w-full h-64 flex items-center justify-center bg-gray-100 rounded-lg">
+            <p className="text-gray-500">No shareholding data available</p>
+          </div>
+        </div>
+        <div className="rounded bg-white p-4 md:p-5">
+          <div className="mb-4">
+            <h3 className="text-md font-semibold text-themeTeal">Shareholding Details</h3>
+          </div>
+          <div className="text-center py-8 text-gray-500">No shareholding data available</div>
     </div>
+      </section>
+    );
+  }
+
+  const totalPercentage = shareholdingData.reduce((sum, item) => {
+    const percentage = typeof item.percentage === 'number' ? item.percentage : parseFloat(item.percentage) || 0;
+    return sum + percentage;
+  }, 0);
+
+  // Ensure totalPercentage is always a number
+  const safeTotalPercentage = typeof totalPercentage === 'number' ? totalPercentage : 0;
+
+  return (
+    <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      {/* LEFT: PIE CHART */}
+      <div className="rounded bg-white p-4 md:p-5">
+        <div className="mb-3">
+          <h3 className="text-md font-semibold text-themeTeal">
+            Shareholding Distribution
+          </h3>
+        </div>
+        <PieChart data={shareholdingData} />
+      </div>
+
+      {/* RIGHT: DETAILED TABLE */}
+      <div className="rounded bg-white p-4 md:p-5">
+        <div className="mb-4">
+          <h3 className="text-md font-semibold text-themeTeal">Shareholding Details</h3>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-gray-200">
+                <th className="text-left py-3 px-4 font-semibold text-gray-700">Shareholders</th>
+                <th className="text-right py-3 px-4 font-semibold text-gray-700">Percentage Holding</th>
+              </tr>
+            </thead>
+            <tbody>
+              {shareholdingData.map((item, index) => (
+                <tr key={item.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <td className="py-2 px-3">
+                    <div>
+                      <h4 className="text-sm font-medium text-gray-900">{item.holder_name}</h4>
+                      {item.holder_type && (
+                        <p className="text-xs text-gray-600">{item.holder_type}</p>
+                      )}
+                    </div>
+                  </td>
+                  <td className="py-2 px-3 text-right">
+                    <div className="text-sm font-semibold text-themeTeal">
+                      {(typeof item.percentage === 'number' ? item.percentage : parseFloat(item.percentage) || 0).toFixed(2)}%
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </section>
   );
 }
-
-/* sample tiles */
-const DEFAULT_ITEMS: CompareTile[] = [
-  { id: "m1", title: "Majority shareholders", line2: "Promoters" },
-  { id: "p1", title: "Pledged Promoter Holdings", line2: "None" },
-  { id: "mf1", title: "Mutual Funds", line2: "Held by 29 Schemes", line3: "(19.52%)" },
-
-  { id: "m2", title: "Majority shareholders", line2: "Promoters" },
-  { id: "p2", title: "Pledged Promoter Holdings", line2: "None" },
-  { id: "mf2", title: "Mutual Funds", line2: "Held by 29 Schemes", line3: "(19.52%)" },
-
-  { id: "m3", title: "Majority shareholders", line2: "Promoters" },
-  { id: "p3", title: "Pledged Promoter Holdings", line2: "None" },
-  { id: "mf3", title: "Mutual Funds", line2: "Held by 29 Schemes", line3: "(19.52%)" },
-];

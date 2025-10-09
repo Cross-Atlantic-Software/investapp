@@ -151,8 +151,8 @@ export default function FinancialPerformanceSection({ stockId }: FinancialPerfor
                     <td key={year} className="py-4 text-center text-themeTealLight">
                       {formatValue(kpi.values[year], kpi.unit)}
                     </td>
-                  ))}
-                </tr>
+                ))}
+              </tr>
               ))
             )}
           </tbody>

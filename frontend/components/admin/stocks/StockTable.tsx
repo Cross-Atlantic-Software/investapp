@@ -1,18 +1,18 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import Image from 'next/image';
 import { Loader } from '@/components/admin/shared';
-import { Check, ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, BarChart3, Plus, Edit3, FileText, AlertTriangle, TrendingUp, MoreVertical } from 'lucide-react';
-import SimpleRichTextEditor from '../SimpleRichTextEditor';
-import GenericSearchableMultiSelect from '@/components/admin/shared/GenericSearchableMultiSelect';
+import { ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, BarChart3, Plus, Edit3, FileText, AlertTriangle, TrendingUp, MoreVertical } from 'lucide-react';
 import CSVUploadModal from './CSVUploadModal';
 import ConfirmationModal from '@/components/admin/shared/ConfirmationModal';
 import EditStockModal from './EditStockModal';
 import ViewStockModal from './ViewStockModal';
 import StockModulesSidebar from './StockModulesSidebar';
 import FinancialDataUpload from './FinancialDataUpload';
+import ShareholdingManagement from './ShareholdingManagement';
+import { useShareholdingManagement } from './hooks/useShareholdingManagement';
 
 interface Stock {
   id: number;
@@ -110,26 +110,19 @@ interface StockTableProps {
   }>;
 }
 
-interface ImageUploadState {
-  file: File | null;
-  preview: string | null;
-  uploading: boolean;
-  progress: number;
-  error: string | null;
-}
 
 // Utility function to strip HTML tags
-const stripHtmlTags = (html: string): string => {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = html;
-  return tempDiv.textContent || tempDiv.innerText || '';
-};
+// const stripHtmlTags = (html: string): string => {
+//   const tempDiv = document.createElement('div');
+//   tempDiv.innerHTML = html;
+//   return tempDiv.textContent || tempDiv.innerText || '';
+// };
 
 
 const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification, stockMasters = [] }) => {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [editFormData, setEditFormData] = useState<Partial<Stock>>({});
-  const [editLoading, setEditLoading] = useState(false);
+  // const [editLoading, setEditLoading] = useState(false);
   const [editIconFile, setEditIconFile] = useState<File | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
   const [selectedStockMasterIds, setSelectedStockMasterIds] = useState<number[]>([]);
@@ -191,6 +184,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     isOpen: false,
     stock: null
   });
+  // Shareholding management hook
+  const { shareholdingModal, openShareholdingModal, closeShareholdingModal } = useShareholdingManagement();
   const [financialDataModal, setFinancialDataModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
     isOpen: false,
     stock: null
@@ -211,17 +206,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [deleteLoading, setDeleteLoading] = useState(false);
   
   // Dropdown state for module management
-  const [dropdownOpen, setDropdownOpen] = useState<{ [key: number]: boolean }>({});
+  // const [dropdownOpen, setDropdownOpen] = useState<{ [key: number]: boolean }>({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarStock, setSidebarStock] = useState<Stock | null>(null);
-  
-  const [imageUpload, setImageUpload] = useState<ImageUploadState>({
-    file: null,
-    preview: null,
-    uploading: false,
-    progress: 0,
-    error: null,
-  });
 
   // Get current user's role to determine permissions
   const getCurrentUserRole = () => {
@@ -239,21 +226,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
   const currentUserRole = getCurrentUserRole();
   const canManageStocks = currentUserRole === 10 || currentUserRole === 11; // Admin or SuperAdmin
-
-  const validateImageFile = (file: File): string | null => {
-    // Check file type
-    if (!file.type.startsWith('image/')) {
-      return 'Please select a valid image file (PNG, JPG, GIF, etc.)';
-    }
-    
-    // Check file size (10MB limit)
-    const maxSize = 10 * 1024 * 1024; // 10MB in bytes
-    if (file.size > maxSize) {
-      return 'File size must be less than 10MB';
-    }
-    
-    return null;
-  };
 
   const handleEditStock = (stock: Stock) => {
     setEditingStock(stock);
@@ -279,104 +251,55 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     // Initialize selected stock master IDs
     setSelectedStockMasterIds(stock.stock_masters?.map(master => master.id) || []);
     setEditIconFile(null); // Reset icon file
-    setImageUpload({
-      file: null,
-      preview: null,
-      uploading: false,
-      progress: 0,
-      error: null,
-    });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] || null;
+  // const removeImage = () => {
+  //   if (imageUpload.preview) {
+  //     URL.revokeObjectURL(imageUpload.preview);
+  //   }
+  //   setImageUpload({
+  //     file: null,
+  //     preview: null,
+  //     uploading: false,
+  //     progress: 0,
+  //     error: null,
+  //   });
+  //   setEditIconFile(null);
+  // };
+
+  // const handleDragOver = (e: React.DragEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  // };
+
+  // const handleDragEnter = (e: React.DragEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  // };
+
+  // const handleDragLeave = (e: React.DragEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  // };
+
+  // const handleDrop = (e: React.DragEvent) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
     
-    if (!file) {
-      setImageUpload({
-        file: null,
-        preview: null,
-        uploading: false,
-        progress: 0,
-        error: null,
-      });
-      setEditIconFile(null);
-      return;
-    }
-
-    // Validate file
-    const validationError = validateImageFile(file);
-    if (validationError) {
-      setImageUpload(prev => ({
-        ...prev,
-        error: validationError,
-        file: null,
-        preview: null,
-      }));
-      setEditIconFile(null);
-      return;
-    }
-
-    // Create preview
-    const preview = URL.createObjectURL(file);
-    
-    setImageUpload({
-      file,
-      preview,
-      uploading: false,
-      progress: 0,
-      error: null,
-    });
-    
-    setEditIconFile(file);
-  };
-
-  const removeImage = () => {
-    if (imageUpload.preview) {
-      URL.revokeObjectURL(imageUpload.preview);
-    }
-    setImageUpload({
-      file: null,
-      preview: null,
-      uploading: false,
-      progress: 0,
-      error: null,
-    });
-    setEditIconFile(null);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      const file = files[0];
+  //   const files = e.dataTransfer.files;
+  //   if (files && files.length > 0) {
+  //     const file = files[0];
       
-      // Create a synthetic event to reuse the file change handler
-      const syntheticEvent = {
-        target: {
-          files: [file]
-        }
-      } as unknown as React.ChangeEvent<HTMLInputElement>;
+  //     // Create a synthetic event to reuse the file change handler
+  //     const syntheticEvent = {
+  //       target: {
+  //         files: [file]
+  //       }
+  //     } as unknown as React.ChangeEvent<HTMLInputElement>;
       
-      handleFileChange(syntheticEvent);
-    }
-  };
+  //     handleFileChange(syntheticEvent);
+  //   }
+  // };
 
   const handleViewStock = (stock: Stock) => {
     setViewingStock(stock);
@@ -1135,12 +1058,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   };
 
   // Toggle dropdown for module management
-  const toggleDropdown = (stockId: number) => {
-    setDropdownOpen(prev => ({
-      ...prev,
-      [stockId]: !prev[stockId]
-    }));
-  };
+  // const toggleDropdown = (stockId: number) => {
+  //   setDropdownOpen(prev => ({
+  //     ...prev,
+  //     [stockId]: !prev[stockId]
+  //   }));
+  // };
 
   const handleOpenSidebar = (stock: Stock) => {
     setSidebarStock(stock);
@@ -1176,6 +1099,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       case 'sector-insights':
         handleManageSectorInsightsPdfs(sidebarStock);
         break;
+      case 'shareholding':
+        openShareholdingModal(sidebarStock);
+        break;
       case 'financial-data':
         setFinancialDataModal({ isOpen: true, stock: sidebarStock });
         break;
@@ -1183,19 +1109,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   };
 
   // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.dropdown-container')) {
-        setDropdownOpen({});
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event: MouseEvent) => {
+  //     const target = event.target as HTMLElement;
+  //     if (!target.closest('.dropdown-container')) {
+  //       setDropdownOpen({});
+  //     }
+  //   };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener('mousedown', handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleClickOutside);
+  //   };
+  // }, []);
 
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
@@ -1208,7 +1134,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const handleUpdateStock = async () => {
     if (!editingStock) return;
     
-    setEditLoading(true);
+    // setEditLoading(true);
     try {
       const token = sessionStorage.getItem('adminToken') || '';
 
@@ -1260,7 +1186,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       console.error('Error updating stock:', error);
       onNotification?.('error', 'Update Failed', 'Error updating stock');
     } finally {
-      setEditLoading(false);
+      // setEditLoading(false);
     }
   };
 
@@ -1279,23 +1205,23 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       const response = await fetch(`/api/admin/stocks/${deleteConfirmation.stockId}`, {
-        method: 'DELETE',
+          method: 'DELETE',
         headers: {
           'token': token,
         },
       });
         
-      const data = await response.json();
-      if (data.success) {
-        onRefresh();
-        onNotification?.('success', 'Stock Deleted', 'Stock has been deleted successfully!');
+        const data = await response.json();
+        if (data.success) {
+          onRefresh();
+          onNotification?.('success', 'Stock Deleted', 'Stock has been deleted successfully!');
         setDeleteConfirmation({ isOpen: false, stockId: null, stockName: '' });
-      } else {
-        onNotification?.('error', 'Delete Failed', data.message || 'Failed to delete stock');
-      }
-    } catch (error) {
-      console.error('Error deleting stock:', error);
-      onNotification?.('error', 'Delete Failed', 'Error deleting stock');
+        } else {
+          onNotification?.('error', 'Delete Failed', data.message || 'Failed to delete stock');
+        }
+      } catch (error) {
+        console.error('Error deleting stock:', error);
+        onNotification?.('error', 'Delete Failed', 'Error deleting stock');
     } finally {
       setDeleteLoading(false);
     }
@@ -1572,10 +1498,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   onNotification?.('success', 'Success', 'Financial data uploaded successfully!');
                   setFinancialDataModal({ isOpen: false, stock: null });
                 }}
-              />
-            </div>
-          </div>
-        </div>
+                  />
+                </div>
+                    </div>
+                  </div>
       )}
 
       {/* Scorecard Management Modal */}
@@ -1864,9 +1790,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       />
                       {rationaleFormData.icon && (
                         <div className="flex items-center space-x-2">
-                          <img 
+                          <Image 
                             src={rationaleFormData.icon} 
                             alt="Current icon" 
+                            width={32}
+                            height={32}
                             className="w-8 h-8 rounded object-cover"
                           />
                           <span className="text-sm text-gray-500">Current icon</span>
@@ -1929,9 +1857,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-3 mb-2">
                                     {rationale.icon && (
-                                      <img 
+                                      <Image 
                                         src={rationale.icon} 
                                         alt={`${rationale.title} icon`}
+                                        width={24}
+                                        height={24}
                                         className="w-6 h-6 rounded object-cover"
                                       />
                                     )}
@@ -1982,9 +1912,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-3 mb-2">
                                     {rationale.icon && (
-                                      <img 
+                                      <Image 
                                         src={rationale.icon} 
                                         alt={`${rationale.title} icon`}
+                                        width={24}
+                                        height={24}
                                         className="w-6 h-6 rounded object-cover"
                                       />
                                     )}
@@ -2752,6 +2684,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         type="danger"
         loading={deleteLoading}
       />
+
+      {/* Shareholding Management Modal */}
+      {shareholdingModal.isOpen && shareholdingModal.stock && (
+        <ShareholdingManagement
+          stockId={shareholdingModal.stock.id.toString()}
+          stockName={shareholdingModal.stock.company_name}
+          onClose={closeShareholdingModal}
+        />
+      )}
 
       {/* Stock Modules Sidebar */}
       <StockModulesSidebar
