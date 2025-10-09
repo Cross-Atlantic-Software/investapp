@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Upload, BarChart3, FileText, TrendingUp, ChevronRight } from 'lucide-react';
+import { X, Upload, BarChart3, FileText, TrendingUp, ChevronRight, Newspaper } from 'lucide-react';
 
 interface Stock {
   id: number;
@@ -104,6 +104,17 @@ const modules = [
     hoverBg: 'hover:bg-cyan-100',
     iconColor: 'text-cyan-600',
     borderColor: 'border-cyan-500',
+  },
+  {
+    id: 'news-sections',
+    title: 'Manage News Sections',
+    description: 'Add and manage news articles',
+    icon: Newspaper,
+    color: 'pink',
+    bgColor: 'bg-pink-50',
+    hoverBg: 'hover:bg-pink-100',
+    iconColor: 'text-pink-600',
+    borderColor: 'border-pink-500',
   },
 ];
 

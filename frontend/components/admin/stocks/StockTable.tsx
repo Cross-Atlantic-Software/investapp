@@ -13,6 +13,8 @@ import StockModulesSidebar from './StockModulesSidebar';
 import FinancialDataUpload from './FinancialDataUpload';
 import ShareholdingManagement from './ShareholdingManagement';
 import { useShareholdingManagement } from './hooks/useShareholdingManagement';
+import { useNewsSectionManagement } from './hooks/useNewsSectionManagement';
+import NewsSectionManagement from './NewsSectionManagement';
 
 interface Stock {
   id: number;
@@ -186,6 +188,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   });
   // Shareholding management hook
   const { shareholdingModal, openShareholdingModal, closeShareholdingModal } = useShareholdingManagement();
+  
+  // News section management hook
+  const { newsSectionModal, openNewsSectionModal, closeNewsSectionModal } = useNewsSectionManagement();
   const [financialDataModal, setFinancialDataModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
     isOpen: false,
     stock: null
@@ -1101,6 +1106,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         break;
       case 'shareholding':
         openShareholdingModal(sidebarStock);
+        break;
+      case 'news-sections':
+        openNewsSectionModal(sidebarStock);
         break;
       case 'financial-data':
         setFinancialDataModal({ isOpen: true, stock: sidebarStock });
@@ -2691,6 +2699,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
           stockId={shareholdingModal.stock.id.toString()}
           stockName={shareholdingModal.stock.company_name}
           onClose={closeShareholdingModal}
+        />
+      )}
+
+      {/* News Section Management Modal */}
+      {newsSectionModal.isOpen && newsSectionModal.stock && (
+        <NewsSectionManagement
+          stockId={newsSectionModal.stock.id.toString()}
+          stockName={newsSectionModal.stock.company_name}
+          onClose={closeNewsSectionModal}
         />
       )}
 

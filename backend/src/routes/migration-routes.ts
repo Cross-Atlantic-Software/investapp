@@ -319,4 +319,59 @@ router.post("/add-shareholder-type-to-stock-shareholding", async (req, res) => {
   }
 });
 
+// Run migration to create stock_news_section table
+router.post("/create-stock-news-section-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-stock-news-section-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'stock_news_section'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'stock_news_section' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'stock_news_section' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE stock_news_section (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        stock_id INT NOT NULL,
+        url VARCHAR(500) NOT NULL,
+        banner VARCHAR(500) NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        FOREIGN KEY (stock_id) REFERENCES products(id) ON DELETE CASCADE,
+        
+        INDEX idx_stock_news_stock_id (stock_id),
+        INDEX idx_stock_news_created_at (created_at)
+      )
+    `);
+    
+    console.log("✅ Created stock_news_section table successfully");
+    
+    res.json({
+      success: true,
+      message: "Stock news section table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;

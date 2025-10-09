@@ -1,6 +1,7 @@
 import express from "express";
 import adminMiddleware from "../utils/middlewares/admin-middleware";
 import { uploadIcon } from "../utils/middlewares/s3Upload";
+import { uploadBanner } from "../utils/middlewares/s3Upload";
 import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
@@ -47,6 +48,7 @@ import { FinancialDataController } from "../controllers/admin/financialDataContr
 import { StockShareholdingController } from "../controllers/admin/stockShareholdingController";
 import { WishlistController } from "../controllers/stocks/wishlistController";
 import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
+import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -111,7 +113,8 @@ router.use((req, res, next) => {
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
-      req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes')) {
+      req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
+      req.path.includes('/news-sections')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -309,5 +312,19 @@ router.post("/shareholder-types", ShareholderTypeController.createShareholderTyp
 router.put("/shareholder-types/:id", ShareholderTypeController.updateShareholderType);
 router.delete("/shareholder-types/:id", ShareholderTypeController.deleteShareholderType);
 router.patch("/shareholder-types/:id/toggle-status", ShareholderTypeController.toggleActiveStatus);
+
+// Stock News Section Management Routes
+router.get("/news-sections", StockNewsSectionController.getAllNewsSections);
+router.get("/news-sections/:id", StockNewsSectionController.getNewsSectionById);
+router.post("/news-sections", StockNewsSectionController.createNewsSection);
+router.put("/news-sections/:id", StockNewsSectionController.updateNewsSection);
+router.delete("/news-sections/:id", StockNewsSectionController.deleteNewsSection);
+router.post("/news-sections/bulk-delete", StockNewsSectionController.bulkDeleteNewsSections);
+
+// Stock News Section File Upload Routes
+router.post("/news-sections/upload-banner", uploadBanner.single('banner'), StockNewsSectionController.uploadBanner);
+
+// Stock-specific News Section Routes
+router.get("/stocks/:stockId/news-sections", StockNewsSectionController.getStockNewsSections);
 
 export default router;

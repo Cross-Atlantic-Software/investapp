@@ -22,6 +22,7 @@ import { MethodologyNote, initializeMethodologyNoteModel } from "../Models/Metho
 import StockShareholding, { initializeStockShareholdingModel } from "../Models/StockShareholding";
 import ShareholderType, { initializeShareholderTypeModel } from "../Models/ShareholderType";
 import Wishlist, { initializeWishlistModel } from "../Models/Wishlist";
+import StockNewsSection, { initializeStockNewsSectionModel } from "../Models/StockNewsSection";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -121,6 +122,9 @@ async function initializeSequelize() {
   // Initialize Shareholder Type model
   initializeShareholderTypeModel(sequelize);
   
+  // Initialize Stock News Section model
+  initializeStockNewsSectionModel(sequelize);
+  
   // Initialize Wishlist model
   initializeWishlistModel(sequelize);
   
@@ -164,6 +168,17 @@ async function initializeSequelize() {
   StockShareholding.belongsTo(ShareholderType, {
     foreignKey: 'shareholder_type_id',
     as: 'shareholderType'
+  });
+  
+  // Stock News Section associations
+  Product.hasMany(StockNewsSection, {
+    foreignKey: 'stock_id',
+    as: 'newsSections'
+  });
+  
+  StockNewsSection.belongsTo(Product, {
+    foreignKey: 'stock_id',
+    as: 'stock'
   });
   
   // No associations needed since only admins handle stocks
@@ -320,6 +335,12 @@ export const db = {
       throw new Error('ShareholderType model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return ShareholderType;
+  },
+  get StockNewsSection() {
+    if (!StockNewsSection) {
+      throw new Error('StockNewsSection model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockNewsSection;
   },
 };
 

@@ -140,3 +140,25 @@ export interface ShareholdingManagementProps {
   stockName: string;
   onClose: () => void;
 }
+
+export interface StockNewsSection {
+  id: number;
+  title: string;
+  stock_id: number;
+  url: string;
+  banner: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsSectionFormData {
+  title: string;
+  url: string;
+  banner: string;
+}
+
+export interface NewsSectionManagementProps {
+  stockId: string;
+  stockName: string;
+  onClose: () => void;
+}
