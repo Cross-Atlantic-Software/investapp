@@ -24,6 +24,9 @@ import ShareholderType, { initializeShareholderTypeModel } from "../Models/Share
 import Wishlist, { initializeWishlistModel } from "../Models/Wishlist";
 import StockNewsSection, { initializeStockNewsSectionModel } from "../Models/StockNewsSection";
 import { StockFaq, initializeStockFaqModel } from "../Models/StockFaq";
+import { FinancialDataCsv, initializeFinancialDataCsvModel } from "../Models/FinancialDataCsv";
+import { Sector, initializeSectorModel } from "../Models/Sector";
+import { Subsector, initializeSubsectorModel } from "../Models/Subsector";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -126,6 +129,24 @@ async function initializeSequelize() {
   // Initialize Stock News Section model
   initializeStockNewsSectionModel(sequelize);
   initializeStockFaqModel(sequelize);
+  
+  // Initialize Financial Data CSV model
+  initializeFinancialDataCsvModel(sequelize);
+  
+  // Initialize Sector and Subsector models
+  initializeSectorModel(sequelize);
+  initializeSubsectorModel(sequelize);
+  
+  // Set up Sector and Subsector associations
+  Sector.hasMany(Subsector, {
+    foreignKey: 'sector_id',
+    as: 'subsectors'
+  });
+
+  Subsector.belongsTo(Sector, {
+    foreignKey: 'sector_id',
+    as: 'sector'
+  });
   
   // Initialize Wishlist model
   initializeWishlistModel(sequelize);
@@ -360,6 +381,27 @@ export const db = {
       throw new Error('StockFaq model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockFaq;
+  },
+
+  get FinancialDataCsv() {
+    if (!FinancialDataCsv) {
+      throw new Error('FinancialDataCsv model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return FinancialDataCsv;
+  },
+
+  get Sector() {
+    if (!Sector) {
+      throw new Error('Sector model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Sector;
+  },
+
+  get Subsector() {
+    if (!Subsector) {
+      throw new Error('Subsector model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Subsector;
   },
 };
 

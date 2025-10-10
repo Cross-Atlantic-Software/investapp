@@ -12,41 +12,14 @@ import ViewStockModal from './ViewStockModal';
 import StockModulesSidebar from './StockModulesSidebar';
 import FinancialDataUpload from './FinancialDataUpload';
 import ShareholdingManagement from './ShareholdingManagement';
-import { useShareholdingManagement } from './hooks/useShareholdingManagement';
+import { ExistingStockData, StockData } from './types';
 import { useNewsSectionManagement } from './hooks/useNewsSectionManagement';
 import NewsSectionManagement from './NewsSectionManagement';
+import { useShareholdingManagement } from './hooks/useShareholdingManagement';
 import { useFaqManagement } from './hooks/useFaqManagement';
 import FaqManagement from './FaqManagement';
 
-interface Stock {
-  id: number;
-  company_name: string;
-  logo: string;
-  price_change: number;
-  teaser: string;
-  short_description: string;
-  analysis: string;
-  demand: 'High Demand' | 'Low Demand';
-  homeDisplay: 'yes' | 'no';
-  bannerDisplay: 'yes' | 'no';
-  valuation: string;
-  price_per_share: number;
-  percentage_change: number;
-  founded: number;
-  sector: string;
-  subsector: string;
-  headquarters: string;
-  min_units: number;
-  lot_size: number;
-  stock_master_ids: number[];
-  icon: File | null;
-  stock_masters?: Array<{
-    id: number;
-    name: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-}
+type Stock = ExistingStockData;
 
 interface Scorecard {
   id: number;
@@ -112,6 +85,15 @@ interface StockTableProps {
     id: number;
     name: string;
   }>;
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
+  }>;
 }
 
 
@@ -123,13 +105,9 @@ interface StockTableProps {
 // };
 
 
-const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification, stockMasters = [] }) => {
+const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification, stockMasters = [], sectors = [], subsectors = [] }) => {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
-  const [editFormData, setEditFormData] = useState<Partial<Stock>>({});
-  // const [editLoading, setEditLoading] = useState(false);
-  const [editIconFile, setEditIconFile] = useState<File | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
-  const [selectedStockMasterIds, setSelectedStockMasterIds] = useState<number[]>([]);
   const [csvUploadModal, setCsvUploadModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
     isOpen: false,
     stock: null
@@ -237,28 +215,6 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
   const handleEditStock = (stock: Stock) => {
     setEditingStock(stock);
-    setEditFormData({
-      company_name: stock.company_name,
-      teaser: stock.teaser,
-      short_description: stock.short_description,
-      analysis: stock.analysis,
-      demand: stock.demand,
-      homeDisplay: stock.homeDisplay,
-      bannerDisplay: stock.bannerDisplay,
-      valuation: stock.valuation,
-      price_per_share: stock.price_per_share,
-      price_change: stock.price_change,
-      percentage_change: stock.percentage_change,
-      founded: stock.founded,
-      sector: stock.sector,
-      subsector: stock.subsector,
-      headquarters: stock.headquarters,
-      min_units: stock.min_units,
-      lot_size: stock.lot_size
-    });
-    // Initialize selected stock master IDs
-    setSelectedStockMasterIds(stock.stock_masters?.map(master => master.id) || []);
-    setEditIconFile(null); // Reset icon file
   };
 
   // const removeImage = () => {
@@ -1145,37 +1101,36 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
-  const handleUpdateStock = async () => {
+  const handleUpdateStockFromModal = async (stockData: StockData) => {
     if (!editingStock) return;
     
-    // setEditLoading(true);
     try {
       const token = sessionStorage.getItem('adminToken') || '';
 
       // Create FormData for file upload
       const formData = new FormData();
-      formData.append('company_name', editFormData.company_name || '');
-      formData.append('teaser', editFormData.teaser || '');
-      formData.append('short_description', editFormData.short_description || '');
-      formData.append('analysis', editFormData.analysis || '');
-      formData.append('demand', editFormData.demand || '');
-      formData.append('homeDisplay', editFormData.homeDisplay || '');
-      formData.append('bannerDisplay', editFormData.bannerDisplay || '');
-      formData.append('valuation', editFormData.valuation || '');
-      formData.append('price_per_share', editFormData.price_per_share?.toString() || '');
-      formData.append('price_change', editFormData.price_change?.toString() || '');
-      formData.append('percentage_change', editFormData.percentage_change?.toString() || '');
-      formData.append('founded', editFormData.founded?.toString() || '');
-      formData.append('sector', editFormData.sector || '');
-      formData.append('subsector', editFormData.subsector || '');
-      formData.append('headquarters', editFormData.headquarters || '');
-      formData.append('min_units', editFormData.min_units?.toString() || '');
-      formData.append('lot_size', editFormData.lot_size?.toString() || '');
-      formData.append('stock_master_ids', JSON.stringify(selectedStockMasterIds));
+      formData.append('company_name', stockData.company_name || '');
+      formData.append('teaser', stockData.teaser || '');
+      formData.append('short_description', stockData.short_description || '');
+      formData.append('analysis', stockData.analysis || '');
+      formData.append('demand', stockData.demand || '');
+      formData.append('homeDisplay', stockData.homeDisplay || '');
+      formData.append('bannerDisplay', stockData.bannerDisplay || '');
+      formData.append('valuation', stockData.valuation || '');
+      formData.append('price_per_share', stockData.price_per_share?.toString() || '');
+      formData.append('price_change', stockData.price_change?.toString() || '');
+      formData.append('percentage_change', stockData.percentage_change?.toString() || '');
+      formData.append('founded', stockData.founded?.toString() || '');
+      formData.append('sector_ids', JSON.stringify(stockData.sector_ids || []));
+      formData.append('subsector_ids', JSON.stringify(stockData.subsector_ids || []));
+      formData.append('headquarters', stockData.headquarters || '');
+      formData.append('min_units', stockData.min_units?.toString() || '');
+      formData.append('lot_size', stockData.lot_size?.toString() || '');
+      formData.append('stock_master_ids', JSON.stringify(stockData.stock_master_ids || []));
       
       // Add logo file if selected
-      if (editIconFile) {
-        formData.append('logo', editIconFile);
+      if (stockData.icon) {
+        formData.append('logo', stockData.icon);
       }
 
       const response = await fetch(`/api/admin/stocks/${editingStock.id}`, {
@@ -1190,17 +1145,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       if (data.success) {
         onRefresh();
         setEditingStock(null);
-        setEditFormData({});
-        setEditIconFile(null);
         onNotification?.('success', 'Stock Updated', 'Stock has been updated successfully!');
       } else {
         onNotification?.('error', 'Update Failed', data.message || 'Failed to update stock');
       }
     } catch (error) {
       console.error('Error updating stock:', error);
-      onNotification?.('error', 'Update Failed', 'Error updating stock');
-    } finally {
-      // setEditLoading(false);
+      onNotification?.('error', 'Update Failed', 'An error occurred while updating the stock');
     }
   };
 
@@ -1281,7 +1232,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   onClick={() => onSort?.('valuation')}
                 >
                   <div className="flex items-center">
-                    Valuation
+                    Valuation (in Cr.)
                     {sortBy === 'valuation' ? (
                       <svg className={`ml-1 h-3 w-3 ${sortOrder === 'asc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -1455,11 +1406,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
           stock={editingStock}
           onClose={() => {
                     setEditingStock(null);
-                    setEditFormData({});
-                    setEditIconFile(null);
                   }}
-          onSubmit={handleUpdateStock}
+          onSubmit={handleUpdateStockFromModal}
           stockMasters={stockMasters}
+          sectors={sectors}
+          subsectors={subsectors}
         />
       )}
 

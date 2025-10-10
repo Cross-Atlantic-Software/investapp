@@ -12,15 +12,19 @@ import {
   StockMasterItem,
   NewStockMasterForm
 } from '@/components/admin/stock-master';
+import { SectorManagementModal } from '@/components/admin/sector-management';
 import MethodologyModal from '@/components/admin/methodology/MethodologyModal';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
   const [stockMasters, setStockMasters] = useState<StockMasterItem[]>([]);
+  const [sectors, setSectors] = useState<Array<{id: number; name: string}>>([]);
+  const [subsectors, setSubsectors] = useState<Array<{id: number; name: string; sector_id: number}>>([]);
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showStockMasterModal, setShowStockMasterModal] = useState(false);
+  const [showSectorModal, setShowSectorModal] = useState(false);
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -152,10 +156,38 @@ export default function StocksPage() {
     }
   }, []);
 
+  const fetchSectors = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/sectors/select');
+      const data = await response.json();
+
+      if (data.success) {
+        setSectors(data.data.sectors);
+      }
+    } catch (error) {
+      console.error('Error fetching sectors:', error);
+    }
+  }, []);
+
+  const fetchSubsectors = useCallback(async () => {
+    try {
+      const response = await fetch('/api/admin/subsectors');
+      const data = await response.json();
+
+      if (data.success) {
+        setSubsectors(data.data.subsectors);
+      }
+    } catch (error) {
+      console.error('Error fetching subsectors:', error);
+    }
+  }, []);
+
   // Initial load effect
   useEffect(() => {
     fetchStocks();
     fetchStockMasters();
+    fetchSectors();
+    fetchSubsectors();
     getCurrentUserRole();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
@@ -221,8 +253,8 @@ export default function StocksPage() {
     price_per_share: number;
     percentage_change: number;
     founded: number;
-    sector: string;
-    subsector: string;
+    sector_ids: number[];
+    subsector_ids: number[];
     headquarters: string;
     min_units: number;
     lot_size: number;
@@ -247,8 +279,8 @@ export default function StocksPage() {
       formData.append('valuation', stockData.valuation);
       formData.append('percentage_change', stockData.percentage_change.toString());
       formData.append('founded', stockData.founded.toString());
-      formData.append('sector', stockData.sector);
-      formData.append('subsector', stockData.subsector);
+      formData.append('sector_ids', JSON.stringify(stockData.sector_ids));
+      formData.append('subsector_ids', JSON.stringify(stockData.subsector_ids));
       formData.append('headquarters', stockData.headquarters);
       formData.append('min_units', stockData.min_units.toString());
       formData.append('lot_size', stockData.lot_size.toString());
@@ -438,6 +470,13 @@ export default function StocksPage() {
                 Manage Stock Masters
               </button>
               <button
+                onClick={() => setShowSectorModal(true)}
+                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
+              >
+                <Plus width={16} height={16} className='mr-1'/>
+                Manage Sectors
+              </button>
+              <button
                 onClick={() => setShowMethodologyModal(true)}
                 className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
               >
@@ -465,6 +504,8 @@ export default function StocksPage() {
             sortOrder={sortOrder}
             onNotification={(type, title, message) => addNotification({ type, title, message, duration: 5000 })}
             stockMasters={stockMasters}
+            sectors={sectors}
+            subsectors={subsectors}
           />
           </div>
         </>
@@ -474,6 +515,8 @@ export default function StocksPage() {
         <AddStockModal
           onClose={() => setShowAddModal(false)}
           stockMasters={stockMasters}
+          sectors={sectors}
+          subsectors={subsectors}
           onSubmit={(stockData) => {
             const adaptedData = {
               company_name: stockData.company_name,
@@ -489,8 +532,8 @@ export default function StocksPage() {
               price_per_share: stockData.price_per_share,
               percentage_change: stockData.percentage_change,
               founded: stockData.founded,
-              sector: stockData.sector,
-              subsector: stockData.subsector,
+              sector_ids: stockData.sector_ids,
+              subsector_ids: stockData.subsector_ids,
               headquarters: stockData.headquarters,
               min_units: stockData.min_units,
               lot_size: stockData.lot_size,
@@ -510,6 +553,11 @@ export default function StocksPage() {
         onDeleteStockMaster={handleDeleteStockMaster}
         newStockMaster={newStockMaster}
         setNewStockMaster={setNewStockMaster}
+      />
+
+      <SectorManagementModal
+        isOpen={showSectorModal}
+        onClose={() => setShowSectorModal(false)}
       />
 
       <MethodologyModal

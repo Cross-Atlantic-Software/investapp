@@ -1,5 +1,7 @@
 import FinancialKpi, { initializeFinancialKpiModel } from './FinancialKpi';
 import StockFinancialData, { initializeStockFinancialDataModel } from './StockFinancialData';
+import { Sector, initializeSectorModel } from './Sector';
+import { Subsector, initializeSubsectorModel } from './Subsector';
 import Wishlist, { initializeWishlistModel } from './Wishlist';
 import Product from './Product';
 import User from './User';
@@ -8,6 +10,8 @@ export function initializeFinancialDataModels(sequelize: any) {
   // Initialize models first
   initializeFinancialKpiModel(sequelize);
   initializeStockFinancialDataModel(sequelize);
+  initializeSectorModel(sequelize);
+  initializeSubsectorModel(sequelize);
 
   // Then define associations
   StockFinancialData.belongsTo(FinancialKpi, {
@@ -19,6 +23,18 @@ export function initializeFinancialDataModels(sequelize: any) {
     foreignKey: 'kpi_id',
     as: 'StockFinancialData'
   });
+
+  // Sector and Subsector associations
+  Sector.hasMany(Subsector, {
+    foreignKey: 'sector_id',
+    as: 'subsectors'
+  });
+
+  Subsector.belongsTo(Sector, {
+    foreignKey: 'sector_id',
+    as: 'sector'
+  });
+
 }
 
 export function initializeWishlistModels(sequelize: any) {

@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useEffect, useCallback } from 'react';
-import { X, Loader2 } from 'lucide-react';
-import { StockData, ImageUploadState } from './types';
+import { X } from 'lucide-react';
+import { StockData, ExistingStockData, ImageUploadState } from './types';
 import { useStepNavigation } from './hooks';
-import { validateStep, validateImageFile } from './validation';
+import { validateStepForEdit, validateImageFile } from './validation';
 import StepProgressIndicator from './StepProgressIndicator';
 import ModalFooter from './ModalFooter';
 import Step1 from './steps/Step1';
@@ -14,16 +14,25 @@ import Step4 from './steps/Step4';
 import Step5 from './steps/Step5';
 
 interface EditStockModalProps {
-  stock: StockData;
+  stock: ExistingStockData;
   onClose: () => void;
   onSubmit: (stockData: StockData) => void;
   stockMasters?: Array<{
     id: number;
     name: string;
   }>;
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
+  }>;
 }
 
-const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmit, stockMasters = [] }) => {
+const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmit, stockMasters = [], sectors = [], subsectors = [] }) => {
   const totalSteps = 5;
   
   // Initialize form data with existing stock data
@@ -41,8 +50,8 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
     price_per_share: stock.price_per_share || 0,
     percentage_change: stock.percentage_change || 0,
     founded: stock.founded || new Date().getFullYear(),
-    sector: stock.sector || 'Technology',
-    subsector: stock.subsector || 'Software',
+    sector_ids: Array.isArray(stock.sector_ids) ? stock.sector_ids : [],
+    subsector_ids: Array.isArray(stock.subsector_ids) ? stock.subsector_ids : [],
     headquarters: stock.headquarters || '',
     min_units: stock.min_units || 1,
     lot_size: stock.lot_size || 1,
@@ -60,24 +69,14 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
 
   const {
     currentStep,
-    setCurrentStep,
-    completedSteps,
-    setCompletedSteps,
     isStepCompleted,
-    markStepCompleted,
-    markStepIncomplete,
     nextStep,
     prevStep,
     goToStep,
   } = useStepNavigation(totalSteps);
 
-  // Mark all steps as completed initially since we're editing existing data
-  useEffect(() => {
-    setCompletedSteps(new Set([1, 2, 3, 4, 5]));
-  }, [setCompletedSteps]);
-
   // Validation function with current formData
-  const validateCurrentStep = useCallback((step: number) => validateStep(step, formData), [formData]);
+  const validateCurrentStep = useCallback((step: number) => validateStepForEdit(step, formData), [formData]);
 
   // Input change handler
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -131,7 +130,7 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
     });
     
     handleFormDataChange({ icon: file });
-  }, [stock.logo, handleFormDataChange]);
+  }, [handleFormDataChange]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -231,6 +230,8 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
       onInputChange: handleInputChange,
       onFormDataChange: handleFormDataChange,
       stockMasters,
+      sectors,
+      subsectors,
     };
 
     switch (currentStep) {

@@ -1,8 +1,10 @@
 import { Request, Response } from 'express';
+import { Op } from 'sequelize';
 import FinancialKpi from '../../Models/FinancialKpi';
 import StockFinancialData from '../../Models/StockFinancialData';
 import { initializeFinancialDataModels } from '../../Models/associations';
 import db from '../../utils/database';
+
 
 export class FinancialDataController {
   private async ensureDbReady() {
@@ -241,14 +243,15 @@ export class FinancialDataController {
       }
 
       // Clear existing data for this stock and category (replace mode)
-      await StockFinancialData.destroy({
+      // This ensures old data is completely removed when uploading new CSV
+      const deletedCount = await StockFinancialData.destroy({
         where: { 
-          stock_id: stockId,
+          stock_id: parseInt(stockId),
           category
         }
       });
 
-      console.log(`Cleared existing ${category} data for stock ${stockId}`);
+      console.log(`Cleared ${deletedCount} existing ${category} data records for stock ${stockId}`);
 
       // Process each row and prepare data for bulk insert
       const dataToInsert: any[] = [];
@@ -281,6 +284,51 @@ export class FinancialDataController {
       // Bulk insert new data
       if (dataToInsert.length > 0) {
         await StockFinancialData.bulkCreate(dataToInsert);
+      }
+
+      // Clean up orphaned KPIs that are no longer used in this category
+      // Get all KPIs currently used in the new data
+      const usedKpiIds = new Set(dataToInsert.map(item => item.kpi_id));
+      
+      // Find KPIs in this category that are not used in the new data
+      const orphanedKpis = await FinancialKpi.findAll({
+        where: {
+          category,
+          id: { [Op.notIn]: Array.from(usedKpiIds) }
+        }
+      });
+
+      // Delete orphaned KPIs (only if they have no data in any stock)
+      for (const orphanedKpi of orphanedKpis) {
+        const hasData = await StockFinancialData.findOne({
+          where: { kpi_id: orphanedKpi.id }
+        });
+        
+        if (!hasData) {
+          await orphanedKpi.destroy();
+          console.log(`Deleted orphaned KPI: ${orphanedKpi.name}`);
+        }
+      }
+
+      // Store the original CSV content in the database (ADDITIONAL functionality - doesn't affect existing code)
+      try {
+        const originalCsvContent = file.buffer.toString('utf-8');
+        
+        await db.FinancialDataCsv.upsert({
+          stock_id: parseInt(stockId),
+          category,
+          original_filename: file.originalname,
+          s3_key: `csv/financial-data/stock_${stockId}_${category}_${Date.now()}.csv`,
+          s3_url: `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/csv/financial-data/stock_${stockId}_${category}_${Date.now()}.csv`,
+          file_size: file.size,
+          uploaded_at: new Date(),
+          csv_content: originalCsvContent
+        });
+        
+        console.log(`CSV content stored for stock ${stockId}, category ${category}`);
+      } catch (csvError) {
+        console.error('Error storing CSV content:', csvError);
+        // Don't fail the request if CSV storage fails
       }
 
       res.json({
@@ -402,7 +450,7 @@ export class FinancialDataController {
     }
   }
 
-  // Export financial data as CSV for a specific category
+  // Export financial data as CSV for a specific category (serves original uploaded file)
   static async exportFinancialDataCSV(req: Request, res: Response) {
     try {
       const controller = new FinancialDataController();
@@ -417,66 +465,88 @@ export class FinancialDataController {
         });
       }
 
-      // Get KPIs for the category
-      const kpis = await FinancialKpi.findAll({
-        where: { category },
-        order: [['display_order', 'ASC']]
-      });
-
-      if (kpis.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: `No KPIs found for ${category}`
-        });
-      }
-
-      // Get financial data for the stock and category
-      const financialData = await StockFinancialData.findAll({
+      // Try to get the stored CSV content from financial_data_csv table first
+      const csvFile = await db.FinancialDataCsv.findOne({
         where: {
-          stock_id: stockId,
+          stock_id: parseInt(stockId),
           category
-        },
-        order: [
-          ['kpi_id', 'ASC'],
-          ['year', 'ASC']
-        ]
-      });
-
-      if (financialData.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: `No financial data found for ${category}`
-        });
-      }
-
-      // Organize data by KPI and year
-      const organizedData: any = {};
-      const years = new Set<number>();
-
-      financialData.forEach((data: any) => {
-        const kpiName = kpis.find(kpi => kpi.id === data.kpi_id)?.name;
-        if (!kpiName) return;
-        
-        if (!organizedData[kpiName]) {
-          organizedData[kpiName] = {};
         }
-        organizedData[kpiName][data.year] = data.value;
-        years.add(data.year);
       });
 
-      // Convert to CSV format
-      const sortedYears = Array.from(years).sort((a, b) => a - b);
-      const csvHeaders = [...sortedYears, 'KPI Name'].join(',') + '\n';
-      
-      const csvRows = Object.entries(organizedData).map(([kpiName, values]: [string, any]) => {
-        const row = sortedYears.map(year => values[year] || '');
-        return [...row, kpiName].join(',');
-      }).join('\n');
+      let csvContent: string;
 
-      const csvContent = csvHeaders + csvRows;
+      if (csvFile && csvFile.csv_content) {
+        // Use the stored original CSV content (exact same as uploaded)
+        csvContent = csvFile.csv_content;
+        console.log(`Serving original CSV file for stock ${stockId}, category ${category}`);
+      } else {
+        // Fallback to original reconstruction logic for backward compatibility
+        console.log(`No stored CSV found, reconstructing from database for stock ${stockId}, category ${category}`);
+        
+        // Get KPIs for the category
+        const kpis = await FinancialKpi.findAll({
+          where: { category },
+          order: [['display_order', 'ASC']]
+        });
+
+        if (kpis.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: `No KPIs found for ${category}`
+          });
+        }
+
+        // Get financial data for the stock and category
+        const financialData = await StockFinancialData.findAll({
+          where: {
+            stock_id: stockId,
+            category
+          },
+          order: [
+            ['kpi_id', 'ASC'],
+            ['year', 'ASC']
+          ]
+        });
+
+        if (financialData.length === 0) {
+          return res.status(404).json({
+            success: false,
+            message: `No financial data found for ${category}`
+          });
+        }
+
+        // Organize data by KPI and year
+        const organizedData: any = {};
+        const years = new Set<number>();
+
+        financialData.forEach((data: any) => {
+          const kpiName = kpis.find(kpi => kpi.id === data.kpi_id)?.name;
+          if (!kpiName) return;
+          
+          if (!organizedData[kpiName]) {
+            organizedData[kpiName] = {};
+          }
+          organizedData[kpiName][data.year] = data.value;
+          years.add(data.year);
+        });
+
+        // Convert to CSV format (matching original upload format)
+        const sortedYears = Array.from(years).sort((a, b) => a - b);
+        
+        // Create column headers matching upload format (1, 2, 3, 4 instead of actual years)
+        const yearColumns = sortedYears.map((_, index) => (index + 1).toString());
+        const csvHeaders = ['KPI Name', ...yearColumns].join(',') + '\n';
+        
+        const csvRows = Object.entries(organizedData).map(([kpiName, values]: [string, any]) => {
+          // Map actual year values to column positions (1, 2, 3, 4)
+          const row = sortedYears.map(year => values[year] || '');
+          return [kpiName, ...row].join(',');
+        }).join('\n');
+
+        csvContent = csvHeaders + csvRows;
+      }
 
       // Set headers for CSV download
-      const categoryName = category.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
       res.setHeader('Content-Type', 'text/csv');
       res.setHeader('Content-Disposition', `attachment; filename="stock_${stockId}_${category}_data.csv"`);
       res.setHeader('Content-Length', Buffer.byteLength(csvContent));
@@ -549,10 +619,43 @@ export class FinancialDataController {
 
       const deletedCount = await StockFinancialData.destroy({
         where: {
-          stock_id: stockId,
+          stock_id: parseInt(stockId),
           category
         }
       });
+
+      // Clean up KPIs that are no longer used by ANY stock in this category
+      // Get all KPIs for this category
+      const categoryKpis = await FinancialKpi.findAll({
+        where: { category }
+      });
+
+      // Check each KPI to see if it's still being used by any stock
+      for (const kpi of categoryKpis) {
+        const hasData = await StockFinancialData.findOne({
+          where: { kpi_id: kpi.id }
+        });
+        
+        if (!hasData) {
+          // This KPI is not used by any stock, safe to delete
+          await kpi.destroy();
+          console.log(`Deleted unused KPI: ${kpi.name} (category: ${category})`);
+        }
+      }
+
+      // Also clean up stored CSV content from database (ADDITIONAL functionality)
+      try {
+        await db.FinancialDataCsv.destroy({
+          where: {
+            stock_id: parseInt(stockId),
+            category
+          }
+        });
+        console.log(`CSV content cleaned up for stock ${stockId}, category ${category}`);
+      } catch (csvError) {
+        console.error('Error cleaning up CSV content:', csvError);
+        // Don't fail the request if CSV cleanup fails
+      }
 
       res.json({
         success: true,

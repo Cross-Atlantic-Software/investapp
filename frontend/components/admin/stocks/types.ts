@@ -12,13 +12,32 @@ export interface StockData {
   price_per_share: number;
   percentage_change: number;
   founded: number;
-  sector: string;
-  subsector: string;
+  sector_ids: number[];
+  subsector_ids: number[];
   headquarters: string;
   min_units: number;
   lot_size: number;
   stock_master_ids: number[];
   icon: File | null;
+}
+
+export interface ExistingStockData extends Omit<StockData, 'icon'> {
+  id: number;
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
+  }>;
+  stock_masters?: Array<{
+    id: number;
+    name: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ImageUploadState {
@@ -36,6 +55,15 @@ export interface AddStockModalProps {
     id: number;
     name: string;
   }>;
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
+  }>;
 }
 
 export interface StepProps {
@@ -45,6 +73,15 @@ export interface StepProps {
   stockMasters?: Array<{
     id: number;
     name: string;
+  }>;
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
   }>;
 }
 

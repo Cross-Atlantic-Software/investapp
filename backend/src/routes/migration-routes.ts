@@ -430,4 +430,285 @@ router.post('/create-stock-faq-table', async (req, res) => {
   }
 });
 
+
+// Financial Data CSV table migration
+router.post('/create-financial-data-csv-table', async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-financial-data-csv-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT COUNT(*) as count
+      FROM information_schema.tables 
+      WHERE table_schema = DATABASE()
+      AND TABLE_NAME = 'financial_data_csv'
+    `);
+    
+    if ((results as any)[0].count > 0) {
+      console.log("✅ Table 'financial_data_csv' already exists");
+      
+      // Check if csv_content column exists
+      const [columnResults] = await db.sequelize.query(`
+        SELECT COUNT(*) as count
+        FROM information_schema.columns 
+        WHERE table_schema = DATABASE()
+        AND TABLE_NAME = 'financial_data_csv'
+        AND COLUMN_NAME = 'csv_content'
+      `);
+      
+      if ((columnResults as any)[0].count === 0) {
+        console.log("🔄 Adding missing csv_content column");
+        await db.sequelize.query(`
+          ALTER TABLE financial_data_csv 
+          ADD COLUMN csv_content LONGTEXT NOT NULL AFTER uploaded_at
+        `);
+        console.log("✅ Added csv_content column successfully");
+      }
+      
+      return res.json({
+        success: true,
+        message: "Financial Data CSV table already exists and updated"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE financial_data_csv (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        stock_id INT NOT NULL,
+        category ENUM('income_statement', 'balance_sheet', 'cash_flow') NOT NULL,
+        original_filename VARCHAR(255) NOT NULL,
+        s3_key VARCHAR(500) NOT NULL,
+        s3_url VARCHAR(1000) NOT NULL,
+        file_size INT NOT NULL,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        csv_content LONGTEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        FOREIGN KEY (stock_id) REFERENCES products(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_stock_category (stock_id, category),
+        INDEX idx_financial_data_csv_stock_id (stock_id),
+        INDEX idx_financial_data_csv_category (category)
+      )
+    `);
+
+    console.log("✅ Created financial_data_csv table successfully");
+    res.json({
+      success: true,
+      message: "Financial Data CSV table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// Sectors and Subsectors tables migration
+router.post('/create-sectors-and-subsectors', async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-sectors-and-subsectors");
+    
+    // Check if sectors table already exists
+    const [sectorsResults] = await db.sequelize.query(`
+      SELECT COUNT(*) as count
+      FROM information_schema.tables 
+      WHERE table_schema = DATABASE()
+      AND TABLE_NAME = 'sectors'
+    `);
+    
+    if ((sectorsResults as any)[0].count > 0) {
+      console.log("✅ Table 'sectors' already exists");
+    } else {
+      console.log("📝 Creating sectors table...");
+      await db.sequelize.query(`
+        CREATE TABLE sectors (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(100) NOT NULL UNIQUE,
+          is_active BOOLEAN NOT NULL DEFAULT TRUE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+      `);
+      console.log("✅ Sectors table created");
+    }
+
+    // Check if subsectors table already exists
+    const [subsectorsResults] = await db.sequelize.query(`
+      SELECT COUNT(*) as count
+      FROM information_schema.tables 
+      WHERE table_schema = DATABASE()
+      AND TABLE_NAME = 'subsectors'
+    `);
+    
+    if ((subsectorsResults as any)[0].count > 0) {
+      console.log("✅ Table 'subsectors' already exists");
+    } else {
+      console.log("📝 Creating subsectors table...");
+      await db.sequelize.query(`
+        CREATE TABLE subsectors (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          sector_id INT NOT NULL,
+          name VARCHAR(100) NOT NULL,
+          is_active BOOLEAN NOT NULL DEFAULT TRUE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          
+          FOREIGN KEY (sector_id) REFERENCES sectors(id) ON DELETE CASCADE
+        )
+      `);
+      console.log("✅ Subsectors table created");
+    }
+
+    // Check if products table has sector_ids and subsector_ids columns
+    const [columnsResults] = await db.sequelize.query(`
+      SELECT COLUMN_NAME 
+      FROM information_schema.columns 
+      WHERE table_schema = DATABASE()
+      AND TABLE_NAME = 'products'
+      AND COLUMN_NAME IN ('sector_ids', 'subsector_ids')
+    `);
+    
+    const existingColumns = (columnsResults as any).map((row: any) => row.COLUMN_NAME);
+    
+    if (!existingColumns.includes('sector_ids')) {
+      console.log("📝 Adding sector_ids column to products table...");
+      await db.sequelize.query(`
+        ALTER TABLE products 
+        ADD COLUMN sector_ids TEXT AFTER founded
+      `);
+      console.log("✅ sector_ids column added");
+    } else {
+      console.log("✅ sector_ids column already exists");
+    }
+    
+    if (!existingColumns.includes('subsector_ids')) {
+      console.log("📝 Adding subsector_ids column to products table...");
+      await db.sequelize.query(`
+        ALTER TABLE products 
+        ADD COLUMN subsector_ids TEXT AFTER sector_ids
+      `);
+      console.log("✅ subsector_ids column added");
+    } else {
+      console.log("✅ subsector_ids column already exists");
+    }
+
+    // Insert sample data if tables are empty
+    const [sectorCount] = await db.sequelize.query(`SELECT COUNT(*) as count FROM sectors`);
+    if ((sectorCount as any)[0].count === 0) {
+      console.log("📝 Inserting sample sectors...");
+      await db.sequelize.query(`
+        INSERT INTO sectors (name) VALUES
+        ('Technology'),
+        ('Healthcare'),
+        ('Finance'),
+        ('Manufacturing'),
+        ('Energy')
+      `);
+      console.log("✅ Sample sectors inserted");
+    }
+
+    const [subsectorCount] = await db.sequelize.query(`SELECT COUNT(*) as count FROM subsectors`);
+    if ((subsectorCount as any)[0].count === 0) {
+      console.log("📝 Inserting sample subsectors...");
+      await db.sequelize.query(`
+        INSERT INTO subsectors (sector_id, name) VALUES
+        (1, 'Software'),
+        (1, 'Hardware'),
+        (1, 'Internet'),
+        (2, 'Pharmaceuticals'),
+        (2, 'Medical Devices'),
+        (2, 'Healthcare Services'),
+        (3, 'Banking'),
+        (3, 'Insurance'),
+        (3, 'Investment'),
+        (4, 'Automotive'),
+        (4, 'Aerospace'),
+        (4, 'Chemicals'),
+        (5, 'Oil & Gas'),
+        (5, 'Renewable Energy'),
+        (5, 'Utilities')
+      `);
+      console.log("✅ Sample subsectors inserted");
+    }
+
+    console.log("🎉 Migration completed successfully!");
+    res.json({
+      success: true,
+      message: "Sectors and subsectors tables created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// Add missing columns to products table
+router.post('/add-sector-columns-to-products', async (req, res) => {
+  try {
+    console.log("🔄 Adding sector_ids and subsector_ids columns to products table...");
+    
+    // Check if sector_ids column exists
+    const [sectorIdsResults] = await db.sequelize.query(`
+      SELECT COLUMN_NAME 
+      FROM information_schema.columns 
+      WHERE table_schema = DATABASE()
+      AND TABLE_NAME = 'products'
+      AND COLUMN_NAME = 'sector_ids'
+    `);
+    
+    if ((sectorIdsResults as any).length === 0) {
+      console.log("📝 Adding sector_ids column...");
+      await db.sequelize.query(`
+        ALTER TABLE products 
+        ADD COLUMN sector_ids TEXT AFTER founded
+      `);
+      console.log("✅ sector_ids column added");
+    } else {
+      console.log("✅ sector_ids column already exists");
+    }
+    
+    // Check if subsector_ids column exists
+    const [subsectorIdsResults] = await db.sequelize.query(`
+      SELECT COLUMN_NAME 
+      FROM information_schema.columns 
+      WHERE table_schema = DATABASE()
+      AND TABLE_NAME = 'products'
+      AND COLUMN_NAME = 'subsector_ids'
+    `);
+    
+    if ((subsectorIdsResults as any).length === 0) {
+      console.log("📝 Adding subsector_ids column...");
+      await db.sequelize.query(`
+        ALTER TABLE products 
+        ADD COLUMN subsector_ids TEXT AFTER sector_ids
+      `);
+      console.log("✅ subsector_ids column added");
+    } else {
+      console.log("✅ subsector_ids column already exists");
+    }
+
+    console.log("🎉 Migration completed successfully!");
+    res.json({
+      success: true,
+      message: "Sector columns added to products table successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
 export default router;

@@ -5,13 +5,13 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
   return (
     <div className="space-y-6">
       <div className="text-center mb-4">
-        <h4 className="text-lg font-semibold text-themeTeal">Financial Details</h4>
+        <h4 className="text-lg font-semibold text-themeTeal">Stock Price Details</h4>
       </div>
       
       {/* Valuation */}
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Valuation <span className="text-red-500">*</span>
+          Valuation (in Cr.) <span className="text-red-500">*</span>
         </label>
         <input
           type="number"

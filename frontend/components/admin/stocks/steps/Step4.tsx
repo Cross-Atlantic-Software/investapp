@@ -12,7 +12,7 @@ const Step4: React.FC<StepProps> = ({ formData, onInputChange, onFormDataChange,
       {/* Demand */}
       <div>
         <label className="block text-xs font-medium text-themeTeal mb-1">
-          Demand <span className="text-red-500">*</span>
+          Stock Demand Tag - High / Low <span className="text-red-500">*</span>
         </label>
         <select
           name="demand"
@@ -30,7 +30,7 @@ const Step4: React.FC<StepProps> = ({ formData, onInputChange, onFormDataChange,
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-medium text-themeTeal mb-1">
-            Home Display <span className="text-red-500">*</span>
+            What&apos;s going on Today <span className="text-red-500">*</span>
           </label>
           <select
             name="homeDisplay"
@@ -46,7 +46,7 @@ const Step4: React.FC<StepProps> = ({ formData, onInputChange, onFormDataChange,
         
         <div>
           <label className="block text-xs font-medium text-themeTeal mb-1">
-            Banner Display <span className="text-red-500">*</span>
+            Home Page - Top Banner Slider <span className="text-red-500">*</span>
           </label>
           <select
             name="bannerDisplay"

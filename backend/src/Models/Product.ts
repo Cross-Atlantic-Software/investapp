@@ -15,8 +15,8 @@ interface ProductAttributes {
   price_per_share: number;
   percentage_change: number;
   founded: number;
-  sector: string;
-  subsector: string;
+  sector_ids: string;
+  subsector_ids: string;
   headquarters: string;
   min_units: number;
   lot_size: number;
@@ -48,8 +48,8 @@ class Product
   public price_per_share!: number;
   public percentage_change!: number;
   public founded!: number;
-  public sector!: string;
-  public subsector!: string;
+  public sector_ids!: string;
+  public subsector_ids!: string;
   public headquarters!: string;
   public min_units!: number;
   public lot_size!: number;
@@ -121,13 +121,13 @@ export function initializeProductModel(sequelize: Sequelize) {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      sector: {
-        type: DataTypes.STRING(100),
-        allowNull: false
+      sector_ids: {
+        type: DataTypes.TEXT,
+        allowNull: true
       },
-      subsector: {
-        type: DataTypes.STRING(100),
-        allowNull: false
+      subsector_ids: {
+        type: DataTypes.TEXT,
+        allowNull: true
       },
       headquarters: {
         type: DataTypes.STRING(200),

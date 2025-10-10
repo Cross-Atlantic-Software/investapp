@@ -27,7 +27,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector', 'subsector', 'headquarters', 'min_units', 'lot_size', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'headquarters', 'min_units', 'lot_size', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -64,10 +64,46 @@ export const getAllStocks = async (req: Request, res: Response) => {
           where: { id: { [Op.in]: stockMasterIds } },
           attributes: ['id', 'name'],
         });
+
+        // Fetch sector names
+        let sectorIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).sector_ids || '[]');
+          if (Array.isArray(parsed)) {
+            sectorIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+          sectorIds = [];
+        }
+        
+        const sectors = await db.Sector.findAll({
+          where: { id: { [Op.in]: sectorIds } },
+          attributes: ['id', 'name'],
+        });
+
+        // Fetch subsector names
+        let subsectorIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+          if (Array.isArray(parsed)) {
+            subsectorIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+          subsectorIds = [];
+        }
+        
+        const subsectors = await db.Subsector.findAll({
+          where: { id: { [Op.in]: subsectorIds } },
+          attributes: ['id', 'name', 'sector_id'],
+        });
         
         return {
           ...stock.toJSON(),
           stock_masters: stockMasters,
+          sectors: sectors,
+          subsectors: subsectors,
         };
       })
     );
@@ -135,9 +171,45 @@ export const getStockById = async (req: Request, res: Response) => {
       attributes: ['id', 'name'],
     });
 
+    // Fetch sector names
+    let sectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).sector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        sectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+      sectorIds = [];
+    }
+    
+    const sectors = await db.Sector.findAll({
+      where: { id: { [Op.in]: sectorIds } },
+      attributes: ['id', 'name'],
+    });
+
+    // Fetch subsector names
+    let subsectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        subsectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+      subsectorIds = [];
+    }
+    
+    const subsectors = await db.Subsector.findAll({
+      where: { id: { [Op.in]: subsectorIds } },
+      attributes: ['id', 'name', 'sector_id'],
+    });
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
+      sectors: sectors,
+      subsectors: subsectors,
     };
 
     return res.status(200).json({
@@ -196,9 +268,45 @@ export const getStockByName = async (req: Request, res: Response) => {
       attributes: ['id', 'name'],
     });
 
+    // Fetch sector names
+    let sectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).sector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        sectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+      sectorIds = [];
+    }
+    
+    const sectors = await db.Sector.findAll({
+      where: { id: { [Op.in]: sectorIds } },
+      attributes: ['id', 'name'],
+    });
+
+    // Fetch subsector names
+    let subsectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        subsectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+      subsectorIds = [];
+    }
+    
+    const subsectors = await db.Subsector.findAll({
+      where: { id: { [Op.in]: subsectorIds } },
+      attributes: ['id', 'name', 'sector_id'],
+    });
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
+      sectors: sectors,
+      subsectors: subsectors,
     };
 
     return res.status(200).json({
@@ -242,8 +350,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       price_per_share,
       percentage_change,
       founded,
-      sector,
-      subsector,
+      sector_ids,
+      subsector_ids,
       headquarters,
       min_units,
       lot_size,
@@ -298,8 +406,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       price_per_share: price_per_share || 0,
       percentage_change: percentage_change || price_change || 0,
       founded: founded || new Date().getFullYear(),
-      sector: sector || 'Technology',
-      subsector: subsector || 'Software',
+      sector_ids: sector_ids || '[]',
+      subsector_ids: subsector_ids || '[]',
       headquarters: headquarters || 'N/A',
       min_units: min_units || 1,
       lot_size: lot_size || 1,
@@ -344,8 +452,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       price_per_share,
       percentage_change,
       founded,
-      sector,
-      subsector,
+      sector_ids,
+      subsector_ids,
       headquarters,
       min_units,
       lot_size,
@@ -395,8 +503,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,
       percentage_change: percentage_change !== undefined ? percentage_change : stock.percentage_change,
       founded: founded !== undefined ? founded : stock.founded,
-      sector: sector !== undefined ? sector : stock.sector,
-      subsector: subsector !== undefined ? subsector : stock.subsector,
+      sector_ids: sector_ids !== undefined ? sector_ids : stock.sector_ids,
+      subsector_ids: subsector_ids !== undefined ? subsector_ids : stock.subsector_ids,
       headquarters: headquarters !== undefined ? headquarters : stock.headquarters,
       min_units: min_units !== undefined ? min_units : stock.min_units,
       lot_size: lot_size !== undefined ? lot_size : stock.lot_size,

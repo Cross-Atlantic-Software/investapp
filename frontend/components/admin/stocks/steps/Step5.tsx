@@ -4,10 +4,14 @@ import { StepProps, ImageUploadState } from '../types';
 
 const Step5: React.FC<StepProps & { 
   stockMasters?: Array<{ id: number; name: string; }>;
+  sectors?: Array<{ id: number; name: string; }>;
+  subsectors?: Array<{ id: number; name: string; sector_id: number; }>;
   imageUpload: ImageUploadState;
 }> = ({ 
   formData, 
   stockMasters = [],
+  sectors = [],
+  subsectors = [],
   imageUpload
 }) => {
   const getStockMasterNames = () => {
@@ -16,6 +20,24 @@ const Step5: React.FC<StepProps & {
     }
     return formData.stock_master_ids.map(id => 
       stockMasters.find(master => master.id === id)?.name
+    ).filter(Boolean).join(', ');
+  };
+
+  const getSectorNames = () => {
+    if (!Array.isArray(formData.sector_ids)) {
+      return 'No sectors selected';
+    }
+    return formData.sector_ids.map(id => 
+      sectors.find(sector => sector.id === id)?.name
+    ).filter(Boolean).join(', ');
+  };
+
+  const getSubsectorNames = () => {
+    if (!Array.isArray(formData.subsector_ids)) {
+      return 'No subsectors selected';
+    }
+    return formData.subsector_ids.map(id => 
+      subsectors.find(subsector => subsector.id === id)?.name
     ).filter(Boolean).join(', ');
   };
 
@@ -43,12 +65,12 @@ const Step5: React.FC<StepProps & {
               <p className="text-gray-600 mt-1">{formData.founded}</p>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Sector:</span>
-              <p className="text-gray-600 mt-1">{formData.sector}</p>
+              <span className="font-medium text-gray-700">Sectors:</span>
+              <p className="text-gray-600 mt-1">{getSectorNames()}</p>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Subsector:</span>
-              <p className="text-gray-600 mt-1">{formData.subsector}</p>
+              <span className="font-medium text-gray-700">Subsectors:</span>
+              <p className="text-gray-600 mt-1">{getSubsectorNames()}</p>
             </div>
             <div className="md:col-span-2">
               <span className="font-medium text-gray-700">Headquarters:</span>
@@ -61,7 +83,7 @@ const Step5: React.FC<StepProps & {
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <h5 className="text-md font-semibold text-themeTeal mb-3 flex items-center">
             <div className="w-2 h-2 bg-themeTeal rounded-full mr-2"></div>
-            Financial Details
+          Stock Price Details
           </h5>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
@@ -125,15 +147,15 @@ const Step5: React.FC<StepProps & {
           </h5>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="font-medium text-gray-700">Demand Level:</span>
+              <span className="font-medium text-gray-700">Stock Demand Tag :</span>
               <p className="text-gray-600 mt-1">{formData.demand}</p>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Home Display:</span>
+              <span className="font-medium text-gray-700">What&apos;s going on Today:</span>
               <p className="text-gray-600 mt-1 capitalize">{formData.homeDisplay}</p>
             </div>
             <div>
-              <span className="font-medium text-gray-700">Banner Display:</span>
+              <span className="font-medium text-gray-700">Home Page - Top Banner Slider:</span>
               <p className="text-gray-600 mt-1 capitalize">{formData.bannerDisplay}</p>
             </div>
             <div>

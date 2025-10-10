@@ -50,6 +50,7 @@ import { WishlistController } from "../controllers/stocks/wishlistController";
 import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
 import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
 import { StockFaqController } from "../controllers/admin/stockFaqController";
+import { SectorManagementController } from "../controllers/admin/sectorManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -115,7 +116,8 @@ router.use((req, res, next) => {
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
       req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
-      req.path.includes('/news-sections') || req.path.includes('/faqs')) {
+      req.path.includes('/news-sections') || req.path.includes('/faqs') ||
+      req.path.includes('/sectors') || req.path.includes('/subsectors')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -220,6 +222,23 @@ router.get("/stock-masters/:id", stockMasterController.getStockMasterById);
 router.post("/stock-masters", stockMasterController.createStockMaster);
 router.put("/stock-masters/:id", stockMasterController.updateStockMaster);
 router.delete("/stock-masters/:id", stockMasterController.deleteStockMaster);
+
+// Sector Management Routes
+router.get("/sectors", SectorManagementController.getAllSectors);
+router.get("/sectors/stats", SectorManagementController.getSectorStats);
+router.get("/sectors/select", SectorManagementController.getAllSectorsForSelect);
+router.get("/sectors/:id", SectorManagementController.getSectorById);
+router.post("/sectors", SectorManagementController.createSector);
+router.put("/sectors/:id", SectorManagementController.updateSector);
+router.delete("/sectors/:id", SectorManagementController.deleteSector);
+
+// Subsector Management Routes
+router.get("/subsectors", SectorManagementController.getAllSubsectors);
+router.get("/sectors/:sectorId/subsectors", SectorManagementController.getSubsectorsBySectorId);
+router.get("/subsectors/:id", SectorManagementController.getSubsectorById);
+router.post("/subsectors", SectorManagementController.createSubsector);
+router.put("/subsectors/:id", SectorManagementController.updateSubsector);
+router.delete("/subsectors/:id", SectorManagementController.deleteSubsector);
 
 // Stock Scorecard Management Routes
 router.get("/stocks/:stockId/scorecards", StockScorecardManagementController.getScorecardsByStockId);
