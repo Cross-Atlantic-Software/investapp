@@ -337,6 +337,6 @@ router.delete("/faqs/:id", StockFaqController.deleteFaq);
 router.post("/faqs/bulk-delete", StockFaqController.bulkDeleteFaqs);
 
 // Stock-specific FAQ routes
-router.get("/stocks/:stockId/faqs", StockFaqController.getStockFaqs);
+router.get("/stocks/:stockId/faqs", StockFaqController.getStockFaqsAdmin);
 
 export default router;

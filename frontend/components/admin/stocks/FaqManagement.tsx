@@ -13,7 +13,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
   const [formData, setFormData] = useState<FaqFormData>({
     question: '',
     answer: '',
-    display_order: 0,
+    display_order: 0, // Not used in create, but needed for edit form
     is_active: true
   });
 
@@ -69,7 +69,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
       
       if (result.success) {
         setShowAddForm(false);
-        setFormData({ question: '', answer: '', display_order: 0, is_active: true });
+        setFormData({ question: '', answer: '', display_order: 0, is_active: true }); // display_order not used in create
         loadFaqs();
         alert('FAQ added successfully');
       } else {
@@ -192,7 +192,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
 
   const cancelAdd = () => {
     setShowAddForm(false);
-    setFormData({ question: '', answer: '', display_order: 0, is_active: true });
+    setFormData({ question: '', answer: '', display_order: 0, is_active: true }); // display_order not used in create
   };
 
   return (
@@ -258,7 +258,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                   <div className="flex justify-between items-center mb-4">
                     <div>
                       <h3 className="text-md font-semibold text-gray-900">Add New FAQ</h3>
-                      <p className="text-xs text-gray-500 mt-1">Order will be automatically assigned</p>
+                      <p className="text-xs text-gray-500 mt-1">Order will be auto-assigned (comes at the bottom)</p>
                     </div>
                     <button
                       onClick={cancelAdd}
@@ -380,7 +380,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                           onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Change order to swap positions with other FAQs</p>
+                        <p className="text-xs text-gray-500 mt-1">Change order to reorder FAQs (others will shift accordingly)</p>
                       </div>
                       
                       <div className="flex items-center">
