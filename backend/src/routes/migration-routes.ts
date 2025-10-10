@@ -374,4 +374,60 @@ router.post("/create-stock-news-section-table", async (req, res) => {
   }
 });
 
+// Stock FAQ migration
+router.post('/create-stock-faq-table', async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-stock-faq-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'stock_faq'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'stock_faq' already exists");
+      return res.json({
+        success: true,
+        message: "Stock FAQ table already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE stock_faq (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        stock_id INT NOT NULL,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        display_order INT DEFAULT 0,
+        is_active BOOLEAN DEFAULT TRUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        FOREIGN KEY (stock_id) REFERENCES products(id) ON DELETE CASCADE,
+        INDEX idx_stock_faq_stock_id (stock_id),
+        INDEX idx_stock_faq_active (is_active),
+        INDEX idx_stock_faq_order (display_order)
+      )
+    `);
+    
+    console.log("✅ Created stock_faq table successfully");
+    
+    res.json({
+      success: true,
+      message: "Stock FAQ table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
 export default router;

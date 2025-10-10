@@ -267,7 +267,14 @@ export class StockInvestmentRationaleManagementController {
         });
       }
 
+      const stockId = rationale.stock_id;
+      const rationaleType = rationale.type;
+      const deletedOrder = rationale.order_index;
+
       await rationale.destroy();
+
+      // Reorder remaining rationales for the same stock and type
+      await StockInvestmentRationaleManagementController.reorderRationalesAfterDeletion(stockId, rationaleType, deletedOrder);
 
       res.json({
         success: true,
@@ -430,6 +437,33 @@ export class StockInvestmentRationaleManagementController {
         message: 'Failed to fetch investment rationale statistics',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
+    }
+  }
+
+  // Helper method to reorder rationales after deletion
+  private static async reorderRationalesAfterDeletion(stockId: number, rationaleType: string, deletedOrder: number): Promise<void> {
+    try {
+      // Get all remaining rationales for this stock and type with order greater than the deleted order
+      const remainingRationales = await StockInvestmentRationaleModel.findAll({
+        where: {
+          stock_id: stockId,
+          type: rationaleType,
+          order_index: {
+            [Op.gt]: deletedOrder
+          }
+        },
+        order: [['order_index', 'ASC']]
+      });
+
+      // Decrement the order of all rationales that had higher order than the deleted one
+      for (let i = 0; i < remainingRationales.length; i++) {
+        await remainingRationales[i].update({
+          order_index: deletedOrder + i
+        });
+      }
+    } catch (error) {
+      console.error('Error reordering rationales after deletion:', error);
+      // Don't throw error here as deletion was successful
     }
   }
 }

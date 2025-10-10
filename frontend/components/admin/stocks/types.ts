@@ -162,3 +162,31 @@ export interface NewsSectionManagementProps {
   stockName: string;
   onClose: () => void;
 }
+
+export interface StockFaq {
+  id: number;
+  stock_id: number;
+  question: string;
+  answer: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  stock?: {
+    id: number;
+    company_name: string;
+  };
+}
+
+export interface FaqFormData {
+  question: string;
+  answer: string;
+  display_order: number;
+  is_active: boolean;
+}
+
+export interface FaqManagementProps {
+  stockId: string;
+  stockName: string;
+  onClose: () => void;
+}

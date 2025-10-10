@@ -15,6 +15,8 @@ import ShareholdingManagement from './ShareholdingManagement';
 import { useShareholdingManagement } from './hooks/useShareholdingManagement';
 import { useNewsSectionManagement } from './hooks/useNewsSectionManagement';
 import NewsSectionManagement from './NewsSectionManagement';
+import { useFaqManagement } from './hooks/useFaqManagement';
+import FaqManagement from './FaqManagement';
 
 interface Stock {
   id: number;
@@ -191,6 +193,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   
   // News section management hook
   const { newsSectionModal, openNewsSectionModal, closeNewsSectionModal } = useNewsSectionManagement();
+  const { faqModal, openFaqModal, closeFaqModal } = useFaqManagement();
   const [financialDataModal, setFinancialDataModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
     isOpen: false,
     stock: null
@@ -1109,6 +1112,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         break;
       case 'news-sections':
         openNewsSectionModal(sidebarStock);
+        break;
+      case 'faqs':
+        openFaqModal(sidebarStock);
         break;
       case 'financial-data':
         setFinancialDataModal({ isOpen: true, stock: sidebarStock });
@@ -2702,14 +2708,23 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         />
       )}
 
-      {/* News Section Management Modal */}
-      {newsSectionModal.isOpen && newsSectionModal.stock && (
-        <NewsSectionManagement
-          stockId={newsSectionModal.stock.id.toString()}
-          stockName={newsSectionModal.stock.company_name}
-          onClose={closeNewsSectionModal}
-        />
-      )}
+        {/* News Section Management Modal */}
+        {newsSectionModal.isOpen && newsSectionModal.stock && (
+          <NewsSectionManagement
+            stockId={newsSectionModal.stock.id.toString()}
+            stockName={newsSectionModal.stock.company_name}
+            onClose={closeNewsSectionModal}
+          />
+        )}
+
+        {/* FAQ Management Modal */}
+        {faqModal.isOpen && faqModal.stock && (
+          <FaqManagement
+            stockId={faqModal.stock.id.toString()}
+            stockName={faqModal.stock.company_name}
+            onClose={closeFaqModal}
+          />
+        )}
 
       {/* Stock Modules Sidebar */}
       <StockModulesSidebar

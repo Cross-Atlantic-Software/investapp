@@ -184,7 +184,7 @@ export default function UnlistedCompanyDetails() {
             <Section id="financials" title="Financial Performance" info={getMethodologyText('financials')}><FinancialPerformanceSection stockId={stockData.id} /></Section>
             <Section id="holders" title="Shareholding" info={getMethodologyText('holders')}><ShareholdingSection stockId={stockData.id} /></Section>
             <Section id="news" title="News Related to Company" info={getMethodologyText('news')}><NewsSection stockId={parseInt(stockData.id)} /></Section>
-            <Section id="faq" title="Frequently Asked Questions" info={getMethodologyText('faq')}><FaqSection /></Section>
+            <Section id="faq" title="Frequently Asked Questions" info={getMethodologyText('faq')}><FaqSection stockId={parseInt(stockData.id)} /></Section>
           </div>
         </div>
 

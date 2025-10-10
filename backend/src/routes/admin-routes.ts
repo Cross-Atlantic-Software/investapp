@@ -49,6 +49,7 @@ import { StockShareholdingController } from "../controllers/admin/stockSharehold
 import { WishlistController } from "../controllers/stocks/wishlistController";
 import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
 import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
+import { StockFaqController } from "../controllers/admin/stockFaqController";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -114,7 +115,7 @@ router.use((req, res, next) => {
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
       req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
-      req.path.includes('/news-sections')) {
+      req.path.includes('/news-sections') || req.path.includes('/faqs')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -326,5 +327,16 @@ router.post("/news-sections/upload-banner", uploadBanner.single('banner'), Stock
 
 // Stock-specific News Section Routes
 router.get("/stocks/:stockId/news-sections", StockNewsSectionController.getStockNewsSections);
+
+// Stock FAQ Management Routes
+router.get("/faqs", StockFaqController.getAllFaqs);
+router.get("/faqs/:id", StockFaqController.getFaqById);
+router.post("/faqs", StockFaqController.createFaq);
+router.put("/faqs/:id", StockFaqController.updateFaq);
+router.delete("/faqs/:id", StockFaqController.deleteFaq);
+router.post("/faqs/bulk-delete", StockFaqController.bulkDeleteFaqs);
+
+// Stock-specific FAQ routes
+router.get("/stocks/:stockId/faqs", StockFaqController.getStockFaqs);
 
 export default router;

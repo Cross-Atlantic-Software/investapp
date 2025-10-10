@@ -8,6 +8,7 @@ import { StockDisplayController } from "../controllers/stocks/stockDisplayContro
 import { FinancialDataController } from "../controllers/admin/financialDataController";
 import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
 import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
+import { StockFaqController } from "../controllers/admin/stockFaqController";
 
 const router = express.Router();
 
@@ -50,5 +51,8 @@ router.get("/shareholder-types", ShareholderTypeController.getAllShareholderType
 // Public Stock News Section Routes (no authentication required)
 router.get("/stocks/:stockId/news-sections", StockNewsSectionController.getStockNewsSections);
 router.get("/news-sections/:id", StockNewsSectionController.getNewsSectionById);
+
+// Public Stock FAQ Routes (no authentication required)
+router.get("/stocks/:stockId/faqs", StockFaqController.getStockFaqs);
 
 export default router;

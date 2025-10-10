@@ -23,6 +23,7 @@ import StockShareholding, { initializeStockShareholdingModel } from "../Models/S
 import ShareholderType, { initializeShareholderTypeModel } from "../Models/ShareholderType";
 import Wishlist, { initializeWishlistModel } from "../Models/Wishlist";
 import StockNewsSection, { initializeStockNewsSectionModel } from "../Models/StockNewsSection";
+import { StockFaq, initializeStockFaqModel } from "../Models/StockFaq";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -124,6 +125,7 @@ async function initializeSequelize() {
   
   // Initialize Stock News Section model
   initializeStockNewsSectionModel(sequelize);
+  initializeStockFaqModel(sequelize);
   
   // Initialize Wishlist model
   initializeWishlistModel(sequelize);
@@ -177,6 +179,17 @@ async function initializeSequelize() {
   });
   
   StockNewsSection.belongsTo(Product, {
+    foreignKey: 'stock_id',
+    as: 'stock'
+  });
+
+  // Stock FAQ associations
+  Product.hasMany(StockFaq, {
+    foreignKey: 'stock_id',
+    as: 'stockFaqs'
+  });
+  
+  StockFaq.belongsTo(Product, {
     foreignKey: 'stock_id',
     as: 'stock'
   });
@@ -341,6 +354,12 @@ export const db = {
       throw new Error('StockNewsSection model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockNewsSection;
+  },
+  get StockFaq() {
+    if (!StockFaq) {
+      throw new Error('StockFaq model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockFaq;
   },
 };
 
