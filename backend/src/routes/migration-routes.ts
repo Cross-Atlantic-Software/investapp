@@ -1,5 +1,5 @@
 import express from "express";
-import { db } from "../utils/database";
+import { db, sequelizePromise } from "../utils/database";
 
 const router = express.Router();
 
@@ -710,5 +710,213 @@ router.post('/add-sector-columns-to-products', async (req, res) => {
     });
   }
 });
+
+// Run migration to create KYC applications table
+router.post("/create-kyc-applications-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-kyc-applications-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'kyc_applications'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'kyc_applications' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'kyc_applications' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE kyc_applications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        user_id INT UNSIGNED NOT NULL,
+        pan_number VARCHAR(10) NOT NULL,
+        name_pan VARCHAR(255) NOT NULL,
+        dob DATE NOT NULL,
+        father_name VARCHAR(255) NOT NULL,
+        aadhar_number VARCHAR(12) NOT NULL,
+        account_number VARCHAR(18) NOT NULL,
+        ifsc_code VARCHAR(11) NOT NULL,
+        bank_proof VARCHAR(500) NOT NULL,
+        demat_type ENUM('Individual', 'Joint', 'NRI(repatriable)', 'Non-repatriable NRI', 'Corporate', 'Minor', 'HUF', 'Trust/Society/Partnership') NOT NULL,
+        demat_account_id VARCHAR(50) NOT NULL,
+        sign VARCHAR(500) NOT NULL,
+        status ENUM('pending', 'verified', 'rejected') NOT NULL DEFAULT 'pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        
+        INDEX idx_user_id (user_id),
+        INDEX idx_status (status),
+        INDEX idx_created_at (created_at),
+        INDEX idx_pan_number (pan_number),
+        INDEX idx_aadhar_number (aadhar_number)
+      )
+    `);
+    
+    console.log("✅ Created kyc_applications table successfully");
+    
+    res.json({
+      success: true,
+      message: "KYC applications table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+  // Add residency_status column to kyc_applications table
+  router.post("/add-residency-status-to-kyc", async (req, res) => {
+    try {
+      // Check if column already exists
+      const [results] = await db.sequelize.query(`
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'kyc_applications' 
+        AND COLUMN_NAME = 'residency_status'
+      `);
+
+      if (results.length > 0) {
+        return res.status(200).json({
+          success: true,
+          message: "residency_status column already exists in kyc_applications table"
+        });
+      }
+
+      // Add the column
+      await db.sequelize.query(`
+        ALTER TABLE kyc_applications 
+        ADD COLUMN residency_status ENUM('Indian', 'NRI') NOT NULL DEFAULT 'Indian' 
+        AFTER father_name
+      `);
+
+      // Add index for better performance
+      await db.sequelize.query(`
+        CREATE INDEX idx_residency_status ON kyc_applications(residency_status)
+      `);
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully added residency_status column to kyc_applications table"
+      });
+    } catch (error) {
+      console.error("Error adding residency_status column:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to add residency_status column",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Add KYC verification email template
+  router.post("/add-kyc-verification-email-template", async (req, res) => {
+    try {
+      // Ensure database is ready
+      await sequelizePromise;
+      
+      // Check if template already exists
+      const [results] = await db.sequelize.query(`
+        SELECT id FROM email_templates WHERE type = 'KYC_Verification'
+      `);
+
+      if (results.length > 0) {
+        return res.status(200).json({
+          success: true,
+          message: "KYC verification email template already exists"
+        });
+      }
+
+      // Insert KYC verification email template
+      await db.sequelize.query(`
+        INSERT INTO email_templates (type, subject, body, created_by, updated_by, createdAt, updatedAt)
+        VALUES (
+          'KYC_Verification',
+          'KYC Verification Complete - Welcome to InvestAPP',
+          '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+            <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #2c5530; margin: 0; font-size: 28px;">🎉 KYC Verification Complete!</h1>
+              </div>
+              
+              <div style="margin-bottom: 25px;">
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                  Dear {{userName}},
+                </p>
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                  Congratulations! Your KYC (Know Your Customer) verification has been successfully completed and approved.
+                </p>
+              </div>
+              
+              <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #2c5530;">
+                <h3 style="color: #2c5530; margin: 0 0 10px 0; font-size: 18px;">✅ What this means:</h3>
+                <ul style="color: #333; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 20px;">
+                  <li>Your account is now fully verified and activated</li>
+                  <li>You can start trading immediately</li>
+                  <li>All investment features are now available to you</li>
+                  <li>Your account is compliant with regulatory requirements</li>
+                </ul>
+              </div>
+              
+              <div style="margin: 25px 0;">
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                  You can now log in to your account and start exploring investment opportunities in the private market.
+                </p>
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                  If you have any questions or need assistance, please don''t hesitate to contact our support team.
+                </p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://investapp.com/login" style="background-color: #2c5530; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                  Login to Your Account
+                </a>
+              </div>
+              
+              <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+                <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0 0 10px 0;">
+                  Thank you for choosing InvestAPP for your investment journey.
+                </p>
+                <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0;">
+                  Best regards,<br>
+                  The InvestAPP Team
+                </p>
+              </div>
+            </div>
+          </div>',
+          1,
+          1,
+          NOW(),
+          NOW()
+        )
+      `);
+
+      res.status(200).json({
+        success: true,
+        message: "KYC verification email template created successfully"
+      });
+    } catch (error) {
+      console.error("Error creating KYC verification email template:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to create KYC verification email template",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
 
 export default router;

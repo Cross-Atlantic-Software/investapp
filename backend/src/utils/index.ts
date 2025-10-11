@@ -873,6 +873,12 @@ export default async function sendMail(
   content: string
 ): Promise<void> {
   try {
+    console.log("📧 Attempting to send email...");
+    console.log("📧 To:", email);
+    console.log("📧 Subject:", mailSubject);
+    console.log("📧 SMTP_MAIL:", process.env.SMTP_MAIL);
+    console.log("📧 SMTP_PASSWORD:", process.env.SMTP_PASSWORD ? "***SET***" : "NOT SET");
+    
     const transport = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
@@ -892,8 +898,9 @@ export default async function sendMail(
     };
 
     await transport.sendMail(mailOptions);
-    console.log("Email has been sent to:", email);
+    console.log("✅ Email has been sent to:", email);
   } catch (error: any) {
-    console.error("sendMail error:", error.message);
+    console.error("❌ sendMail error:", error.message);
+    console.error("❌ Full error:", error);
   }
 }

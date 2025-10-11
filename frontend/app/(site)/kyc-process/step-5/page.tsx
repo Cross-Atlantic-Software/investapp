@@ -1,37 +1,38 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  FileText, CreditCard, MapPin, Landmark, UserRoundCheck, Video, PenLine,
+  FileText, CreditCard, MapPin, Landmark, UserRoundCheck, PenLine,
 } from "lucide-react";
+import { useKYC } from "@/contexts/KYCContext";
 
-type Props = { onContinue?: () => void; onBack?: () => void };
-type Demat = { type: "" | "CDSL" | "NSDL"; id: string };
+type Demat = { 
+  type: "" | "Individual" | "Joint" | "NRI(repatriable)" | "Non-repatriable NRI" | "Corporate" | "Minor" | "HUF" | "Trust/Society/Partnership"; 
+  id: string 
+};
 
-export default function KYCStep5Demat({ onContinue, onBack }: Props) {
+export default function KYCStep5Demat() {
   const router = useRouter();
   const pathname = usePathname();
+  const { formData, updateFormData, markStepCompleted } = useKYC();
 
-  // steps
-  const steps = useMemo(
-    () => [
-      { label: "Documents", icon: FileText, href: "/kyc-process/step-1" },
-      { label: "PAN Validation", icon: CreditCard, href: "/kyc-process/step-2" },
-      { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
-      { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
-      { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
-      { label: "Video KYC", icon: Video, href: "/kyc-process/step-6" },
-      { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
-    ],
-    []
-  );
-  const current = 4; // 0-based -> Step 5
-
-  // form state
-  const [rows, setRows] = useState<Demat[]>([{ type: "", id: "" }]);
+  // form state (initialize from context)
+  const [rows, setRows] = useState<Demat[]>([
+    { type: formData.demat_type as Demat["type"] || "", id: formData.demat_account_id }
+  ]);
   const MAX_ROWS = 5;
+
+  // Update context when form data changes
+  useEffect(() => {
+    if (rows.length > 0 && rows[0].type && rows[0].id) {
+      updateFormData({
+        demat_type: rows[0].type,
+        demat_account_id: rows[0].id,
+      });
+    }
+  }, [rows, updateFormData]);
 
   const idOk = (v: string) => /^[A-Za-z0-9]{8,16}$/.test(v.trim());
   const rowValid = (r: Demat) => !!r.type && idOk(r.id);
@@ -42,16 +43,32 @@ export default function KYCStep5Demat({ onContinue, onBack }: Props) {
   const update = (i: number, k: keyof Demat, v: string) =>
     setRows((r) => r.map((row, idx) => (idx === i ? { ...row, [k]: v } : row)));
 
-  const backHandler =
-    onBack ??
-    (() => {
-      const m = pathname.match(/step-(\d+)/);
-      const curr = m ? Number(m[1]) : 5;
-      router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
-    });
+  const handleContinue = () => {
+    if (allValid) {
+      markStepCompleted(5);
+      router.push('/kyc-process/step-7');
+    }
+  };
 
-  const continueHandler =
-    onContinue ?? (() => router.push("/kyc-process/step-6"));
+  // steps
+  const steps = useMemo(
+    () => [
+      { label: "Documents", icon: FileText, href: "/kyc-process/step-1" },
+      { label: "PAN Validation", icon: CreditCard, href: "/kyc-process/step-2" },
+      { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
+      { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
+      { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
+      { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
+    ],
+    []
+  );
+  const current = 4; // 0-based -> Step 5
+
+  const backHandler = () => {
+    const m = pathname.match(/step-(\d+)/);
+    const curr = m ? Number(m[1]) : 5;
+    router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
+  };
 
   return (
     <section className="bg-themeTealWhite py-8 sm:py-12 lg:py-16">
@@ -133,9 +150,15 @@ export default function KYCStep5Demat({ onContinue, onBack }: Props) {
                       onChange={(e) => update(i, "type", e.target.value as Demat["type"])}
                       className="w-full rounded border border-themeTealLighter bg-white px-3 py-2 text-themeTeal focus:outline-none focus:border-themeTeal"
                     >
-                      <option value="">Select Account Type</option>
-                      <option value="CDSL">CDSL</option>
-                      <option value="NSDL">NSDL</option>
+                      <option value="">Select Demat Account Type</option>
+                      <option value="Individual">Individual</option>
+                      <option value="Joint">Joint</option>
+                      <option value="NRI(repatriable)">NRI (Repatriable)</option>
+                      <option value="Non-repatriable NRI">Non-repatriable NRI</option>
+                      <option value="Corporate">Corporate</option>
+                      <option value="Minor">Minor</option>
+                      <option value="HUF">HUF</option>
+                      <option value="Trust/Society/Partnership">Trust/Society/Partnership</option>
                     </select>
                   </div>
 
@@ -169,7 +192,7 @@ export default function KYCStep5Demat({ onContinue, onBack }: Props) {
               ))}
             </div>
 
-            <div className="mt-4">
+            {/* <div className="mt-4">
               <button
                 type="button"
                 onClick={addRow}
@@ -186,7 +209,7 @@ export default function KYCStep5Demat({ onContinue, onBack }: Props) {
               {rows.length >= MAX_ROWS && (
                 <span className="ml-3 text-xs text-themeTealLighter">Max {MAX_ROWS} accounts.</span>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -201,7 +224,7 @@ export default function KYCStep5Demat({ onContinue, onBack }: Props) {
           </button>
           <button
             type="button"
-            onClick={continueHandler}
+            onClick={handleContinue}
             disabled={!allValid}
             className={[
               "w-full sm:w-auto px-6 py-3 rounded font-medium",
@@ -210,7 +233,7 @@ export default function KYCStep5Demat({ onContinue, onBack }: Props) {
                 : "bg-themeTealLighter text-white cursor-not-allowed",
             ].join(" ")}
           >
-            Continue to Video KYC
+            Continue to eSign & Consent
           </button>
         </div>
       </div>

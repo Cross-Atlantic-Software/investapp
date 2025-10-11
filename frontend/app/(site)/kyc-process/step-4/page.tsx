@@ -1,41 +1,35 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  FileText, CreditCard, MapPin, Landmark, UserRoundCheck, Video, PenLine,
+  FileText, CreditCard, MapPin, Landmark, UserRoundCheck, PenLine,
   UploadCloud, CheckCircle2,
 } from "lucide-react";
+import { useKYC } from "@/contexts/KYCContext";
 
-type Props = { onContinue?: () => void; onBack?: () => void };
-
-export default function KYCStep4BankProof({ onContinue, onBack }: Props) {
+export default function KYCStep4BankProof() {
   const router = useRouter();
   const pathname = usePathname();
+  const { formData, updateFormData, markStepCompleted } = useKYC();
 
-  // steps
-  const steps = useMemo(
-    () => [
-      { label: "Documents", icon: FileText, href: "/kyc-process/step-1" },
-      { label: "PAN Validation", icon: CreditCard, href: "/kyc-process/step-2" },
-      { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
-      { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
-      { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
-      { label: "Video KYC", icon: Video, href: "/kyc-process/step-6" },
-      { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
-    ],
-    []
-  );
-  const current = 3; // 0-based -> Step 4
-
-  // form
-  const [acct, setAcct] = useState("");
-  const [ifsc, setIfsc] = useState("");
-  const [file, setFile] = useState<File | null>(null);
+  // form (initialize from context)
+  const [acct, setAcct] = useState(formData.account_number);
+  const [ifsc, setIfsc] = useState(formData.ifsc_code);
+  const [file, setFile] = useState<File | null>(formData.bank_proof_file);
   const [err, setErr] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Update context when form data changes
+  useEffect(() => {
+    updateFormData({
+      account_number: acct,
+      ifsc_code: ifsc,
+      bank_proof_file: file,
+    });
+  }, [acct, ifsc, file, updateFormData]);
 
   const acctDigits = acct.replace(/\D/g, "");
   const acctValid = /^\d{9,18}$/.test(acctDigits); // Indian accounts vary
@@ -63,16 +57,32 @@ export default function KYCStep4BankProof({ onContinue, onBack }: Props) {
     setFile(f);
   }
 
-  const backHandler =
-    onBack ??
-    (() => {
-      const m = pathname.match(/step-(\d+)/);
-      const curr = m ? Number(m[1]) : 4;
-      router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
-    });
+  const handleContinue = () => {
+    if (allValid) {
+      markStepCompleted(4);
+      router.push('/kyc-process/step-5');
+    }
+  };
 
-  const continueHandler =
-    onContinue ?? (() => router.push("/kyc-process/step-5"));
+  // steps
+  const steps = useMemo(
+    () => [
+      { label: "Documents", icon: FileText, href: "/kyc-process/step-1" },
+      { label: "PAN Validation", icon: CreditCard, href: "/kyc-process/step-2" },
+      { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
+      { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
+      { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
+      { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
+    ],
+    []
+  );
+  const current = 3; // 0-based -> Step 4
+
+  const backHandler = () => {
+    const m = pathname.match(/step-(\d+)/);
+    const curr = m ? Number(m[1]) : 4;
+    router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
+  };
 
   return (
     <section className="bg-themeTealWhite py-8 sm:py-12 lg:py-16">
@@ -244,7 +254,7 @@ export default function KYCStep4BankProof({ onContinue, onBack }: Props) {
           </button>
           <button
             type="button"
-            onClick={continueHandler}
+            onClick={handleContinue}
             disabled={!allValid}
             className={[
               "w-full sm:w-auto px-6 py-3 rounded font-medium",

@@ -51,6 +51,7 @@ import { ShareholderTypeController } from "../controllers/admin/shareholderTypeC
 import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
 import { StockFaqController } from "../controllers/admin/stockFaqController";
 import { SectorManagementController } from "../controllers/admin/sectorManagement";
+import { KYCManagementController } from "../controllers/admin/kycManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -357,5 +358,13 @@ router.post("/faqs/bulk-delete", StockFaqController.bulkDeleteFaqs);
 
 // Stock-specific FAQ routes
 router.get("/stocks/:stockId/faqs", StockFaqController.getStockFaqsAdmin);
+
+// KYC Management Routes (Admin only)
+const kycController = new KYCManagementController();
+router.get("/kyc", kycController.getAllKYCApplications);
+router.get("/kyc/stats", kycController.getKYCStats);
+router.get("/kyc/:id", kycController.getKYCApplicationById);
+router.put("/kyc/:id/status", kycController.updateKYCStatus);
+router.delete("/kyc/:id", kycController.deleteKYCApplication);
 
 export default router;

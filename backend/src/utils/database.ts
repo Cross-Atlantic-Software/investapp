@@ -27,6 +27,7 @@ import { StockFaq, initializeStockFaqModel } from "../Models/StockFaq";
 import { FinancialDataCsv, initializeFinancialDataCsvModel } from "../Models/FinancialDataCsv";
 import { Sector, initializeSectorModel } from "../Models/Sector";
 import { Subsector, initializeSubsectorModel } from "../Models/Subsector";
+import KYCApplication, { initializeKYCApplicationModel } from "../Models/KYCApplication";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -137,6 +138,9 @@ async function initializeSequelize() {
   initializeSectorModel(sequelize);
   initializeSubsectorModel(sequelize);
   
+  // Initialize KYC Application model
+  initializeKYCApplicationModel(sequelize);
+  
   // Set up Sector and Subsector associations
   Sector.hasMany(Subsector, {
     foreignKey: 'sector_id',
@@ -146,6 +150,17 @@ async function initializeSequelize() {
   Subsector.belongsTo(Sector, {
     foreignKey: 'sector_id',
     as: 'sector'
+  });
+  
+  // Set up KYC associations
+  KYCApplication.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user'
+  });
+
+  User.hasMany(KYCApplication, {
+    foreignKey: 'user_id',
+    as: 'kycApplications'
   });
   
   // Initialize Wishlist model
@@ -402,6 +417,13 @@ export const db = {
       throw new Error('Subsector model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return Subsector;
+  },
+
+  get KYCApplication() {
+    if (!KYCApplication) {
+      throw new Error('KYCApplication model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return KYCApplication;
   },
 };
 

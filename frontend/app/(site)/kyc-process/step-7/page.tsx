@@ -1,18 +1,90 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  FileText, CreditCard, MapPin, Landmark, UserRoundCheck, Video, PenLine, CheckCircle2
+  FileText, CreditCard, MapPin, Landmark, UserRoundCheck, PenLine, CheckCircle2, UploadCloud
 } from "lucide-react";
-import Image from "next/image";
+import { useKYC } from "@/contexts/KYCContext";
 
-type Props = { onContinue?: () => void; onBack?: () => void };
-
-export default function KYCStep7ESign({ onContinue, onBack }: Props) {
+export default function KYCStep7ESign() {
   const router = useRouter();
   const pathname = usePathname();
+  const { formData, updateFormData, markStepCompleted, submitKYC, isSubmitting } = useKYC();
+
+  // consents + esign
+  const [c1, setC1] = useState(false);
+  const [c2, setC2] = useState(false);
+  const [c3, setC3] = useState(false);
+  const [signFile, setSignFile] = useState<File | null>(formData.signature_file);
+  const [fileError, setFileError] = useState<string>("");
+  const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null);
+  const allConsented = c1 && c2 && c3;
+
+  // Update context when signature file is uploaded
+  useEffect(() => {
+    updateFormData({
+      signature_file: signFile,
+      esign_completed: !!signFile,
+    });
+  }, [signFile, updateFormData]);
+
+  const handleFileUpload = (file: File | null) => {
+    setFileError("");
+    if (!file) {
+      setSignFile(null);
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      setFileError("Only PDF, JPG, and PNG files are allowed.");
+      setSignFile(null);
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("File size must be less than 5MB.");
+      setSignFile(null);
+      return;
+    }
+
+    setSignFile(file);
+  };
+
+  const handleSubmit = async () => {
+    console.log('KYC Submit clicked');
+    console.log('All consented:', allConsented);
+    console.log('Sign file:', signFile);
+    console.log('Is submitting:', isSubmitting);
+    
+    if (!allConsented || !signFile) {
+      console.log('Validation failed - allConsented:', allConsented, 'signFile:', !!signFile);
+      return;
+    }
+    
+    console.log('Starting KYC submission...');
+    const result = await submitKYC();
+    console.log('KYC submission result:', result);
+    setSubmitResult(result);
+    
+    if (result.success) {
+      markStepCompleted(7);
+      // Redirect to success page or dashboard
+      setTimeout(() => {
+        router.push('/kyc-process/complete');
+      }, 2000);
+    }
+  };
+
+  const backHandler = () => {
+    const m = pathname.match(/step-(\d+)/);
+    const curr = m ? Number(m[1]) : 7;
+    router.push(`/kyc-process/step-${Math.max(1, curr - 2)}`); // Go back 2 steps since we removed step 6
+  };
 
   // steps
   const steps = useMemo(
@@ -22,43 +94,11 @@ export default function KYCStep7ESign({ onContinue, onBack }: Props) {
       { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
       { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
       { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
-      { label: "Video KYC", icon: Video, href: "/kyc-process/step-6" },
       { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
     ],
     []
   );
-  const current = 6; // 0-based -> Step 7
-
-  // consents + esign
-  const [c1, setC1] = useState(false);
-  const [c2, setC2] = useState(false);
-  const [c3, setC3] = useState(false);
-  const [esigning, setEsigning] = useState(false);
-  const [esignDone, setEsignDone] = useState(false);
-  const allConsented = c1 && c2 && c3;
-
-  const startESign = async () => {
-    if (!allConsented) return;
-    setEsigning(true);
-    // simulate provider popup + callback
-    setTimeout(() => {
-      setEsigning(false);
-      setEsignDone(true);
-    }, 1500);
-  };
-
-  const backHandler = onBack
-    ? onBack
-    : () => {
-        const m = pathname.match(/step-(\d+)/);
-        const curr = m ? Number(m[1]) : 7;
-        router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
-      };
-
-  const continueHandler = onContinue ? onContinue : () => {
-    // finalization hook. Replace with your success route.
-    router.push("/kyc-process/complete");
-  };
+  const current = 5; // 0-based -> Step 7 (now step 6)
 
   return (
     <section className="bg-themeTealWhite py-8 sm:py-12 lg:py-16">
@@ -151,27 +191,81 @@ export default function KYCStep7ESign({ onContinue, onBack }: Props) {
 
             <hr className="my-4 border-themeTealLighter" />
 
-            {/* eSign action */}
-            <div className="">
-              <button
-                type="button"
-                disabled={!allConsented || esigning}
-                onClick={startESign}
-                className={[
-                  " p-1 rounded font-medium flex gap-4 items-center",
-                  allConsented && !esigning
-                    ? "bg-themeTeal text-themeTealWhite"
-                    : "bg-themeTealLighter text-white cursor-not-allowed",
-                ].join(" ")}
+            {/* Signature File Upload */}
+            <div className="space-y-3">
+              <label className="text-sm text-themeTeal">
+                Upload Signature Document<span className="text-red-600">*</span>
+              </label>
+              
+              <div
+                className="border-2 border-dashed border-themeTealLighter bg-white p-6 text-center rounded cursor-pointer hover:border-themeTeal transition-colors"
+                onClick={() => document.getElementById('signFileInput')?.click()}
               >
-                <Image src='/images/adhaar-logo.webp' alt="Adhaar" width={60} height={39} className="bg-white rounded p-1" />
-                <span className="pe-3">{esigning ? "Opening eSign…" : "Sign with Aadhaar eSign"}</span>
-              </button>
+                <input
+                  id="signFileInput"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e.target.files?.[0] ?? null)}
+                />
+                
+                {signFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-2 text-themeTeal">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                      <span className="text-sm font-medium">{signFile.name}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSignFile(null);
+                      }}
+                      className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                    >
+                      Remove file
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-themeTealWhite text-themeTeal">
+                      <UploadCloud className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-themeTeal font-medium">Upload your signature document</p>
+                      <p className="text-xs text-themeTealLighter mt-1">
+                        Supported formats: PDF, JPG, PNG (Max 5MB)
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex items-center rounded border border-themeTealLighter px-4 py-2 text-sm text-themeTeal hover:bg-themeTealWhite"
+                    >
+                      Choose File
+                    </button>
+                  </div>
+                )}
+                
+                {fileError && (
+                  <p className="mt-2 text-xs text-red-600">{fileError}</p>
+                )}
+              </div>
+
+              {signFile && (
+                <p className="text-xs text-emerald-700 flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Signature document uploaded successfully.
+                </p>
+              )}
             </div>
 
-            {esignDone && (
-              <div className="mt-4 rounded border border-emerald-600 bg-emerald-50 p-3 text-emerald-700 text-sm flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" /> eSign completed successfully.
+            {submitResult && (
+              <div className={`mt-4 rounded border p-3 text-sm flex items-center gap-2 ${
+                submitResult.success 
+                  ? 'border-emerald-600 bg-emerald-50 text-emerald-700' 
+                  : 'border-red-600 bg-red-50 text-red-700'
+              }`}>
+                <CheckCircle2 className="h-4 w-4" /> {submitResult.message}
               </div>
             )}
           </div>
@@ -188,16 +282,16 @@ export default function KYCStep7ESign({ onContinue, onBack }: Props) {
           </button>
           <button
             type="button"
-            onClick={continueHandler}
-            disabled={!allConsented || !esignDone}
+            onClick={handleSubmit}
+            disabled={!allConsented || !signFile || isSubmitting}
             className={[
               "w-full sm:w-auto px-6 py-3 rounded font-medium",
-              allConsented && esignDone
+              allConsented && signFile && !isSubmitting
                 ? "bg-themeSkyBlue text-themeTealWhite cursor-pointer"
                 : "bg-themeTealLighter text-white cursor-not-allowed",
             ].join(" ")}
           >
-            Ready to Complete
+            {isSubmitting ? "Submitting KYC..." : "Submit KYC Application"}
           </button>
         </div>
       </div>

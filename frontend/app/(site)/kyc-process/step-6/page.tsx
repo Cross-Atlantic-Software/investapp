@@ -6,33 +6,27 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   FileText, CreditCard, MapPin, Landmark, UserRoundCheck, Video, PenLine, Camera
 } from "lucide-react";
+import { useKYC } from "@/contexts/KYCContext";
 
-type Props = { onContinue?: () => void; onBack?: () => void };
-
-export default function KYCStep6VideoKYC({ onContinue, onBack }: Props) {
+export default function KYCStep6VideoKYC() {
   const router = useRouter();
   const pathname = usePathname();
-
-  // steps
-  const steps = useMemo(
-    () => [
-      { label: "Documents", icon: FileText, href: "/kyc-process/step-1" },
-      { label: "PAN Validation", icon: CreditCard, href: "/kyc-process/step-2" },
-      { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
-      { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
-      { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
-      { label: "Video KYC", icon: Video, href: "/kyc-process/step-6" },
-      { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
-    ],
-    []
-  );
-  const current = 5; // 0-based -> Step 6
+  const { formData, updateFormData, markStepCompleted } = useKYC();
 
   // camera
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(formData.video_kyc_completed);
   const [err, setErr] = useState<string>("");
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  // Update context when video KYC is completed
+  useEffect(() => {
+    if (started) {
+      updateFormData({
+        video_kyc_completed: true,
+      });
+    }
+  }, [started, updateFormData]);
 
   async function startCamera() {
     setErr("");
@@ -59,15 +53,33 @@ export default function KYCStep6VideoKYC({ onContinue, onBack }: Props) {
     return () => stopCamera();
   }, []);
 
-    const backHandler = onBack ? onBack : () => {
+  const handleContinue = () => {
+    if (started) {
+      markStepCompleted(6);
+      router.push('/kyc-process/step-7');
+    }
+  };
+
+  // steps
+  const steps = useMemo(
+    () => [
+      { label: "Documents", icon: FileText, href: "/kyc-process/step-1" },
+      { label: "PAN Validation", icon: CreditCard, href: "/kyc-process/step-2" },
+      { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
+      { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
+      { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
+      { label: "Video KYC", icon: Video, href: "/kyc-process/step-6" },
+      { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
+    ],
+    []
+  );
+  const current = 5; // 0-based -> Step 6
+
+  const backHandler = () => {
     const m = pathname.match(/step-(\d+)/);
     const curr = m ? Number(m[1]) : 6;
     router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
-    };
-
-    const continueHandler = onContinue ? onContinue : () => {
-    router.push("/kyc-process/step-7");
-    };
+  };
 
   return (
     <section className="bg-themeTealWhite py-8 sm:py-12 lg:py-16">
@@ -187,7 +199,7 @@ export default function KYCStep6VideoKYC({ onContinue, onBack }: Props) {
           </button>
           <button
             type="button"
-            onClick={continueHandler}
+            onClick={handleContinue}
             disabled={!started}
             className={[
               "w-full sm:w-auto px-6 py-3 rounded font-medium",

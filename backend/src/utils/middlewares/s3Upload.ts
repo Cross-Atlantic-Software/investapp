@@ -90,3 +90,49 @@ export const uploadBanner = multer({
     fileSize: 5 * 1024 * 1024, // 5MB limit for banners
   }
 });
+
+// KYC Document Upload Middleware
+export const uploadKYCDocuments = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.S3_BUCKET!,
+    contentType: (req, file, cb) => {
+      cb(null, file.mimetype);
+    },
+    key: (req: Request, file: any, cb: (error: any, key?: string) => void) => {
+      // Get user_id from authenticated user
+      const user_id = (req as any).user?.user_id || 'unknown';
+      const timestamp = Date.now();
+      const fileExtension = file.originalname.split('.').pop();
+      
+      // Determine file type based on field name
+      let fileType = 'documents';
+      if (file.fieldname === 'bank_proof') {
+        fileType = 'bank_proof';
+      } else if (file.fieldname === 'sign') {
+        fileType = 'signature';
+      }
+      
+      const uniqueName = `kyc/${user_id}/${fileType}_${timestamp}.${fileExtension}`;
+      cb(null, uniqueName);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    // Accept PDF, JPG, PNG files for KYC documents
+    const allowedTypes = [
+      'application/pdf',
+      'image/jpeg',
+      'image/jpg', 
+      'image/png'
+    ];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF, JPG, and PNG files are allowed for KYC documents'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit for KYC documents
+  }
+});
