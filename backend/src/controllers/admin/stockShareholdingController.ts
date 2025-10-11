@@ -42,7 +42,7 @@ export class StockShareholdingController {
       await controller.ensureDbReady();
       
       const { id } = req.params;
-      const { holder_name, percentage } = req.body;
+      const { holder_name, percentage, shareholder_type_id } = req.body;
 
               // Validate percentage doesn't exceed 100%
               const existingTotal = await StockShareholding.sum('percentage', {
@@ -60,6 +60,7 @@ export class StockShareholdingController {
         stock_id: parseInt(id),
         holder_name,
         percentage: parseFloat(percentage),
+        shareholder_type_id: shareholder_type_id ? parseInt(shareholder_type_id) : undefined,
         display_order: 0
       });
 
@@ -85,7 +86,7 @@ export class StockShareholdingController {
       await controller.ensureDbReady();
       
       const { id } = req.params;
-      const { holder_name, percentage } = req.body;
+      const { holder_name, percentage, shareholder_type_id } = req.body;
 
       const shareholding = await StockShareholding.findByPk(id);
       if (!shareholding) {
@@ -112,7 +113,8 @@ export class StockShareholdingController {
 
       await shareholding.update({
         holder_name,
-        percentage: parseFloat(percentage)
+        percentage: parseFloat(percentage),
+        shareholder_type_id: shareholder_type_id ? parseInt(shareholder_type_id) : undefined
       });
 
       res.json({

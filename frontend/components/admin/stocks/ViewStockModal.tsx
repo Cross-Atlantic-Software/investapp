@@ -4,38 +4,10 @@ import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import StepProgressIndicator from './StepProgressIndicator';
-
-interface Stock {
-  id: number;
-  company_name: string;
-  logo: string;
-  price_change: number;
-  teaser: string;
-  short_description: string;
-  analysis: string;
-  demand: 'High Demand' | 'Low Demand';
-  homeDisplay: 'yes' | 'no';
-  bannerDisplay: 'yes' | 'no';
-  valuation: string;
-  price_per_share: number;
-  percentage_change: number;
-  founded: number;
-  sector: string;
-  subsector: string;
-  headquarters: string;
-  min_units: number;
-  lot_size: number;
-  stock_master_ids: number[];
-  stock_masters?: Array<{
-    id: number;
-    name: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-}
+import { ExistingStockData } from './types';
 
 interface ViewStockModalProps {
-  stock: Stock;
+  stock: ExistingStockData;
   onClose: () => void;
   stockMasters?: Array<{
     id: number;
@@ -54,6 +26,20 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
     return stock.stock_master_ids.map(id => 
       stockMasters.find(master => master.id === id)?.name
     ).filter(Boolean).join(', ') || 'No tags assigned';
+  };
+
+  const getSectorNames = () => {
+    if (!stock.sectors || stock.sectors.length === 0) {
+      return 'No sectors assigned';
+    }
+    return stock.sectors.map(sector => sector.name).join(', ');
+  };
+
+  const getSubsectorNames = () => {
+    if (!stock.subsectors || stock.subsectors.length === 0) {
+      return 'No subsectors assigned';
+    }
+    return stock.subsectors.map(subsector => subsector.name).join(', ');
   };
 
   const handleGoToStep = (step: number) => {
@@ -105,13 +91,13 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
               <div>
                 <label className="block text-xs font-medium text-themeTeal mb-1">Sector</label>
                 <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
-                  {stock.sector || 'N/A'}
+                  {getSectorNames()}
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-medium text-themeTeal mb-1">Subsector</label>
                 <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
-                  {stock.subsector || 'N/A'}
+                  {getSubsectorNames()}
                 </div>
               </div>
             </div>
@@ -142,7 +128,7 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h4 className="text-lg font-semibold text-themeTeal">Financial Details</h4>
+              <h4 className="text-lg font-semibold text-themeTeal">Stock Price Details</h4>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -153,7 +139,7 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">Valuation</label>
+                <label className="block text-xs font-medium text-themeTeal mb-1">Valuation (in Cr.)</label>
                 <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
                   {stock.valuation || 'N/A'}
                 </div>
@@ -239,7 +225,7 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">Demand</label>
+                <label className="block text-xs font-medium text-themeTeal mb-1">Stock Demand Tag - High / Low</label>
                 <div className={`w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md font-semibold ${
                   stock.demand === 'High Demand' 
                     ? 'bg-green-50 text-green-700' 
@@ -249,7 +235,7 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">Home Display</label>
+                <label className="block text-xs font-medium text-themeTeal mb-1">What&apos;s going on Today</label>
                 <div className={`w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md ${
                   stock.homeDisplay === 'yes' 
                     ? 'bg-green-50 text-green-700' 
@@ -262,7 +248,7 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">Banner Display</label>
+                <label className="block text-xs font-medium text-themeTeal mb-1">Home Page - Top Banner Slider</label>
                 <div className={`w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md ${
                   stock.bannerDisplay === 'yes' 
                     ? 'bg-green-50 text-green-700' 
@@ -329,14 +315,14 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Sector:</span>
-                  <p className="text-gray-600">{stock.sector}</p>
+                  <p className="text-gray-600">{getSectorNames()}</p>
                 </div>
                 <div>
                   <span className="font-medium text-gray-700">Price:</span>
                   <p className="text-gray-600">₹{stock.price_per_share}</p>
                 </div>
                 <div>
-                  <span className="font-medium text-gray-700">Demand:</span>
+                  <span className="font-medium text-gray-700">Stock Demand Tag :</span>
                   <p className={stock.demand === 'High Demand' ? 'text-green-600' : 'text-red-600'}>
                     {stock.demand}
                   </p>

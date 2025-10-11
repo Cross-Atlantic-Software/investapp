@@ -15,6 +15,7 @@ interface GenericSearchableMultiSelectProps {
   placeholder?: string;
   className?: string;
   forceAbove?: boolean; // New prop to force dropdown above
+  disabled?: boolean; // New prop to disable the component
 }
 
 export default function GenericSearchableMultiSelect({
@@ -23,7 +24,8 @@ export default function GenericSearchableMultiSelect({
   onChange,
   placeholder = "Select options...",
   className = "",
-  forceAbove = false
+  forceAbove = false,
+  disabled = false
 }: GenericSearchableMultiSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -147,18 +149,24 @@ export default function GenericSearchableMultiSelect({
   return (
     <div className={`relative ${className}`} ref={dropdownRef}>
       <div
-        className="w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-themeTeal focus:border-themeTeal transition-all duration-200 text-gray-900 cursor-pointer bg-white"
+        className={`w-full px-3 py-2 text-sm border border-gray-200 rounded-md focus:outline-none focus:ring-1 focus:ring-themeTeal focus:border-themeTeal transition-all duration-200 text-gray-900 bg-white ${
+          disabled 
+            ? 'cursor-not-allowed opacity-50 bg-gray-100' 
+            : 'cursor-pointer'
+        }`}
         onClick={() => {
+          if (disabled) return;
           if (!isOpen) {
             calculateDropdownPosition();
           }
           setIsOpen(!isOpen);
         }}
-        onKeyDown={handleKeyDown}
-        tabIndex={0}
+        onKeyDown={disabled ? undefined : handleKeyDown}
+        tabIndex={disabled ? -1 : 0}
         role="combobox"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
+        aria-disabled={disabled}
       >
         <div className="flex items-center justify-between">
           <div className="flex flex-wrap gap-1 flex-1">
@@ -196,7 +204,7 @@ export default function GenericSearchableMultiSelect({
         </div>
       </div>
 
-      {isOpen && (
+      {isOpen && !disabled && (
         <div className={`absolute z-[9999] w-full bg-white border border-gray-300 rounded shadow-lg ${
           dropdownPosition === 'above' ? 'bottom-full mb-1' : 'top-full mt-1'
         }`}>

@@ -328,11 +328,17 @@ export class StockPerformancePdfManagementController {
         });
       }
 
+      const stockId = pdf.stock_id;
+      const deletedOrder = pdf.order_index;
+
       // Note: S3 files are automatically cleaned up by lifecycle policies
       // No need to manually delete from S3 for now
 
       // Delete the database record
       await pdf.destroy();
+
+      // Reorder remaining PDFs for the same stock
+      await StockPerformancePdfManagementController.reorderPdfsAfterDeletion(stockId, deletedOrder);
 
       res.json({
         success: true,
@@ -425,6 +431,32 @@ export class StockPerformancePdfManagementController {
         message: 'Failed to fetch performance PDF statistics',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
+    }
+  }
+
+  // Helper method to reorder PDFs after deletion
+  private static async reorderPdfsAfterDeletion(stockId: number, deletedOrder: number): Promise<void> {
+    try {
+      // Get all remaining PDFs for this stock with order greater than the deleted order
+      const remainingPdfs = await StockPerformancePdfModel.findAll({
+        where: {
+          stock_id: stockId,
+          order_index: {
+            [Op.gt]: deletedOrder
+          }
+        },
+        order: [['order_index', 'ASC']]
+      });
+
+      // Decrement the order of all PDFs that had higher order than the deleted one
+      for (let i = 0; i < remainingPdfs.length; i++) {
+        await remainingPdfs[i].update({
+          order_index: deletedOrder + i
+        });
+      }
+    } catch (error) {
+      console.error('Error reordering PDFs after deletion:', error);
+      // Don't throw error here as deletion was successful
     }
   }
 }

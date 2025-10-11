@@ -1,6 +1,7 @@
 import express from "express";
 import adminMiddleware from "../utils/middlewares/admin-middleware";
 import { uploadIcon } from "../utils/middlewares/s3Upload";
+import { uploadBanner } from "../utils/middlewares/s3Upload";
 import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
@@ -45,6 +46,12 @@ import { StockSectorInsightsPdfManagementController } from "../controllers/admin
 import { MethodologyNotesManagementController } from "../controllers/admin/methodologyNotesManagement";
 import { FinancialDataController } from "../controllers/admin/financialDataController";
 import { StockShareholdingController } from "../controllers/admin/stockShareholdingController";
+import { WishlistController } from "../controllers/stocks/wishlistController";
+import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
+import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
+import { StockFaqController } from "../controllers/admin/stockFaqController";
+import { SectorManagementController } from "../controllers/admin/sectorManagement";
+import { KYCManagementController } from "../controllers/admin/kycManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
 // Stock Draft Controllers
@@ -109,7 +116,9 @@ router.use((req, res, next) => {
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
-      req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes')) {
+      req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
+      req.path.includes('/news-sections') || req.path.includes('/faqs') ||
+      req.path.includes('/sectors') || req.path.includes('/subsectors')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -215,6 +224,23 @@ router.post("/stock-masters", stockMasterController.createStockMaster);
 router.put("/stock-masters/:id", stockMasterController.updateStockMaster);
 router.delete("/stock-masters/:id", stockMasterController.deleteStockMaster);
 
+// Sector Management Routes
+router.get("/sectors", SectorManagementController.getAllSectors);
+router.get("/sectors/stats", SectorManagementController.getSectorStats);
+router.get("/sectors/select", SectorManagementController.getAllSectorsForSelect);
+router.get("/sectors/:id", SectorManagementController.getSectorById);
+router.post("/sectors", SectorManagementController.createSector);
+router.put("/sectors/:id", SectorManagementController.updateSector);
+router.delete("/sectors/:id", SectorManagementController.deleteSector);
+
+// Subsector Management Routes
+router.get("/subsectors", SectorManagementController.getAllSubsectors);
+router.get("/sectors/:sectorId/subsectors", SectorManagementController.getSubsectorsBySectorId);
+router.get("/subsectors/:id", SectorManagementController.getSubsectorById);
+router.post("/subsectors", SectorManagementController.createSubsector);
+router.put("/subsectors/:id", SectorManagementController.updateSubsector);
+router.delete("/subsectors/:id", SectorManagementController.deleteSubsector);
+
 // Stock Scorecard Management Routes
 router.get("/stocks/:stockId/scorecards", StockScorecardManagementController.getScorecardsByStockId);
 router.get("/scorecards/:id", StockScorecardManagementController.getScorecardById);
@@ -297,5 +323,48 @@ router.get("/stocks/:id/shareholding", StockShareholdingController.getStockShare
 router.post("/stocks/:id/shareholding", StockShareholdingController.createShareholding);
 router.put("/shareholding/:id", StockShareholdingController.updateShareholding);
 router.delete("/shareholding/:id", StockShareholdingController.deleteShareholding);
+
+// Wishlist Management Routes
+router.get("/wishlist/user/:userId", WishlistController.getUserWishlistAdmin);
+
+// Shareholder Type Management Routes
+router.get("/shareholder-types", ShareholderTypeController.getAllShareholderTypesAdmin);
+router.post("/shareholder-types", ShareholderTypeController.createShareholderType);
+router.put("/shareholder-types/:id", ShareholderTypeController.updateShareholderType);
+router.delete("/shareholder-types/:id", ShareholderTypeController.deleteShareholderType);
+router.patch("/shareholder-types/:id/toggle-status", ShareholderTypeController.toggleActiveStatus);
+
+// Stock News Section Management Routes
+router.get("/news-sections", StockNewsSectionController.getAllNewsSections);
+router.get("/news-sections/:id", StockNewsSectionController.getNewsSectionById);
+router.post("/news-sections", StockNewsSectionController.createNewsSection);
+router.put("/news-sections/:id", StockNewsSectionController.updateNewsSection);
+router.delete("/news-sections/:id", StockNewsSectionController.deleteNewsSection);
+router.post("/news-sections/bulk-delete", StockNewsSectionController.bulkDeleteNewsSections);
+
+// Stock News Section File Upload Routes
+router.post("/news-sections/upload-banner", uploadBanner.single('banner'), StockNewsSectionController.uploadBanner);
+
+// Stock-specific News Section Routes
+router.get("/stocks/:stockId/news-sections", StockNewsSectionController.getStockNewsSections);
+
+// Stock FAQ Management Routes
+router.get("/faqs", StockFaqController.getAllFaqs);
+router.get("/faqs/:id", StockFaqController.getFaqById);
+router.post("/faqs", StockFaqController.createFaq);
+router.put("/faqs/:id", StockFaqController.updateFaq);
+router.delete("/faqs/:id", StockFaqController.deleteFaq);
+router.post("/faqs/bulk-delete", StockFaqController.bulkDeleteFaqs);
+
+// Stock-specific FAQ routes
+router.get("/stocks/:stockId/faqs", StockFaqController.getStockFaqsAdmin);
+
+// KYC Management Routes (Admin only)
+const kycController = new KYCManagementController();
+router.get("/kyc", kycController.getAllKYCApplications);
+router.get("/kyc/stats", kycController.getKYCStats);
+router.get("/kyc/:id", kycController.getKYCApplicationById);
+router.put("/kyc/:id/status", kycController.updateKYCStatus);
+router.delete("/kyc/:id", kycController.deleteKYCApplication);
 
 export default router;

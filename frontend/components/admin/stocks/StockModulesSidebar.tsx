@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Upload, BarChart3, FileText, TrendingUp, ChevronRight } from 'lucide-react';
+import { X, Upload, BarChart3, FileText, TrendingUp, ChevronRight, Newspaper, HelpCircle } from 'lucide-react';
 
 interface Stock {
   id: number;
@@ -105,6 +105,28 @@ const modules = [
     iconColor: 'text-cyan-600',
     borderColor: 'border-cyan-500',
   },
+    {
+      id: 'news-sections',
+      title: 'Manage News Sections',
+      description: 'Add and manage news articles',
+      icon: Newspaper,
+      color: 'pink',
+      bgColor: 'bg-pink-50',
+      hoverBg: 'hover:bg-pink-100',
+      iconColor: 'text-pink-600',
+      borderColor: 'border-pink-500',
+    },
+    {
+      id: 'faqs',
+      title: 'Manage FAQs',
+      description: 'Add and manage frequently asked questions',
+      icon: HelpCircle,
+      color: 'purple',
+      bgColor: 'bg-purple-50',
+      hoverBg: 'hover:bg-purple-100',
+      iconColor: 'text-purple-600',
+      borderColor: 'border-purple-500',
+    },
 ];
 
 const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({

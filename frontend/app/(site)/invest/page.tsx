@@ -21,6 +21,7 @@ export default function Invest() {
     logo: string;
     price_per_share: number;
     price_change: number;
+    valuation: string;
     teaser: string;
     short_description: string;
     analysis: string;
@@ -33,6 +34,7 @@ export default function Invest() {
       logo: stock.logo,
       price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
       price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
+      valuation: stock.valuation || '0',
       teaser: stock.teaser,
       short_description: stock.short_description,
       analysis: stock.analysis,

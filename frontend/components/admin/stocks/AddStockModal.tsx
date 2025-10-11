@@ -13,7 +13,7 @@ import Step3 from './steps/Step3';
 import Step4 from './steps/Step4';
 import Step5 from './steps/Step5';
 
-const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockMasters = [] }) => {
+const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockMasters = [], sectors = [], subsectors = [] }) => {
   const totalSteps = 5;
   
   // Custom hooks
@@ -197,6 +197,8 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
       onInputChange: handleInputChange,
       onFormDataChange: handleFormDataChange,
       stockMasters,
+      sectors,
+      subsectors,
     };
 
     switch (currentStep) {

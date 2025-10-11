@@ -11,7 +11,7 @@ interface StepProgressIndicatorProps {
 
 const stepTitles = [
   'Basic Info',
-  'Financial Details', 
+  'Stock Price Details', 
   'Content & Description',
   'Display Settings',
   'Review & Submit'

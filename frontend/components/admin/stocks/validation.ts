@@ -7,11 +7,13 @@ const validateAllSteps = (formData: StockData): boolean => {
     formData.company_name && 
     formData.company_name.trim() !== '' &&
     formData.founded && 
-    formData.sector && 
-    formData.subsector && 
+    formData.sector_ids && 
+    formData.sector_ids.length > 0 &&
+    formData.subsector_ids && 
+    formData.subsector_ids.length > 0 &&
     formData.headquarters &&
     formData.headquarters.trim() !== '' &&
-    formData.icon && // Image upload is required
+    // Note: icon validation removed for editing - existing stocks may not need new icon upload
     // Step 2: Financial Details
     formData.valuation && 
     formData.valuation.toString().trim() !== '' &&
@@ -37,6 +39,53 @@ const validateAllSteps = (formData: StockData): boolean => {
   );
 };
 
+// Validation for editing existing stocks (more lenient)
+export const validateStepForEdit = (step: number, formData: StockData): boolean => {
+  switch (step) {
+    case 1: // Basic Company Information
+      return !!(
+        formData.company_name && 
+        formData.company_name.trim() !== '' &&
+        formData.founded && 
+        formData.headquarters &&
+        formData.headquarters.trim() !== ''
+        // Note: sectors/subsectors and icon are optional for editing
+      );
+    case 2: // Financial Details
+      return !!(
+        formData.valuation && 
+        formData.valuation.toString().trim() !== '' &&
+        formData.price_change !== null && 
+        formData.price_change !== undefined &&
+        formData.price_per_share && 
+        formData.price_per_share > 0 &&
+        formData.percentage_change !== null && 
+        formData.percentage_change !== undefined &&
+        formData.min_units && 
+        formData.min_units > 0 &&
+        formData.lot_size && 
+        formData.lot_size > 0
+      );
+    case 3: // Content & Description
+      return !!(
+        formData.teaser && formData.teaser.trim() !== '' &&
+        formData.short_description && formData.short_description.trim() !== '' &&
+        formData.analysis && formData.analysis.trim() !== ''
+      );
+    case 4: // Display Settings & Tags
+      return !!(
+        formData.demand && 
+        formData.homeDisplay && 
+        formData.bannerDisplay && 
+        Array.isArray(formData.stock_master_ids) && formData.stock_master_ids.length > 0
+      );
+    case 5: // Review & Submit
+      return validateAllSteps(formData);
+    default:
+      return false;
+  }
+};
+
 export const validateStep = (step: number, formData: StockData): boolean => {
   switch (step) {
     case 1: // Basic Company Information
@@ -44,11 +93,13 @@ export const validateStep = (step: number, formData: StockData): boolean => {
         formData.company_name && 
         formData.company_name.trim() !== '' &&
         formData.founded && 
-        formData.sector && 
-        formData.subsector && 
+        formData.sector_ids && 
+        formData.sector_ids.length > 0 &&
+        formData.subsector_ids && 
+        formData.subsector_ids.length > 0 &&
         formData.headquarters &&
-        formData.headquarters.trim() !== '' &&
-        formData.icon // Image upload is required
+        formData.headquarters.trim() !== ''
+        // Note: icon validation removed for editing - existing stocks may not need new icon upload
       );
     case 2: // Financial Details
       return !!(

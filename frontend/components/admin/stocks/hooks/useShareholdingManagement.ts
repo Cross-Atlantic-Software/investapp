@@ -1,40 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-
-interface Stock {
-  id: number;
-  company_name: string;
-  logo: string;
-  price_change: number;
-  teaser: string;
-  short_description: string;
-  analysis: string;
-  demand: 'High Demand' | 'Low Demand';
-  homeDisplay: 'yes' | 'no';
-  bannerDisplay: 'yes' | 'no';
-  valuation: string;
-  price_per_share: number;
-  percentage_change: number;
-  founded: number;
-  sector: string;
-  subsector: string;
-  headquarters: string;
-  min_units: number;
-  lot_size: number;
-  stock_master_ids: number[];
-  icon: File | null;
-  stock_masters?: Array<{
-    id: number;
-    name: string;
-  }>;
-  createdAt: string;
-  updatedAt: string;
-}
+import { ExistingStockData } from '../types';
 
 interface ShareholdingModalState {
   isOpen: boolean;
-  stock: Stock | null;
+  stock: ExistingStockData | null;
 }
 
 export const useShareholdingManagement = () => {
@@ -43,7 +14,7 @@ export const useShareholdingManagement = () => {
     stock: null
   });
 
-  const openShareholdingModal = (stock: Stock) => {
+  const openShareholdingModal = (stock: ExistingStockData) => {
     setShareholdingModal({ isOpen: true, stock });
   };
 

@@ -72,10 +72,46 @@ export const getAllStocks = async (req: Request, res: Response) => {
           where: { id: { [Op.in]: stockMasterIds } },
           attributes: ['id', 'name'],
         });
+
+        // Fetch sector names
+        let sectorIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).sector_ids || '[]');
+          if (Array.isArray(parsed)) {
+            sectorIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+          sectorIds = [];
+        }
+        
+        const sectors = await db.Sector.findAll({
+          where: { id: { [Op.in]: sectorIds } },
+          attributes: ['id', 'name'],
+        });
+
+        // Fetch subsector names
+        let subsectorIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+          if (Array.isArray(parsed)) {
+            subsectorIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+          subsectorIds = [];
+        }
+        
+        const subsectors = await db.Subsector.findAll({
+          where: { id: { [Op.in]: subsectorIds } },
+          attributes: ['id', 'name', 'sector_id'],
+        });
         
         return {
           ...stock.toJSON(),
           stock_masters: stockMasters,
+          sectors: sectors,
+          subsectors: subsectors,
         };
       })
     );
@@ -143,9 +179,45 @@ export const getStockById = async (req: Request, res: Response) => {
       attributes: ['id', 'name'],
     });
 
+    // Fetch sector names
+    let sectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).sector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        sectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+      sectorIds = [];
+    }
+    
+    const sectors = await db.Sector.findAll({
+      where: { id: { [Op.in]: sectorIds } },
+      attributes: ['id', 'name'],
+    });
+
+    // Fetch subsector names
+    let subsectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        subsectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+      subsectorIds = [];
+    }
+    
+    const subsectors = await db.Subsector.findAll({
+      where: { id: { [Op.in]: subsectorIds } },
+      attributes: ['id', 'name', 'sector_id'],
+    });
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
+      sectors: sectors,
+      subsectors: subsectors,
     };
 
     return res.status(200).json({
@@ -204,9 +276,45 @@ export const getStockByName = async (req: Request, res: Response) => {
       attributes: ['id', 'name'],
     });
 
+    // Fetch sector names
+    let sectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).sector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        sectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+      sectorIds = [];
+    }
+    
+    const sectors = await db.Sector.findAll({
+      where: { id: { [Op.in]: sectorIds } },
+      attributes: ['id', 'name'],
+    });
+
+    // Fetch subsector names
+    let subsectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        subsectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+      subsectorIds = [];
+    }
+    
+    const subsectors = await db.Subsector.findAll({
+      where: { id: { [Op.in]: subsectorIds } },
+      attributes: ['id', 'name', 'sector_id'],
+    });
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
+      sectors: sectors,
+      subsectors: subsectors,
     };
 
     return res.status(200).json({

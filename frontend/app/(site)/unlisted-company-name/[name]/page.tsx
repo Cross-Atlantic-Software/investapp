@@ -6,13 +6,13 @@ import { useEffect, useState } from 'react';
 
 const NAV = [
   { id: "price", label: "Price Chart" },
-  { id: "score", label: "Scorecard" },
+  { id: "score", label: "Signal Analyzer" },
   { id: "rationale", label: "Investment Rationale" },
-  { id: "bench", label: "Performance Benchmark" },
-  { id: "outlook", label: "Sector Outlook" },
+  { id: "bench", label: "Competitive Benchmarking" },
+  { id: "outlook", label: "SWOT & Porter Analysis" },
   { id: "financials", label: "Financial Performance" },
   { id: "holders", label: "Shareholding" },
-  { id: "news", label: "News Related to Company" },
+  { id: "news", label: "Related News" },
   { id: "faq", label: "Frequently Asked Questions" },
 ];
 
@@ -22,12 +22,22 @@ interface StockData {
   logo: string;
   price_per_share: number;
   price_change: number;
+  valuation: string;
   teaser: string;
   short_description: string;
   analysis: string;
   founded: number;
-  sector: string;
-  subsector: string;
+  sector_ids: number[];
+  subsector_ids: number[];
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
+  }>;
   headquarters: string;
   min_units: number;
   lot_size: number;
@@ -95,12 +105,15 @@ export default function UnlistedCompanyDetails() {
             logo: stock.logo,
             price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
             price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
+            valuation: stock.valuation || '0',
             teaser: stock.teaser,
             short_description: stock.short_description,
             analysis: stock.analysis,
             founded: typeof stock.founded === 'string' ? parseInt(stock.founded) : stock.founded,
-            sector: stock.sector,
-            subsector: stock.subsector,
+            sector_ids: Array.isArray(stock.sector_ids) ? stock.sector_ids : [],
+            subsector_ids: Array.isArray(stock.subsector_ids) ? stock.subsector_ids : [],
+            sectors: stock.sectors || [],
+            subsectors: stock.subsectors || [],
             headquarters: stock.headquarters,
             min_units: typeof stock.min_units === 'string' ? parseInt(stock.min_units) : stock.min_units,
             lot_size: typeof stock.lot_size === 'string' ? parseInt(stock.lot_size) : stock.lot_size,
@@ -143,6 +156,7 @@ export default function UnlistedCompanyDetails() {
   return (
     <>
       <ShareIntro
+        stockId={stockData.id}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Invest", href: "/invest" },
@@ -152,12 +166,11 @@ export default function UnlistedCompanyDetails() {
         company={stockData.company_name}
         investPrice={stockData.price_per_share}
         changeAbs={stockData.price_change}
-        changePct={0}
         updatedAt={stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "Recently"}
         tags={stockData.stock_masters?.map(master => master.name) || []}
         founded={stockData.founded}
-        sector={stockData.sector}
-        subsector={stockData.subsector}
+        sector={stockData.sectors?.map(s => s.name).join(', ') || 'No sectors assigned'}
+        subsector={stockData.subsectors?.map(s => s.name).join(', ') || 'No subsectors assigned'}
         hq={stockData.headquarters}
         about={stockData.short_description}
         website={`${stockData.company_name.toLowerCase().replace(/\s+/g, '')}.com`}
@@ -177,14 +190,14 @@ export default function UnlistedCompanyDetails() {
                 percentageChange={stockData.price_change / stockData.price_per_share * 100}
               />
             </Section>
-            <Section id="score" title="Scorecard" info={getMethodologyText('score')}><ScorecardSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="score" title="Signal Analyzer" info={getMethodologyText('score')}><ScorecardSection stockId={parseInt(stockData.id)} /></Section>
             <Section id="rationale" title="Investment Rationale" info={getMethodologyText('rationale')}><InvestmentRationaleSection stockId={parseInt(stockData.id)} /></Section>
-            <Section id="bench" title="Performance Benchmark" info={getMethodologyText('bench')}><PerformanceBenchmarkSection stockId={parseInt(stockData.id)} /></Section>
-            <Section id="outlook" title="Sector Outlook" info={getMethodologyText('outlook')}><SectorOutlookSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="bench" title="Competitive Benchmarking" info={getMethodologyText('bench')}><PerformanceBenchmarkSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="outlook" title="SWOT & Porter Analysis" info={getMethodologyText('outlook')}><SectorOutlookSection stockId={parseInt(stockData.id)} /></Section>
             <Section id="financials" title="Financial Performance" info={getMethodologyText('financials')}><FinancialPerformanceSection stockId={stockData.id} /></Section>
             <Section id="holders" title="Shareholding" info={getMethodologyText('holders')}><ShareholdingSection stockId={stockData.id} /></Section>
-            <Section id="news" title="News Related to Company" info={getMethodologyText('news')}><NewsSection /></Section>
-            <Section id="faq" title="Frequently Asked Questions" info={getMethodologyText('faq')}><FaqSection /></Section>
+            <Section id="news" title="Related News" info={getMethodologyText('news')}><NewsSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="faq" title="Frequently Asked Questions" info={getMethodologyText('faq')}><FaqSection stockId={parseInt(stockData.id)} /></Section>
           </div>
         </div>
 

@@ -1,21 +1,43 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CheckCircle2, Landmark, CreditCard,
-  FileText, MapPin, UserRoundCheck, PenLine, Video,
+  FileText, MapPin, UserRoundCheck, PenLine,
 } from "lucide-react";
+import { useKYC } from "@/contexts/KYCContext";
 
-type Props = {
-  onContinue?: () => void;
-  onBack?: () => void;
-};
-
-export default function KYCStep3Address({ onContinue, onBack }: Props) {
+export default function KYCStep3Address() {
   const router = useRouter();
   const pathname = usePathname();
+  const { formData, updateFormData, markStepCompleted } = useKYC();
+
+  // ----- Aadhaar state (initialize from context)
+  const [aadhaarDigits, setAadhaarDigits] = useState(formData.aadhar_number);
+  const isAadhaarValid = /^\d{12}$/.test(aadhaarDigits);
+
+  // Update context when aadhaar changes
+  useEffect(() => {
+    updateFormData({
+      aadhar_number: aadhaarDigits,
+    });
+  }, [aadhaarDigits, updateFormData]);
+
+  const formatted = aadhaarDigits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
+
+  function handleAadhaarChange(v: string) {
+    const digits = v.replace(/\D/g, "").slice(0, 12);
+    setAadhaarDigits(digits);
+  }
+
+  const handleContinue = () => {
+    if (isAadhaarValid) {
+      markStepCompleted(3);
+      router.push('/kyc-process/step-4');
+    }
+  };
 
   // ----- steps config
   const steps = useMemo(
@@ -25,43 +47,17 @@ export default function KYCStep3Address({ onContinue, onBack }: Props) {
       { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
       { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
       { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
-      { label: "Video KYC", icon: Video, href: "/kyc-process/step-6" },
       { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
     ],
     []
   );
   const current = 2; // 0-based -> Step 3
 
-  // ----- Aadhaar state
-  const [aadhaarDigits, setAadhaarDigits] = useState(""); // only digits
-  const [verified, setVerified] = useState<null | "otp" | "digilocker">(null);
-  const isAadhaarValid = /^\d{12}$/.test(aadhaarDigits);
-
-  const formatted = aadhaarDigits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
-
-  function handleAadhaarChange(v: string) {
-    const digits = v.replace(/\D/g, "").slice(0, 12);
-    setAadhaarDigits(digits);
-    if (verified) setVerified(null);
-  }
-
-  function verify(mode: "otp" | "digilocker") {
-    if (!isAadhaarValid) return;
-    // stub: integrate OTP/Digilocker here
-    setVerified(mode);
-  }
-
-  const backHandler =
-    onBack ??
-    (() => {
-      const m = pathname.match(/step-(\d+)/);
-      const curr = m ? Number(m[1]) : 3;
-      router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
-    });
-
-  const continueHandler =
-    onContinue ??
-    (() => router.push("/kyc-process/step-4"));
+  const backHandler = () => {
+    const m = pathname.match(/step-(\d+)/);
+    const curr = m ? Number(m[1]) : 3;
+    router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
+  };
 
   return (
     <section className="bg-themeTealWhite py-8 sm:py-12 lg:py-16">
@@ -125,10 +121,10 @@ export default function KYCStep3Address({ onContinue, onBack }: Props) {
         {/* Card */}
         <div className="bg-themeTealWhite border border-themeTealLighter rounded p-4 sm:p-6 md:p-8 lg:p-10">
           <h3 className="text-themeSkyBlue font-semibold text-base sm:text-lg">
-            Step 2: Aadhaar eKYC
+            Step 3: Aadhaar Number
           </h3>
           <p className="text-themeTealLighter text-xs sm:text-sm mb-6">
-            Quick and secure address verification using your Aadhaar
+            Enter your 12-digit Aadhaar number for address verification
           </p>
 
           <div className="space-y-3">
@@ -145,47 +141,19 @@ export default function KYCStep3Address({ onContinue, onBack }: Props) {
               className="w-full rounded border border-themeTealLighter bg-white px-3 py-2 text-themeTeal placeholder-themeTealLighter focus:outline-none focus:border-themeTeal transition"
             />
 
-            <div className="mt-4 flex flex-col sm:flex-row gap-4">
-              <button
-                type="button"
-                disabled={!isAadhaarValid}
-                onClick={() => verify("otp")}
-                className={[
-                  "px-5 py-3 rounded font-medium w-full sm:w-auto",
-                  isAadhaarValid
-                    ? "bg-themeSkyBlue text-themeTealWhite cursor-pointer"
-                    : "bg-themeTealLighter text-white cursor-not-allowed",
-                ].join(" ")}
-              >
-                Verify with Aadhaar OTP
-              </button>
-
-              <button
-                type="button"
-                disabled={!isAadhaarValid}
-                onClick={() => verify("digilocker")}
-                className={[
-                  "px-5 py-3 rounded font-medium w-full sm:w-auto",
-                  isAadhaarValid
-                    ? "bg-themeTeal text-themeTealWhite cursor-pointer"
-                    : "bg-themeTealLighter text-white cursor-not-allowed",
-                ].join(" ")}
-              >
-                Verify Using Digilocker
-              </button>
-            </div>
-
-            {verified ? (
-              <div className="mt-6 rounded border border-emerald-600 bg-emerald-50 p-4 text-emerald-700 flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5" />
-                <span className="text-md">
-                  Address verified via {verified === "otp" ? "Aadhaar OTP" : "DigiLocker"}.
-                </span>
-              </div>
+            {isAadhaarValid ? (
+              <p className="mt-2 text-sm text-emerald-700 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" />
+                Aadhaar number format is valid. You can continue to the next step.
+              </p>
+            ) : aadhaarDigits.length > 0 ? (
+              <p className="mt-2 text-sm text-red-600">
+                Please enter a valid 12-digit Aadhaar number.
+              </p>
             ) : (
-              <div className="mt-6 rounded border border-themeTealLighter bg-white p-4 text-themeTealLighter text-md">
-                Enter your 12-digit Aadhaar number and choose a verification method.
-              </div>
+              <p className="mt-2 text-sm text-themeTealLighter">
+                Enter your 12-digit Aadhaar number to continue.
+              </p>
             )}
           </div>
         </div>
@@ -201,11 +169,11 @@ export default function KYCStep3Address({ onContinue, onBack }: Props) {
           </button>
           <button
             type="button"
-            onClick={continueHandler}
-            disabled={!verified}
+            onClick={handleContinue}
+            disabled={!isAadhaarValid}
             className={[
               "w-full sm:w-auto px-6 py-3 rounded font-medium",
-              verified
+              isAadhaarValid
                 ? "bg-themeSkyBlue text-themeTealWhite cursor-pointer"
                 : "bg-themeTealLighter text-white cursor-not-allowed",
             ].join(" ")}

@@ -12,13 +12,32 @@ export interface StockData {
   price_per_share: number;
   percentage_change: number;
   founded: number;
-  sector: string;
-  subsector: string;
+  sector_ids: number[];
+  subsector_ids: number[];
   headquarters: string;
   min_units: number;
   lot_size: number;
   stock_master_ids: number[];
   icon: File | null;
+}
+
+export interface ExistingStockData extends Omit<StockData, 'icon'> {
+  id: number;
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
+  }>;
+  stock_masters?: Array<{
+    id: number;
+    name: string;
+  }>;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ImageUploadState {
@@ -36,6 +55,15 @@ export interface AddStockModalProps {
     id: number;
     name: string;
   }>;
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
+  }>;
 }
 
 export interface StepProps {
@@ -45,6 +73,15 @@ export interface StepProps {
   stockMasters?: Array<{
     id: number;
     name: string;
+  }>;
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
   }>;
 }
 
@@ -114,7 +151,16 @@ export interface StockShareholding {
   holder_name: string;
   percentage: number;
   holder_type?: string;
+  shareholder_type_id?: number;
   display_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShareholderType {
+  id: number;
+  name: string;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -123,9 +169,60 @@ export interface ShareholdingFormData {
   holder_name: string;
   percentage: number;
   holder_type?: string;
+  shareholder_type_id?: number;
 }
 
 export interface ShareholdingManagementProps {
+  stockId: string;
+  stockName: string;
+  onClose: () => void;
+}
+
+export interface StockNewsSection {
+  id: number;
+  title: string;
+  stock_id: number;
+  url: string;
+  banner: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface NewsSectionFormData {
+  title: string;
+  url: string;
+  banner: string;
+}
+
+export interface NewsSectionManagementProps {
+  stockId: string;
+  stockName: string;
+  onClose: () => void;
+}
+
+export interface StockFaq {
+  id: number;
+  stock_id: number;
+  question: string;
+  answer: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  stock?: {
+    id: number;
+    company_name: string;
+  };
+}
+
+export interface FaqFormData {
+  question: string;
+  answer: string;
+  display_order: number;
+  is_active: boolean;
+}
+
+export interface FaqManagementProps {
   stockId: string;
   stockName: string;
   onClose: () => void;

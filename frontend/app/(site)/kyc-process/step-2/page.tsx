@@ -1,17 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CheckCircle2, Landmark, CreditCard,
-  FileText, MapPin, UserRoundCheck, PenLine, Video,
+  FileText, MapPin, UserRoundCheck, PenLine,
 } from "lucide-react";
 import Link from "next/link";
-
-type Props = {
-  onContinue: () => void;
-  onBack?: () => void;
-};
+import { useKYC } from "@/contexts/KYCContext";
 
 /* ---------- tiny icons ---------- */
 const SvgDot = (props: React.SVGProps<SVGSVGElement>) => (
@@ -28,23 +24,44 @@ const SvgCheck = (props: React.SVGProps<SVGSVGElement>) => (
   </svg>
 );
 
-export default function KYCStep2PanProfile({ onContinue }: Props) {
-  // ---- form state
-  const [pan, setPan] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [dob, setDob] = useState("");
-  const [father, setFather] = useState("");
-  const [residency, setResidency] = useState<"resident" | "nri">("resident");
-    const router = useRouter();
-    const pathname = usePathname();
-    const m = pathname.match(/step-(\d+)/);
-    const curr = m ? Number(m[1]) : 1;
-    const onBack = () => router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
+export default function KYCStep2PanProfile() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { formData, updateFormData, markStepCompleted } = useKYC();
+
+  // ---- form state (initialize from context)
+  const [pan, setPan] = useState(formData.pan_number);
+  const [fullName, setFullName] = useState(formData.name_pan);
+  const [dob, setDob] = useState(formData.dob);
+  const [father, setFather] = useState(formData.father_name);
+  const [residency, setResidency] = useState<'Indian' | 'NRI'>(formData.residency_status);
+
+  // Update context when form data changes
+  useEffect(() => {
+    updateFormData({
+      pan_number: pan,
+      name_pan: fullName,
+      dob: dob,
+      father_name: father,
+      residency_status: residency,
+    });
+  }, [pan, fullName, dob, father, residency, updateFormData]);
+
+  const m = pathname.match(/step-(\d+)/);
+  const curr = m ? Number(m[1]) : 1;
+  const onBack = () => router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
 
   // ---- validation
   const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/; // PAN format
   const isPanValid = panRegex.test(pan.toUpperCase());
   const formValid = isPanValid && fullName.trim() && dob && father.trim();
+
+  const handleContinue = () => {
+    if (formValid) {
+      markStepCompleted(2);
+      router.push('/kyc-process/step-3');
+    }
+  };
 
   // ---- steps
   const steps = useMemo(
@@ -54,7 +71,6 @@ export default function KYCStep2PanProfile({ onContinue }: Props) {
         { label: "Address Verification", icon: MapPin, href: "/kyc-process/step-3" },
         { label: "Bank Proof", icon: Landmark, href: "/kyc-process/step-4" },
         { label: "Demat Account", icon: UserRoundCheck, href: "/kyc-process/step-5" },
-        { label: "Video KYC", icon: Video, href: "/kyc-process/step-6" },
         { label: "eSign & Consent", icon: PenLine, href: "/kyc-process/step-7" },
     ],
     []
@@ -134,7 +150,7 @@ export default function KYCStep2PanProfile({ onContinue }: Props) {
               className="space-y-4"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (formValid) onContinue();
+                if (formValid) handleContinue();
               }}
             >
               <div className="space-y-1">
@@ -192,8 +208,8 @@ export default function KYCStep2PanProfile({ onContinue }: Props) {
 
                     <div className="flex flex-wrap gap-3">
                         {[
-                        { value: "resident", label: "Resident Indian" },
-                        { value: "nri", label: "Non-Resident Indian (NRI)" },
+                        { value: "Indian", label: "Indian" },
+                        { value: "NRI", label: "Non-Resident Indian (NRI)" },
                         ].map((opt) => {
                         const checked = residency === opt.value;
                         return (
@@ -203,7 +219,7 @@ export default function KYCStep2PanProfile({ onContinue }: Props) {
                                 name="residency"
                                 value={opt.value}
                                 checked={checked}
-                                onChange={() => setResidency(opt.value as "resident" | "nri")}
+                                onChange={() => setResidency(opt.value as "Indian" | "NRI")}
                                 className="peer sr-only"
                             />
                             <span
@@ -254,7 +270,7 @@ export default function KYCStep2PanProfile({ onContinue }: Props) {
             >
                 Back
             </button>
-            <button type="submit" disabled={!formValid} className={[
+            <button type="submit" disabled={!formValid} onClick={handleContinue} className={[
                 "w-full sm:w-auto py-3 px-6 rounded font-medium",
                 formValid
                     ? "bg-themeSkyBlue text-themeTealWhite cursor-pointer"
