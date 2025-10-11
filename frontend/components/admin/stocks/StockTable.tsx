@@ -189,6 +189,27 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     stockId: null,
     stockName: ''
   });
+
+  // Additional confirmation modal states
+  const [scorecardDeleteConfirmation, setScorecardDeleteConfirmation] = useState<{ isOpen: boolean; scorecardId: number | null }>({
+    isOpen: false,
+    scorecardId: null
+  });
+
+  const [rationaleDeleteConfirmation, setRationaleDeleteConfirmation] = useState<{ isOpen: boolean; rationaleId: number | null }>({
+    isOpen: false,
+    rationaleId: null
+  });
+
+  const [pdfDeleteConfirmation, setPdfDeleteConfirmation] = useState<{ isOpen: boolean; pdfId: number | null }>({
+    isOpen: false,
+    pdfId: null
+  });
+
+  const [sectorInsightsPdfDeleteConfirmation, setSectorInsightsPdfDeleteConfirmation] = useState<{ isOpen: boolean; pdfId: number | null }>({
+    isOpen: false,
+    pdfId: null
+  });
   const [deleteLoading, setDeleteLoading] = useState(false);
   
   // Dropdown state for module management
@@ -375,12 +396,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
-  const handleDeleteScorecard = async (scorecardId: number) => {
-    if (!confirm('Are you sure you want to delete this scorecard?')) return;
+  const handleDeleteScorecard = (scorecardId: number) => {
+    setScorecardDeleteConfirmation({
+      isOpen: true,
+      scorecardId: scorecardId
+    });
+  };
+
+  const confirmDeleteScorecard = async () => {
+    if (!scorecardDeleteConfirmation.scorecardId) return;
     
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`/api/admin/scorecards/${scorecardId}`, {
+      const response = await fetch(`/api/admin/scorecards/${scorecardDeleteConfirmation.scorecardId}`, {
         method: 'DELETE',
         headers: { 'token': token }
       });
@@ -522,12 +550,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
-  const handleDeleteRationale = async (rationaleId: number) => {
-    if (!confirm('Are you sure you want to delete this investment rationale?')) return;
+  const handleDeleteRationale = (rationaleId: number) => {
+    setRationaleDeleteConfirmation({
+      isOpen: true,
+      rationaleId: rationaleId
+    });
+  };
+
+  const confirmDeleteRationale = async () => {
+    if (!rationaleDeleteConfirmation.rationaleId) return;
     
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`/api/admin/investment-rationales/${rationaleId}`, {
+      const response = await fetch(`/api/admin/investment-rationales/${rationaleDeleteConfirmation.rationaleId}`, {
         method: 'DELETE',
         headers: { 'token': token }
       });
@@ -650,12 +685,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
-  const handleDeletePdf = async (pdfId: number) => {
-    if (!confirm('Are you sure you want to delete this performance PDF?')) return;
+  const handleDeletePdf = (pdfId: number) => {
+    setPdfDeleteConfirmation({
+      isOpen: true,
+      pdfId: pdfId
+    });
+  };
+
+  const confirmDeletePdf = async () => {
+    if (!pdfDeleteConfirmation.pdfId) return;
     
     try {
       const token = sessionStorage.getItem('adminToken') || '';
-      const response = await fetch(`/api/admin/performance-pdfs/${pdfId}`, {
+      const response = await fetch(`/api/admin/performance-pdfs/${pdfDeleteConfirmation.pdfId}`, {
         method: 'DELETE',
         headers: { 'token': token }
       });
@@ -943,13 +985,20 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
-  const handleDeleteSectorInsightsPdf = async (pdfId: number) => {
-    if (!confirm('Are you sure you want to delete this sector insights PDF?')) return;
+  const handleDeleteSectorInsightsPdf = (pdfId: number) => {
+    setSectorInsightsPdfDeleteConfirmation({
+      isOpen: true,
+      pdfId: pdfId
+    });
+  };
+
+  const confirmDeleteSectorInsightsPdf = async () => {
+    if (!sectorInsightsPdfDeleteConfirmation.pdfId) return;
 
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       
-      const response = await fetch(`/api/admin/sector-insights-pdfs/${pdfId}`, {
+      const response = await fetch(`/api/admin/sector-insights-pdfs/${sectorInsightsPdfDeleteConfirmation.pdfId}`, {
         method: 'DELETE',
         headers: { 'token': token }
       });
@@ -2648,6 +2697,54 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         cancelText="Cancel"
         type="danger"
         loading={deleteLoading}
+      />
+
+      {/* Scorecard Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={scorecardDeleteConfirmation.isOpen}
+        onClose={() => setScorecardDeleteConfirmation({ isOpen: false, scorecardId: null })}
+        onConfirm={confirmDeleteScorecard}
+        title="Delete Scorecard"
+        message="Are you sure you want to delete this scorecard? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
+
+      {/* Investment Rationale Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={rationaleDeleteConfirmation.isOpen}
+        onClose={() => setRationaleDeleteConfirmation({ isOpen: false, rationaleId: null })}
+        onConfirm={confirmDeleteRationale}
+        title="Delete Investment Rationale"
+        message="Are you sure you want to delete this investment rationale? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
+
+      {/* Performance PDF Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={pdfDeleteConfirmation.isOpen}
+        onClose={() => setPdfDeleteConfirmation({ isOpen: false, pdfId: null })}
+        onConfirm={confirmDeletePdf}
+        title="Delete Performance PDF"
+        message="Are you sure you want to delete this performance PDF? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+      />
+
+      {/* Sector Insights PDF Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={sectorInsightsPdfDeleteConfirmation.isOpen}
+        onClose={() => setSectorInsightsPdfDeleteConfirmation({ isOpen: false, pdfId: null })}
+        onConfirm={confirmDeleteSectorInsightsPdf}
+        title="Delete Sector Insights PDF"
+        message="Are you sure you want to delete this sector insights PDF? This action cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
       />
 
       {/* Shareholding Management Modal */}

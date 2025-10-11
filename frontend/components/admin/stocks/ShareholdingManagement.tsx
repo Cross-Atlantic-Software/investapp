@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Edit2, Trash2, Save, XCircle, Settings, ToggleLeft, ToggleRight } from 'lucide-react';
 import { StockShareholding, ShareholdingFormData, ShareholdingManagementProps, ShareholderType } from './types';
+import { NotificationContainer, NotificationData } from '../shared/Notification';
+import ConfirmationModal from '../shared/ConfirmationModal';
 
 export default function ShareholdingManagement({ stockId, stockName, onClose }: ShareholdingManagementProps) {
   const [shareholdingData, setShareholdingData] = useState<StockShareholding[]>([]);
@@ -13,11 +15,35 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
   const [editingId, setEditingId] = useState<number | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [showShareholderTypeManagement, setShowShareholderTypeManagement] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'danger'
+  });
   const [formData, setFormData] = useState<ShareholdingFormData>({
     holder_name: '',
     percentage: 0,
     shareholder_type_id: undefined
   });
+
+  // Notification helper functions
+  const addNotification = (notification: Omit<NotificationData, 'id'>) => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { ...notification, id }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
 
   const loadShareholderTypes = useCallback(async () => {
     try {
@@ -102,7 +128,11 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
 
   const handleAdd = async () => {
     if (!formData.holder_name.trim() || formData.percentage <= 0) {
-      alert('Please fill in all required fields');
+      addNotification({
+        type: 'warning',
+        title: 'Warning',
+        message: 'Please fill in all required fields'
+      });
       return;
     }
 
@@ -128,11 +158,19 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         setShowAddForm(false);
         setFormData({ holder_name: '', percentage: 0, shareholder_type_id: undefined });
       } else {
-        alert(result.message || 'Failed to add shareholding entry');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: result.message || 'Failed to add shareholding entry'
+        });
       }
     } catch (error) {
       console.error('Error adding shareholding:', error);
-      alert('Failed to add shareholding entry');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to add shareholding entry'
+      });
     } finally {
       setSaving(false);
     }
@@ -140,7 +178,11 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
 
   const handleUpdate = async (id: number) => {
     if (!formData.holder_name.trim() || formData.percentage <= 0) {
-      alert('Please fill in all required fields');
+      addNotification({
+        type: 'warning',
+        title: 'Warning',
+        message: 'Please fill in all required fields'
+      });
       return;
     }
 
@@ -166,20 +208,35 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         setEditingId(null);
         setFormData({ holder_name: '', percentage: 0, shareholder_type_id: undefined });
       } else {
-        alert(result.message || 'Failed to update shareholding entry');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: result.message || 'Failed to update shareholding entry'
+        });
       }
     } catch (error) {
       console.error('Error updating shareholding:', error);
-      alert('Failed to update shareholding entry');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to update shareholding entry'
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this shareholding entry?')) {
-      return;
-    }
+  const handleDelete = (id: number) => {
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Delete Shareholding Entry',
+      message: 'Are you sure you want to delete this shareholding entry? This action cannot be undone.',
+      type: 'danger',
+      onConfirm: () => deleteShareholding(id)
+    });
+  };
+
+  const deleteShareholding = async (id: number) => {
 
     try {
       setSaving(true);
@@ -196,11 +253,19 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
       if (result.success) {
         await loadShareholdingData();
       } else {
-        alert(result.message || 'Failed to delete shareholding entry');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: result.message || 'Failed to delete shareholding entry'
+        });
       }
     } catch (error) {
       console.error('Error deleting shareholding:', error);
-      alert('Failed to delete shareholding entry');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to delete shareholding entry'
+      });
     } finally {
       setSaving(false);
     }
@@ -216,6 +281,16 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
     });
   };
 
+  const closeConfirmationModal = () => {
+    setConfirmationModal({
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: () => {},
+      type: 'danger'
+    });
+  };
+
   const cancelEdit = () => {
     setEditingId(null);
     setShowAddForm(false);
@@ -228,7 +303,11 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
 
   const handleAddShareholderType = async () => {
     if (!shareholderTypeFormData.name.trim()) {
-      alert('Please enter a shareholder type name');
+      addNotification({
+        type: 'warning',
+        title: 'Warning',
+        message: 'Please enter a shareholder type name'
+      });
       return;
     }
 
@@ -251,13 +330,25 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         await loadShareholderTypes();
         await loadActiveShareholderTypes();
         setShareholderTypeFormData({ name: '' });
-        alert('Shareholder type added successfully');
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Shareholder type added successfully'
+        });
       } else {
-        alert(result.message || 'Failed to add shareholder type');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: result.message || 'Failed to add shareholder type'
+        });
       }
     } catch (error) {
       console.error('Error adding shareholder type:', error);
-      alert('Failed to add shareholder type');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to add shareholder type'
+      });
     } finally {
       setSaving(false);
     }
@@ -280,11 +371,19 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         await loadShareholderTypes();
         await loadActiveShareholderTypes();
       } else {
-        alert(result.message || 'Failed to delete shareholder type');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: result.message || 'Failed to delete shareholder type'
+        });
       }
     } catch (error) {
       console.error('Error deleting shareholder type:', error);
-      alert('Failed to delete shareholder type');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to delete shareholder type'
+      });
     } finally {
       setSaving(false);
     }
@@ -306,13 +405,25 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
       if (result.success) {
         await loadShareholderTypes();
         await loadActiveShareholderTypes();
-        alert('Shareholder type status updated successfully');
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Shareholder type status updated successfully'
+        });
       } else {
-        alert(result.message || 'Failed to toggle shareholder type status');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: result.message || 'Failed to toggle shareholder type status'
+        });
       }
     } catch (error) {
       console.error('Error toggling shareholder type status:', error);
-      alert('Failed to toggle shareholder type status');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to toggle shareholder type status'
+      });
     } finally {
       setSaving(false);
     }
@@ -325,7 +436,11 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
 
   const handleUpdateShareholderType = async (id: number) => {
     if (!shareholderTypeFormData.name.trim()) {
-      alert('Please enter a shareholder type name');
+      addNotification({
+        type: 'warning',
+        title: 'Warning',
+        message: 'Please enter a shareholder type name'
+      });
       return;
     }
 
@@ -349,13 +464,25 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         await loadActiveShareholderTypes();
         setEditingShareholderTypeId(null);
         setShareholderTypeFormData({ name: '' });
-        alert('Shareholder type updated successfully');
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Shareholder type updated successfully'
+        });
       } else {
-        alert(result.message || 'Failed to update shareholder type');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: result.message || 'Failed to update shareholder type'
+        });
       }
     } catch (error) {
       console.error('Error updating shareholder type:', error);
-      alert('Failed to update shareholder type');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to update shareholder type'
+      });
     } finally {
       setSaving(false);
     }
@@ -381,8 +508,8 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         <div className="bg-gradient-to-r from-themeTeal to-themeTealLight p-6 text-white">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-2xl font-bold">Manage Shareholding</h2>
-              <p className="text-white/80">{stockName}</p>
+              <h2 className="text-lg font-bold">Manage Shareholding</h2>
+              <p className="text-sm text-white/80">{stockName}</p>
             </div>
             <button
               onClick={onClose}
@@ -749,6 +876,27 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
           )}
         </div>
       </div>
+      
+      {/* Notification Container */}
+      <NotificationContainer
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+      
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={() => {
+          confirmationModal.onConfirm();
+          closeConfirmationModal();
+        }}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        type={confirmationModal.type}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }

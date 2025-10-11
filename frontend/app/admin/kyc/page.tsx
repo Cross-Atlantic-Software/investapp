@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Eye, CheckCircle, XCircle, Trash2, Download } from 'lucide-react';
+import { Search, Eye, CheckCircle, XCircle, Trash2, Download, User, FileText, Calendar, Globe, CreditCard, Building } from 'lucide-react';
 import { NotificationContainer, NotificationData } from '@/components/admin/shared/Notification';
 import Loader from '@/components/admin/shared/Loader';
+import ConfirmationModal from '@/components/admin/shared/ConfirmationModal';
 
 interface KYCApplication {
   id: number;
@@ -49,6 +50,34 @@ export default function KYCPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [selectedKYC, setSelectedKYC] = useState<KYCApplication | null>(null);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'danger'
+  });
+  const [statusConfirmationModal, setStatusConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+    kycName?: string;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'info',
+    kycName: ''
+  });
   const [showViewModal, setShowViewModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -155,8 +184,23 @@ export default function KYCPage() {
     }
   }, []);
 
-  // Update KYC status
-  const updateKYCStatus = async (id: number, status: 'verified' | 'rejected') => {
+  // Update KYC status with confirmation
+  const confirmUpdateKYCStatus = (id: number, status: 'verified' | 'rejected', kycName: string) => {
+    const action = status === 'verified' ? 'approve' : 'reject';
+    const actionTitle = status === 'verified' ? 'Approve' : 'Reject';
+    
+    setStatusConfirmationModal({
+      isOpen: true,
+      title: `${actionTitle} KYC Application`,
+      message: `Are you sure you want to ${action} the KYC application for "${kycName}"? This action will ${status === 'verified' ? 'approve' : 'reject'} their application and cannot be undone.`,
+      type: status === 'verified' ? 'info' : 'warning',
+      kycName: kycName,
+      onConfirm: () => performUpdateKYCStatus(id, status)
+    });
+  };
+
+  // Perform the actual KYC status update
+  const performUpdateKYCStatus = async (id: number, status: 'verified' | 'rejected') => {
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       
@@ -196,10 +240,17 @@ export default function KYCPage() {
   };
 
   // Delete KYC application
-  const deleteKYCApplication = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this KYC application?')) {
-      return;
-    }
+  const deleteKYCApplication = (id: number) => {
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Delete KYC Application',
+      message: 'Are you sure you want to delete this KYC application? This action cannot be undone.',
+      type: 'danger',
+      onConfirm: () => performDeleteKYC(id)
+    });
+  };
+
+  const performDeleteKYC = async (id: number) => {
 
     try {
       const token = sessionStorage.getItem('adminToken') || '';
@@ -235,6 +286,27 @@ export default function KYCPage() {
         message: 'Failed to delete KYC application'
       });
     }
+  };
+
+  const closeConfirmationModal = () => {
+    setConfirmationModal({
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: () => {},
+      type: 'danger'
+    });
+  };
+
+  const closeStatusConfirmationModal = () => {
+    setStatusConfirmationModal({
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: () => {},
+      type: 'info',
+      kycName: ''
+    });
   };
 
   // View KYC application
@@ -552,14 +624,14 @@ export default function KYCPage() {
                           {kyc.status === 'pending' && (
                             <>
                               <button
-                                onClick={() => updateKYCStatus(kyc.id, 'verified')}
+                                onClick={() => confirmUpdateKYCStatus(kyc.id, 'verified', kyc.name_pan)}
                                 className="text-green-600 hover:text-green-900 p-1"
                                 title="Verify"
                               >
                                 <CheckCircle className="w-4 h-4" />
                               </button>
                               <button
-                                onClick={() => updateKYCStatus(kyc.id, 'rejected')}
+                                onClick={() => confirmUpdateKYCStatus(kyc.id, 'rejected', kyc.name_pan)}
                                 className="text-red-600 hover:text-red-900 p-1"
                                 title="Reject"
                               >
@@ -648,121 +720,231 @@ export default function KYCPage() {
 
       {/* View Modal */}
       {showViewModal && selectedKYC && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">KYC Application Details</h2>
-                <button
-                  onClick={() => setShowViewModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <XCircle className="w-6 h-6" />
-                </button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 m-0">
+          <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-xl font-bold text-themeTealWhite">
+                      {selectedKYC.name_pan.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-themeTealWhite">KYC Application Details</h3>
+                    <p className="text-sm text-themeTealLighter">ID: #{selectedKYC.id}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <span className={`px-3 py-1 text-sm font-medium rounded-full ${
+                    selectedKYC.status === 'verified' 
+                      ? 'bg-green-100 text-green-800' 
+                      : selectedKYC.status === 'rejected' 
+                      ? 'bg-red-100 text-red-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {selectedKYC.status.charAt(0).toUpperCase() + selectedKYC.status.slice(1)}
+                  </span>
+                  <button
+                    onClick={() => setShowViewModal(false)}
+                    className="text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer"
+                  >
+                    <XCircle className="w-6 h-6" />
+                  </button>
+                </div>
               </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto">
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Personal Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Personal Information</h3>
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Name (as per PAN)</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedKYC.name_pan}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">PAN Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedKYC.pan_number}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
-                    <p className="mt-1 text-sm text-gray-900">{new Date(selectedKYC.dob).toLocaleDateString()}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Father's Name</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedKYC.father_name}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Residency Status</label>
-                    <p className="mt-1 text-sm text-gray-900">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                        selectedKYC.residency_status === 'Indian' 
-                          ? 'bg-blue-100 text-blue-800' 
-                          : 'bg-purple-100 text-purple-800'
-                      }`}>
-                        {selectedKYC.residency_status}
-                      </span>
-                    </p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Aadhaar Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedKYC.aadhar_number}</p>
+                    <h4 className="text-lg font-semibold text-themeTeal mb-4">Personal Information</h4>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <User className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Name (as per PAN)</div>
+                          <div className="text-sm text-themeTealLight">{selectedKYC.name_pan}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <FileText className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">PAN Number</div>
+                          <div className="text-sm text-themeTealLight">{selectedKYC.pan_number}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <Calendar className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Date of Birth</div>
+                          <div className="text-sm text-themeTealLight">{new Date(selectedKYC.dob).toLocaleDateString()}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <User className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Father's Name</div>
+                          <div className="text-sm text-themeTealLight">{selectedKYC.father_name}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <Globe className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Residency Status</div>
+                          <div className="text-sm text-themeTealLight">
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              selectedKYC.residency_status === 'Indian' 
+                                ? 'bg-blue-100 text-blue-800' 
+                                : 'bg-purple-100 text-purple-800'
+                            }`}>
+                              {selectedKYC.residency_status}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <CreditCard className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Aadhaar Number</div>
+                          <div className="text-sm text-themeTealLight">{selectedKYC.aadhar_number}</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 {/* Banking Information */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-gray-900">Banking Information</h3>
+                <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Account Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedKYC.account_number}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">IFSC Code</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedKYC.ifsc_code}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Demat Type</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedKYC.demat_type}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Demat Account ID</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedKYC.demat_account_id}</p>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Status</label>
-                    <div className="mt-1">
-                      {getStatusBadge(selectedKYC.status)}
+                    <h4 className="text-lg font-semibold text-themeTeal mb-4">Banking Information</h4>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <Building className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Account Number</div>
+                          <div className="text-sm text-themeTealLight">{selectedKYC.account_number}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <FileText className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">IFSC Code</div>
+                          <div className="text-sm text-themeTealLight">{selectedKYC.ifsc_code}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <CreditCard className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Demat Type</div>
+                          <div className="text-sm text-themeTealLight">{selectedKYC.demat_type}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <FileText className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Demat Account ID</div>
+                          <div className="text-sm text-themeTealLight">{selectedKYC.demat_account_id}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        <div className="flex-shrink-0">
+                          <CheckCircle className='text-themeTealLight'/>
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-themeTeal">Status</div>
+                          <div className="text-sm text-themeTealLight">
+                            {getStatusBadge(selectedKYC.status)}
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* Documents */}
-              <div className="mt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Documents</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Bank Proof</h4>
-                    <div className="flex space-x-2">
+              <div className="mt-8">
+                <h4 className="text-lg font-semibold text-themeTeal mb-6">Documents</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="bg-themeTealWhite border border-themeTealLighter rounded-lg p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="flex-shrink-0">
+                        <FileText className='text-themeTeal'/>
+                      </div>
+                      <h5 className="font-medium text-themeTeal">Bank Proof</h5>
+                    </div>
+                    <div className="flex space-x-3">
                       <button
                         onClick={() => window.open(selectedKYC.bank_proof, '_blank')}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200"
                       >
                         View Document
                       </button>
                       <button
                         onClick={() => downloadFile(selectedKYC.bank_proof, 'Bank Proof')}
-                        className="text-green-600 hover:text-green-800 text-sm"
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200 flex items-center"
                       >
-                        <Download className="w-4 h-4 inline mr-1" />
+                        <Download className="w-4 h-4 mr-1" />
                         Download
                       </button>
                     </div>
                   </div>
-                  <div className="border rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-2">Signature</h4>
-                    <div className="flex space-x-2">
+                  <div className="bg-themeTealWhite border border-themeTealLighter rounded-lg p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="flex-shrink-0">
+                        <FileText className='text-themeTeal'/>
+                      </div>
+                      <h5 className="font-medium text-themeTeal">Signature</h5>
+                    </div>
+                    <div className="flex space-x-3">
                       <button
                         onClick={() => window.open(selectedKYC.sign, '_blank')}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200"
                       >
                         View Document
                       </button>
                       <button
                         onClick={() => downloadFile(selectedKYC.sign, 'Signature')}
-                        className="text-green-600 hover:text-green-800 text-sm"
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200 flex items-center"
                       >
-                        <Download className="w-4 h-4 inline mr-1" />
+                        <Download className="w-4 h-4 mr-1" />
                         Download
                       </button>
                     </div>
@@ -772,25 +954,29 @@ export default function KYCPage() {
 
               {/* Actions */}
               {selectedKYC.status === 'pending' && (
-                <div className="mt-6 flex space-x-4">
-                  <button
-                    onClick={() => {
-                      updateKYCStatus(selectedKYC.id, 'verified');
-                      setShowViewModal(false);
-                    }}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700"
-                  >
-                    Verify Application
-                  </button>
-                  <button
-                    onClick={() => {
-                      updateKYCStatus(selectedKYC.id, 'rejected');
-                      setShowViewModal(false);
-                    }}
-                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
-                  >
-                    Reject Application
-                  </button>
+                <div className="mt-8 pt-6 border-t border-themeTealLighter">
+                  <div className="flex space-x-4">
+                    <button
+                      onClick={() => {
+                        confirmUpdateKYCStatus(selectedKYC.id, 'verified', selectedKYC.name_pan);
+                        setShowViewModal(false);
+                      }}
+                      className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors duration-200 font-medium"
+                    >
+                      <CheckCircle className="w-4 h-4 inline mr-2" />
+                      Verify Application
+                    </button>
+                    <button
+                      onClick={() => {
+                        confirmUpdateKYCStatus(selectedKYC.id, 'rejected', selectedKYC.name_pan);
+                        setShowViewModal(false);
+                      }}
+                      className="bg-red-600 text-white px-6 py-3 rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
+                    >
+                      <XCircle className="w-4 h-4 inline mr-2" />
+                      Reject Application
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -801,6 +987,36 @@ export default function KYCPage() {
       <NotificationContainer
         notifications={notifications}
         onRemove={removeNotification}
+      />
+      
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={() => {
+          confirmationModal.onConfirm();
+          closeConfirmationModal();
+        }}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        type={confirmationModal.type}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+
+      {/* Status Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={statusConfirmationModal.isOpen}
+        onClose={closeStatusConfirmationModal}
+        onConfirm={() => {
+          statusConfirmationModal.onConfirm();
+          closeStatusConfirmationModal();
+        }}
+        title={statusConfirmationModal.title}
+        message={statusConfirmationModal.message}
+        type={statusConfirmationModal.type}
+        confirmText={statusConfirmationModal.type === 'info' ? 'Approve' : 'Reject'}
+        cancelText="Cancel"
       />
     </div>
   );

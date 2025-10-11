@@ -6,12 +6,13 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
+    const token = request.headers.get('token');
     
     const response = await fetch(`${API_BASE_URL}/backend/api/admin/faqs${queryString ? `?${queryString}` : ''}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'token': request.headers.get('token') || '',
+        ...(token && { 'token': token }),
       },
     });
 
@@ -31,18 +32,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const token = request.headers.get('token');
     
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: 'Admin token required' },
-        { status: 401 }
-      );
-    }
-
     const response = await fetch(`${API_BASE_URL}/backend/api/admin/faqs`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'token': token,
+        ...(token && { 'token': token }),
       },
       body: JSON.stringify(body),
     });

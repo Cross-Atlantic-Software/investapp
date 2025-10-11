@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Loader, NotificationContainer, NotificationData, ConfirmationModal, SortableHeader, createSortHandler } from '@/components/admin/shared';
-import { Search, Trash2 } from 'lucide-react';
+import { Search, Trash2, X } from 'lucide-react';
 
 interface SiteUser {
   id: number;
@@ -583,42 +583,54 @@ export default function SiteUsersPage() {
 
       {/* Wishlist Modal */}
       {wishlistModal.isOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-hidden">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h2 className="text-lg font-semibold text-gray-900">
-                Wishlist - {wishlistModal.userName}
-              </h2>
-              <button
-                onClick={() => setWishlistModal(prev => ({ ...prev, isOpen: false }))}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-xl font-bold text-themeTealWhite">
+                      {wishlistModal.userName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-themeTealWhite">Wishlist</h3>
+                    <p className="text-sm text-themeTealLighter">View wishlist for {wishlistModal.userName}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setWishlistModal(prev => ({ ...prev, isOpen: false }))}
+                  className="text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
             </div>
             
-            <div className="p-6 overflow-y-auto max-h-[60vh]">
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto">
               {wishlistModal.loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader />
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto"></div>
+                  <p className="mt-2 text-sm text-themeTealLight">Loading wishlist...</p>
                 </div>
               ) : wishlistModal.wishlistItems.length === 0 ? (
                 <div className="text-center py-8">
-                  <div className="text-gray-400 mb-2">
-                    <svg className="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="h-16 w-16 rounded-full bg-themeTealLighter flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-themeTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                     </svg>
                   </div>
-                  <p className="text-gray-500">No items in wishlist</p>
+                  <h3 className="text-lg font-semibold text-themeTeal mb-2">No Items Found</h3>
+                  <p className="text-sm text-themeTealLight">This user hasn't added any items to their wishlist yet.</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {wishlistModal.wishlistItems.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div key={item.id} className="flex items-center justify-between p-4 border border-themeTealLighter rounded-lg bg-themeTealWhite hover:bg-white transition-colors duration-200">
                       <div className="flex items-center space-x-4">
-                        <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <div className="w-12 h-12 bg-themeTealLighter rounded-lg flex items-center justify-center">
                           {item.stock.logo ? (
                             <Image 
                               src={item.stock.logo} 
@@ -628,19 +640,19 @@ export default function SiteUsersPage() {
                               className="object-contain"
                             />
                           ) : (
-                            <span className="text-gray-400 text-xs font-semibold">
+                            <span className="text-themeTeal text-xs font-semibold">
                               {item.stock.company_name.charAt(0)}
                             </span>
                           )}
                         </div>
                         <div>
-                          <h3 className="font-semibold text-gray-900">{item.stock.company_name}</h3>
-                          <p className="text-sm text-gray-500">
+                          <h3 className="font-semibold text-themeTeal">{item.stock.company_name}</h3>
+                          <p className="text-sm text-themeTealLight">
                             ₹{item.stock.price_per_share.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                           </p>
                         </div>
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-themeTealLight">
                         Added {new Date(item.created_at).toLocaleDateString()}
                       </div>
                     </div>

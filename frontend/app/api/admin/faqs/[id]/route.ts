@@ -6,19 +6,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id } = await params;
     const token = request.headers.get('token');
-    
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: 'Admin token required' },
-        { status: 401 }
-      );
-    }
 
     const response = await fetch(`${API_BASE_URL}/backend/api/admin/faqs/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'token': token,
+        ...(token && { 'token': token }),
       },
     });
 
@@ -38,19 +31,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const body = await request.json();
     const token = request.headers.get('token');
-    
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: 'Admin token required' },
-        { status: 401 }
-      );
-    }
 
     const response = await fetch(`${API_BASE_URL}/backend/api/admin/faqs/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'token': token,
+        ...(token && { 'token': token }),
       },
       body: JSON.stringify(body),
     });
@@ -70,19 +56,12 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     const { id } = await params;
     const token = request.headers.get('token');
-    
-    if (!token) {
-      return NextResponse.json(
-        { success: false, message: 'Admin token required' },
-        { status: 401 }
-      );
-    }
 
     const response = await fetch(`${API_BASE_URL}/backend/api/admin/faqs/${id}`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'token': token,
+        ...(token && { 'token': token }),
       },
     });
 

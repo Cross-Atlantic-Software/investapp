@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Plus, Edit2, Trash2, Save, XCircle, HelpCircle, ArrowUpDown } from 'lucide-react';
 import { StockFaq, FaqFormData, FaqManagementProps } from './types';
+import { NotificationContainer, NotificationData } from '../shared/Notification';
+import ConfirmationModal from '../shared/ConfirmationModal';
 
 export default function FaqManagement({ stockId, stockName, onClose }: FaqManagementProps) {
   const [faqs, setFaqs] = useState<StockFaq[]>([]);
@@ -10,12 +12,42 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingFaq, setEditingFaq] = useState<StockFaq | null>(null);
+  const [confirmationModal, setConfirmationModal] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    type?: 'danger' | 'warning' | 'info';
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    type: 'danger'
+  });
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [formData, setFormData] = useState<FaqFormData>({
     question: '',
     answer: '',
     display_order: 0, // Not used in create, but needed for edit form
     is_active: true
   });
+
+  // Notification helper functions
+  const addNotification = (message: string, type: 'success' | 'error' | 'warning' | 'info') => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { 
+      id, 
+      type, 
+      title: type === 'success' ? 'Success' : type === 'error' ? 'Error' : type === 'warning' ? 'Warning' : 'Info',
+      message,
+      duration: 5000
+    }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
 
   const loadFaqs = useCallback(async () => {
     try {
@@ -71,13 +103,13 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
         setShowAddForm(false);
         setFormData({ question: '', answer: '', display_order: 0, is_active: true }); // display_order not used in create
         loadFaqs();
-        alert('FAQ added successfully');
+        addNotification('FAQ added successfully', 'success');
       } else {
-        alert(result.message || 'Failed to add FAQ');
+        addNotification(result.message || 'Failed to add FAQ', 'error');
       }
     } catch (err) {
       console.error('Error adding FAQ:', err);
-      alert('Failed to add FAQ');
+      addNotification('Failed to add FAQ', 'error');
     }
   };
 
@@ -103,18 +135,27 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
         setEditingFaq(null);
         setFormData({ question: '', answer: '', display_order: 0, is_active: true });
         loadFaqs();
-        alert('FAQ updated successfully');
+        addNotification('FAQ updated successfully', 'success');
       } else {
-        alert(result.message || 'Failed to update FAQ');
+        addNotification(result.message || 'Failed to update FAQ', 'error');
       }
     } catch (err) {
       console.error('Error updating FAQ:', err);
-      alert('Failed to update FAQ');
+      addNotification('Failed to update FAQ', 'error');
     }
   };
 
-  const handleDeleteFaq = async (id: number) => {
-    if (!confirm('Are you sure you want to delete this FAQ?')) return;
+  const handleDeleteFaq = (id: number) => {
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Delete FAQ',
+      message: 'Are you sure you want to delete this FAQ? This action cannot be undone.',
+      type: 'danger',
+      onConfirm: () => deleteFaq(id)
+    });
+  };
+
+  const deleteFaq = async (id: number) => {
     
     try {
       const token = localStorage.getItem('adminToken');
@@ -129,25 +170,34 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
       
       if (result.success) {
         loadFaqs();
-        alert('FAQ deleted successfully');
+        addNotification('FAQ deleted successfully', 'success');
       } else {
-        alert(result.message || 'Failed to delete FAQ');
+        addNotification(result.message || 'Failed to delete FAQ', 'error');
       }
     } catch (err) {
       console.error('Error deleting FAQ:', err);
-      alert('Failed to delete FAQ');
+      addNotification('Failed to delete FAQ', 'error');
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleBulkDelete = () => {
     const selectedIds = faqs.filter(faq => (document.getElementById(`checkbox-${faq.id}`) as HTMLInputElement)?.checked).map(faq => faq.id);
     
     if (selectedIds.length === 0) {
-      alert('Please select FAQs to delete');
+      addNotification('Please select FAQs to delete', 'warning');
       return;
     }
     
-    if (!confirm(`Are you sure you want to delete ${selectedIds.length} FAQ(s)?`)) return;
+    setConfirmationModal({
+      isOpen: true,
+      title: 'Delete Multiple FAQs',
+      message: `Are you sure you want to delete ${selectedIds.length} FAQ(s)? This action cannot be undone.`,
+      type: 'danger',
+      onConfirm: () => bulkDeleteFaqs(selectedIds)
+    });
+  };
+
+  const bulkDeleteFaqs = async (selectedIds: number[]) => {
     
     try {
       const token = localStorage.getItem('adminToken');
@@ -164,13 +214,13 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
       
       if (result.success) {
         loadFaqs();
-        alert(`${result.data.deletedCount} FAQ(s) deleted successfully`);
+        addNotification(`${result.data.deletedCount} FAQ(s) deleted successfully`, 'success');
       } else {
-        alert(result.message || 'Failed to delete FAQs');
+        addNotification(result.message || 'Failed to delete FAQs', 'error');
       }
     } catch (err) {
       console.error('Error bulk deleting FAQs:', err);
-      alert('Failed to delete FAQs');
+      addNotification('Failed to delete FAQs', 'error');
     }
   };
 
@@ -190,6 +240,16 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
     setFormData({ question: '', answer: '', display_order: 0, is_active: true });
   };
 
+  const closeConfirmationModal = () => {
+    setConfirmationModal({
+      isOpen: false,
+      title: '',
+      message: '',
+      onConfirm: () => {},
+      type: 'danger'
+    });
+  };
+
   const cancelAdd = () => {
     setShowAddForm(false);
     setFormData({ question: '', answer: '', display_order: 0, is_active: true }); // display_order not used in create
@@ -197,31 +257,40 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <div className="flex justify-between items-center p-6 border-b border-gray-200">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">FAQ Management</h2>
-            <p className="text-sm text-gray-600 mt-1">Manage FAQs for {stockName}</p>
+      <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
+        {/* Modal Header */}
+        <div className="bg-themeTeal px-6 py-4 rounded-t">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                <span className="text-xl font-bold text-themeTealWhite">
+                  {stockName.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-base font-semibold text-themeTealWhite">FAQ Management</h3>
+                <p className="text-xs text-themeTealLighter">Manage FAQs for {stockName}</p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer"
+            >
+              <X className="w-6 h-6" />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
-          >
-            <X className="w-6 h-6" />
-          </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
+        {/* Modal Body */}
+        <div className="p-6 flex-1 overflow-y-auto">
           {loading ? (
-            <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto"></div>
-              <p className="mt-2 text-sm text-gray-600">Loading FAQs...</p>
+            <div className="text-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-themeTeal mx-auto"></div>
+              <p className="mt-2 text-xs text-themeTealLight">Loading FAQs...</p>
             </div>
           ) : error ? (
-            <div className="text-center py-8 text-red-600">
-              <p className="text-sm">{error}</p>
+            <div className="text-center py-6">
+              <p className="text-xs text-red-600">{error}</p>
             </div>
           ) : (
             <>
@@ -230,7 +299,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setShowAddForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-themeTeal text-white rounded-lg hover:bg-themeTeal/90 transition-colors"
+                    className="flex items-center gap-2 px-4 py-2 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition-colors duration-200 font-medium"
                   >
                     <Plus className="w-4 h-4" />
                     Add FAQ
@@ -239,7 +308,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                   {faqs.length > 0 && (
                     <button
                       onClick={handleBulkDelete}
-                      className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      className="flex items-center gap-2 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete Selected
@@ -247,50 +316,50 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                   )}
                 </div>
                 
-                <div className="text-sm text-gray-600">
+                <div className="text-xs text-themeTealLight">
                   {faqs.length} FAQ(s) found
                 </div>
               </div>
 
               {/* Add Form */}
               {showAddForm && (
-                <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                  <div className="flex justify-between items-center mb-4">
+                <div className="mb-6 p-6 border border-themeTealLighter rounded-lg bg-themeTealWhite">
+                  <div className="flex justify-between items-center mb-6">
                     <div>
-                      <h3 className="text-md font-semibold text-gray-900">Add New FAQ</h3>
-                      <p className="text-xs text-gray-500 mt-1">Order will be auto-assigned (comes at the bottom)</p>
+                      <h3 className="text-sm font-semibold text-themeTeal">Add New FAQ</h3>
+                      <p className="text-xs text-themeTealLight mt-1">Order will be auto-assigned (comes at the bottom)</p>
                     </div>
                     <button
                       onClick={cancelAdd}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="p-2 text-themeTealLight hover:text-themeTeal hover:bg-themeTealLighter rounded-lg transition-colors duration-200"
                     >
                       <X className="w-5 h-5" />
                     </button>
                   </div>
                   
-                  <form onSubmit={handleAddFaq} className="space-y-4">
+                  <form onSubmit={handleAddFaq} className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-themeTeal mb-1">
                         Question *
                       </label>
                       <input
                         type="text"
                         value={formData.question}
                         onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
+                        className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal transition-colors duration-200"
                         required
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-xs font-medium text-themeTeal mb-1">
                         Answer *
                       </label>
                       <textarea
                         value={formData.answer}
                         onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
-                        rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
+                        rows={3}
+                        className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal transition-colors duration-200"
                         required
                       />
                     </div>
@@ -301,17 +370,17 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                         id="is_active"
                         checked={formData.is_active}
                         onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                        className="mr-2"
+                        className="mr-3 w-4 h-4 text-themeTeal border-themeTealLighter rounded focus:ring-themeTeal"
                       />
-                      <label htmlFor="is_active" className="text-sm font-medium text-gray-700">
+                      <label htmlFor="is_active" className="text-xs font-medium text-themeTeal">
                         Active
                       </label>
                     </div>
                     
-                    <div className="flex gap-2">
+                    <div className="flex gap-3 pt-4 border-t border-themeTealLighter">
                       <button
                         type="submit"
-                        className="flex items-center gap-2 px-4 py-2 bg-themeTeal text-white rounded-lg hover:bg-themeTeal/90 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition-colors duration-200 font-medium"
                       >
                         <Save className="w-4 h-4" />
                         Save FAQ
@@ -319,7 +388,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                       <button
                         type="button"
                         onClick={cancelAdd}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium"
                       >
                         <XCircle className="w-4 h-4" />
                         Cancel
@@ -420,9 +489,9 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
 
               {/* FAQs List */}
               {faqs.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <HelpCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p className="text-sm">No FAQs found for this stock</p>
+                <div className="text-center py-6">
+                  <HelpCircle className="w-8 h-8 mx-auto mb-3 text-themeTealLight" />
+                  <p className="text-xs text-themeTealLight">No FAQs found for this stock</p>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -475,6 +544,23 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
           )}
         </div>
       </div>
+      <NotificationContainer
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+      <ConfirmationModal
+        isOpen={confirmationModal.isOpen}
+        onClose={closeConfirmationModal}
+        onConfirm={() => {
+          confirmationModal.onConfirm();
+          closeConfirmationModal();
+        }}
+        title={confirmationModal.title}
+        message={confirmationModal.message}
+        type={confirmationModal.type}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
     </div>
   );
 }
