@@ -27,7 +27,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector', 'subsector', 'headquarters', 'min_units', 'lot_size', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'headquarters', 'min_units', 'lot_size', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -35,7 +35,15 @@ export const getAllStocks = async (req: Request, res: Response) => {
       where: whereClause,
       limit,
       offset,
-      order: [[validSortBy, validSortOrder]]
+      order: [[validSortBy, validSortOrder]],
+      attributes: [
+        'id', 'company_name', 'logo', 'price_change', 'teaser', 
+        'short_description', 'analysis', 'demand', 'homeDisplay', 
+        'bannerDisplay', 'valuation', 'price_per_share', 
+        'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 
+        'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
+        'createdAt', 'updatedAt'
+      ]
     });
 
     // Fetch stock master names for each stock
