@@ -801,7 +801,7 @@ export default function KYCPage() {
                           <User className='text-themeTealLight'/>
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-themeTeal">Father's Name</div>
+                          <div className="text-sm font-medium text-themeTeal">Father&apos;s Name</div>
                           <div className="text-sm text-themeTealLight">{selectedKYC.father_name}</div>
                         </div>
                       </div>
