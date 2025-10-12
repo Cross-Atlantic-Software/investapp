@@ -14,7 +14,16 @@ export const getHomeDisplayStocks = async (req: Request, res: Response) => {
       where: {
         homeDisplay: 'yes'
       },
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
+      limit: 20,
+      attributes: [
+        'id', 'company_name', 'logo', 'price_change', 'teaser', 
+        'short_description', 'analysis', 'demand', 'homeDisplay', 
+        'bannerDisplay', 'valuation', 'price_per_share', 
+        'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 
+        'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
+        'createdAt', 'updatedAt'
+      ]
     });
 
     console.log(`Found ${stocks.length} stocks with homeDisplay='yes'`);
