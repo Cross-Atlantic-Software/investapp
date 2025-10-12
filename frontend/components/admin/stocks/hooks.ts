@@ -12,7 +12,7 @@ export const useStockFormState = () => {
     demand: 'High Demand',
     homeDisplay: 'no',
     bannerDisplay: 'no',
-    valuation: '',
+    valuation_id: 2, // Default to '₹100-500 Cr'
     price_per_share: 0,
     percentage_change: 0,
     founded: new Date().getFullYear(),
@@ -40,11 +40,11 @@ export const useStockFormState = () => {
     // Convert numeric fields to numbers
     const numericFields = [
       'price_change', 'price_per_share', 'percentage_change', 'founded', 
-      'min_units', 'lot_size', 'price_change_period_id'
+      'min_units', 'lot_size', 'price_change_period_id', 'valuation_id'
     ];
     
     const processedValue = numericFields.includes(name) ? 
-      (name === 'price_change_period_id' ? parseInt(value, 10) : parseFloat(value)) : 
+      (name === 'price_change_period_id' || name === 'valuation_id' ? parseInt(value, 10) : parseFloat(value)) : 
       value;
     
     setFormData(prev => ({

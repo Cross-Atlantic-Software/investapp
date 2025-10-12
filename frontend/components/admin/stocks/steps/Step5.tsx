@@ -7,6 +7,11 @@ interface PriceChangePeriod {
   period: string;
 }
 
+interface Valuation {
+  id: number;
+  valuation_name: string;
+}
+
 const Step5: React.FC<StepProps & { 
   stockMasters?: Array<{ id: number; name: string; }>;
   sectors?: Array<{ id: number; name: string; }>;
@@ -20,26 +25,42 @@ const Step5: React.FC<StepProps & {
   imageUpload
 }) => {
   const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
+  const [valuations, setValuations] = useState<Valuation[]>([]);
 
   useEffect(() => {
-    const fetchPriceChangePeriods = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/admin/price-change-periods/select');
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.success && data.data?.periods) {
-            setPriceChangePeriods(data.data.periods);
+        // Fetch price change periods
+        const priceChangePeriodsResponse = await fetch('/api/admin/price-change-periods/select');
+        if (priceChangePeriodsResponse.ok) {
+          const priceChangePeriodsData = await priceChangePeriodsResponse.json();
+          if (priceChangePeriodsData.success && priceChangePeriodsData.data?.periods) {
+            setPriceChangePeriods(priceChangePeriodsData.data.periods);
+          }
+        }
+
+        // Fetch valuations
+        const valuationsResponse = await fetch('/api/admin/valuations/select');
+        if (valuationsResponse.ok) {
+          const valuationsData = await valuationsResponse.json();
+          if (valuationsData.success && valuationsData.data?.valuations) {
+            setValuations(valuationsData.data.valuations);
           }
         }
       } catch (error) {
-        console.error('Error fetching price change periods:', error);
+        console.error('Error fetching data:', error);
       }
     };
 
-    fetchPriceChangePeriods();
+    fetchData();
   }, []);
+  const getValuationName = () => {
+    if (!formData.valuation_id) return '₹100-500 Cr';
+    
+    const valuation = valuations.find(v => v.id === formData.valuation_id);
+    return valuation ? valuation.valuation_name : '₹100-500 Cr';
+  };
+
   const getStockMasterNames = () => {
     if (!Array.isArray(formData.stock_master_ids)) {
       return 'No tags selected';
@@ -122,7 +143,7 @@ const Step5: React.FC<StepProps & {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium text-gray-700">Valuation:</span>
-              <p className="text-gray-600 mt-1">₹{formData.valuation}</p>
+              <p className="text-gray-600 mt-1">{getValuationName()}</p>
             </div>
             <div>
               <span className="font-medium text-gray-700">Price per Share:</span>

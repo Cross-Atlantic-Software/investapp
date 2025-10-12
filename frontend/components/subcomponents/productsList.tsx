@@ -178,7 +178,7 @@ function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => 
             <div className={pos ? "text-green-700" : "text-rose-600"}>
               {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />} ({periodName})
             </div>
-            <div className="whitespace-nowrap">₹ {item.valuation} Cr.</div>
+            <div className="whitespace-nowrap">₹ {item.valuation}</div>
           </div>
 
           <div className="grid md:hidden grid-cols-3 gap-3 bg-white p-3 text-sm text-themeTeal">
@@ -189,7 +189,7 @@ function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => 
                 {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />} ({periodName})
               </span>}
             />
-            <MobileStat label="Valuation (in Cr.)" value={`₹ ${item.valuation} Cr.`} />
+            <MobileStat label="Valuation (in Cr.)" value={`₹ ${item.valuation}`} />
           </div>
         </div>
       </div>

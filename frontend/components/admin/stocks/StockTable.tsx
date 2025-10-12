@@ -1165,7 +1165,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       formData.append('demand', stockData.demand || '');
       formData.append('homeDisplay', stockData.homeDisplay || '');
       formData.append('bannerDisplay', stockData.bannerDisplay || '');
-      formData.append('valuation', stockData.valuation || '');
+      formData.append('valuation_id', stockData.valuation_id?.toString() || '');
       formData.append('price_per_share', stockData.price_per_share?.toString() || '');
       formData.append('price_change', stockData.price_change?.toString() || '');
       formData.append('price_change_period_id', stockData.price_change_period_id?.toString() || '');

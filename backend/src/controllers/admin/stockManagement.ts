@@ -107,13 +107,23 @@ export const getAllStocks = async (req: Request, res: Response) => {
         } else {
           priceChangePeriod = '12 Months';
         }
+
+        // Fetch valuation name
+        let valuation = null;
+        if (stock.valuation_id) {
+          const valuationRecord = await db.Valuation.findByPk(stock.valuation_id);
+          valuation = valuationRecord ? valuationRecord.valuation_name : '₹100-500 Cr';
+        } else {
+          valuation = '₹100-500 Cr';
+        }
         
         return {
           ...stock.toJSON(),
           stock_masters: stockMasters,
           sectors: sectors,
           subsectors: subsectors,
-          price_change_period: priceChangePeriod
+          price_change_period: priceChangePeriod,
+          valuation: valuation
         };
       })
     );
@@ -224,12 +234,22 @@ export const getStockById = async (req: Request, res: Response) => {
       priceChangePeriod = '12 Months';
     }
 
+    // Fetch valuation name
+    let valuation = null;
+    if (stock.valuation_id) {
+      const valuationRecord = await db.Valuation.findByPk(stock.valuation_id);
+      valuation = valuationRecord ? valuationRecord.valuation_name : '₹100-500 Cr';
+    } else {
+      valuation = '₹100-500 Cr';
+    }
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
       sectors: sectors,
       subsectors: subsectors,
-      price_change_period: priceChangePeriod
+      price_change_period: priceChangePeriod,
+      valuation: valuation
     };
 
     return res.status(200).json({
@@ -331,12 +351,22 @@ export const getStockByName = async (req: Request, res: Response) => {
       priceChangePeriod = '12 Months';
     }
 
+    // Fetch valuation name
+    let valuation = null;
+    if (stock.valuation_id) {
+      const valuationRecord = await db.Valuation.findByPk(stock.valuation_id);
+      valuation = valuationRecord ? valuationRecord.valuation_name : '₹100-500 Cr';
+    } else {
+      valuation = '₹100-500 Cr';
+    }
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
       sectors: sectors,
       subsectors: subsectors,
-      price_change_period: priceChangePeriod
+      price_change_period: priceChangePeriod,
+      valuation: valuation
     };
 
     return res.status(200).json({
@@ -376,7 +406,6 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       demand,
       homeDisplay,
       bannerDisplay,
-      valuation,
       price_per_share,
       percentage_change,
       founded,
@@ -386,8 +415,11 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       min_units,
       lot_size,
       stock_master_ids,
-      price_change_period_id
+      price_change_period_id,
+      valuation_id
     } = cleanedBody;
+
+    console.log("Valuation ID received:", valuation_id);
 
     // Validate required fields
     if (!company_name) {
@@ -433,7 +465,7 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       demand: demand || 'Low Demand',
       homeDisplay: homeDisplay || 'no',
       bannerDisplay: bannerDisplay || 'no',
-      valuation: valuation || 'N/A',
+      valuation_id: valuation_id || 2,
       price_per_share: price_per_share || 0,
       percentage_change: percentage_change || price_change || 0,
       founded: founded || new Date().getFullYear(),
@@ -480,7 +512,6 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       demand,
       homeDisplay,
       bannerDisplay,
-      valuation,
       price_per_share,
       percentage_change,
       founded,
@@ -490,8 +521,11 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       min_units,
       lot_size,
       stock_master_ids,
-      price_change_period_id
+      price_change_period_id,
+      valuation_id
     } = req.body;
+
+    console.log("Update Stock - Valuation ID received:", valuation_id);
 
     const stock = await db.Product.findByPk(id);
     if (!stock) {
@@ -532,7 +566,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       demand: demand !== undefined ? demand : stock.demand,
       homeDisplay: homeDisplay !== undefined ? homeDisplay : stock.homeDisplay,
       bannerDisplay: bannerDisplay !== undefined ? bannerDisplay : stock.bannerDisplay,
-      valuation: valuation !== undefined ? valuation : stock.valuation,
+      valuation_id: valuation_id !== undefined ? valuation_id : stock.valuation_id,
       price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,
       percentage_change: percentage_change !== undefined ? percentage_change : stock.percentage_change,
       founded: founded !== undefined ? founded : stock.founded,

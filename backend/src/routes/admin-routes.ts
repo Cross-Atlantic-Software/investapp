@@ -39,6 +39,7 @@ import { ActivityTypeManagementController } from "../controllers/admin/activityT
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 import { PriceChangePeriodController } from "../controllers/admin/priceChangePeriodController";
+import { ValuationController } from "../controllers/admin/valuationController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
@@ -117,6 +118,7 @@ router.use((req, res, next) => {
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
       req.path.includes('/price-change-periods') ||
+      req.path.includes('/valuations') ||
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
       req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
@@ -235,6 +237,14 @@ router.get("/price-change-periods/:id", PriceChangePeriodController.getPriceChan
 router.post("/price-change-periods", PriceChangePeriodController.createPriceChangePeriod);
 router.put("/price-change-periods/:id", PriceChangePeriodController.updatePriceChangePeriod);
 router.delete("/price-change-periods/:id", PriceChangePeriodController.deletePriceChangePeriod);
+
+// Valuation Management Routes
+router.get("/valuations", ValuationController.getAllValuations);
+router.get("/valuations/select", ValuationController.getValuationsForSelect);
+router.get("/valuations/:id", ValuationController.getValuationById);
+router.post("/valuations", ValuationController.createValuation);
+router.put("/valuations/:id", ValuationController.updateValuation);
+router.delete("/valuations/:id", ValuationController.deleteValuation);
 
 // Sector Management Routes
 router.get("/sectors", SectorManagementController.getAllSectors);

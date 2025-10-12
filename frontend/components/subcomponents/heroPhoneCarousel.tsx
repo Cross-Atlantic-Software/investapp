@@ -80,7 +80,7 @@ async function fetchBannerStocks(): Promise<Slide[]> {
         price_change: priceChange,
         changePct: `${percentageChange >= 0 ? '+' : ''}${stock.percentage_change}% ${percentageChange >= 0 ? '↑' : '↓'}`,
         pps: `₹ ${stock.price_per_share}`,
-        valuation: `₹ ${stock.valuation}B`,
+        valuation: stock.valuation,
       };
     });
   } catch (error) {

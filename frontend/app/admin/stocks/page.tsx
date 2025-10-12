@@ -15,6 +15,7 @@ import {
 import { SectorManagementModal } from '@/components/admin/sector-management';
 import MethodologyModal from '@/components/admin/methodology/MethodologyModal';
 import PriceChangePeriodManagement from '@/components/admin/PriceChangePeriodManagement';
+import ValuationManagement from '@/components/admin/ValuationManagement';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
@@ -27,6 +28,7 @@ export default function StocksPage() {
   const [showStockMasterModal, setShowStockMasterModal] = useState(false);
   const [showSectorModal, setShowSectorModal] = useState(false);
   const [showPriceChangePeriodModal, setShowPriceChangePeriodModal] = useState(false);
+  const [showValuationModal, setShowValuationModal] = useState(false);
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -252,7 +254,7 @@ export default function StocksPage() {
     demand: 'High Demand' | 'Low Demand';
     homeDisplay: 'yes' | 'no';
     bannerDisplay: 'yes' | 'no';
-    valuation: string;
+    valuation_id: number;
     price_per_share: number;
     percentage_change: number;
     founded: number;
@@ -280,7 +282,7 @@ export default function StocksPage() {
       formData.append('demand', stockData.demand);
       formData.append('homeDisplay', stockData.homeDisplay);
       formData.append('bannerDisplay', stockData.bannerDisplay);
-      formData.append('valuation', stockData.valuation);
+      formData.append('valuation_id', stockData.valuation_id.toString());
       formData.append('percentage_change', stockData.percentage_change.toString());
       formData.append('founded', stockData.founded.toString());
       formData.append('sector_ids', JSON.stringify(stockData.sector_ids));
@@ -488,6 +490,13 @@ export default function StocksPage() {
                 Manage Price Change Periods
               </button>
               <button
+                onClick={() => setShowValuationModal(true)}
+                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
+              >
+                <Plus width={16} height={16} className='mr-1'/>
+                Manage Valuations
+              </button>
+              <button
                 onClick={() => setShowMethodologyModal(true)}
                 className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
               >
@@ -540,7 +549,7 @@ export default function StocksPage() {
               demand: stockData.demand,
               homeDisplay: stockData.homeDisplay,
               bannerDisplay: stockData.bannerDisplay,
-              valuation: stockData.valuation,
+              valuation_id: stockData.valuation_id,
               price_per_share: stockData.price_per_share,
               percentage_change: stockData.percentage_change,
               founded: stockData.founded,
@@ -590,6 +599,24 @@ export default function StocksPage() {
               </button>
             </div>
             <PriceChangePeriodManagement />
+          </div>
+        </div>
+      )}
+
+      {/* Valuation Management Modal */}
+      {showValuationModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+            <div className="bg-themeTeal text-white p-4 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Manage Valuations</h2>
+              <button
+                onClick={() => setShowValuationModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <ValuationManagement onClose={() => setShowValuationModal(false)} />
           </div>
         </div>
       )}

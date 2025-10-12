@@ -1219,4 +1219,78 @@ router.post("/create-kyc-applications-table", async (req, res) => {
     }
   });
 
+  // Create valuations table and update products table
+  router.post("/create-valuations-table", async (req, res) => {
+    try {
+      await sequelizePromise;
+      
+      // Check if valuations table exists
+      const [tableResults] = await db.sequelize.query(`
+        SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'valuations'
+      `);
+      
+      if (tableResults.length === 0) {
+        // Create valuations table
+        await db.sequelize.query(`
+          CREATE TABLE valuations (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            valuation_name VARCHAR(100) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+          )
+        `);
+        
+        // Insert default valuations
+        await db.sequelize.query(`
+          INSERT INTO valuations (valuation_name, created_at, updated_at) VALUES 
+          ('Under ₹100 Cr', NOW(), NOW()),
+          ('₹100-500 Cr', NOW(), NOW()),
+          ('₹500-1000 Cr', NOW(), NOW()),
+          ('₹1000-5000 Cr', NOW(), NOW()),
+          ('₹5000-10000 Cr', NOW(), NOW()),
+          ('Above ₹10000 Cr', NOW(), NOW())
+        `);
+        
+        console.log("✅ Created valuations table with default data");
+      } else {
+        console.log("✅ Valuations table already exists");
+      }
+
+      // Check if valuation_id column exists in products table
+      const [columnResults] = await db.sequelize.query(`
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'products' AND COLUMN_NAME = 'valuation_id'
+      `);
+      
+      if (columnResults.length === 0) {
+        // Add valuation_id column to products table
+        await db.sequelize.query(`
+          ALTER TABLE products 
+          ADD COLUMN valuation_id INT UNSIGNED AFTER bannerDisplay,
+          ADD FOREIGN KEY (valuation_id) REFERENCES valuations(id)
+        `);
+        
+        // Update existing products to use default valuation (₹100-500 Cr = ID 2)
+        await db.sequelize.query(`
+          UPDATE products SET valuation_id = 2 WHERE valuation_id IS NULL
+        `);
+        
+        console.log("✅ Added valuation_id column to products table");
+      } else {
+        console.log("✅ valuation_id column already exists in products table");
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully created valuations table and updated products table"
+      });
+    } catch (error) {
+      console.error("Error creating valuations table:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to create valuations table",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
 export default router;

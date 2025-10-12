@@ -6,30 +6,44 @@ interface PriceChangePeriod {
   period: string;
 }
 
+interface Valuation {
+  id: number;
+  valuation_name: string;
+}
+
 const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
   const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
+  const [valuations, setValuations] = useState<Valuation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchPriceChangePeriods = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/admin/price-change-periods/select');
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.success && data.data?.periods) {
-            setPriceChangePeriods(data.data.periods);
+        // Fetch price change periods
+        const priceChangePeriodsResponse = await fetch('/api/admin/price-change-periods/select');
+        if (priceChangePeriodsResponse.ok) {
+          const priceChangePeriodsData = await priceChangePeriodsResponse.json();
+          if (priceChangePeriodsData.success && priceChangePeriodsData.data?.periods) {
+            setPriceChangePeriods(priceChangePeriodsData.data.periods);
+          }
+        }
+
+        // Fetch valuations
+        const valuationsResponse = await fetch('/api/admin/valuations/select');
+        if (valuationsResponse.ok) {
+          const valuationsData = await valuationsResponse.json();
+          if (valuationsData.success && valuationsData.data?.valuations) {
+            setValuations(valuationsData.data.valuations);
           }
         }
       } catch (error) {
-        console.error('Error fetching price change periods:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchPriceChangePeriods();
+    fetchData();
   }, []);
   return (
     <div className="space-y-6">
@@ -40,18 +54,23 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
       {/* Valuation */}
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Valuation (in Cr.) <span className="text-red-500">*</span>
+          Valuation <span className="text-red-500">*</span>
         </label>
-        <input
-          type="number"
-          name="valuation"
-          value={formData.valuation}
+        <select
+          name="valuation_id"
+          value={formData.valuation_id}
           onChange={onInputChange}
           required
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-          placeholder="0.00"
-          step="0.01"
-        />
+          disabled={loading}
+        >
+          <option value="">{loading ? 'Loading...' : 'Select valuation...'}</option>
+          {valuations.map((valuation) => (
+            <option key={valuation.id} value={valuation.id}>
+              {valuation.valuation_name}
+            </option>
+          ))}
+        </select>
       </div>
       
       {/* Price Change and Price Change Period - Side by Side */}

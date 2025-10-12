@@ -84,7 +84,7 @@ export default function ShareIntro(props: ShareIntroProps) {
             {valuation && (
               <Kpi
                 label="Valuation"
-                value={`₹${parseFloat(valuation).toLocaleString()}B`}
+                value={valuation}
               />
             )}
             <Kpi

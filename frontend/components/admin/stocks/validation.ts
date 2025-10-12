@@ -15,8 +15,8 @@ const validateAllSteps = (formData: StockData): boolean => {
     formData.headquarters.trim() !== '' &&
     // Note: icon validation removed for editing - existing stocks may not need new icon upload
     // Step 2: Financial Details
-    formData.valuation && 
-    formData.valuation.toString().trim() !== '' &&
+    formData.valuation_id && 
+    formData.valuation_id > 0 &&
     formData.price_change !== null && 
     formData.price_change !== undefined &&
     formData.price_change_period_id &&
@@ -55,8 +55,8 @@ export const validateStepForEdit = (step: number, formData: StockData): boolean 
       );
     case 2: // Financial Details
       return !!(
-        formData.valuation && 
-        formData.valuation.toString().trim() !== '' &&
+        formData.valuation_id && 
+        formData.valuation_id > 0 &&
         formData.price_change !== null && 
         formData.price_change !== undefined &&
         formData.price_change_period_id &&
@@ -107,8 +107,8 @@ export const validateStep = (step: number, formData: StockData): boolean => {
       );
     case 2: // Financial Details
       return !!(
-        formData.valuation && 
-        formData.valuation.toString().trim() !== '' &&
+        formData.valuation_id && 
+        formData.valuation_id > 0 &&
         formData.price_change !== null && 
         formData.price_change !== undefined &&
         formData.price_change_period_id &&

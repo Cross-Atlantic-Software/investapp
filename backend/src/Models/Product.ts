@@ -11,7 +11,7 @@ interface ProductAttributes {
   demand: 'High Demand' | 'Low Demand';
   homeDisplay: 'yes' | 'no';
   bannerDisplay: 'yes' | 'no';
-  valuation: string;
+  valuation_id?: number;
   price_per_share: number;
   percentage_change: number;
   founded: number;
@@ -21,7 +21,7 @@ interface ProductAttributes {
   min_units: number;
   lot_size: number;
   stock_master_ids?: string;
-  price_change_period_id?: string;
+  price_change_period_id?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -45,7 +45,7 @@ class Product
   public demand!: 'High Demand' | 'Low Demand';
   public homeDisplay!: 'yes' | 'no';
   public bannerDisplay!: 'yes' | 'no';
-  public valuation!: string;
+  public valuation_id?: number;
   public price_per_share!: number;
   public percentage_change!: number;
   public founded!: number;
@@ -55,7 +55,7 @@ class Product
   public min_units!: number;
   public lot_size!: number;
   public stock_master_ids?: string;
-  public price_change_period_id?: string;
+  public price_change_period_id?: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -107,9 +107,13 @@ export function initializeProductModel(sequelize: Sequelize) {
         allowNull: false,
         defaultValue: 'no'
       },
-      valuation: {
-        type: DataTypes.STRING(100),
-        allowNull: false
+      valuation_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'valuations',
+          key: 'id'
+        }
       },
       price_per_share: {
         type: DataTypes.DECIMAL(10, 2),
