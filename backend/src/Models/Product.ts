@@ -21,6 +21,7 @@ interface ProductAttributes {
   min_units: number;
   lot_size: number;
   stock_master_ids?: string;
+  price_change_period_id?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -54,6 +55,7 @@ class Product
   public min_units!: number;
   public lot_size!: number;
   public stock_master_ids?: string;
+  public price_change_period_id?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -144,6 +146,11 @@ export function initializeProductModel(sequelize: Sequelize) {
       stock_master_ids: {
         type: DataTypes.TEXT,
         allowNull: true
+      },
+      price_change_period_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 4  // ID for '12 Months'
       }
     }, {
       sequelize,

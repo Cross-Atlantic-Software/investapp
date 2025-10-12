@@ -1,10 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import StepProgressIndicator from './StepProgressIndicator';
 import { ExistingStockData } from './types';
+
+interface PriceChangePeriod {
+  id: number;
+  period: string;
+}
 
 interface ViewStockModalProps {
   stock: ExistingStockData;
@@ -18,6 +23,27 @@ interface ViewStockModalProps {
 const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMasters = [] }) => {
   const totalSteps = 5;
   const [currentStep, setCurrentStep] = useState(1);
+  const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
+
+  useEffect(() => {
+    const fetchPriceChangePeriods = async () => {
+      try {
+        const response = await fetch('/api/admin/price-change-periods/select');
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.success && data.data?.periods) {
+            setPriceChangePeriods(data.data.periods);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching price change periods:', error);
+      }
+    };
+
+    fetchPriceChangePeriods();
+  }, []);
 
   const getStockMasterNames = () => {
     if (!Array.isArray(stock.stock_master_ids)) {
@@ -40,6 +66,13 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
       return 'No subsectors assigned';
     }
     return stock.subsectors.map(subsector => subsector.name).join(', ');
+  };
+
+  const getPriceChangePeriodName = () => {
+    if (!stock.price_change_period_id) return '12 Months';
+    
+    const period = priceChangePeriods.find(p => p.id === stock.price_change_period_id);
+    return period ? period.period : '12 Months';
   };
 
   const handleGoToStep = (step: number) => {
@@ -157,6 +190,15 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
                   {(stock.price_change || 0) >= 0 ? '+' : ''}₹{Math.abs(stock.price_change || 0)}
                 </div>
               </div>
+              <div>
+                <label className="block text-xs font-medium text-themeTeal mb-1">Price Change Period</label>
+                <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
+                  {getPriceChangePeriodName()}
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-themeTeal mb-1">Percentage Change</label>
                 <div className={`w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md font-semibold ${

@@ -18,6 +18,7 @@ export interface StockData {
   min_units: number;
   lot_size: number;
   stock_master_ids: number[];
+  price_change_period_id: number;
   icon: File | null;
 }
 
@@ -36,6 +37,10 @@ export interface ExistingStockData extends Omit<StockData, 'icon'> {
     id: number;
     name: string;
   }>;
+  price_change_period?: {
+    id: number;
+    period: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

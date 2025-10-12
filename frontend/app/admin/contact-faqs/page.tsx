@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Eye, EyeOff, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
 
 interface ContactFaq {
   id: number;

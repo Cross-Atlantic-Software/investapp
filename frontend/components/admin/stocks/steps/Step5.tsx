@@ -1,6 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { StepProps, ImageUploadState } from '../types';
+
+interface PriceChangePeriod {
+  id: number;
+  period: string;
+}
 
 const Step5: React.FC<StepProps & { 
   stockMasters?: Array<{ id: number; name: string; }>;
@@ -14,6 +19,27 @@ const Step5: React.FC<StepProps & {
   subsectors = [],
   imageUpload
 }) => {
+  const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
+
+  useEffect(() => {
+    const fetchPriceChangePeriods = async () => {
+      try {
+        const response = await fetch('/api/admin/price-change-periods/select');
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.success && data.data?.periods) {
+            setPriceChangePeriods(data.data.periods);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching price change periods:', error);
+      }
+    };
+
+    fetchPriceChangePeriods();
+  }, []);
   const getStockMasterNames = () => {
     if (!Array.isArray(formData.stock_master_ids)) {
       return 'No tags selected';
@@ -40,6 +66,14 @@ const Step5: React.FC<StepProps & {
       subsectors.find(subsector => subsector.id === id)?.name
     ).filter(Boolean).join(', ');
   };
+
+  // Memoize the price change period name to ensure it updates when dependencies change
+  const priceChangePeriodName = useMemo(() => {
+    if (!formData.price_change_period_id) return '12 Months';
+    
+    const period = priceChangePeriods.find(p => p.id === formData.price_change_period_id);
+    return period ? period.period : '12 Months';
+  }, [formData.price_change_period_id, priceChangePeriods]);
 
   return (
     <div className="space-y-6">
@@ -97,6 +131,10 @@ const Step5: React.FC<StepProps & {
             <div>
               <span className="font-medium text-gray-700">Price Change:</span>
               <p className="text-gray-600 mt-1">₹{formData.price_change}</p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Price Change Period:</span>
+              <p className="text-gray-600 mt-1">{priceChangePeriodName}</p>
             </div>
             <div>
               <span className="font-medium text-gray-700">Percentage Change:</span>

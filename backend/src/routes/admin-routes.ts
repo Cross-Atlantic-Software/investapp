@@ -38,6 +38,7 @@ import { NotableActivityManagementController } from "../controllers/admin/notabl
 import { ActivityTypeManagementController } from "../controllers/admin/activityTypeManagement";
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
+import { PriceChangePeriodController } from "../controllers/admin/priceChangePeriodController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
@@ -115,6 +116,7 @@ router.use((req, res, next) => {
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
+      req.path.includes('/price-change-periods') ||
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
       req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
@@ -225,6 +227,14 @@ router.get("/stock-masters/:id", stockMasterController.getStockMasterById);
 router.post("/stock-masters", stockMasterController.createStockMaster);
 router.put("/stock-masters/:id", stockMasterController.updateStockMaster);
 router.delete("/stock-masters/:id", stockMasterController.deleteStockMaster);
+
+// Price Change Period Management Routes
+router.get("/price-change-periods", PriceChangePeriodController.getAllPriceChangePeriods);
+router.get("/price-change-periods/select", PriceChangePeriodController.getPriceChangePeriodsForSelect);
+router.get("/price-change-periods/:id", PriceChangePeriodController.getPriceChangePeriodById);
+router.post("/price-change-periods", PriceChangePeriodController.createPriceChangePeriod);
+router.put("/price-change-periods/:id", PriceChangePeriodController.updatePriceChangePeriod);
+router.delete("/price-change-periods/:id", PriceChangePeriodController.deletePriceChangePeriod);
 
 // Sector Management Routes
 router.get("/sectors", SectorManagementController.getAllSectors);

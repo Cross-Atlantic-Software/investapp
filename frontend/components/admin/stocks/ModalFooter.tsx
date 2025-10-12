@@ -54,8 +54,13 @@ const ModalFooter: React.FC<ModalFooterProps> = ({
           </button>
         ) : (
           <button
-            type="submit"
-            form={isEditMode ? "edit-stock-form" : "stock-form"}
+            type="button"
+            onClick={() => {
+              const form = document.getElementById(isEditMode ? "edit-stock-form" : "stock-form") as HTMLFormElement;
+              if (form) {
+                form.requestSubmit();
+              }
+            }}
             className="px-5 py-2 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition duration-200 font-medium cursor-pointer"
           >
             {isEditMode ? 'Update Stock' : 'Add Stock'}

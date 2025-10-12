@@ -1024,4 +1024,199 @@ router.post("/create-kyc-applications-table", async (req, res) => {
     }
   });
 
+  // Create price_change_period table and add column to products
+  router.post("/create-price-change-period-table", async (req, res) => {
+    try {
+      await sequelizePromise;
+      
+      // Check if price_change_period table already exists
+      const [tableResults] = await db.sequelize.query(`
+        SELECT TABLE_NAME 
+        FROM INFORMATION_SCHEMA.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'price_change_period'
+      `);
+
+      if (tableResults.length === 0) {
+        // Create price_change_period table
+        await db.sequelize.query(`
+          CREATE TABLE price_change_period (
+            id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+            period VARCHAR(100) NOT NULL UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+          )
+        `);
+
+        // Insert default periods
+        await db.sequelize.query(`
+          INSERT INTO price_change_period (period) VALUES 
+          ('1 Month'),
+          ('3 Months'),
+          ('6 Months'),
+          ('12 Months'),
+          ('2 Years'),
+          ('3 Years'),
+          ('5 Years')
+        `);
+
+        console.log("✅ Created price_change_period table with default periods");
+      } else {
+        console.log("✅ price_change_period table already exists");
+      }
+
+      // Check if price_change_period_id column already exists in products table
+      const [columnResults] = await db.sequelize.query(`
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'products' 
+        AND COLUMN_NAME = 'price_change_period_id'
+      `);
+
+      if (columnResults.length === 0) {
+        // Add price_change_period_id column to products table
+        await db.sequelize.query(`
+          ALTER TABLE products 
+          ADD COLUMN price_change_period_id INT 
+          DEFAULT 4
+          AFTER stock_master_ids
+        `);
+
+        console.log("✅ Added price_change_period_id column to products table");
+      } else {
+        console.log("✅ price_change_period_id column already exists in products table");
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully created price_change_period table and added column to products"
+      });
+    } catch (error) {
+      console.error("Error creating price_change_period table:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to create price_change_period table",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Insert default price change periods
+  router.post("/insert-default-price-change-periods", async (req, res) => {
+    try {
+      await sequelizePromise;
+      
+      // Check if periods already exist
+      const [existingPeriods] = await db.sequelize.query(`
+        SELECT COUNT(*) as count FROM price_change_period
+      `);
+
+      if ((existingPeriods[0] as any).count > 0) {
+        return res.status(200).json({
+          success: true,
+          message: "Default price change periods already exist"
+        });
+      }
+
+      // Insert default periods
+      await db.sequelize.query(`
+        INSERT INTO price_change_period (period, created_at, updated_at) VALUES 
+        ('1 Month', NOW(), NOW()),
+        ('3 Months', NOW(), NOW()),
+        ('6 Months', NOW(), NOW()),
+        ('12 Months', NOW(), NOW()),
+        ('2 Years', NOW(), NOW()),
+        ('3 Years', NOW(), NOW()),
+        ('5 Years', NOW(), NOW())
+      `);
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully inserted default price change periods"
+      });
+    } catch (error) {
+      console.error("Error inserting default price change periods:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to insert default price change periods",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Fix price_change_period_id column to use IDs instead of names
+  router.post("/fix-price-change-period-ids", async (req, res) => {
+    try {
+      await sequelizePromise;
+      
+      // Check if column exists and is VARCHAR (needs fixing)
+      const [columnResults] = await db.sequelize.query(`
+        SELECT DATA_TYPE 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'products' 
+        AND COLUMN_NAME = 'price_change_period_id'
+      `);
+
+      if (columnResults.length === 0) {
+        return res.status(200).json({
+          success: true,
+          message: "price_change_period_id column does not exist"
+        });
+      }
+
+      const columnType = (columnResults[0] as any).DATA_TYPE;
+      
+      if (columnType === 'varchar') {
+        // Column exists but is VARCHAR, need to convert to INT
+        console.log("Converting price_change_period_id from VARCHAR to INT...");
+        
+        // First, update existing data to use IDs instead of names
+        await db.sequelize.query(`
+          UPDATE products 
+          SET price_change_period_id = CASE 
+            WHEN price_change_period_id = '1 Month' THEN 1
+            WHEN price_change_period_id = '3 Months' THEN 2
+            WHEN price_change_period_id = '6 Months' THEN 3
+            WHEN price_change_period_id = '12 Months' THEN 4
+            WHEN price_change_period_id = '2 Years' THEN 5
+            WHEN price_change_period_id = '3 Years' THEN 6
+            WHEN price_change_period_id = '5 Years' THEN 7
+            ELSE 4
+          END
+        `);
+
+        // Drop the old column
+        await db.sequelize.query(`
+          ALTER TABLE products DROP COLUMN price_change_period_id
+        `);
+
+        // Add the new INT column
+        await db.sequelize.query(`
+          ALTER TABLE products 
+          ADD COLUMN price_change_period_id INT 
+          DEFAULT 4
+          AFTER stock_master_ids
+        `);
+
+        console.log("✅ Successfully converted price_change_period_id to INT");
+      } else {
+        console.log("✅ price_change_period_id column is already INT type");
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully fixed price_change_period_id column"
+      });
+    } catch (error) {
+      console.error("Error fixing price_change_period_id column:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to fix price_change_period_id column",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
 export default router;

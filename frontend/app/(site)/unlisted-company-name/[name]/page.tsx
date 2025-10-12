@@ -22,6 +22,8 @@ interface StockData {
   logo: string;
   price_per_share: number;
   price_change: number;
+  price_change_period_id?: number;
+  price_change_period?: string;
   valuation: string;
   teaser: string;
   short_description: string;
@@ -105,6 +107,8 @@ export default function UnlistedCompanyDetails() {
             logo: stock.logo,
             price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
             price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
+            price_change_period_id: stock.price_change_period_id || 4,
+            price_change_period: stock.price_change_period || '12 Months',
             valuation: stock.valuation || '0',
             teaser: stock.teaser,
             short_description: stock.short_description,
@@ -166,6 +170,7 @@ export default function UnlistedCompanyDetails() {
         company={stockData.company_name}
         investPrice={stockData.price_per_share}
         changeAbs={stockData.price_change}
+        priceChangePeriod={stockData.price_change_period}
         updatedAt={stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "Recently"}
         tags={stockData.stock_masters?.map(master => master.name) || []}
         founded={stockData.founded}

@@ -56,6 +56,7 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
     min_units: stock.min_units || 1,
     lot_size: stock.lot_size || 1,
     stock_master_ids: Array.isArray(stock.stock_master_ids) ? stock.stock_master_ids : [],
+    price_change_period_id: stock.price_change_period_id || 4,
     icon: null as File | null,
   });
 
@@ -81,9 +82,20 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
   // Input change handler
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Convert numeric fields to numbers
+    const numericFields = [
+      'price_change', 'price_per_share', 'percentage_change', 'founded', 
+      'min_units', 'lot_size', 'price_change_period_id'
+    ];
+    
+    const processedValue = numericFields.includes(name) ? 
+      (name === 'price_change_period_id' ? parseInt(value, 10) : parseFloat(value)) : 
+      value;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
   }, []);
 

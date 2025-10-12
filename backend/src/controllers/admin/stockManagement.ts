@@ -27,7 +27,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'headquarters', 'min_units', 'lot_size', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 'price_change_period_id', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -98,12 +98,22 @@ export const getAllStocks = async (req: Request, res: Response) => {
           where: { id: { [Op.in]: subsectorIds } },
           attributes: ['id', 'name', 'sector_id'],
         });
+
+        // Fetch price change period name
+        let priceChangePeriod = null;
+        if (stock.price_change_period_id) {
+          const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+          priceChangePeriod = period ? period.period : '12 Months';
+        } else {
+          priceChangePeriod = '12 Months';
+        }
         
         return {
           ...stock.toJSON(),
           stock_masters: stockMasters,
           sectors: sectors,
           subsectors: subsectors,
+          price_change_period: priceChangePeriod
         };
       })
     );
@@ -205,11 +215,21 @@ export const getStockById = async (req: Request, res: Response) => {
       attributes: ['id', 'name', 'sector_id'],
     });
 
+    // Fetch price change period name
+    let priceChangePeriod = null;
+    if (stock.price_change_period_id) {
+      const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+      priceChangePeriod = period ? period.period : '12 Months';
+    } else {
+      priceChangePeriod = '12 Months';
+    }
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
       sectors: sectors,
       subsectors: subsectors,
+      price_change_period: priceChangePeriod
     };
 
     return res.status(200).json({
@@ -302,11 +322,21 @@ export const getStockByName = async (req: Request, res: Response) => {
       attributes: ['id', 'name', 'sector_id'],
     });
 
+    // Fetch price change period name
+    let priceChangePeriod = null;
+    if (stock.price_change_period_id) {
+      const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+      priceChangePeriod = period ? period.period : '12 Months';
+    } else {
+      priceChangePeriod = '12 Months';
+    }
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
       sectors: sectors,
       subsectors: subsectors,
+      price_change_period: priceChangePeriod
     };
 
     return res.status(200).json({
@@ -355,7 +385,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       headquarters,
       min_units,
       lot_size,
-      stock_master_ids
+      stock_master_ids,
+      price_change_period_id
     } = cleanedBody;
 
     // Validate required fields
@@ -411,7 +442,8 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       headquarters: headquarters || 'N/A',
       min_units: min_units || 1,
       lot_size: lot_size || 1,
-      stock_master_ids: stock_master_ids || '[]'
+      stock_master_ids: stock_master_ids || '[]',
+      price_change_period_id: price_change_period_id || 4
     });
 
     return res.status(201).json({
@@ -457,7 +489,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       headquarters,
       min_units,
       lot_size,
-      stock_master_ids
+      stock_master_ids,
+      price_change_period_id
     } = req.body;
 
     const stock = await db.Product.findByPk(id);
@@ -508,7 +541,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       headquarters: headquarters !== undefined ? headquarters : stock.headquarters,
       min_units: min_units !== undefined ? min_units : stock.min_units,
       lot_size: lot_size !== undefined ? lot_size : stock.lot_size,
-      stock_master_ids: stock_master_ids !== undefined ? stock_master_ids : stock.stock_master_ids
+      stock_master_ids: stock_master_ids !== undefined ? stock_master_ids : stock.stock_master_ids,
+      price_change_period_id: price_change_period_id !== undefined ? price_change_period_id : stock.price_change_period_id
     });
 
     return res.status(200).json({

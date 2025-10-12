@@ -14,6 +14,7 @@ import {
 } from '@/components/admin/stock-master';
 import { SectorManagementModal } from '@/components/admin/sector-management';
 import MethodologyModal from '@/components/admin/methodology/MethodologyModal';
+import PriceChangePeriodManagement from '@/components/admin/PriceChangePeriodManagement';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
@@ -25,6 +26,7 @@ export default function StocksPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showStockMasterModal, setShowStockMasterModal] = useState(false);
   const [showSectorModal, setShowSectorModal] = useState(false);
+  const [showPriceChangePeriodModal, setShowPriceChangePeriodModal] = useState(false);
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -243,6 +245,7 @@ export default function StocksPage() {
     company_name: string;
     logo: string;
     price_change: number;
+    price_change_period_id: number;
     teaser: string;
     short_description: string;
     analysis: string;
@@ -270,6 +273,7 @@ export default function StocksPage() {
       formData.append('logo', stockData.logo);
       formData.append('price_per_share', stockData.price_per_share.toString());
       formData.append('price_change', stockData.price_change.toString());
+      formData.append('price_change_period_id', stockData.price_change_period_id.toString());
       formData.append('teaser', stockData.teaser);
       formData.append('short_description', stockData.short_description);
       formData.append('analysis', stockData.analysis);
@@ -477,6 +481,13 @@ export default function StocksPage() {
                 Manage Sectors
               </button>
               <button
+                onClick={() => setShowPriceChangePeriodModal(true)}
+                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
+              >
+                <Plus width={16} height={16} className='mr-1'/>
+                Manage Price Change Periods
+              </button>
+              <button
                 onClick={() => setShowMethodologyModal(true)}
                 className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
               >
@@ -522,6 +533,7 @@ export default function StocksPage() {
               company_name: stockData.company_name,
               logo: stockData.logo,
               price_change: stockData.price_change,
+              price_change_period_id: stockData.price_change_period_id,
               teaser: stockData.teaser,
               short_description: stockData.short_description,
               analysis: stockData.analysis,
@@ -564,6 +576,23 @@ export default function StocksPage() {
         isOpen={showMethodologyModal}
         onClose={() => setShowMethodologyModal(false)}
       />
+
+      {showPriceChangePeriodModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-themeTeal">Price Change Period Management</h2>
+              <button
+                onClick={() => setShowPriceChangePeriodModal(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            <PriceChangePeriodManagement />
+          </div>
+        </div>
+      )}
 
       {/* Notifications */}
       <NotificationContainer

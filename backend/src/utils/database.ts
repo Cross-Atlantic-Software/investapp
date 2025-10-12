@@ -12,6 +12,7 @@ import NotableActivity, { initializeNotableActivityModel } from "../Models/Notab
 import ActivityType, { initializeActivityTypeModel } from "../Models/ActivityType";
 import BulkDeals, { initializeBulkDealsModel } from "../Models/BulkDeals";
 import StockMaster, { initializeStockMasterModel } from "../Models/StockMaster";
+import PriceChangePeriod, { initializePriceChangePeriodModel } from "../Models/PriceChangePeriod";
 import StockScorecardModel, { initializeStockScorecardModel } from "../Models/StockScorecard";
 import StockInvestmentRationaleModel, { initializeStockInvestmentRationaleModel } from "../Models/StockInvestmentRationale";
 import StockPerformancePdfModel, { initializeStockPerformancePdfModel } from "../Models/StockPerformancePdf";
@@ -104,6 +105,9 @@ async function initializeSequelize() {
   
   // Initialize Stock Master model
   initializeStockMasterModel(sequelize);
+  
+  // Initialize Price Change Period model
+  initializePriceChangePeriodModel(sequelize);
   
   // Initialize Stock Scorecard model
   initializeStockScorecardModel(sequelize);
@@ -326,6 +330,12 @@ export const db = {
       throw new Error('StockMaster model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockMaster;
+  },
+  get PriceChangePeriod() {
+    if (!PriceChangePeriod) {
+      throw new Error('PriceChangePeriod model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return PriceChangePeriod;
   },
   get StockScorecard() {
     if (!StockScorecardModel) {

@@ -59,15 +59,23 @@ export class StockDisplayController {
         limit: 20 // Limit to 20 stocks for home display
       });
 
-      res.json({
-        success: true,
-        data: {
-          stocks: stocks.map((stock: any) => ({
+      // Fetch price change periods for all stocks
+      const stocksWithPeriods = await Promise.all(
+        stocks.map(async (stock: any) => {
+          let priceChangePeriod = '12 Months';
+          if (stock.price_change_period_id) {
+            const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+            priceChangePeriod = period ? period.period : '12 Months';
+          }
+
+          return {
             id: stock.id,
             company_name: stock.company_name,
             logo: stock.logo,
             price: stock.price_per_share,
             price_change: stock.price_change,
+            price_change_period_id: stock.price_change_period_id,
+            price_change_period: priceChangePeriod,
             teaser: stock.teaser,
             short_description: stock.short_description,
             analysis: stock.analysis,
@@ -79,7 +87,14 @@ export class StockDisplayController {
             percentage_change: stock.percentage_change,
             createdAt: stock.createdAt,
             updatedAt: stock.updatedAt
-          })),
+          };
+        })
+      );
+
+      res.json({
+        success: true,
+        data: {
+          stocks: stocksWithPeriods,
           count: stocks.length
         }
       });

@@ -21,6 +21,8 @@ export default function Invest() {
     logo: string;
     price_per_share: number;
     price_change: number;
+    price_change_period_id?: number;
+    price_change_period?: string;
     valuation: string;
     teaser: string;
     short_description: string;
@@ -34,6 +36,8 @@ export default function Invest() {
       logo: stock.logo,
       price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
       price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
+      price_change_period_id: stock.price_change_period_id || 4, // Default to 12 Months
+      price_change_period: stock.price_change_period, // Optional for backward compatibility
       valuation: stock.valuation || '0',
       teaser: stock.teaser,
       short_description: stock.short_description,

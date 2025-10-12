@@ -696,7 +696,7 @@ export default function SiteUsersPage() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-themeTeal mb-2">No Items Found</h3>
-                  <p className="text-sm text-themeTealLight">This user hasn't added any items to their wishlist yet.</p>
+                  <p className="text-sm text-themeTealLight">This user hasn&apos;t added any items to their wishlist yet.</p>
                 </div>
               ) : (
                 <div className="space-y-3">
@@ -774,7 +774,7 @@ export default function SiteUsersPage() {
                     </svg>
                   </div>
                   <h3 className="text-lg font-semibold text-themeTeal mb-2">No Buy Requests</h3>
-                  <p className="text-sm text-themeTealLight">This user hasn't made any buy requests yet.</p>
+                  <p className="text-sm text-themeTealLight">This user hasn&apos;t made any buy requests yet.</p>
                 </div>
               ) : (
                 <div className="space-y-3">

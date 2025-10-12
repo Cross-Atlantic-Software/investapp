@@ -19,6 +19,8 @@ const validateAllSteps = (formData: StockData): boolean => {
     formData.valuation.toString().trim() !== '' &&
     formData.price_change !== null && 
     formData.price_change !== undefined &&
+    formData.price_change_period_id &&
+    formData.price_change_period_id > 0 &&
     formData.price_per_share && 
     formData.price_per_share > 0 &&
     formData.percentage_change !== null && 
@@ -57,6 +59,8 @@ export const validateStepForEdit = (step: number, formData: StockData): boolean 
         formData.valuation.toString().trim() !== '' &&
         formData.price_change !== null && 
         formData.price_change !== undefined &&
+        formData.price_change_period_id &&
+        formData.price_change_period_id > 0 &&
         formData.price_per_share && 
         formData.price_per_share > 0 &&
         formData.percentage_change !== null && 
@@ -107,6 +111,8 @@ export const validateStep = (step: number, formData: StockData): boolean => {
         formData.valuation.toString().trim() !== '' &&
         formData.price_change !== null && 
         formData.price_change !== undefined &&
+        formData.price_change_period_id &&
+        formData.price_change_period_id > 0 &&
         formData.price_per_share && 
         formData.price_per_share > 0 &&
         formData.percentage_change !== null && 
