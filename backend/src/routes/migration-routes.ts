@@ -919,4 +919,60 @@ router.post("/create-kyc-applications-table", async (req, res) => {
     }
   });
 
+  // Create contact_faq table
+  router.post("/create-contact-faq-table", async (req, res) => {
+    try {
+      await sequelizePromise;
+      
+      // Check if table already exists
+      const [results] = await db.sequelize.query(`
+        SELECT TABLE_NAME 
+        FROM INFORMATION_SCHEMA.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'contact_faq'
+      `);
+
+      if (results.length > 0) {
+        return res.status(200).json({
+          success: true,
+          message: "contact_faq table already exists"
+        });
+      }
+
+      // Create contact_faq table
+      await db.sequelize.query(`
+        CREATE TABLE contact_faq (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          question TEXT NOT NULL,
+          answer TEXT NOT NULL,
+          display_order INT NOT NULL DEFAULT 0,
+          is_active BOOLEAN NOT NULL DEFAULT TRUE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+      `);
+
+      // Create indexes
+      await db.sequelize.query(`
+        CREATE INDEX idx_contact_faq_display_order ON contact_faq(display_order)
+      `);
+
+      await db.sequelize.query(`
+        CREATE INDEX idx_contact_faq_is_active ON contact_faq(is_active)
+      `);
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully created contact_faq table"
+      });
+    } catch (error) {
+      console.error("Error creating contact_faq table:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to create contact_faq table",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
 export default router;

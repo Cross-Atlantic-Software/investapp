@@ -24,6 +24,7 @@ import ShareholderType, { initializeShareholderTypeModel } from "../Models/Share
 import Wishlist, { initializeWishlistModel } from "../Models/Wishlist";
 import StockNewsSection, { initializeStockNewsSectionModel } from "../Models/StockNewsSection";
 import { StockFaq, initializeStockFaqModel } from "../Models/StockFaq";
+import ContactFaq, { initializeContactFaqModel } from "../Models/ContactFaq";
 import { FinancialDataCsv, initializeFinancialDataCsvModel } from "../Models/FinancialDataCsv";
 import { Sector, initializeSectorModel } from "../Models/Sector";
 import { Subsector, initializeSubsectorModel } from "../Models/Subsector";
@@ -130,6 +131,7 @@ async function initializeSequelize() {
   // Initialize Stock News Section model
   initializeStockNewsSectionModel(sequelize);
   initializeStockFaqModel(sequelize);
+  initializeContactFaqModel(sequelize);
   
   // Initialize Financial Data CSV model
   initializeFinancialDataCsvModel(sequelize);
@@ -396,6 +398,12 @@ export const db = {
       throw new Error('StockFaq model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockFaq;
+  },
+  get ContactFaq() {
+    if (!ContactFaq) {
+      throw new Error('ContactFaq model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return ContactFaq;
   },
 
   get FinancialDataCsv() {

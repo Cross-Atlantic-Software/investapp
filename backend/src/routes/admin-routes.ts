@@ -51,6 +51,7 @@ import { ShareholderTypeController } from "../controllers/admin/shareholderTypeC
 import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
 import { StockFaqController } from "../controllers/admin/stockFaqController";
 import { SectorManagementController } from "../controllers/admin/sectorManagement";
+import { ContactFaqController } from "../controllers/admin/contactFaqController";
 import { KYCManagementController } from "../controllers/admin/kycManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
@@ -118,7 +119,8 @@ router.use((req, res, next) => {
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
       req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
       req.path.includes('/news-sections') || req.path.includes('/faqs') ||
-      req.path.includes('/sectors') || req.path.includes('/subsectors')) {
+      req.path.includes('/sectors') || req.path.includes('/subsectors') ||
+      req.path.includes('/contact-faqs')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -366,5 +368,13 @@ router.get("/kyc/stats", kycController.getKYCStats);
 router.get("/kyc/:id", kycController.getKYCApplicationById);
 router.put("/kyc/:id/status", kycController.updateKYCStatus);
 router.delete("/kyc/:id", kycController.deleteKYCApplication);
+
+// Contact FAQ Management Routes (Admin only)
+router.get("/contact-faqs", ContactFaqController.getAllContactFaqs);
+router.get("/contact-faqs/:id", ContactFaqController.getFaqById);
+router.post("/contact-faqs", ContactFaqController.createFaq);
+router.put("/contact-faqs/:id", ContactFaqController.updateFaq);
+router.delete("/contact-faqs/:id", ContactFaqController.deleteFaq);
+router.delete("/contact-faqs/bulk-delete", ContactFaqController.bulkDeleteFaqs);
 
 export default router;
