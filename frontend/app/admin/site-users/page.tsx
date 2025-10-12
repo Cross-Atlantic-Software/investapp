@@ -17,6 +17,7 @@ interface SiteUser {
   email_verified: number;
   phone_verified: number;
   country_code: string;
+  buy_request?: string; // JSON string of buy requests
   createdAt: string;
   updatedAt: string;
 }
@@ -39,6 +40,22 @@ interface WishlistModalState {
   userId: number | null;
   userName: string;
   wishlistItems: WishlistItem[];
+  loading: boolean;
+}
+
+interface BuyRequest {
+  stockName: string;
+  quantity: number;
+  price: number;
+  totalAmount: number;
+  timestamp: string;
+}
+
+interface BuyRequestsModalState {
+  isOpen: boolean;
+  userId: number | null;
+  userName: string;
+  buyRequests: BuyRequest[];
   loading: boolean;
 }
 
@@ -74,6 +91,14 @@ export default function SiteUsersPage() {
     userId: null,
     userName: '',
     wishlistItems: [],
+    loading: false,
+  });
+
+  const [buyRequestsModal, setBuyRequestsModal] = useState<BuyRequestsModalState>({
+    isOpen: false,
+    userId: null,
+    userName: '',
+    buyRequests: [],
     loading: false,
   });
 
@@ -248,6 +273,28 @@ export default function SiteUsersPage() {
     }
   };
 
+  const handleViewBuyRequests = (userId: number, buyRequestData?: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    let buyRequests: BuyRequest[] = [];
+    if (buyRequestData) {
+      try {
+        buyRequests = JSON.parse(buyRequestData);
+      } catch (error) {
+        console.error('Error parsing buy requests:', error);
+        buyRequests = [];
+      }
+    }
+
+    setBuyRequestsModal({
+      isOpen: true,
+      userId,
+      userName: `${user.first_name} ${user.last_name}`,
+      buyRequests,
+      loading: false,
+    });
+  };
 
   const handleDeleteUser = async (userId: number) => {
     setUserToDelete(userId);
@@ -403,6 +450,9 @@ export default function SiteUsersPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                         Wishlist
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                        Buy Requests
+                      </th>
                       <SortableHeader
                         field="createdAt"
                         sortBy={sortBy}
@@ -460,6 +510,29 @@ export default function SiteUsersPage() {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                             </svg>
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => handleViewBuyRequests(user.id, user.buy_request)}
+                            className="p-2 bg-green-100 text-green-600 hover:bg-green-200 rounded transition duration-300 cursor-pointer flex items-center"
+                            title="View Buy Requests"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            {user.buy_request && (() => {
+                              try {
+                                const buyRequests = JSON.parse(user.buy_request);
+                                return buyRequests.length > 0 ? (
+                                  <span className="ml-1 text-xs font-bold">
+                                    {buyRequests.length}
+                                  </span>
+                                ) : null;
+                              } catch (error) {
+                                return null;
+                              }
+                            })()}
                           </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
@@ -654,6 +727,79 @@ export default function SiteUsersPage() {
                       </div>
                       <div className="text-sm text-themeTealLight">
                         Added {new Date(item.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Buy Requests Modal */}
+      {buyRequestsModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-xl font-bold text-themeTealWhite">
+                      {buyRequestsModal.userName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-themeTealWhite">Buy Requests</h3>
+                    <p className="text-sm text-themeTealLighter">View buy requests for {buyRequestsModal.userName}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setBuyRequestsModal(prev => ({ ...prev, isOpen: false }))}
+                  className="text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto">
+              {buyRequestsModal.buyRequests.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="h-16 w-16 rounded-full bg-themeTealLighter flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-themeTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-themeTeal mb-2">No Buy Requests</h3>
+                  <p className="text-sm text-themeTealLight">This user hasn't made any buy requests yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {buyRequestsModal.buyRequests.map((request, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border border-themeTealLighter rounded-lg bg-themeTealWhite hover:bg-white transition-colors duration-200">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-themeTealLighter rounded-lg flex items-center justify-center">
+                          <span className="text-themeTeal text-xs font-semibold">
+                            {request.stockName.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-themeTeal">{request.stockName}</h3>
+                          <p className="text-sm text-themeTealLight">
+                            Quantity: {request.quantity} | Price: ₹{request.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-themeTeal">
+                          ₹{request.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-xs text-themeTealLight">
+                          {new Date(request.timestamp).toLocaleDateString()}
+                        </div>
                       </div>
                     </div>
                   ))}

@@ -975,4 +975,53 @@ router.post("/create-kyc-applications-table", async (req, res) => {
     }
   });
 
+  // Add buy_request column to users table
+  router.post("/add-buy-request-to-users", async (req, res) => {
+    try {
+      await sequelizePromise;
+      
+      // Check if column already exists
+      const [results] = await db.sequelize.query(`
+        SELECT COLUMN_NAME 
+        FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'users' 
+        AND COLUMN_NAME = 'buy_request'
+      `);
+
+      if (results.length > 0) {
+        return res.status(200).json({
+          success: true,
+          message: "buy_request column already exists in users table"
+        });
+      }
+
+      // Add buy_request column
+      await db.sequelize.query(`
+        ALTER TABLE users 
+        ADD COLUMN buy_request TEXT 
+        AFTER phone_verified
+      `);
+
+      // Update existing users to have empty array
+      await db.sequelize.query(`
+        UPDATE users 
+        SET buy_request = '[]' 
+        WHERE buy_request IS NULL
+      `);
+
+      res.status(200).json({
+        success: true,
+        message: "Successfully added buy_request column to users table"
+      });
+    } catch (error) {
+      console.error("Error adding buy_request column:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to add buy_request column",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
 export default router;
