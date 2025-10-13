@@ -1177,6 +1177,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       formData.append('founded', stockData.founded?.toString() || '');
       formData.append('sector_ids', JSON.stringify(stockData.sector_ids || []));
       formData.append('subsector_ids', JSON.stringify(stockData.subsector_ids || []));
+      formData.append('theme_ids', JSON.stringify(stockData.theme_ids || []));
       formData.append('headquarters', stockData.headquarters || '');
       formData.append('min_units', stockData.min_units?.toString() || '');
       formData.append('lot_size', stockData.lot_size?.toString() || '');

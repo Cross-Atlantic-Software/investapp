@@ -16,12 +16,14 @@ const Step5: React.FC<StepProps & {
   stockMasters?: Array<{ id: number; name: string; }>;
   sectors?: Array<{ id: number; name: string; }>;
   subsectors?: Array<{ id: number; name: string; sector_id: number; }>;
+  themes?: Array<{ id: number; name: string; }>;
   imageUpload: ImageUploadState;
 }> = ({ 
   formData, 
   stockMasters = [],
   sectors = [],
   subsectors = [],
+  themes = [],
   imageUpload
 }) => {
   const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
@@ -88,6 +90,15 @@ const Step5: React.FC<StepProps & {
     ).filter(Boolean).join(', ');
   };
 
+  const getThemeNames = () => {
+    if (!Array.isArray(formData.theme_ids)) {
+      return 'No themes selected';
+    }
+    return formData.theme_ids.map(id => 
+      themes.find(theme => theme.id === id)?.name
+    ).filter(Boolean).join(', ');
+  };
+
   // Memoize the price change period name to ensure it updates when dependencies change
   const priceChangePeriodName = useMemo(() => {
     if (!formData.price_change_period_id) return 'No period selected';
@@ -126,6 +137,10 @@ const Step5: React.FC<StepProps & {
             <div>
               <span className="font-medium text-gray-700">Subsectors:</span>
               <p className="text-gray-600 mt-1">{getSubsectorNames()}</p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Themes:</span>
+              <p className="text-gray-600 mt-1">{getThemeNames()}</p>
             </div>
             <div className="md:col-span-2">
               <span className="font-medium text-gray-700">Headquarters:</span>
