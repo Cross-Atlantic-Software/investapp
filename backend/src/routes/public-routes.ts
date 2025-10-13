@@ -24,6 +24,9 @@ const notableActivityController = new NotableActivityManagementController();
 router.get("/stocks/banner-display", StockDisplayController.getBannerDisplayStocks);
 router.get("/stocks/home-display", StockDisplayController.getHomeDisplayStocks);
 
+// Public Stocks Route (for invest page)
+router.get("/stocks", StockDisplayController.getPublicStocks);
+
 // Private Market News Routes
 router.get("/private-market-news", privateMarketNewsController.getAllPrivateMarketNews);
 

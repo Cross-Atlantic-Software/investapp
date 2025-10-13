@@ -8,7 +8,7 @@ import jwtAuthMiddleware from "../utils/middleware";
 const router = express.Router();
 
 // Public stock routes (no authentication required)
-router.get("/", getAllStocks);
+// Note: Main /stocks route is handled by public-routes.ts
 router.get("/home-display", getHomeDisplayStocks);
 router.get("/banner-display", getBannerDisplayStocks);
 router.get("/name/:name", getStockByName);

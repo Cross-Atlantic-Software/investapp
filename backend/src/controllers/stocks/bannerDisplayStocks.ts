@@ -21,18 +21,19 @@ export const getBannerDisplayStocks = async (req: Request, res: Response) => {
         'bannerDisplay', 'valuation_id', 'price_per_share', 
         'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 
         'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
-        'createdAt', 'updatedAt'
+        'price_change_period_id', 'createdAt', 'updatedAt'
       ]
     });
 
     console.log(`Found ${stocks.length} stocks with bannerDisplay='yes'`);
 
-    // Fetch valuation names for all stocks
+    // Fetch valuation names and price change periods for all stocks
     const stocksWithValuations = await Promise.all(
       stocks.map(async (stock: any) => {
         let valuationName = 'N/A';
+        let priceChangePeriod = 'No period assigned';
         
-        console.log(`Processing stock: ${stock.company_name}, valuation_id: ${stock.valuation_id}`);
+        console.log(`Processing stock: ${stock.company_name}, valuation_id: ${stock.valuation_id}, price_change_period_id: ${stock.price_change_period_id}`);
         
         // Check if valuation_id exists (for backward compatibility)
         if (stock.valuation_id) {
@@ -51,10 +52,28 @@ export const getBannerDisplayStocks = async (req: Request, res: Response) => {
           valuationName = stock.valuation || 'N/A'; // Fallback to old field
         }
 
+        // Fetch price change period name
+        if (stock.price_change_period_id) {
+          try {
+            console.log(`Looking up price change period for ID: ${stock.price_change_period_id}`);
+            const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+            console.log(`Found price change period:`, period);
+            priceChangePeriod = period ? period.period : 'Period not found';
+            console.log(`Stock ${stock.company_name}: price_change_period_id=${stock.price_change_period_id}, period=${priceChangePeriod}`);
+          } catch (error) {
+            console.log(`Error fetching price change period for ${stock.company_name}:`, error instanceof Error ? error.message : 'Unknown error');
+            priceChangePeriod = 'No period assigned';
+          }
+        } else {
+          console.log(`Stock ${stock.company_name}: No price_change_period_id found`);
+          priceChangePeriod = 'No period assigned';
+        }
+
         return {
           id: stock.id,
           company_name: stock.company_name,
           logo: stock.logo,
+          price_change: stock.price_change,
           price_per_share: stock.price_per_share,
           percentage_change: stock.percentage_change,
           valuation: valuationName,
@@ -72,6 +91,7 @@ export const getBannerDisplayStocks = async (req: Request, res: Response) => {
           lot_size: stock.lot_size,
           stock_master_ids: stock.stock_master_ids,
           price_change_period_id: stock.price_change_period_id,
+          price_change_period: priceChangePeriod,
           createdAt: stock.createdAt,
           updatedAt: stock.updatedAt
         };

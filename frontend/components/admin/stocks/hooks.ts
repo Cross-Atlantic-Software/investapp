@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { StockData, ImageUploadState } from './types';
 
 export const useStockFormState = () => {
@@ -23,7 +23,7 @@ export const useStockFormState = () => {
     min_units: 1,
     lot_size: 1,
     stock_master_ids: [],
-    price_change_period_id: 4, // ID for '12 Months'
+    price_change_period_id: undefined, // No default - let user select
     icon: null as File | null,
   });
 
@@ -101,7 +101,7 @@ export const useStepNavigation = (totalSteps: number) => {
     }
   }, [currentStep]);
 
-  const goToStep = useCallback((step: number, validateStep: (step: number) => boolean) => {
+  const goToStep = useCallback((step: number, _validateStep: (step: number) => boolean) => {
     if (step >= 1 && step <= totalSteps) {
       if (isStepCompleted(step) || step === currentStep) {
         setCurrentStep(step);

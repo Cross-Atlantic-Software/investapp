@@ -282,7 +282,7 @@ export default function StocksPage() {
     company_name: string;
     logo: string;
     price_change: number;
-    price_change_period_id: number;
+    price_change_period_id: number | undefined;
     teaser: string;
     short_description: string;
     analysis: string;
@@ -310,7 +310,7 @@ export default function StocksPage() {
       formData.append('logo', stockData.logo);
       formData.append('price_per_share', stockData.price_per_share.toString());
       formData.append('price_change', stockData.price_change.toString());
-      formData.append('price_change_period_id', stockData.price_change_period_id.toString());
+      formData.append('price_change_period_id', stockData.price_change_period_id?.toString() || '');
       formData.append('teaser', stockData.teaser);
       formData.append('short_description', stockData.short_description);
       formData.append('analysis', stockData.analysis);

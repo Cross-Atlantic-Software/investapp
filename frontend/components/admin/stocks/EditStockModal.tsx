@@ -71,7 +71,7 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
     min_units: stock.min_units || 1,
     lot_size: stock.lot_size || 1,
     stock_master_ids: parsedStockMasterIds,
-    price_change_period_id: stock.price_change_period_id || 4,
+    price_change_period_id: stock.price_change_period_id ?? undefined,
     icon: null as File | null,
   });
 

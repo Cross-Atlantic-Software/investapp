@@ -41,14 +41,14 @@ export default function Invest() {
     theme_ids?: string;
     createdAt?: Date;
     updatedAt?: Date;
-  }): ProductItem & { valuation_id?: number; sector_ids?: string; subsector_ids?: string; theme_ids?: string } => {
+  }): ProductItem & { valuation_id?: number; sector_ids?: string; subsector_ids?: string; theme_ids?: string; price_change_period_id?: number | undefined } => {
     return {
       id: stock.id.toString(),
       company_name: stock.company_name,
       logo: stock.logo,
       price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
       price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
-      price_change_period_id: stock.price_change_period_id || 4, // Default to 12 Months
+      price_change_period_id: stock.price_change_period_id || undefined, // No default
       price_change_period: stock.price_change_period, // Optional for backward compatibility
       valuation: stock.valuation || 'N/A',
       valuation_id: stock.valuation_id,

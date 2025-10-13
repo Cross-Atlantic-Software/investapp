@@ -45,7 +45,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
         'bannerDisplay', 'valuation_id', 'price_per_share', 
         'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 
         'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
-        'createdAt', 'updatedAt'
+        'price_change_period_id', 'createdAt', 'updatedAt'
       ]
     });
 
@@ -114,9 +114,9 @@ export const getAllStocks = async (req: Request, res: Response) => {
         let priceChangePeriod = null;
         if (stock.price_change_period_id) {
           const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
-          priceChangePeriod = period ? period.period : '12 Months';
+          priceChangePeriod = period ? period.period : 'Period not found';
         } else {
-          priceChangePeriod = '12 Months';
+          priceChangePeriod = 'No period assigned';
         }
 
         // Fetch theme names
@@ -258,9 +258,9 @@ export const getStockById = async (req: Request, res: Response) => {
     let priceChangePeriod = null;
     if (stock.price_change_period_id) {
       const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
-      priceChangePeriod = period ? period.period : '12 Months';
+      priceChangePeriod = period ? period.period : 'Period not found';
     } else {
-      priceChangePeriod = '12 Months';
+      priceChangePeriod = 'No period assigned';
     }
 
     // Fetch valuation name
@@ -375,9 +375,9 @@ export const getStockByName = async (req: Request, res: Response) => {
     let priceChangePeriod = null;
     if (stock.price_change_period_id) {
       const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
-      priceChangePeriod = period ? period.period : '12 Months';
+      priceChangePeriod = period ? period.period : 'Period not found';
     } else {
-      priceChangePeriod = '12 Months';
+      priceChangePeriod = 'No period assigned';
     }
 
     // Fetch valuation name
@@ -506,7 +506,7 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       min_units: min_units || 1,
       lot_size: lot_size || 1,
       stock_master_ids: stock_master_ids || '[]',
-      price_change_period_id: price_change_period_id || 4
+      price_change_period_id: price_change_period_id || null
     });
 
     return res.status(201).json({
