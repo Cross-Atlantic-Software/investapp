@@ -46,7 +46,7 @@ export default function ManageDropdown({ options, label = 'Manage' }: ManageDrop
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 m-0">
           {options.map((option, index) => {
             const IconComponent = option.icon;
             return (

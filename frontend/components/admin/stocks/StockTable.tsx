@@ -1376,7 +1376,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
                   {/* Valuation Column */}
                   <td className="px-4 py-3 text-left">
-                    <div className="text-xs font-medium text-gray-900">
+                    <div className="text-xs font-medium text-themeTeal">
                       {typeof stock.valuation === 'string' ? stock.valuation : stock.valuation?.valuation_name || 'N/A'}
                     </div>
                   </td>
@@ -1409,7 +1409,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       {/* Module Management Sidebar Button - Available for all users */}
                         <button
                         onClick={() => handleOpenSidebar(stock)}
-                        className="p-2 text-white bg-themeTeal rounded-lg transition-all duration-200 hover:bg-themeTealLight cursor-pointer shadow-sm hover:shadow-md"
+                        className="p-2 text-white bg-themeTealLight rounded transition-all duration-200 hover:bg-themeTealWhite hover:text-themeTealLight cursor-pointer"
                           title="Manage Stock Modules"
                         >
                           <MoreVertical width={16} height={16}/>
@@ -1495,7 +1495,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Financial Data Upload Modal */}
       {financialDataModal.isOpen && financialDataModal.stock && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t-lg">
@@ -1527,14 +1527,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Scorecard Management Modal */}
       {scorecardModal.isOpen && scorecardModal.stock && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-semibold text-white">Manage Scorecards</h3>
-                  <p className="text-white/80 text-sm">{scorecardModal.stock.company_name}</p>
+                  <p className="text-themeTealLighter text-sm">{scorecardModal.stock.company_name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -1553,28 +1553,28 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             {/* Modal Content */}
             <div className="flex-1 overflow-y-auto p-6">
               {/* Add New Scorecard Form */}
-              <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-                <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <div className="mb-6 p-4 border border-themeTealLighter rounded">
+                <h4 className="text-md font-medium text-themeTeal mb-4 flex items-center">
                   <Plus className="w-5 h-5 mr-2" />
                   {editingScorecard ? 'Edit Scorecard' : 'Add New Scorecard'}
                 </h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Category <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={scorecardFormData.category || ''}
                       onChange={(e) => setScorecardFormData({...scorecardFormData, category: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="e.g., Financial Health, Market Position"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Score Value (0-10) <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -1584,19 +1584,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       step="0.1"
                       value={scorecardFormData.score_value || ''}
                       onChange={(e) => setScorecardFormData({...scorecardFormData, score_value: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="8.5"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Risk Tag <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={scorecardFormData.score_tag || ''}
                       onChange={(e) => setScorecardFormData({...scorecardFormData, score_tag: e.target.value as 'Low Risk' | 'Medium Risk' | 'High Risk'})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                     >
                       <option value="">Select Risk Level</option>
                       <option value="Low Risk">Low Risk</option>
@@ -1606,14 +1606,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                   
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Analysis <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       rows={4}
                       value={scorecardFormData.analysis || ''}
                       onChange={(e) => setScorecardFormData({...scorecardFormData, analysis: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="Detailed analysis of this category..."
                     />
                   </div>
@@ -1626,7 +1626,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         setEditingScorecard(null);
                         setScorecardFormData({});
                       }}
-                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
+                      className="buttonStyleLight"
                     >
                       Cancel
                     </button>
@@ -1634,7 +1634,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   <button
                     onClick={editingScorecard ? handleUpdateScorecard : handleCreateScorecard}
                     disabled={!scorecardFormData.category || !scorecardFormData.score_value || !scorecardFormData.score_tag || !scorecardFormData.analysis}
-                    className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTeal/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="buttonStyle"
                   >
                     {editingScorecard ? 'Update Scorecard' : 'Add Scorecard'}
                   </button>
@@ -1643,26 +1643,26 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
               {/* Existing Scorecards */}
               <div>
-                <h4 className="text-lg font-medium text-gray-900 mb-4">Existing Scorecards</h4>
+                <h4 className="text-md font-medium text-themeTeal mb-4">Existing Scorecards</h4>
                 
                 {scorecardLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader />
                   </div>
                 ) : scorecards.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <BarChart3 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <div className="text-center py-8 text-themeTealLighter">
+                    <BarChart3 className="w-12 h-12 mx-auto mb-3 text-themeTealLighter" />
                     <p>No scorecards found for this stock.</p>
                     <p className="text-sm">Add your first scorecard above.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {scorecards.map((scorecard) => (
-                      <div key={scorecard.id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={scorecard.id} className="border border-themeTealLighter rounded p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-2">
-                              <h5 className="font-medium text-gray-900">{scorecard.category}</h5>
+                              <h5 className="font-medium text-themeTeal">{scorecard.category}</h5>
                               <span className={`px-2 py-1 rounded text-xs font-medium ${
                                 scorecard.score_tag === 'Low Risk' ? 'bg-green-100 text-green-800' :
                                 scorecard.score_tag === 'Medium Risk' ? 'bg-yellow-100 text-yellow-800' :
@@ -1670,23 +1670,23 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                               }`}>
                                 {scorecard.score_tag}
                               </span>
-                              <span className="text-sm font-medium text-gray-600">
+                              <span className="text-sm font-medium text-themeTeal">
                                 {scorecard.score_value}/10
                               </span>
                             </div>
-                            <p className="text-sm text-gray-600 line-clamp-2">{scorecard.analysis}</p>
+                            <p className="text-sm text-themeTealLighter line-clamp-2">{scorecard.analysis}</p>
                           </div>
                           <div className="flex items-center space-x-2 ml-4">
                             <button
                               onClick={() => handleEditScorecard(scorecard)}
-                              className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                              className="p-2 text-themeSkyBlue bg-themeSkyBlue/10 hover:bg-themeSkyBlue/20 transition duration-300 rounded"
                               title="Edit Scorecard"
                             >
                               <Edit3 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeleteScorecard(scorecard.id)}
-                              className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                              className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                               title="Delete Scorecard"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -1705,14 +1705,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Investment Rationale Management Modal */}
       {rationaleModal.isOpen && rationaleModal.stock && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-semibold text-white">Manage Investment Rationales</h3>
-                  <p className="text-white/80 text-sm">{rationaleModal.stock.company_name}</p>
+                  <p className="text-themeTealLighter text-sm">{rationaleModal.stock.company_name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -1731,21 +1731,21 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             {/* Modal Content */}
             <div className="flex-1 overflow-y-auto p-6">
               {/* Add New Investment Rationale Form */}
-              <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-                <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <div className="mb-6 p-4 border border-themeTealLighter rounded">
+                <h4 className="text-md font-medium text-themeTeal mb-4 flex items-center">
                   <Plus className="w-5 h-5 mr-2" />
                   {editingRationale ? 'Edit Investment Rationale' : 'Add New Investment Rationale'}
                 </h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Type <span className="text-red-500">*</span>
                     </label>
                     <select
                       value={rationaleFormData.type || ''}
                       onChange={(e) => setRationaleFormData({...rationaleFormData, type: e.target.value as 'pros' | 'risks'})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                     >
                       <option value="">Select Type</option>
                       <option value="pros">Pros (Investment Rationale)</option>
@@ -1754,7 +1754,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Order Index
                     </label>
                     <input
@@ -1762,39 +1762,39 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       min="0"
                       value={rationaleFormData.order_index || ''}
                       onChange={(e) => setRationaleFormData({...rationaleFormData, order_index: parseInt(e.target.value) || 0})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="0"
                     />
                   </div>
                   
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Title <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={rationaleFormData.title || ''}
                       onChange={(e) => setRationaleFormData({...rationaleFormData, title: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="e.g., Strong Fundamentals, Market Volatility"
                     />
                   </div>
                   
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Description <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       rows={4}
                       value={rationaleFormData.description || ''}
                       onChange={(e) => setRationaleFormData({...rationaleFormData, description: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="Detailed description of this rationale..."
                     />
                   </div>
                   
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Icon
                     </label>
                     <div className="flex items-center space-x-4">
@@ -1807,7 +1807,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             setRationaleIconFile(file);
                           }
                         }}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-themeTeal file:text-white hover:file:bg-themeTeal/80"
+                        className="input-theme"
                       />
                       {rationaleFormData.icon && (
                         <div className="flex items-center space-x-2">
@@ -1822,7 +1822,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">Upload an icon for this rationale (optional)</p>
+                    <p className="text-xs text-themeTealLighter mt-1">Upload an icon for this rationale (optional)</p>
                   </div>
                 </div>
                 
@@ -1833,7 +1833,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         setEditingRationale(null);
                         setRationaleFormData({});
                       }}
-                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
+                      className="buttonStyleLight"
                     >
                       Cancel
                     </button>
@@ -1841,7 +1841,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   <button
                     onClick={editingRationale ? handleUpdateRationale : handleCreateRationale}
                     disabled={!rationaleFormData.type || !rationaleFormData.title || !rationaleFormData.description}
-                    className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTeal/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="buttonStyle"
                   >
                     {editingRationale ? 'Update Rationale' : 'Add Rationale'}
                   </button>
@@ -1850,15 +1850,15 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
               {/* Existing Investment Rationales */}
               <div>
-                <h4 className="text-lg font-medium text-gray-900 mb-4">Existing Investment Rationales</h4>
+                <h4 className="text-md font-medium text-themeTeal mb-4">Existing Investment Rationales</h4>
                 
                 {rationaleLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <Loader />
                   </div>
                 ) : (rationales.pros.length === 0 && rationales.risks.length === 0) ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <FileText className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <div className="text-center py-8 text-themeTealLighter">
+                    <FileText className="w-12 h-12 mx-auto mb-3 text-themeTealLighter" />
                     <p>No investment rationales found for this stock.</p>
                     <p className="text-sm">Add your first rationale above.</p>
                   </div>
@@ -1873,7 +1873,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         </h5>
                         <div className="space-y-3">
                           {rationales.pros.map((rationale) => (
-                            <div key={rationale.id} className="border border-gray-200 rounded-lg p-4">
+                            <div key={rationale.id} className="border border-themeTealLighter rounded p-4">
                               <div className="flex items-center justify-between">
                                 <div className="flex-1">
                                   <div className="flex items-center space-x-3 mb-2">
@@ -1886,27 +1886,27 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                         className="w-6 h-6 rounded object-cover"
                                       />
                                     )}
-                                    <h6 className="font-medium text-gray-900">{rationale.title}</h6>
+                                    <h6 className="font-medium text-themeTeal">{rationale.title}</h6>
                                     <span className="px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800">
                                       PROS
                                     </span>
-                                    <span className="text-sm text-gray-500">
+                                    <span className="text-sm text-themeTealLighter">
                                       Order: {rationale.order_index}
                                     </span>
                                   </div>
-                                  <p className="text-sm text-gray-600 line-clamp-2">{rationale.description}</p>
+                                  <p className="text-sm text-themeTealLight line-clamp-2">{rationale.description}</p>
                                 </div>
                                 <div className="flex items-center space-x-2 ml-4">
                                   <button
                                     onClick={() => handleEditRationale(rationale)}
-                                    className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                                    className="p-2 text-themeSkyBlue bg-themeSkyBlue/10 hover:bg-themeSkyBlue/20 transition duration-300 rounded"
                                     title="Edit Rationale"
                                   >
                                     <Edit3 className="w-4 h-4" />
                                   </button>
                                   <button
                                     onClick={() => handleDeleteRationale(rationale.id)}
-                                    className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                                    className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                                     title="Delete Rationale"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -1941,27 +1941,27 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                         className="w-6 h-6 rounded object-cover"
                                       />
                                     )}
-                                    <h6 className="font-medium text-gray-900">{rationale.title}</h6>
+                                    <h6 className="font-medium text-themeTeal">{rationale.title}</h6>
                                     <span className="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
                                       RISKS
                                     </span>
-                                    <span className="text-sm text-gray-500">
+                                    <span className="text-sm text-themeTealLighter">
                                       Order: {rationale.order_index}
                                     </span>
                                   </div>
-                                  <p className="text-sm text-gray-600 line-clamp-2">{rationale.description}</p>
+                                  <p className="text-sm text-themeTealLight line-clamp-2">{rationale.description}</p>
                                 </div>
                                 <div className="flex items-center space-x-2 ml-4">
                                   <button
                                     onClick={() => handleEditRationale(rationale)}
-                                    className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                                    className="p-2 text-themeSkyBlue bg-themeSkyBlue/10 hover:bg-themeSkyBlue/20 transition duration-300 rounded"
                                     title="Edit Rationale"
                                   >
                                     <Edit3 className="w-4 h-4" />
                                   </button>
                                   <button
                                     onClick={() => handleDeleteRationale(rationale.id)}
-                                    className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                                    className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                                     title="Delete Rationale"
                                   >
                                     <Trash2 className="w-4 h-4" />
@@ -1983,14 +1983,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Performance PDF Management Modal */}
       {pdfModal.isOpen && pdfModal.stock && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-white">Manage Performance PDFs</h3>
-                  <p className="text-white/80 text-sm">{pdfModal.stock.company_name}</p>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Performance PDFs</h3>
+                  <p className="text-themeTealLighter text-sm">{pdfModal.stock.company_name}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -2010,28 +2010,28 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             {/* Modal Content */}
             <div className="flex-1 overflow-y-auto p-6">
               {/* Upload New PDF Form */}
-              <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-                <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+              <div className="mb-6 p-4 border border-themeTealLighter rounded">
+                <h4 className="text-md font-medium text-themeTeal mb-4 flex items-center">
                   <Upload className="w-5 h-5 mr-2" />
                   {editingPdf ? 'Edit Performance PDF' : 'Upload New Performance PDF'}
                 </h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Title <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={pdfFormData.title || ''}
                       onChange={(e) => setPdfFormData({...pdfFormData, title: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="e.g., Q3 2024 Performance Report"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Order Index
                     </label>
                     <input
@@ -2039,36 +2039,36 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       min="0"
                       value={pdfFormData.order_index || ''}
                       onChange={(e) => setPdfFormData({...pdfFormData, order_index: parseInt(e.target.value) || 0})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="0"
                     />
                   </div>
                   
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm text-themeTealLight mb-1">
                       Description
                     </label>
                     <textarea
                       rows={3}
                       value={pdfFormData.description || ''}
                       onChange={(e) => setPdfFormData({...pdfFormData, description: e.target.value})}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="Brief description of this PDF document..."
                     />
                   </div>
                   
                   {!editingPdf && (
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm text-themeTealLight mb-1">
                         PDF File <span className="text-red-500">*</span>
                       </label>
                       <input
                         type="file"
                         accept=".pdf"
                         onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                        className="input-theme"
                       />
-                      <p className="text-xs text-gray-500 mt-1">Maximum file size: 10MB</p>
+                      <p className="text-xs text-themeTealLighter mt-1">Maximum file size: 10MB</p>
                     </div>
                   )}
                   
@@ -2079,9 +2079,9 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                           type="checkbox"
                           checked={pdfFormData.is_active || false}
                           onChange={(e) => setPdfFormData({...pdfFormData, is_active: e.target.checked})}
-                          className="rounded border-gray-300 text-themeTeal focus:ring-themeTeal"
+                          className="rounded border-themeTealLight text-themeTeal focus:ring-themeTeal"
                         />
-                        <span className="text-sm text-gray-700">Active (visible to users)</span>
+                        <span className="text-sm text-themeTealLighter">Active (visible to users)</span>
                       </label>
                     </div>
                   )}
@@ -2094,7 +2094,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         setEditingPdf(null);
                         setPdfFormData({});
                       }}
-                      className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
+                      className="buttonStyleLight"
                     >
                       Cancel
                     </button>
@@ -2102,7 +2102,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   <button
                     onClick={editingPdf ? handleUpdatePdf : handleCreatePdf}
                     disabled={!pdfFormData.title || (!editingPdf && !pdfFile)}
-                    className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTeal/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="buttonStyle"
                   >
                     {editingPdf ? 'Update PDF' : 'Upload PDF'}
                   </button>
@@ -2112,8 +2112,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
               {/* Existing PDFs */}
               <div>
                 <div className="mb-4">
-                  <h4 className="text-lg font-medium text-gray-900">Existing Performance PDFs</h4>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <h4 className="text-md font-medium text-themeTeal">Existing Performance PDFs</h4>
+                  <p className="text-sm text-themeTealLighter mt-1">
                     All PDFs are shown below. Only one PDF can be active at a time. 
                     Click &quot;✓ Set Active&quot; to switch which PDF is displayed on the frontend.
                   </p>
@@ -2124,32 +2124,32 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <Loader />
                   </div>
                 ) : pdfs.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Upload className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                  <div className="text-center py-8 text-themeTealLighter">
+                    <Upload className="w-12 h-12 mx-auto mb-3 text-themeTealLighter" />
                     <p>No performance PDFs found for this stock.</p>
                     <p className="text-sm">Upload your first PDF above.</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {pdfs.map((pdf) => (
-                      <div key={pdf.id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={pdf.id} className="border border-themeTealLighter rounded-lg p-4">
                         <div className="flex items-center justify-between">
                           <div className="flex-1">
                             <div className="flex items-center space-x-3 mb-2">
-                              <h5 className="font-medium text-gray-900">{pdf.title}</h5>
+                              <h5 className="font-medium text-themeTeal">{pdf.title}</h5>
                               <span className={`px-2 py-1 rounded text-xs font-medium ${
                                 pdf.is_active ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'
                               }`}>
                                 {pdf.is_active ? '✓ ACTIVE' : '✗ INACTIVE'}
                               </span>
-                              <span className="text-sm text-gray-500">
+                              <span className="text-sm text-themeTealLighter">
                                 Order: {pdf.order_index}
                               </span>
                             </div>
                             {pdf.description && (
-                              <p className="text-sm text-gray-600 line-clamp-2 mb-2">{pdf.description}</p>
+                              <p className="text-sm text-themeTealLight line-clamp-2 mb-2">{pdf.description}</p>
                             )}
-                            <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            <div className="flex items-center space-x-4 text-xs text-themeTealLighter">
                               <span>{pdf.file_name}</span>
                               <span>{formatFileSize(pdf.file_size)}</span>
                               <span>{pdf.page_count} pages</span>
@@ -2169,7 +2169,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                               href={pdf.pdf_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"
+                              className="p-2 text-themeSkyBlue bg-themeSkyBlue/10 hover:bg-themeSkyBlue/20 transition duration-300 rounded"
                               title="View PDF"
                             >
                               <Eye className="w-4 h-4" />
@@ -2179,21 +2179,21 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 setReplacingPdf(pdf);
                                 setPdfFile(null);
                               }}
-                              className="p-2 text-orange-600 bg-orange-50 rounded hover:bg-orange-100"
+                              className="p-2 text-orange-600 bg-orange-50 rounded hover:bg-orange-100 transition duration-300"
                               title="Replace PDF File"
                             >
                               <Upload className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleEditPdf(pdf)}
-                              className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                              className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20 transition duration-300"
                               title="Edit PDF"
                             >
                               <Edit3 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeletePdf(pdf.id)}
-                              className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                              className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                               title="Delete PDF"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -2212,14 +2212,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Replace PDF Modal */}
       {replacingPdf && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
             {/* Modal Header */}
-            <div className="bg-orange-500 px-6 py-4 rounded-t">
+            <div className="bg-themeSkyBlue px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-white">Replace PDF File</h3>
-                  <p className="text-white/80 text-sm">{replacingPdf.title}</p>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Replace PDF File</h3>
+                  <p className="text-themeTealWhite text-sm">{replacingPdf.title}</p>
                 </div>
                 <button
                   onClick={() => {
@@ -2236,17 +2236,17 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             {/* Modal Content */}
             <div className="p-6">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm text-themeTealLight mb-2">
                   Select New PDF File
                 </label>
                 <input
                   type="file"
                   accept=".pdf"
                   onChange={(e) => setPdfFile(e.target.files?.[0] || null)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className="input-theme"
                 />
                 {pdfFile && (
-                  <p className="text-sm text-gray-600 mt-2">
+                  <p className="text-sm text-themeTealLighter mt-2">
                     Selected: {pdfFile.name} ({(pdfFile.size / 1024 / 1024).toFixed(2)} MB)
                   </p>
                 )}
@@ -2258,14 +2258,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setReplacingPdf(null);
                     setPdfFile(null);
                   }}
-                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
+                  className="buttonStyleLight"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleReplacePdf}
                   disabled={!pdfFile}
-                  className="px-4 py-2 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="buttonStyle"
                 >
                   Replace PDF
                 </button>
@@ -2277,13 +2277,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Sector Outlook Management Modal */}
       {sectorOutlookModal.isOpen && sectorOutlookModal.stock && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-white">Manage Sector Outlook</h3>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Sector Outlook</h3>
                   <p className="text-themeTealWhite text-sm">{sectorOutlookModal.stock.company_name}</p>
                 </div>
                 <button
@@ -2309,14 +2309,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 <div className="space-y-6">
                   {/* Description */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm text-themeTealLight mb-2">
                       Sector Outlook Description
                     </label>
                     <textarea
                       value={sectorOutlookFormData.description}
                       onChange={(e) => setSectorOutlookFormData(prev => ({ ...prev, description: e.target.value }))}
                       rows={4}
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                      className="input-theme"
                       placeholder="Enter sector outlook description..."
                     />
                   </div>
@@ -2324,22 +2324,22 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   {/* Accordion Items */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="text-lg font-medium text-gray-900">Accordion Items</h4>
+                      <h4 className="text-md font-medium text-themeTeal">Accordion Items</h4>
                       <button
                         onClick={addAccordionItem}
-                        className="px-3 py-1 bg-themeTeal text-white rounded text-sm hover:bg-themeTealLight"
+                        className="px-3 py-1 bg-themeTeal text-white rounded text-sm hover:bg-themeSkyBlue transition duration-300"
                       >
                         Add Item
                       </button>
                     </div>
 
                     {sectorOutlookFormData.accordions.map((item, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg p-4 mb-4">
+                      <div key={index} className="border border-themeTealLighter rounded p-4 mb-4">
                         <div className="flex items-center justify-between mb-3">
-                          <h5 className="font-medium text-gray-900">Item {index + 1}</h5>
+                          <h5 className="font-medium text-themeTeal">Item {index + 1}</h5>
                           <button
                             onClick={() => removeAccordionItem(index)}
-                            className="text-red-600 hover:text-red-800"
+                            className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -2347,27 +2347,27 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         
                         <div className="space-y-3">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm text-themeTealLight mb-1">
                               Title
                             </label>
                             <input
                               type="text"
                               value={item.title}
                               onChange={(e) => updateAccordionItem(index, 'title', e.target.value)}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                              className="input-theme"
                               placeholder="Enter accordion title..."
                             />
                           </div>
                           
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                            <label className="block text-sm text-themeTealLight mb-1">
                               Analysis
                             </label>
                             <textarea
                               value={item.analysis}
                               onChange={(e) => updateAccordionItem(index, 'analysis', e.target.value)}
                               rows={3}
-                              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                              className="input-theme"
                               placeholder="Enter analysis content..."
                             />
                           </div>
@@ -2376,7 +2376,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     ))}
 
                     {sectorOutlookFormData.accordions.length === 0 && (
-                      <div className="text-center py-8 text-gray-500">
+                      <div className="text-center py-8 text-themeTealLighter">
                         <p>No accordion items added yet. Click &quot;Add Item&quot; to start.</p>
                       </div>
                     )}
@@ -2386,7 +2386,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   <div className="flex justify-end">
                     <button
                       onClick={handleSaveSectorOutlook}
-                      className="px-6 py-2 bg-themeTeal text-white rounded-md hover:bg-themeTealLight"
+                      className="buttonStyle"
                     >
                       Save Sector Outlook
                     </button>
@@ -2400,7 +2400,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Sector Insights PDF Management Modal */}
       {sectorInsightsPdfModal.isOpen && sectorInsightsPdfModal.stock && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -2433,64 +2433,64 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
               ) : (
                 <div className="space-y-6">
                 {/* Upload New PDF */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <h4 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                <div className="border border-themeTealLighter rounded p-4">
+                  <h4 className="text-md font-medium text-themeTeal mb-4 flex items-center">
                     <Upload className="w-5 h-5 mr-2" />
                     {editingSectorInsightsPdf ? 'Edit Sector Insights PDF' : 'Upload New Sector Insights PDF'}
                   </h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm text-themeTealLight mb-1">
                           Title <span className="text-red-500">*</span>
                         </label>
                         <input
                           type="text"
                           value={sectorInsightsPdfFormData.title || ''}
                           onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, title: e.target.value }))}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                          className="input-theme"
                           placeholder="e.g., Q3 2024 Sector Insights Report"
                         />
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm text-themeTealLight mb-1">
                           Order Index
                         </label>
                         <input
                           type="number"
                           value={sectorInsightsPdfFormData.order_index || 0}
                           onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, order_index: parseInt(e.target.value) || 0 }))}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                          className="input-theme"
                           placeholder="0"
                         />
                       </div>
                       
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm text-themeTealLight mb-1">
                           Description
                         </label>
                         <textarea
                           value={sectorInsightsPdfFormData.description || ''}
                           onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, description: e.target.value }))}
                           rows={3}
-                          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                          className="input-theme"
                           placeholder="Brief description of this PDF document..."
                         />
                       </div>
                       
                       {!editingSectorInsightsPdf && (
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm text-themeTealLight mb-1">
                             PDF File <span className="text-red-500">*</span>
                           </label>
                           <input
                             type="file"
                             accept=".pdf"
                             onChange={(e) => setSectorInsightsPdfFile(e.target.files?.[0] || null)}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                            className="input-theme"
                           />
-                          <p className="text-xs text-gray-500 mt-1">Maximum file size: 10MB</p>
+                          <p className="text-xs text-themeTealLighter mt-1">Maximum file size: 10MB</p>
                         </div>
                       )}
                       
@@ -2516,7 +2516,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             setEditingSectorInsightsPdf(null);
                             setSectorInsightsPdfFormData({});
                           }}
-                          className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
+                          className="buttonStyleLight"
                         >
                           Cancel
                         </button>
@@ -2524,7 +2524,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       <button
                         onClick={editingSectorInsightsPdf ? handleUpdateSectorInsightsPdf : handleUploadSectorInsightsPdf}
                         disabled={!sectorInsightsPdfFormData.title || (!editingSectorInsightsPdf && !sectorInsightsPdfFile)}
-                        className="px-4 py-2 text-sm bg-themeTeal text-white rounded-md hover:bg-themeTealLight disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="buttonStyle"
                       >
                         {editingSectorInsightsPdf ? 'Update PDF' : 'Upload PDF'}
                       </button>
@@ -2534,38 +2534,38 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   {/* Existing PDFs */}
                   <div>
                     <div className="mb-4">
-                      <h4 className="text-lg font-medium text-gray-900">Existing Sector Insights PDFs</h4>
-                      <p className="text-sm text-gray-600 mt-1">
+                      <h4 className="text-lg font-medium text-themeTeal">Existing Sector Insights PDFs</h4>
+                      <p className="text-sm text-themeTealLighter mt-1">
                         All PDFs are shown below. Only one PDF can be active at a time. 
                         Click &quot;✓ Set Active&quot; to switch which PDF is displayed on the frontend.
                       </p>
                     </div>
                     
                     {sectorInsightsPdfs.length === 0 ? (
-                      <div className="text-center py-8 text-gray-500">
+                      <div className="text-center py-8 text-themeTealLighter">
                         <p>No sector insights PDFs uploaded yet.</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
                         {sectorInsightsPdfs.map((pdf) => (
-                          <div key={pdf.id} className="border border-gray-200 rounded-lg p-4">
+                          <div key={pdf.id} className="border border-themeTealLighter rounded p-4">
                             <div className="flex items-center justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center space-x-3 mb-2">
-                                  <h5 className="font-medium text-gray-900">{pdf.title}</h5>
+                                  <h5 className="font-medium text-themeTeal">{pdf.title}</h5>
                                   <span className={`px-2 py-1 rounded text-xs font-medium ${
                                     pdf.is_active ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-red-100 text-red-800 border border-red-200'
                                   }`}>
                                     {pdf.is_active ? '✓ ACTIVE' : '✗ INACTIVE'}
                                   </span>
-                                  <span className="text-sm text-gray-500">
+                                  <span className="text-sm text-themeTealLighter">
                                     Order: {pdf.order_index}
                                   </span>
                                 </div>
                                 {pdf.description && (
-                                  <p className="text-sm text-gray-600 line-clamp-2 mb-2">{pdf.description}</p>
+                                  <p className="text-sm text-themeTealLight line-clamp-2 mb-2">{pdf.description}</p>
                                 )}
-                                <div className="flex items-center space-x-4 text-xs text-gray-500">
+                                <div className="flex items-center space-x-4 text-xs text-themeTealLighter">
                                   <span>{pdf.file_name}</span>
                                   <span>{formatFileSize(pdf.file_size)}</span>
                                   <span>{pdf.page_count} pages</span>
@@ -2585,7 +2585,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                   href={pdf.pdf_url}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="p-2 text-blue-600 bg-blue-50 rounded hover:bg-blue-100"
+                                  className="p-2 text-themeSkyBlue bg-themeSkyBlue/10 hover:bg-themeSkyBlue/20 transition duration-300 rounded"
                                   title="View PDF"
                                 >
                                   <Eye className="w-4 h-4" />
@@ -2595,21 +2595,21 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                     setReplacingSectorInsightsPdf(pdf);
                                     setSectorInsightsPdfFile(null);
                                   }}
-                                  className="p-2 text-orange-600 bg-orange-50 rounded hover:bg-orange-100"
+                                  className="p-2 text-orange-600 bg-orange-50 rounded hover:bg-orange-100 transition duration-300"
                                   title="Replace PDF File"
                                 >
                                   <Upload className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleEditSectorInsightsPdf(pdf)}
-                                  className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20"
+                                  className="p-2 text-themeTeal bg-themeTeal/10 rounded hover:bg-themeTeal/20 transition duration-300"
                                   title="Edit PDF"
                                 >
                                   <Edit3 className="w-4 h-4" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteSectorInsightsPdf(pdf.id)}
-                                  className="p-2 text-red-600 bg-red-50 rounded hover:bg-red-100"
+                                  className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                                   title="Delete PDF"
                                 >
                                   <Trash2 className="w-4 h-4" />
@@ -2630,7 +2630,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Replace Sector Insights PDF Modal */}
       {replacingSectorInsightsPdf && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
             {/* Modal Header */}
             <div className="bg-orange-500 px-6 py-4 rounded-t">
@@ -2654,7 +2654,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             {/* Modal Content */}
             <div className="p-6">
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm text-themeTealLight mb-2">
                   Select New PDF File
                 </label>
                 <input
@@ -2676,14 +2676,14 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     setReplacingSectorInsightsPdf(null);
                     setSectorInsightsPdfFile(null);
                   }}
-                  className="px-4 py-2 text-sm text-gray-600 border border-gray-300 rounded-md hover:bg-green-50 hover:text-green-700"
+                  className="buttonStyleLight"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleReplaceSectorInsightsPdf}
                   disabled={!sectorInsightsPdfFile}
-                  className="px-4 py-2 text-sm bg-orange-500 text-white rounded-md hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="buttonStyle"
                 >
                   Replace PDF
                 </button>

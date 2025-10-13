@@ -18,7 +18,7 @@ export default function Logo({
   alt = "Logo",
   href,
   width = 140,
-  height = 40,
+  height = 50,
   className,
   priority,
 }: Props) {
@@ -30,7 +30,7 @@ export default function Logo({
       height={height}
       priority={priority}
       className={className}
-      style={{ width: "auto", height: "auto" }}
+      // style={{ width: "100", height: "50" }}
     />
   )
   return href ? <Link href={href} aria-label={alt}>{img}</Link> : img

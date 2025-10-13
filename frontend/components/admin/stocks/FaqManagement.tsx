@@ -256,7 +256,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 m-0">
       <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
         {/* Modal Header */}
         <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -299,7 +299,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                 <div className="flex items-center gap-4">
                   <button
                     onClick={() => setShowAddForm(true)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition-colors duration-200 font-medium"
+                    className="buttonStyle flex gap-2 items-center"
                   >
                     <Plus className="w-4 h-4" />
                     Add FAQ
@@ -308,7 +308,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                   {faqs.length > 0 && (
                     <button
                       onClick={handleBulkDelete}
-                      className="flex items-center gap-2 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 font-medium"
+                      className="buttonStyleRed flex gap-2 items-center"
                     >
                       <Trash2 className="w-4 h-4" />
                       Delete Selected
@@ -323,7 +323,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
 
               {/* Add Form */}
               {showAddForm && (
-                <div className="mb-6 p-6 border border-themeTealLighter rounded-lg bg-themeTealWhite">
+                <div className="mb-6 p-6 border border-themeTealLighter rounded bg-themeTealWhite">
                   <div className="flex justify-between items-center mb-6">
                     <div>
                       <h3 className="text-sm font-semibold text-themeTeal">Add New FAQ</h3>
@@ -339,27 +339,27 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                   
                   <form onSubmit={handleAddFaq} className="space-y-6">
                     <div>
-                      <label className="block text-xs font-medium text-themeTeal mb-1">
+                      <label className="block text-sm text-themeTealLight mb-1">
                         Question *
                       </label>
                       <input
                         type="text"
                         value={formData.question}
                         onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                        className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal transition-colors duration-200"
+                        className="input-theme"
                         required
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-xs font-medium text-themeTeal mb-1">
+                      <label className="block text-sm text-themeTealLight mb-1">
                         Answer *
                       </label>
                       <textarea
                         value={formData.answer}
                         onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
                         rows={3}
-                        className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal transition-colors duration-200"
+                        className="input-theme"
                         required
                       />
                     </div>
@@ -380,7 +380,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                     <div className="flex gap-3 pt-4 border-t border-themeTealLighter">
                       <button
                         type="submit"
-                        className="flex items-center gap-2 px-4 py-2 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition-colors duration-200 font-medium"
+                        className="buttonStyle flex gap-2 items-center"
                       >
                         <Save className="w-4 h-4" />
                         Save FAQ
@@ -388,7 +388,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                       <button
                         type="button"
                         onClick={cancelAdd}
-                        className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium"
+                        className="buttonStyleLight flex gap-2 items-center"
                       >
                         <XCircle className="w-4 h-4" />
                         Cancel
@@ -400,12 +400,12 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
 
               {/* Edit Form */}
               {editingFaq && (
-                <div className="mb-6 p-4 border border-blue-200 rounded-lg bg-blue-50">
+                <div className="mb-6 p-4 border border-themeTealLighter rounded bg-themeTealWhite">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-md font-semibold text-gray-900">Edit FAQ</h3>
+                    <h3 className="text-md font-semibold text-themeTeal">Edit FAQ</h3>
                     <button
                       onClick={cancelEdit}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-themeTealLighter hover:text-themeTeal transition duration-300"
                     >
                       <X className="w-5 h-5" />
                     </button>
@@ -413,43 +413,43 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                   
                   <form onSubmit={handleEditFaq} className="space-y-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm text-themeTealLight mb-1">
                         Question *
                       </label>
                       <input
                         type="text"
                         value={formData.question}
                         onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
+                        className="input-theme"
                         required
                       />
                     </div>
                     
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                      <label className="block text-sm text-themeTealLight mb-1">
                         Answer *
                       </label>
                       <textarea
                         value={formData.answer}
                         onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
                         rows={4}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
+                        className="input-theme"
                         required
                       />
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm text-themeTealLight mb-1">
                           Display Order
                         </label>
                         <input
                           type="number"
                           value={formData.display_order}
                           onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
+                          className="input-theme"
                         />
-                        <p className="text-xs text-gray-500 mt-1">Change order to reorder FAQs (others will shift accordingly)</p>
+                        <p className="text-xs text-themeTealLighter mt-1">Change order to reorder FAQs (others will shift accordingly)</p>
                       </div>
                       
                       <div className="flex items-center">
@@ -469,7 +469,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                     <div className="flex gap-2">
                       <button
                         type="submit"
-                        className="flex items-center gap-2 px-4 py-2 bg-themeTeal text-white rounded-lg hover:bg-themeTeal/90 transition-colors"
+                        className="buttonStyle flex gap-2 items-center"
                       >
                         <Save className="w-4 h-4" />
                         Update FAQ
@@ -477,7 +477,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                       <button
                         type="button"
                         onClick={cancelEdit}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors"
+                        className="buttonStyleLight flex gap-2 items-center"
                       >
                         <XCircle className="w-4 h-4" />
                         Cancel
@@ -496,7 +496,7 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
               ) : (
                 <div className="space-y-4">
                   {faqs.map((faq) => (
-                    <div key={faq.id} className="border border-gray-200 rounded-lg p-4">
+                    <div key={faq.id} className="border border-themeTealLighter rounded p-4">
                       <div className="flex items-start justify-between">
                         <div className="flex items-start gap-3 flex-1">
                           <input
@@ -506,15 +506,15 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                           />
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <ArrowUpDown className="w-4 h-4 text-gray-400" />
-                              <span className="text-xs text-gray-500">Order: {faq.display_order}</span>
+                              <ArrowUpDown className="w-4 h-4 text-themeTealLighter" />
+                              <span className="text-xs text-themeTealLighter">Order: {faq.display_order}</span>
                               <span className={`px-2 py-1 text-xs rounded-full ${faq.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                 {faq.is_active ? 'Active' : 'Inactive'}
                               </span>
                             </div>
-                            <h4 className="font-semibold text-gray-900 mb-2">{faq.question}</h4>
-                            <p className="text-sm text-gray-600 mb-2">{faq.answer}</p>
-                            <p className="text-xs text-gray-400">
+                            <h4 className="font-semibold text-themeTeal mb-2">{faq.question}</h4>
+                            <p className="text-sm text-themeTealLight mb-2">{faq.answer}</p>
+                            <p className="text-xs text-themeTealLighter">
                               Created: {new Date(faq.created_at).toLocaleDateString()}
                             </p>
                           </div>
@@ -522,14 +522,14 @@ export default function FaqManagement({ stockId, stockName, onClose }: FaqManage
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => startEdit(faq)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-themeSkyBlue bg-themeSkyBlue/10 hover:bg-themeSkyBlue/20 transition duration-300 rounded"
                             title="Edit FAQ"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDeleteFaq(faq.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                             title="Delete FAQ"
                           >
                             <Trash2 className="w-4 h-4" />

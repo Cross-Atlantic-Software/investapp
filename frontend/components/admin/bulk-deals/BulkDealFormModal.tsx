@@ -105,7 +105,7 @@ const BulkDealFormModal: React.FC<BulkDealFormModalProps> = ({
                 type="text"
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal"
                 placeholder="Enter value (e.g., ₹50 Cr, 100+ Deals)"
               />
             </div>
@@ -117,7 +117,7 @@ const BulkDealFormModal: React.FC<BulkDealFormModalProps> = ({
               <textarea
                 value={formData.label}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal"
                 rows={3}
                 placeholder="Enter label description..."
               />
@@ -132,7 +132,7 @@ const BulkDealFormModal: React.FC<BulkDealFormModalProps> = ({
                 type="file"
                 accept="image/*"
                 onChange={(e) => setFormData({ ...formData, icon: e.target.files?.[0] || null })}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal"
+                className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal"
               />
               {editingItem?.icon && (
                 <div className="mt-2">
@@ -149,14 +149,14 @@ const BulkDealFormModal: React.FC<BulkDealFormModalProps> = ({
           <div className="flex justify-end gap-2">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-themeTeal border border-themeTealLighter rounded-md hover:bg-themeTealWhite transition duration-300"
+              className="px-4 py-2 text-themeTeal border border-themeTealLighter rounded hover:bg-themeTealWhite transition duration-300"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!formData.value || !formData.label || loading}
-              className="px-4 py-2 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+              className="px-4 py-2 bg-themeTeal text-white rounded hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
             >
               {loading ? 'Processing...' : submitLabel}
             </button>

@@ -529,14 +529,14 @@ export default function ContactFaqsPage() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="bg-themeTeal text-themeTealWhite px-4 py-2 rounded hover:bg-themeSkyBlue transition duration-300"
+                  className="bg-themeTeal text-themeTealWhite px-4 py-2 rounded hover:bg-themeSkyBlue cursor-pointer transition duration-300"
                 >
                   {editingFaq ? 'Update' : 'Create'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-300"
+                  className="bg-themeTealLighter text-themeTealWhite px-4 py-2 rounded hover:bg-themeTeal cursor-pointer transition duration-300"
                 >
                   Cancel
                 </button>
