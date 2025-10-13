@@ -10,6 +10,9 @@ interface MulterRequest extends Request {
 // Get all stocks with pagination
 export const getAllStocks = async (req: Request, res: Response) => {
   try {
+    // Wait for database initialization
+    await db.sequelizePromise;
+    
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
     const offset = (page - 1) * limit;

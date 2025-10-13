@@ -7,6 +7,9 @@ export class SectorManagementController {
   // Get all sectors
   static async getAllSectors(req: Request, res: Response) {
     try {
+      // Wait for database initialization
+      await db.sequelizePromise;
+      
       const sectors = await db.Sector.findAll({
         where: { is_active: true },
         order: [['name', 'ASC']],
@@ -33,6 +36,9 @@ export class SectorManagementController {
   // Get all sectors for select dropdown
   static async getAllSectorsForSelect(req: Request, res: Response) {
     try {
+      // Wait for database initialization
+      await db.sequelizePromise;
+      
       const sectors = await db.Sector.findAll({
         where: { is_active: true },
         order: [['name', 'ASC']],
@@ -282,6 +288,9 @@ export class SectorManagementController {
   // Get all subsectors (for frontend dropdown)
   static async getAllSubsectors(req: Request, res: Response) {
     try {
+      // Wait for database initialization
+      await db.sequelizePromise;
+      
       const subsectors = await db.Subsector.findAll({
         where: { is_active: true },
         order: [['name', 'ASC']],
