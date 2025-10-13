@@ -45,23 +45,26 @@ export class ConnectionManager {
       
       // Test connection with retry logic
       let retryCount = 0;
-      const maxRetries = 3;
+      const maxRetries = 5;
       
       while (retryCount < maxRetries) {
         try {
           await this.sequelize.authenticate();
           console.log('✅ Database connection established successfully');
           break;
-        } catch (authError) {
+        } catch (authError: any) {
           retryCount++;
-          console.warn(`⚠️ Authentication attempt ${retryCount} failed:`, authError);
+          console.warn(`⚠️ Authentication attempt ${retryCount} failed:`, authError.message);
           
           if (retryCount >= maxRetries) {
+            console.error('❌ Max retries reached. Database connection failed.');
             throw authError;
           }
           
-          // Wait before retry
-          await new Promise(resolve => setTimeout(resolve, 2000 * retryCount));
+          // Wait before retry with exponential backoff
+          const waitTime = Math.min(5000 * Math.pow(2, retryCount - 1), 30000);
+          console.log(`⏳ Waiting ${waitTime}ms before retry ${retryCount + 1}/${maxRetries}...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
         }
       }
       
@@ -83,12 +86,19 @@ export class ConnectionManager {
   private async createDatabaseIfNotExists(dbConfig: any): Promise<void> {
     let connection;
     try {
+      if (!this.mysqlPool) {
+        console.log('MySQL pool not available, skipping database creation');
+        return;
+      }
       connection = await this.mysqlPool.getConnection();
       await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\`;`);
       console.log(`Database '${dbConfig.database}' ready`);
     } catch (error) {
       console.error('Error creating database:', error);
-      throw error;
+      // Don't throw error during shutdown
+      if (this.isInitialized) {
+        throw error;
+      }
     } finally {
       if (connection) {
         connection.release();

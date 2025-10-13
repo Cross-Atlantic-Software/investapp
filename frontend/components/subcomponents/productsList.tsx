@@ -15,6 +15,10 @@ export type ProductItem = {
   price_change_period_id: number;
   price_change_period?: string; // Optional for backward compatibility
   valuation: string;
+  valuation_id?: number; // Added for filtering
+  sector_ids?: string; // Added for filtering
+  subsector_ids?: string; // Added for filtering
+  theme_ids?: string; // Added for filtering
   teaser: string;
   short_description: string;
   analysis: string;

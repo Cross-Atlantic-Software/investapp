@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import Product from '../../Models/Product';
 import db from '../../utils/database';
 
 export class StockDisplayController {
@@ -13,7 +12,7 @@ export class StockDisplayController {
       const controller = new StockDisplayController();
       await controller.ensureDbReady();
       
-      const stocks = await Product.findAll({
+      const stocks = await db.Product.findAll({
         where: {
           bannerDisplay: 'yes'
         },
@@ -95,7 +94,7 @@ export class StockDisplayController {
       const controller = new StockDisplayController();
       await controller.ensureDbReady();
       
-      const stocks = await Product.findAll({
+      const stocks = await db.Product.findAll({
         where: {
           homeDisplay: 'yes'
         },

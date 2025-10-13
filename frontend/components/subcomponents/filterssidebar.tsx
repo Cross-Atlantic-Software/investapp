@@ -22,7 +22,11 @@ interface FilterItemProps {
 interface FilterSidebarProps {
   onApplyFilters?: (filters: FilterState) => void;
   onClearFilters?: () => void;
-  stockData?: any[]; // Stock data to filter options based on actual data
+  stockData?: Array<{
+    sector_ids?: string;
+    subsector_ids?: string;
+    theme_ids?: string;
+  }>; // Stock data to filter options based on actual data
 }
 
 export interface FilterState {
@@ -205,7 +209,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
     if (!stockData.length) return sectors;
     
     const usedSectorIds = new Set<number>();
-    stockData.forEach((stock: any) => {
+    stockData.forEach((stock) => {
       if (stock.sector_ids) {
         try {
           const sectorIds = JSON.parse(stock.sector_ids);
@@ -226,7 +230,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
     if (!stockData.length) return subsectors;
     
     const usedSubsectorIds = new Set<number>();
-    stockData.forEach((stock: any) => {
+    stockData.forEach((stock) => {
       if (stock.subsector_ids) {
         try {
           const subsectorIds = JSON.parse(stock.subsector_ids);
@@ -247,7 +251,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
     if (!stockData.length) return themes;
     
     const usedThemeIds = new Set<number>();
-    stockData.forEach((stock: any) => {
+    stockData.forEach((stock) => {
       if (stock.theme_ids) {
         try {
           const themeIds = JSON.parse(stock.theme_ids);
