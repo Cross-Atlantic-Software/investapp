@@ -229,20 +229,20 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
 
   return (
     <div className="space-y-4">
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className="bg-white rounded border border-themeTealLighter p-4">
+        <h3 className="text-lg font-semibold text-themeTeal mb-4">
           Upload Financial Data for {stockName}
         </h3>
         
         {/* Category Selection */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm text-themeTealLight mb-2">
             Financial Statement Category
           </label>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="input-theme"
           >
             {categories.map((category) => (
               <option key={category.value} value={category.value}>
@@ -254,7 +254,7 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
 
         {/* File Upload Area */}
         <div className="mb-4">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm text-themeTealLight mb-2">
             CSV File
           </label>
           
@@ -270,7 +270,7 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
               onDrop={handleDrop}
             >
               <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <p className="text-sm text-gray-600 mb-2">
+              <p className="text-sm text-themeTealLighter mb-2">
                 Drag and drop your CSV file here, or click to select
               </p>
               <input
@@ -282,14 +282,14 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
               />
               <label
                 htmlFor="csv-upload"
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer"
+                className="inline-flex items-center px-4 py-2 border border-themeTealLighter rounded text-sm text-themeTealLight bg-themeTealLighter transition duration-300 text-themeTealWhite cursor-pointer"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Select CSV File
               </label>
             </div>
           ) : (
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center justify-between p-4 bg-themeTealWhite rounded">
               <div className="flex items-center">
                 <FileText className="h-5 w-5 text-gray-400 mr-3" />
                 <div>
@@ -331,8 +331,8 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
 
         {/* Download and Delete Buttons Section - Only show if there's data or checking */}
         {(checkingData || Object.values(dataExists).some(exists => exists)) && (
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <h4 className="text-sm font-medium text-gray-900 mb-3">Manage Existing Data</h4>
+          <div className="mt-6 pt-6 border-t border-themeTealLighter">
+            <h4 className="text-sm font-medium text-themeTeal mb-3">Manage Existing Data</h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {categories.map((category) => (
                 <div key={category.value} className="flex flex-col gap-2">
@@ -342,10 +342,10 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
                       <button
                         onClick={() => handleDownloadCSV(category.value)}
                         disabled={!dataExists[category.value] || uploadStatus.status === 'uploading' || checkingData}
-                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`flex items-center justify-center gap-2 px-3 py-3 rounded text-sm font-medium transition-colors ${
                           dataExists[category.value] && !checkingData
-                            ? 'bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50'
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            ? 'bg-themeTeal text-white hover:bg-themeSkyBlue disabled:opacity-50'
+                            : 'bg-themeTealLighter text-themeTealWhite cursor-not-allowed'
                         }`}
                       >
                         {checkingData ? (
@@ -358,7 +358,7 @@ export default function FinancialDataUpload({ stockId, stockName, onUploadSucces
                       <button
                         onClick={() => handleDeleteCSV(category.value)}
                         disabled={!dataExists[category.value] || uploadStatus.status === 'uploading' || checkingData}
-                        className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        className={`flex items-center justify-center gap-2 px-3 py-3 rounded text-sm font-medium transition-colors ${
                           dataExists[category.value] && !checkingData
                             ? 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
                             : 'bg-gray-100 text-gray-400 cursor-not-allowed'

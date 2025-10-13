@@ -274,13 +274,13 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
       )}
 
       <div className="mb-4">
-        <p className="text-sm text-gray-600 mb-2">
+        <p className="text-sm text-themeTealLight mb-2">
           Upload CSV file with historical price data for <strong>{stockName}</strong>
         </p>
-        <div className="text-xs text-gray-500 bg-gray-50 p-3 rounded-md">
+        <div className="text-xs text-themeTealLighter p-3 bg-themeTealWhite rounded">
           <p className="font-medium mb-1">Expected CSV format:</p>
           <p>Date,Open,High,Low,Close*,Volume</p>
-          <p className="mt-1 text-gray-400">
+          <p className="mt-1 text-themeTealLighter/60">
             *Date should be in Excel serial number format (e.g., 45807)
           </p>
         </div>
@@ -288,14 +288,14 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
 
       {/* Upload Area */}
       <div
-        className={`relative border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+        className={`relative border-2 border-dashed rounded p-8 text-center transition-colors ${
           dragActive
-            ? 'border-blue-400 bg-blue-50'
+            ? 'border-themeSkyBlue'
             : uploadStatus.isError
-            ? 'border-red-300 bg-red-50'
+            ? 'border-red-600 bg-red-50'
             : uploadStatus.isSuccess
-            ? 'border-green-300 bg-green-50'
-            : 'border-gray-300 bg-gray-50'
+            ? 'border-green-600 bg-green-50'
+            : 'border-themeTealLighter'
         }`}
         onDragEnter={handleDrag}
         onDragLeave={handleDrag}
@@ -313,7 +313,7 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
 
         {uploadStatus.isUploading ? (
           <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeSkyBlue mb-2"></div>
             <p className="text-sm text-gray-600">Uploading...</p>
           </div>
         ) : uploadStatus.isSuccess ? (
@@ -357,14 +357,14 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
           <button
             onClick={handleDownloadCSV}
             disabled={!hasPriceData || uploadStatus.isUploading || checkingData}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded transition duration-300 ${
               hasPriceData && !checkingData
-                ? 'bg-gray-600 text-white hover:bg-gray-700 disabled:opacity-50'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-themeTealLight text-white hover:bg-themeTealLighter disabled:opacity-50'
+                : 'bg-themeTealLighter text-themeTealWhite cursor-not-allowed'
             }`}
           >
             {checkingData ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-400"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-themeTealWhite"></div>
             ) : (
               <Download className="w-4 h-4" />
             )}
@@ -373,10 +373,10 @@ export default function CSVUpload({ stockId, stockName, onUploadSuccess, onUploa
           <button
             onClick={handleDeleteCSV}
             disabled={!hasPriceData || uploadStatus.isUploading || checkingData}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2 rounded transition duration-300 ${
               hasPriceData && !checkingData
-                ? 'bg-red-600 text-white hover:bg-red-700 disabled:opacity-50'
-                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-red-600 text-white hover:bg-red-800 disabled:opacity-50'
+                : 'bg-themeTealLighter text-themeTealWhite cursor-not-allowed'
             }`}
           >
             <Trash2 className="w-4 h-4" />

@@ -151,28 +151,28 @@ const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/30 backdrop-blur-md z-40 transition-opacity duration-300"
+        className="fixed inset-0 bg-black/30 backdrop-blur-md z-40 transition-opacity duration-300 m-0"
         onClick={onClose}
       />
 
       {/* Sidebar */}
-      <div className="fixed left-0 top-0 h-screen w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col">
+      <div className="fixed left-0 top-0 h-screen w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col m-0">
         {/* Header */}
-        <div className="h-16 bg-gradient-to-r from-themeTeal to-themeTealLight px-6 flex items-center justify-between border-b border-gray-200">
+        <div className="h-16 bg-themeTeal px-6 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <BarChart3 className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded bg-themeTealWhite backdrop-blur-sm flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-themeTeal" />
             </div>
             <div>
-              <h2 className="text-base font-semibold text-white">Stock Modules</h2>
-              <p className="text-xs text-white/80" style={{ fontSize: '10px' }}>{stock.company_name}</p>
+              <h2 className="text-base font-semibold text-themeTealWhite">Stock Modules</h2>
+              <p className="text-xs text-themeTealLighter" style={{ fontSize: '10px' }}>{stock.company_name}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white/20 rounded-lg transition-colors duration-200"
+            className="p-2 hover:bg-white/20 rounded transition duration-200"
           >
-            <X className="w-5 h-5 text-white" />
+            <X className="w-5 h-5 text-themeTealWhite" />
           </button>
         </div>
 
@@ -185,20 +185,20 @@ const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({
                 <button
                   key={module.id}
                   onClick={() => handleModuleClick(module.id)}
-                  className={`w-full p-4 rounded-xl ${module.bgColor} ${module.hoverBg} border-2 border-transparent hover:border-${module.color}-200 transition-all duration-200 group ${
+                  className={`w-full p-4 rounded ${module.bgColor} ${module.hoverBg} border-2 border-transparent hover:border-${module.color}-200 transition-all duration-200 group ${
                     lastSelectedModule === module.id ? 'ring-2 ring-green-400 ring-opacity-50 bg-green-50' : ''
                   }`}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-center gap-4">
                     {/* Icon */}
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+                    <div className={`flex-shrink-0 w-12 h-12 rounded bg-white flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
                       <Icon className={`w-6 h-6 ${module.iconColor}`} />
                     </div>
 
                     {/* Content */}
                     <div className="flex-1 text-left">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-semibold text-gray-900 group-hover:text-gray-700">
+                      <div className="flex items-end justify-between">
+                        <h3 className="text-xs font-semibold text-themeTeal group-hover:text-themeSkyBlue transition duration-300">
                           {module.title}
                         </h3>
                         <div className="flex items-center gap-2">
@@ -208,7 +208,7 @@ const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({
                           <ChevronRight className={`w-4 h-4 ${module.iconColor} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
                         </div>
                       </div>
-                      <p className="text-xs text-gray-600 mt-1" style={{ fontSize: '10px' }}>
+                      <p className="text-xs text-themeTealLight mt-1" style={{ fontSize: '10px' }}>
                         {module.description}
                       </p>
                     </div>

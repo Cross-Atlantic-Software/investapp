@@ -43,7 +43,7 @@ const ModalFooter: React.FC<ModalFooterProps> = ({
             type="button"
             onClick={onSaveAndNext}
             disabled={isSavingDraft || !validateStep(currentStep)}
-            className="px-5 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition duration-200 disabled:opacity-50 font-medium cursor-pointer flex items-center"
+            className="px-5 py-2 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50 font-medium cursor-pointer flex items-center"
           >
             {isSavingDraft ? (
               <Loader2 className="w-4 h-4 mr-1 animate-spin" />

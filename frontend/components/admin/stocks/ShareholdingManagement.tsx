@@ -502,18 +502,18 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
   const safeTotalPercentage = typeof totalPercentage === 'number' ? totalPercentage : 0;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 m-0">
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
         {/* Header */}
-        <div className="bg-gradient-to-r from-themeTeal to-themeTealLight p-6 text-white">
+        <div className="bg-themeTeal p-6 text-themeTealWhite">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold">Manage Shareholding</h2>
-              <p className="text-sm text-white/80">{stockName}</p>
+              <h2 className="text-lg font-medium">Manage Shareholding</h2>
+              <p className="text-sm text-themeTealLighter">{stockName}</p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              className="p-2 rounded transition-colors"
             >
               <X className="w-6 h-6" />
             </button>
@@ -523,10 +523,10 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
         {/* Content */}
         <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
           {/* Total Percentage Display */}
-          <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+          <div className="mb-6 p-4 bg-themeTealWhite rounded">
             <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold text-gray-700">Total Shareholding:</span>
-              <span className={`text-2xl font-bold ${safeTotalPercentage > 100 ? 'text-red-600' : safeTotalPercentage === 100 ? 'text-green-600' : 'text-orange-600'}`}>
+              <span className="text-lg font-semibold text-themeTeal">Total Shareholding:</span>
+              <span className={`text-2xl font-bold ${safeTotalPercentage > 100 ? 'text-rose-700' : safeTotalPercentage === 100 ? 'text-green-700' : 'text-orange-700'}`}>
                 {safeTotalPercentage.toFixed(2)}%
               </span>
             </div>
@@ -539,7 +539,7 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                 setShowAddForm(true);
                 setShowShareholderTypeManagement(false);
               }}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition-colors"
+              className="buttonStyle flex gap-2 items-center"
             >
               <Plus className="w-4 h-4" />
               Add Shareholding Entry
@@ -549,7 +549,7 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                 setShowShareholderTypeManagement(!showShareholderTypeManagement);
                 setShowAddForm(false);
               }}
-              className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+              className="buttonStyleLight flex gap-2 items-center"
             >
               <Settings className="w-4 h-4" />
               Manage Shareholder Types
@@ -558,12 +558,12 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
 
           {/* Add Form */}
           {showAddForm && (
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div className="mb-6 p-4 border border-themeTealLighter rounded bg-themeTealWhite">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-semibold">Add New Shareholding Entry</h3>
+                <h3 className="text-base font-semibold text-themeTeal">Add New Shareholding Entry</h3>
                 <button
                   onClick={() => setShowAddForm(false)}
-                  className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                  className="p-1 text-themeTeal hover:text-themeSkyBlue transition duration-300"
                   title="Close"
                 >
                   <X className="w-4 h-4" />
@@ -571,20 +571,20 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Holder Name *
+                  <label className="block text-sm text-themeTealLight mb-1">
+                    Holder Name<span className='text-rose-600'>*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.holder_name}
                     onChange={(e) => setFormData({ ...formData, holder_name: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                    className="input-theme"
                     placeholder="e.g., Promoters, Mutual Funds"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Percentage *
+                  <label className="block text-sm text-themeTealLight mb-1">
+                    Percentage<span className='text-rose-600'>*</span>
                   </label>
                   <input
                     type="number"
@@ -593,18 +593,18 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                     step="0.01"
                     value={formData.percentage}
                     onChange={(e) => setFormData({ ...formData, percentage: parseFloat(e.target.value) || 0 })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                    className="input-theme"
                     placeholder="0.00"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm text-themeTealLight mb-1">
                     Shareholder Type
                   </label>
                   <select
                     value={formData.shareholder_type_id || ''}
                     onChange={(e) => setFormData({ ...formData, shareholder_type_id: e.target.value ? parseInt(e.target.value) : undefined })}
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                    className="input-theme"
                   >
                     <option value="">Select Type</option>
                     {activeShareholderTypes.map((type) => (
@@ -619,14 +619,14 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                 <button
                   onClick={handleAdd}
                   disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                  className="buttonStyleSkyBlue flex gap-2 items-center"
                 >
                   <Save className="w-4 h-4" />
                   {saving ? 'Adding...' : 'Add Entry'}
                 </button>
                 <button
                   onClick={cancelEdit}
-                  className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                  className="buttonStyleLight flex gap-2 items-center"
                 >
                   <XCircle className="w-4 h-4" />
                   Cancel
@@ -637,12 +637,12 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
 
           {/* Shareholder Type Management */}
           {showShareholderTypeManagement && (
-            <div className="mb-6 p-4 border border-gray-200 rounded-lg bg-gray-50">
+            <div className="mb-6 p-4 border border-gray-200 rounded bg-gray-50">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-base font-semibold">Manage Shareholder Types</h3>
+                <h3 className="text-base font-semibold text-themeTeal">Manage Shareholder Types</h3>
                 <button
                   onClick={() => setShowShareholderTypeManagement(false)}
-                  className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded"
+                  className="text-themeTealLight hover:text-themeTeal"
                   title="Close"
                 >
                   <X className="w-4 h-4" />
@@ -650,20 +650,20 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
               </div>
               
               {/* Add New Type Form */}
-              <div className="mb-4 p-3 bg-white rounded-lg border">
-                <h4 className="text-sm font-medium mb-2">Add New Type</h4>
+              <div className="mb-4 p-3 bg-white rounded border border-themeTealLighter">
+                <h4 className="text-sm mb-2 text-themeTealLight">Add New Type</h4>
                 <div className="flex gap-2">
                   <input
                     type="text"
                     value={shareholderTypeFormData.name}
                     onChange={(e) => setShareholderTypeFormData({ name: e.target.value })}
-                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                    className="input-theme"
                     placeholder="Enter shareholder type name"
                   />
                   <button
                     onClick={handleAddShareholderType}
                     disabled={saving}
-                    className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                    className="buttonStyleSkyBlue flex gap-2 items-center"
                   >
                     <Plus className="w-4 h-4" />
                     Add
@@ -673,13 +673,13 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
 
               {/* Types List */}
               <div className="space-y-2">
-                <h4 className="text-sm font-medium">Existing Types</h4>
+                <h4 className="text-sm font-medium text-themeTeal">Existing Types</h4>
                 {shareholderTypes.length === 0 ? (
                   <p className="text-sm text-gray-500">No shareholder types found. Please log in as admin to manage types.</p>
                 ) : (
                   <div className="grid grid-cols-1 gap-2">
                     {shareholderTypes.map((type) => (
-                      <div key={type.id} className="flex items-center justify-between p-2 bg-white rounded border">
+                      <div key={type.id} className="flex items-center justify-between p-2 bg-white rounded border border-themeTealLighter">
                         {editingShareholderTypeId === type.id ? (
                           // Edit Mode
                           <div className="flex items-center gap-2 flex-1">
@@ -687,27 +687,27 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                               type="text"
                               value={shareholderTypeFormData.name}
                               onChange={(e) => setShareholderTypeFormData({ name: e.target.value })}
-                              className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded"
+                              className="flex-1 px-2 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300"
                             />
                             <button
                               onClick={() => handleUpdateShareholderType(type.id)}
                               disabled={saving}
-                              className="px-2 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                              className="px-2 py-2 text-sm bg-themeSkyBlue text-white rounded hover:bg-themeTeal disabled:opacity-50 transition duration-300"
                             >
-                              <Save className="w-3 h-3" />
+                              <Save className="w-4 h-4" />
                             </button>
                             <button
                               onClick={cancelEditShareholderType}
-                              className="px-2 py-1 text-xs bg-gray-600 text-white rounded hover:bg-gray-700"
+                              className="px-2 py-2 text-sm bg-themeTealLight text-white rounded hover:bg-themeTealLighter transition duration-300"
                             >
-                              <XCircle className="w-3 h-3" />
+                              <XCircle className="w-4 h-4" />
                             </button>
                           </div>
                         ) : (
                           // Display Mode
                           <>
                             <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium">{type.name}</span>
+                              <span className="text-sm text-themeTeal font-medium">{type.name}</span>
                               <span className={`px-2 py-1 text-xs rounded-full ${
                                 type.is_active 
                                   ? 'bg-green-100 text-green-800' 
@@ -719,7 +719,7 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => startEditShareholderType(type)}
-                                className="p-1 text-blue-600 hover:bg-blue-50 rounded"
+                                className="p-2 text-blue-600 bg-themeSkyBlue/20 rounded text-themeTeal"
                                 title="Edit"
                               >
                                 <Edit2 className="w-3 h-3" />
@@ -727,10 +727,10 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                               <button
                                 onClick={() => handleToggleShareholderTypeStatus(type.id)}
                                 disabled={saving}
-                                className={`p-1 rounded ${
+                                className={`p-2 rounded bg-themeTealLighter/20 ${
                                   type.is_active 
-                                    ? 'text-orange-600 hover:bg-orange-50' 
-                                    : 'text-green-600 hover:bg-green-50'
+                                    ? 'text-orange-600' 
+                                    : 'text-green-600'
                                 }`}
                                 title={type.is_active ? 'Deactivate' : 'Activate'}
                               >
@@ -742,7 +742,7 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                               </button>
                               <button
                                 onClick={() => handleDeleteShareholderType(type.id)}
-                                className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                className="p-2 text-red-700 bg-red-50 rounded"
                                 title="Delete"
                               >
                                 <Trash2 className="w-3 h-3" />
@@ -771,26 +771,26 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
           ) : (
             <div className="space-y-3">
               {shareholdingData.map((item) => (
-                <div key={item.id} className="p-4 border border-gray-200 rounded-lg bg-white">
+                <div key={item.id} className="p-4 border border-themeTealWhite rounded bg-white">
                   {editingId === item.id ? (
                     // Edit Form
                     <div>
-                      <h3 className="text-base font-semibold mb-4">Edit Shareholding Entry</h3>
+                      <h3 className="text-base font-semibold mb-4 text-themeTeal">Edit Shareholding Entry</h3>
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Holder Name *
+                          <label className="block text-sm text-themeTealLight mb-1">
+                            Holder Name<span className='text-rose-600'>*</span>
                           </label>
                           <input
                             type="text"
                             value={formData.holder_name}
                             onChange={(e) => setFormData({ ...formData, holder_name: e.target.value })}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                            className="input-theme"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Percentage *
+                          <label className="block text-sm text-themeTealLight mb-1">
+                            Percentage<span className='text-rose-600'>*</span>
                           </label>
                           <input
                             type="number"
@@ -799,17 +799,17 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                             step="0.01"
                             value={formData.percentage}
                             onChange={(e) => setFormData({ ...formData, percentage: parseFloat(e.target.value) || 0 })}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                            className="input-theme"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm text-themeTealLight mb-1">
                             Shareholder Type
                           </label>
                           <select
                             value={formData.shareholder_type_id || ''}
                             onChange={(e) => setFormData({ ...formData, shareholder_type_id: e.target.value ? parseInt(e.target.value) : undefined })}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                            className="input-theme"
                           >
                             <option value="">Select Type</option>
                             {activeShareholderTypes.map((type) => (
@@ -824,14 +824,14 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                         <button
                           onClick={() => handleUpdate(item.id)}
                           disabled={saving}
-                          className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                          className="buttonStyleSkyBlue flex gap-2 items-center"
                         >
                           <Save className="w-4 h-4" />
                           {saving ? 'Saving...' : 'Save Changes'}
                         </button>
                         <button
                           onClick={cancelEdit}
-                          className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                          className="buttonStyleLight flex gap-2 items-center"
                         >
                           <XCircle className="w-4 h-4" />
                           Cancel
@@ -842,9 +842,9 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                     // Display Mode
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
-                        <h3 className="text-sm font-medium text-gray-900">{item.holder_name}</h3>
+                        <h3 className="text-sm font-medium text-themeTeal">{item.holder_name}</h3>
                         {item.shareholder_type_id && (
-                          <p className="text-xs text-gray-600 mt-1">
+                          <p className="text-xs text-themeTealLighter mt-1">
                             {shareholderTypes.find(type => type.id === item.shareholder_type_id)?.name || 'Unknown Type'}
                           </p>
                         )}
@@ -856,13 +856,13 @@ export default function ShareholdingManagement({ stockId, stockName, onClose }: 
                         <div className="flex gap-2">
                           <button
                             onClick={() => startEdit(item)}
-                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            className="p-2 text-themeSkyBlue bg-themeSkyBlue/10 hover:bg-themeSkyBlue/20 transition duration-300 rounded"
                           >
                             <Edit2 className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => handleDelete(item.id)}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>

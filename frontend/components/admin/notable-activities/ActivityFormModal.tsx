@@ -131,14 +131,14 @@ const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
           <div className="flex justify-end gap-2">
             <button
               onClick={handleClose}
-              className="px-5 py-3 text-themeTealWhite bg-themeTealLighter rounded hover:bg-themeTealLight transition duration-300 cursor-pointer"
+              className="px-5 py-2 text-themeTealWhite bg-themeTealLighter rounded hover:bg-themeTealLight transition duration-300 cursor-pointer"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!formData.description || loading}
-              className="px-5 py-3 bg-themeTeal text-white rounded hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 cursor-pointer"
+              className="px-5 py-2 bg-themeTeal text-white rounded hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 cursor-pointer"
             >
               {loading ? 'Processing...' : submitLabel}
             </button>

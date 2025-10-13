@@ -75,3 +75,27 @@ body {
 @media (min-width: 1536px) {
   .appContainer { max-width: 1400px; }
 }
+
+button{
+  cursor: pointer;
+}
+
+@layer components {
+  .input-theme {
+    @apply w-full px-3 py-2 text-sm border border-themeTealLighter rounded
+           focus:outline-none focus:border-themeTeal transition duration-300
+           text-themeTeal placeholder:text-themeTealLight;
+  }
+  .buttonStyle{
+     @apply px-5 py-2 text-sm bg-themeTeal text-white rounded hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300;
+  }
+  .buttonStyleRed{
+     @apply px-5 py-2 text-sm bg-rose-700 text-white rounded hover:bg-rose-800 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300;
+  }
+  .buttonStyleLight{
+    @apply px-5 py-2 text-sm bg-themeTealLight text-white rounded hover:bg-themeTealLighter disabled:opacity-50 disabled:cursor-not-allowed transition duration-300
+  }
+  .buttonStyleSkyBlue{
+    @apply px-5 py-2 text-sm bg-themeSkyBlue text-white rounded hover:bg-themeTeal disabled:opacity-50 disabled:cursor-not-allowed transition duration-300
+  }
+}

@@ -275,7 +275,7 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4 m-0">
       <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
         {/* Modal Header */}
         <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -293,7 +293,7 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer"
+              className="text-themeTealWhite"
             >
               <X className="w-6 h-6" />
             </button>
@@ -306,7 +306,7 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
           <div className="mb-6">
             <button
               onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-2 px-6 py-3 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition-colors font-medium"
+              className="buttonStyle flex items-center gap-2"
             >
               <Plus className="w-5 h-5" />
               Add News Section
@@ -315,12 +315,12 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
 
           {/* Add Form */}
           {showAddForm && (
-            <div className="mb-6 p-6 border border-themeTealLighter rounded-lg bg-themeTealWhite">
+            <div className="mb-6 p-4 border border-themeTealLighter rounded bg-themeTealWhite">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold text-themeTeal">Add New News Section</h3>
+                <h3 className="text-md font-semibold text-themeTeal">Add New News Section</h3>
                 <button
                   onClick={() => setShowAddForm(false)}
-                  className="p-2 text-themeTealLight hover:text-themeTeal hover:bg-themeTealLighter rounded-lg transition-colors duration-200"
+                  className="text-themeTealLight hover:text-themeTeal transition-colors duration-200"
                   title="Close"
                 >
                   <X className="w-5 h-5" />
@@ -328,31 +328,31 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-themeTeal mb-2">
-                    Title *
+                  <label className="block text-sm text-themeTealLight mb-2">
+                    Title<span className='text-rose-600'>*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    className="w-full px-4 py-3 text-sm border border-themeTealLighter rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-themeTeal transition-colors duration-200"
+                    className="input-theme"
                     placeholder="Enter news title"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-themeTeal mb-2">
-                    URL *
+                  <label className="block text-sm text-themeTealLight mb-2">
+                    URL<span className='text-rose-600'>*</span>
                   </label>
                   <input
                     type="url"
                     value={formData.url}
                     onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                    className="w-full px-4 py-3 text-sm border border-themeTealLighter rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-themeTeal transition-colors duration-200"
+                    className="input-theme"
                     placeholder="https://example.com/news"
                   />
                 </div>
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-themeTeal mb-2">
+                  <label className="block text-sm text-themeTealLight mb-2">
                     Banner Image
                   </label>
                   <div className="flex gap-3">
@@ -365,15 +365,15 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
                     />
                     <label
                       htmlFor="banner-upload"
-                      className="flex items-center gap-2 px-4 py-3 text-sm border border-themeTealLighter rounded-lg hover:bg-themeTealWhite cursor-pointer transition-colors duration-200"
+                      className="buttonStyleLight flex items-center gap-2 cursor-pointer"
                     >
-                      <ImageIcon className="w-5 h-5 text-themeTeal" />
+                      <ImageIcon className="w-5 h-5 text-themeTealWhite" />
                       {uploadingBanner ? 'Uploading...' : 'Upload Banner'}
                     </label>
                     {formData.banner && (
-                      <div className="mt-2">
+                      <div className="">
                         <div className="flex items-center gap-2">
-                          <div className="h-16 w-16 flex items-center justify-center flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
+                          <div className="h-16 w-16 flex items-center justify-center flex-shrink-0 overflow-hidden rounded">
                             <Image
                               src={formData.banner}
                               alt="Banner preview"
@@ -396,14 +396,14 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
                 <button
                   onClick={handleAdd}
                   disabled={saving}
-                  className="flex items-center gap-2 px-6 py-3 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-colors duration-200 font-medium"
+                  className="buttonStyle flex items-center gap-2"
                 >
                   <Save className="w-5 h-5" />
                   Add News Section
                 </button>
                 <button
                   onClick={cancelEdit}
-                  className="flex items-center gap-2 px-6 py-3 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200 font-medium"
+                  className="buttonStyleLight flex gap-2 items-center"
                 >
                   <XCircle className="w-5 h-5" />
                   Cancel
@@ -425,36 +425,36 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
           ) : (
             <div className="space-y-4">
               {newsSections.map((item) => (
-                <div key={item.id} className="p-6 border border-themeTealLighter rounded-lg bg-themeTealWhite shadow-sm">
+                <div key={item.id} className="p-4 border border-themeTealLighter rounded bg-themeTealWhite shadow-sm">
                   {editingId === item.id ? (
                     // Edit Form
                     <div>
-                      <h3 className="text-base font-semibold mb-4">Edit News Section</h3>
+                      <h3 className="text-base font-semibold text-themeTeal mb-4">Edit News Section</h3>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Title *
+                          <label className="block text-sm text-themeTealLight mb-2">
+                            Title<span className='text-rose-600'>*</span>
                           </label>
                           <input
                             type="text"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                            className="input-theme"
                           />
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            URL *
+                          <label className="block text-sm text-themeTealLight mb-2">
+                            URL<span className='text-rose-600'>*</span>
                           </label>
                           <input
                             type="url"
                             value={formData.url}
                             onChange={(e) => setFormData({ ...formData, url: e.target.value })}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+                            className="input-theme"
                           />
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                          <label className="block text-sm text-themeTealLight mb-1">
                             Banner Image
                           </label>
                           <div className="flex gap-2">
@@ -467,21 +467,21 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
                             />
                             <label
                               htmlFor={`banner-upload-${item.id}`}
-                              className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 cursor-pointer"
+                              className="buttonStyleLight flex items-center gap-2 cursor-pointer"
                             >
                               <ImageIcon className="w-4 h-4" />
                               {uploadingBanner ? 'Uploading...' : 'Upload Banner'}
                             </label>
                             {formData.banner && (
-                              <div className="mt-2">
+                              <div className="">
                                 <div className="flex items-center gap-2">
-                                  <div className="h-32 w-32 flex items-center justify-center flex-shrink-0 overflow-hidden rounded-md bg-gray-100">
+                                  <div className="flex items-center justify-center flex-shrink-0 overflow-hidden rounded">
                                     <Image
                                       src={formData.banner}
                                       alt="Banner preview"
                                       width={64}
                                       height={64}
-                                      className="h-16 w-16 rounded-md object-cover"
+                                      className="h-16 w-16 rounded object-cover"
                                     />
                                   </div>
                                   <div className="flex items-center gap-2 text-sm text-green-600">
@@ -494,18 +494,18 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
                           </div>
                         </div>
                       </div>
-                      <div className="flex gap-2 mt-4">
+                      <div className="flex gap-2 mt-6">
                         <button
                           onClick={() => handleUpdate(item.id)}
                           disabled={saving}
-                          className="flex items-center gap-2 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                          className="buttonStyle flex items-center gap-2"
                         >
                           <Save className="w-4 h-4" />
                           Update
                         </button>
                         <button
                           onClick={cancelEdit}
-                          className="flex items-center gap-2 px-4 py-2 text-sm bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+                          className="buttonStyleLight flex gap-2 items-center"
                         >
                           <XCircle className="w-4 h-4" />
                           Cancel
@@ -518,7 +518,7 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
                       {/* Image Section */}
                       <div className="flex-shrink-0">
                         {item.banner ? (
-                          <div className="h-20 w-20 rounded-lg overflow-hidden bg-gray-100">
+                          <div className="h-20 w-20 rounded overflow-hidden bg-gray-100">
                             <Image
                               src={item.banner}
                               alt={item.title}
@@ -564,14 +564,14 @@ export default function NewsSectionManagement({ stockId, stockName, onClose }: N
                       <div className="flex items-center gap-1 flex-shrink-0">
                         <button
                           onClick={() => startEdit(item)}
-                          className="p-2 text-themeTeal hover:bg-themeTealWhite rounded-lg transition-colors duration-200"
+                          className="p-2 text-themeSkyBlue bg-themeSkyBlue/10 hover:bg-themeSkyBlue/20 transition duration-300 rounded"
                           title="Edit"
                         >
                           <Edit2 className="w-4 h-4" />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                          className="p-2 text-red-600 bg-red-50 hover:bg-red-100 transition duration-300 rounded"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
