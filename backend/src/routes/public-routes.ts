@@ -64,7 +64,4 @@ router.get("/contact-faqs", ContactFaqController.getContactFaqs);
 router.get("/themes", ThemeController.getAllThemes);
 router.get("/themes/select", ThemeController.getThemesForSelect);
 
-// Test endpoint for debugging
-router.get("/test-db", testDatabaseConnection);
-
 export default router;
