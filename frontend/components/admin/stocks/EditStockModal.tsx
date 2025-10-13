@@ -30,10 +30,24 @@ interface EditStockModalProps {
     name: string;
     sector_id: number;
   }>;
+  themes?: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
-const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmit, stockMasters = [], sectors = [], subsectors = [] }) => {
+const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmit, stockMasters = [], sectors = [], subsectors = [], themes = [] }) => {
   const totalSteps = 5;
+  
+  // Parse the IDs from JSON strings
+  const parsedSectorIds = Array.isArray(stock.sector_ids) ? stock.sector_ids : 
+                          (typeof stock.sector_ids === 'string' ? JSON.parse(stock.sector_ids || '[]') : []);
+  const parsedSubsectorIds = Array.isArray(stock.subsector_ids) ? stock.subsector_ids : 
+                             (typeof stock.subsector_ids === 'string' ? JSON.parse(stock.subsector_ids || '[]') : []);
+  const parsedThemeIds = Array.isArray(stock.theme_ids) ? stock.theme_ids : 
+                         (typeof stock.theme_ids === 'string' ? JSON.parse(stock.theme_ids || '[]') : []);
+  const parsedStockMasterIds = Array.isArray(stock.stock_master_ids) ? stock.stock_master_ids : 
+                               (typeof stock.stock_master_ids === 'string' ? JSON.parse(stock.stock_master_ids || '[]') : []);
   
   // Initialize form data with existing stock data
   const [formData, setFormData] = React.useState<StockData>({
@@ -46,16 +60,18 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
     demand: stock.demand || 'High Demand',
     homeDisplay: stock.homeDisplay || 'no',
     bannerDisplay: stock.bannerDisplay || 'no',
-    valuation: stock.valuation || '',
+    valuation_id: stock.valuation_id || 2,
     price_per_share: stock.price_per_share || 0,
     percentage_change: stock.percentage_change || 0,
     founded: stock.founded || new Date().getFullYear(),
-    sector_ids: Array.isArray(stock.sector_ids) ? stock.sector_ids : [],
-    subsector_ids: Array.isArray(stock.subsector_ids) ? stock.subsector_ids : [],
+    sector_ids: parsedSectorIds,
+    subsector_ids: parsedSubsectorIds,
+    theme_ids: parsedThemeIds,
     headquarters: stock.headquarters || '',
     min_units: stock.min_units || 1,
     lot_size: stock.lot_size || 1,
-    stock_master_ids: Array.isArray(stock.stock_master_ids) ? stock.stock_master_ids : [],
+    stock_master_ids: parsedStockMasterIds,
+    price_change_period_id: stock.price_change_period_id || 4,
     icon: null as File | null,
   });
 
@@ -81,9 +97,20 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
   // Input change handler
   const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
+    
+    // Convert numeric fields to numbers
+    const numericFields = [
+      'price_change', 'price_per_share', 'percentage_change', 'founded', 
+      'min_units', 'lot_size', 'price_change_period_id', 'valuation_id'
+    ];
+    
+    const processedValue = numericFields.includes(name) ? 
+      (name === 'price_change_period_id' || name === 'valuation_id' ? parseInt(value, 10) : parseFloat(value)) : 
+      value;
+    
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: processedValue
     }));
   }, []);
 
@@ -232,6 +259,7 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
       stockMasters,
       sectors,
       subsectors,
+      themes,
     };
 
     switch (currentStep) {

@@ -11,16 +11,18 @@ interface ProductAttributes {
   demand: 'High Demand' | 'Low Demand';
   homeDisplay: 'yes' | 'no';
   bannerDisplay: 'yes' | 'no';
-  valuation: string;
+  valuation_id?: number;
   price_per_share: number;
   percentage_change: number;
   founded: number;
   sector_ids: string;
   subsector_ids: string;
+  theme_ids: string;
   headquarters: string;
   min_units: number;
   lot_size: number;
   stock_master_ids?: string;
+  price_change_period_id?: number;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -44,16 +46,18 @@ class Product
   public demand!: 'High Demand' | 'Low Demand';
   public homeDisplay!: 'yes' | 'no';
   public bannerDisplay!: 'yes' | 'no';
-  public valuation!: string;
+  public valuation_id?: number;
   public price_per_share!: number;
   public percentage_change!: number;
   public founded!: number;
   public sector_ids!: string;
   public subsector_ids!: string;
+  public theme_ids!: string;
   public headquarters!: string;
   public min_units!: number;
   public lot_size!: number;
   public stock_master_ids?: string;
+  public price_change_period_id?: number;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -105,9 +109,13 @@ export function initializeProductModel(sequelize: Sequelize) {
         allowNull: false,
         defaultValue: 'no'
       },
-      valuation: {
-        type: DataTypes.STRING(100),
-        allowNull: false
+      valuation_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'valuations',
+          key: 'id'
+        }
       },
       price_per_share: {
         type: DataTypes.DECIMAL(10, 2),
@@ -129,6 +137,10 @@ export function initializeProductModel(sequelize: Sequelize) {
         type: DataTypes.TEXT,
         allowNull: true
       },
+      theme_ids: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
       headquarters: {
         type: DataTypes.STRING(200),
         allowNull: false
@@ -144,6 +156,11 @@ export function initializeProductModel(sequelize: Sequelize) {
       stock_master_ids: {
         type: DataTypes.TEXT,
         allowNull: true
+      },
+      price_change_period_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        defaultValue: 4  // ID for '12 Months'
       }
     }, {
       sequelize,

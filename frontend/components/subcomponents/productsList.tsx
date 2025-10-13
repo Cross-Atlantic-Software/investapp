@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { TrendingUp, TrendingDown, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 
@@ -12,6 +12,8 @@ export type ProductItem = {
   logo: string;
   price_per_share: number;
   price_change: number;
+  price_change_period_id: number;
+  price_change_period?: string; // Optional for backward compatibility
   valuation: string;
   teaser: string;
   short_description: string;
@@ -137,9 +139,10 @@ function PageBtn({ n, active, onClick }: { n: number; active: boolean; onClick: 
 }
 
 /* ---------- row (unchanged from your mobile-friendly version) ---------- */
-function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id: string) => void }) {
+function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => void }) {
   const pos = item.price_change >= 0;
   const changeSign = pos ? "+" : "";
+  const periodName = item.price_change_period || '12 Months';
   return (
     <article className="w-full rounded-xl bg-themeTealWhite p-2 md:p-3">
       <div className="flex flex-col gap-4 xl:flex-row md:items-center md:justify-between">
@@ -173,9 +176,9 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
           <div className="hidden md:grid grid-cols-3 items-center gap-2 bg-white px-3 py-2 text-sm font-semibold text-themeTeal">
             <div className="whitespace-nowrap">₹ {formatINR(item.price_per_share)}</div>
             <div className={pos ? "text-green-700" : "text-rose-600"}>
-              {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
+              {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />} ({periodName})
             </div>
-            <div className="whitespace-nowrap">₹ {item.valuation} Cr.</div>
+            <div className="whitespace-nowrap">₹ {item.valuation}</div>
           </div>
 
           <div className="grid md:hidden grid-cols-3 gap-3 bg-white p-3 text-sm text-themeTeal">
@@ -183,10 +186,10 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
             <MobileStat
               label="Price Change Period"
               value={<span className={pos ? "text-green-700" : "text-rose-600"}>
-                {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
+                {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />} ({periodName})
               </span>}
             />
-            <MobileStat label="Valuation (in Cr.)" value={`₹ ${item.valuation} Cr.`} />
+            <MobileStat label="Valuation (in Cr.)" value={`₹ ${item.valuation}`} />
           </div>
         </div>
       </div>

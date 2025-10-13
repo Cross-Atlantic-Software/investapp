@@ -8,16 +8,18 @@ export interface StockData {
   demand: 'High Demand' | 'Low Demand';
   homeDisplay: 'yes' | 'no';
   bannerDisplay: 'yes' | 'no';
-  valuation: string;
+  valuation_id: number;
   price_per_share: number;
   percentage_change: number;
   founded: number;
   sector_ids: number[];
   subsector_ids: number[];
+  theme_ids: number[];
   headquarters: string;
   min_units: number;
   lot_size: number;
   stock_master_ids: number[];
+  price_change_period_id: number;
   icon: File | null;
 }
 
@@ -32,10 +34,22 @@ export interface ExistingStockData extends Omit<StockData, 'icon'> {
     name: string;
     sector_id: number;
   }>;
+  themes?: Array<{
+    id: number;
+    name: string;
+  }>;
   stock_masters?: Array<{
     id: number;
     name: string;
   }>;
+  price_change_period?: {
+    id: number;
+    period: string;
+  };
+  valuation?: {
+    id: number;
+    valuation_name: string;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -64,6 +78,10 @@ export interface AddStockModalProps {
     name: string;
     sector_id: number;
   }>;
+  themes?: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
 export interface StepProps {
@@ -82,6 +100,10 @@ export interface StepProps {
     id: number;
     name: string;
     sector_id: number;
+  }>;
+  themes?: Array<{
+    id: number;
+    name: string;
   }>;
 }
 

@@ -51,6 +51,30 @@ export class BuyStockService {
       
       console.log('✅ User found:', user.email);
 
+      // Add buy request to user's buy_request array
+      try {
+        const currentBuyRequests = user.buy_request ? JSON.parse(user.buy_request) : [];
+        const newBuyRequest = {
+          stockName: companyName,
+          quantity: quantity,
+          price: price,
+          totalAmount: totalAmount,
+          timestamp: new Date().toISOString()
+        };
+        
+        currentBuyRequests.push(newBuyRequest);
+        
+        // Update user's buy_request field
+        await user.update({
+          buy_request: JSON.stringify(currentBuyRequests)
+        });
+        
+        console.log('✅ Buy request added to user profile');
+      } catch (buyRequestError) {
+        console.error('❌ Failed to save buy request:', buyRequestError);
+        // Don't fail the transaction if buy request save fails
+      }
+
       // Send confirmation email
       try {
         const emailTemplate = await EmailTemplateService.getBuyConfirmationEmail(

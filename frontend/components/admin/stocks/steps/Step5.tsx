@@ -1,6 +1,16 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { StepProps, ImageUploadState } from '../types';
+
+interface PriceChangePeriod {
+  id: number;
+  period: string;
+}
+
+interface Valuation {
+  id: number;
+  valuation_name: string;
+}
 
 const Step5: React.FC<StepProps & { 
   stockMasters?: Array<{ id: number; name: string; }>;
@@ -14,6 +24,43 @@ const Step5: React.FC<StepProps & {
   subsectors = [],
   imageUpload
 }) => {
+  const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
+  const [valuations, setValuations] = useState<Valuation[]>([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch price change periods
+        const priceChangePeriodsResponse = await fetch('/api/admin/price-change-periods/select');
+        if (priceChangePeriodsResponse.ok) {
+          const priceChangePeriodsData = await priceChangePeriodsResponse.json();
+          if (priceChangePeriodsData.success && priceChangePeriodsData.data?.periods) {
+            setPriceChangePeriods(priceChangePeriodsData.data.periods);
+          }
+        }
+
+        // Fetch valuations
+        const valuationsResponse = await fetch('/api/admin/valuations/select');
+        if (valuationsResponse.ok) {
+          const valuationsData = await valuationsResponse.json();
+          if (valuationsData.success && valuationsData.data?.valuations) {
+            setValuations(valuationsData.data.valuations);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+  const getValuationName = () => {
+    if (!formData.valuation_id) return '₹100-500 Cr';
+    
+    const valuation = valuations.find(v => v.id === formData.valuation_id);
+    return valuation ? valuation.valuation_name : '₹100-500 Cr';
+  };
+
   const getStockMasterNames = () => {
     if (!Array.isArray(formData.stock_master_ids)) {
       return 'No tags selected';
@@ -40,6 +87,14 @@ const Step5: React.FC<StepProps & {
       subsectors.find(subsector => subsector.id === id)?.name
     ).filter(Boolean).join(', ');
   };
+
+  // Memoize the price change period name to ensure it updates when dependencies change
+  const priceChangePeriodName = useMemo(() => {
+    if (!formData.price_change_period_id) return '12 Months';
+    
+    const period = priceChangePeriods.find(p => p.id === formData.price_change_period_id);
+    return period ? period.period : '12 Months';
+  }, [formData.price_change_period_id, priceChangePeriods]);
 
   return (
     <div className="space-y-6">
@@ -88,7 +143,7 @@ const Step5: React.FC<StepProps & {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium text-gray-700">Valuation:</span>
-              <p className="text-gray-600 mt-1">₹{formData.valuation}</p>
+              <p className="text-gray-600 mt-1">{getValuationName()}</p>
             </div>
             <div>
               <span className="font-medium text-gray-700">Price per Share:</span>
@@ -97,6 +152,10 @@ const Step5: React.FC<StepProps & {
             <div>
               <span className="font-medium text-gray-700">Price Change:</span>
               <p className="text-gray-600 mt-1">₹{formData.price_change}</p>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">Price Change Period:</span>
+              <p className="text-gray-600 mt-1">{priceChangePeriodName}</p>
             </div>
             <div>
               <span className="font-medium text-gray-700">Percentage Change:</span>

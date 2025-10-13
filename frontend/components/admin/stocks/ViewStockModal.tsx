@@ -1,10 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import StepProgressIndicator from './StepProgressIndicator';
 import { ExistingStockData } from './types';
+
+interface PriceChangePeriod {
+  id: number;
+  period: string;
+}
 
 interface ViewStockModalProps {
   stock: ExistingStockData;
@@ -13,19 +18,45 @@ interface ViewStockModalProps {
     id: number;
     name: string;
   }>;
+  themes?: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
-const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMasters = [] }) => {
-  const totalSteps = 5;
+const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMasters = [], themes = [] }) => {
+  const totalSteps = 4;
   const [currentStep, setCurrentStep] = useState(1);
+  const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
+
+  // Debug logging
+  console.log('ViewStockModal props:', { stock, stockMasters, themes });
+
+  useEffect(() => {
+    const fetchPriceChangePeriods = async () => {
+      try {
+        const response = await fetch('/api/admin/price-change-periods/select');
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          if (data.success && data.data?.periods) {
+            setPriceChangePeriods(data.data.periods);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching price change periods:', error);
+      }
+    };
+
+    fetchPriceChangePeriods();
+  }, []);
 
   const getStockMasterNames = () => {
-    if (!Array.isArray(stock.stock_master_ids)) {
+    if (!stock.stock_masters || stock.stock_masters.length === 0) {
       return 'No tags assigned';
     }
-    return stock.stock_master_ids.map(id => 
-      stockMasters.find(master => master.id === id)?.name
-    ).filter(Boolean).join(', ') || 'No tags assigned';
+    return stock.stock_masters.map(master => master.name).join(', ');
   };
 
   const getSectorNames = () => {
@@ -40,6 +71,27 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
       return 'No subsectors assigned';
     }
     return stock.subsectors.map(subsector => subsector.name).join(', ');
+  };
+
+  const getThemeNames = () => {
+    console.log('=== THEMES DEBUG ===');
+    console.log('Full stock object:', stock);
+    console.log('stock.themes:', stock.themes);
+    console.log('stock.theme_ids:', stock.theme_ids);
+    console.log('themes prop:', themes);
+    console.log('==================');
+    
+    if (!stock.themes || stock.themes.length === 0) {
+      return 'No themes assigned';
+    }
+    return stock.themes.map(theme => theme.name).join(', ');
+  };
+
+  const getPriceChangePeriodName = () => {
+    if (!stock.price_change_period_id) return '12 Months';
+    
+    const period = priceChangePeriods.find(p => p.id === stock.price_change_period_id);
+    return period ? period.period : '12 Months';
   };
 
   const handleGoToStep = (step: number) => {
@@ -102,6 +154,13 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
               </div>
             </div>
 
+            <div>
+              <label className="block text-xs font-medium text-themeTeal mb-1">Themes</label>
+              <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700 min-h-[60px]">
+                {getThemeNames()}
+              </div>
+            </div>
+
             {/* Company Logo */}
             {stock.logo && (
               <div>
@@ -141,7 +200,7 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
               <div>
                 <label className="block text-xs font-medium text-themeTeal mb-1">Valuation (in Cr.)</label>
                 <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
-                  {stock.valuation || 'N/A'}
+                  {typeof stock.valuation === 'string' ? stock.valuation : stock.valuation?.valuation_name || 'N/A'}
                 </div>
               </div>
             </div>
@@ -158,16 +217,13 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">Percentage Change</label>
-                <div className={`w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md font-semibold ${
-                  (stock.percentage_change || 0) >= 0 
-                    ? 'bg-green-50 text-green-700' 
-                    : 'bg-red-50 text-red-700'
-                }`}>
-                  {(stock.percentage_change || 0) >= 0 ? '+' : ''}{stock.percentage_change || 0}%
+                <label className="block text-xs font-medium text-themeTeal mb-1">Price Change Period</label>
+                <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
+                  {getPriceChangePeriodName()}
                 </div>
               </div>
             </div>
+
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -268,69 +324,6 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
           </div>
         );
 
-      case 5:
-        return (
-          <div className="space-y-6">
-            <div className="text-center mb-6">
-              <h4 className="text-lg font-semibold text-themeTeal">System Information</h4>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">Created At</label>
-                <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
-                  {new Date(stock.createdAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-themeTeal mb-1">Last Updated</label>
-                <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
-                  {new Date(stock.updatedAt).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* Summary Card */}
-            <div className="bg-themeTealWhite border border-themeTealLighter rounded-lg p-4">
-              <h5 className="text-md font-semibold text-themeTeal mb-3 flex items-center">
-                <div className="w-2 h-2 bg-themeTeal rounded-full mr-2"></div>
-                Stock Summary
-              </h5>
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium text-gray-700">Company:</span>
-                  <p className="text-gray-600">{stock.company_name}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Sector:</span>
-                  <p className="text-gray-600">{getSectorNames()}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Price:</span>
-                  <p className="text-gray-600">₹{stock.price_per_share}</p>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Stock Demand Tag :</span>
-                  <p className={stock.demand === 'High Demand' ? 'text-green-600' : 'text-red-600'}>
-                    {stock.demand}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
 
       default:
         return null;

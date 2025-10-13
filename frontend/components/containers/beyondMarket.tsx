@@ -64,13 +64,13 @@ export function BeyondMarket() {
 
   // Transform data to match component interface
   const transformStockData = (stock: Stock) => ({
-    id: stock.id.toString(),
-    name: stock.company_name,
-    logo: stock.logo,
-    changeINR: stock.price_change.toString(),
-    changePct: stock.percentage_change.toString(),
-    price: stock.price_per_share.toString(),
-    valuation: stock.valuation
+    id: stock.id?.toString() || '0',
+    name: stock.company_name || 'Unknown',
+    logo: stock.logo || '',
+    changeINR: stock.price_change?.toString() || '0',
+    changePct: stock.percentage_change?.toString() || '0',
+    price: stock.price_per_share?.toString() || '0',
+    valuation: stock.valuation || 'N/A'
   });
   return (
     <section className="">

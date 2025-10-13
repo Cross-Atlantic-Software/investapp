@@ -12,6 +12,7 @@ export type ShareIntroProps = {
   company: string;
   investPrice: number;
   changeAbs: number;
+  priceChangePeriod?: string;
   updatedAt: string;
   tags: string[];
   founded: string | number;
@@ -26,7 +27,7 @@ export type ShareIntroProps = {
 export default function ShareIntro(props: ShareIntroProps) {
   const {
     stockId, breadcrumbs, logoUrl, company,
-    investPrice, changeAbs, updatedAt,
+    investPrice, changeAbs, priceChangePeriod, updatedAt,
     tags, founded, sector, subsector, hq,
     about, website, valuation,
   } = props;
@@ -83,14 +84,14 @@ export default function ShareIntro(props: ShareIntroProps) {
             {valuation && (
               <Kpi
                 label="Valuation"
-                value={`₹${parseFloat(valuation).toLocaleString()}B`}
+                value={valuation}
               />
             )}
             <Kpi
-              label="Price Change"
+              label="Price Change Period"
               value={
                 <span className={pos ? "text-green-600" : "text-rose-600"}>
-                  {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))}
+                  {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))} ({priceChangePeriod || '12 Months'})
                 </span>
               }
             />

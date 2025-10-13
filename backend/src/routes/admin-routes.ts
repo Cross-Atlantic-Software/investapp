@@ -38,6 +38,9 @@ import { NotableActivityManagementController } from "../controllers/admin/notabl
 import { ActivityTypeManagementController } from "../controllers/admin/activityTypeManagement";
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
+import { PriceChangePeriodController } from "../controllers/admin/priceChangePeriodController";
+import { ValuationController } from "../controllers/admin/valuationController";
+import { ThemeController } from "../controllers/admin/themeController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
@@ -51,6 +54,7 @@ import { ShareholderTypeController } from "../controllers/admin/shareholderTypeC
 import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
 import { StockFaqController } from "../controllers/admin/stockFaqController";
 import { SectorManagementController } from "../controllers/admin/sectorManagement";
+import { ContactFaqController } from "../controllers/admin/contactFaqController";
 import { KYCManagementController } from "../controllers/admin/kycManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 
@@ -114,11 +118,14 @@ router.use((req, res, next) => {
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
+      req.path.includes('/price-change-periods') ||
+      req.path.includes('/valuations') ||
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
       req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
       req.path.includes('/news-sections') || req.path.includes('/faqs') ||
-      req.path.includes('/sectors') || req.path.includes('/subsectors')) {
+      req.path.includes('/sectors') || req.path.includes('/subsectors') ||
+      req.path.includes('/contact-faqs')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -223,6 +230,30 @@ router.get("/stock-masters/:id", stockMasterController.getStockMasterById);
 router.post("/stock-masters", stockMasterController.createStockMaster);
 router.put("/stock-masters/:id", stockMasterController.updateStockMaster);
 router.delete("/stock-masters/:id", stockMasterController.deleteStockMaster);
+
+// Price Change Period Management Routes
+router.get("/price-change-periods", PriceChangePeriodController.getAllPriceChangePeriods);
+router.get("/price-change-periods/select", PriceChangePeriodController.getPriceChangePeriodsForSelect);
+router.get("/price-change-periods/:id", PriceChangePeriodController.getPriceChangePeriodById);
+router.post("/price-change-periods", PriceChangePeriodController.createPriceChangePeriod);
+router.put("/price-change-periods/:id", PriceChangePeriodController.updatePriceChangePeriod);
+router.delete("/price-change-periods/:id", PriceChangePeriodController.deletePriceChangePeriod);
+
+// Valuation Management Routes
+router.get("/valuations", ValuationController.getAllValuations);
+router.get("/valuations/select", ValuationController.getValuationsForSelect);
+router.get("/valuations/:id", ValuationController.getValuationById);
+router.post("/valuations", ValuationController.createValuation);
+router.put("/valuations/:id", ValuationController.updateValuation);
+router.delete("/valuations/:id", ValuationController.deleteValuation);
+
+// Theme Management Routes
+router.get("/themes", ThemeController.getAllThemes);
+router.get("/themes/select", ThemeController.getThemesForSelect);
+router.get("/themes/:id", ThemeController.getThemeById);
+router.post("/themes", ThemeController.createTheme);
+router.put("/themes/:id", ThemeController.updateTheme);
+router.delete("/themes/:id", ThemeController.deleteTheme);
 
 // Sector Management Routes
 router.get("/sectors", SectorManagementController.getAllSectors);
@@ -366,5 +397,13 @@ router.get("/kyc/stats", kycController.getKYCStats);
 router.get("/kyc/:id", kycController.getKYCApplicationById);
 router.put("/kyc/:id/status", kycController.updateKYCStatus);
 router.delete("/kyc/:id", kycController.deleteKYCApplication);
+
+// Contact FAQ Management Routes (Admin only)
+router.get("/contact-faqs", ContactFaqController.getAllContactFaqs);
+router.get("/contact-faqs/:id", ContactFaqController.getFaqById);
+router.post("/contact-faqs", ContactFaqController.createFaq);
+router.put("/contact-faqs/:id", ContactFaqController.updateFaq);
+router.delete("/contact-faqs/:id", ContactFaqController.deleteFaq);
+router.delete("/contact-faqs/bulk-delete", ContactFaqController.bulkDeleteFaqs);
 
 export default router;

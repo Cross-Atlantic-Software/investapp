@@ -1,7 +1,50 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { StepProps } from '../types';
 
+interface PriceChangePeriod {
+  id: number;
+  period: string;
+}
+
+interface Valuation {
+  id: number;
+  valuation_name: string;
+}
+
 const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
+  const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
+  const [valuations, setValuations] = useState<Valuation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch price change periods
+        const priceChangePeriodsResponse = await fetch('/api/admin/price-change-periods/select');
+        if (priceChangePeriodsResponse.ok) {
+          const priceChangePeriodsData = await priceChangePeriodsResponse.json();
+          if (priceChangePeriodsData.success && priceChangePeriodsData.data?.periods) {
+            setPriceChangePeriods(priceChangePeriodsData.data.periods);
+          }
+        }
+
+        // Fetch valuations
+        const valuationsResponse = await fetch('/api/admin/valuations/select');
+        if (valuationsResponse.ok) {
+          const valuationsData = await valuationsResponse.json();
+          if (valuationsData.success && valuationsData.data?.valuations) {
+            setValuations(valuationsData.data.valuations);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
   return (
     <div className="space-y-6">
       <div className="text-center mb-4">
@@ -11,35 +54,62 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
       {/* Valuation */}
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Valuation (in Cr.) <span className="text-red-500">*</span>
+          Valuation <span className="text-red-500">*</span>
         </label>
-        <input
-          type="number"
-          name="valuation"
-          value={formData.valuation}
+        <select
+          name="valuation_id"
+          value={formData.valuation_id}
           onChange={onInputChange}
           required
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-          placeholder="0.00"
-          step="0.01"
-        />
+          disabled={loading}
+        >
+          <option value="">{loading ? 'Loading...' : 'Select valuation...'}</option>
+          {valuations.map((valuation) => (
+            <option key={valuation.id} value={valuation.id}>
+              {valuation.valuation_name}
+            </option>
+          ))}
+        </select>
       </div>
       
-      {/* Price Change */}
-      <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">
-          Price Change <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="number"
-          name="price_change"
-          value={formData.price_change}
-          onChange={onInputChange}
-          required
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
-          placeholder="0.00"
-          step="0.01"
-        />
+      {/* Price Change and Price Change Period - Side by Side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Price Change <span className="text-red-500">*</span>
+          </label>
+          <input
+            type="number"
+            name="price_change"
+            value={formData.price_change}
+            onChange={onInputChange}
+            required
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
+            placeholder="0.00"
+            step="0.01"
+          />
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-700 mb-1">
+            Price Change Period <span className="text-red-500">*</span>
+          </label>
+          <select
+            name="price_change_period_id"
+            value={formData.price_change_period_id}
+            onChange={onInputChange}
+            required
+            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
+            disabled={loading}
+          >
+            <option value="">{loading ? 'Loading...' : 'Select price change period...'}</option>
+            {priceChangePeriods.map((period) => (
+              <option key={period.id} value={period.id}>
+                {period.period}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Percentage Change and Price per Share - Side by Side */}

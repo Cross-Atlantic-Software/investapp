@@ -27,7 +27,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'headquarters', 'min_units', 'lot_size', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation_id', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 'price_change_period_id', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -39,9 +39,9 @@ export const getAllStocks = async (req: Request, res: Response) => {
       attributes: [
         'id', 'company_name', 'logo', 'price_change', 'teaser', 
         'short_description', 'analysis', 'demand', 'homeDisplay', 
-        'bannerDisplay', 'valuation', 'price_per_share', 
+        'bannerDisplay', 'valuation_id', 'price_per_share', 
         'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 
-        'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
+        'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
         'createdAt', 'updatedAt'
       ]
     });
@@ -106,12 +106,50 @@ export const getAllStocks = async (req: Request, res: Response) => {
           where: { id: { [Op.in]: subsectorIds } },
           attributes: ['id', 'name', 'sector_id'],
         });
+
+        // Fetch price change period name
+        let priceChangePeriod = null;
+        if (stock.price_change_period_id) {
+          const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+          priceChangePeriod = period ? period.period : '12 Months';
+        } else {
+          priceChangePeriod = '12 Months';
+        }
+
+        // Fetch theme names
+        let themeIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).theme_ids || '[]');
+          if (Array.isArray(parsed)) {
+            themeIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing theme_ids:', (stock as any).theme_ids, error);
+          themeIds = [];
+        }
+        
+        const themes = await db.Theme.findAll({
+          where: { id: { [Op.in]: themeIds } },
+          attributes: ['id', 'name'],
+        });
+
+        // Fetch valuation name
+        let valuation = null;
+        if (stock.valuation_id) {
+          const valuationRecord = await db.Valuation.findByPk(stock.valuation_id);
+          valuation = valuationRecord ? valuationRecord.valuation_name : '₹100-500 Cr';
+        } else {
+          valuation = '₹100-500 Cr';
+        }
         
         return {
           ...stock.toJSON(),
           stock_masters: stockMasters,
           sectors: sectors,
           subsectors: subsectors,
+          themes: themes,
+          price_change_period: priceChangePeriod,
+          valuation: valuation
         };
       })
     );
@@ -213,11 +251,31 @@ export const getStockById = async (req: Request, res: Response) => {
       attributes: ['id', 'name', 'sector_id'],
     });
 
+    // Fetch price change period name
+    let priceChangePeriod = null;
+    if (stock.price_change_period_id) {
+      const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+      priceChangePeriod = period ? period.period : '12 Months';
+    } else {
+      priceChangePeriod = '12 Months';
+    }
+
+    // Fetch valuation name
+    let valuation = null;
+    if (stock.valuation_id) {
+      const valuationRecord = await db.Valuation.findByPk(stock.valuation_id);
+      valuation = valuationRecord ? valuationRecord.valuation_name : '₹100-500 Cr';
+    } else {
+      valuation = '₹100-500 Cr';
+    }
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
       sectors: sectors,
       subsectors: subsectors,
+      price_change_period: priceChangePeriod,
+      valuation: valuation
     };
 
     return res.status(200).json({
@@ -310,11 +368,31 @@ export const getStockByName = async (req: Request, res: Response) => {
       attributes: ['id', 'name', 'sector_id'],
     });
 
+    // Fetch price change period name
+    let priceChangePeriod = null;
+    if (stock.price_change_period_id) {
+      const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+      priceChangePeriod = period ? period.period : '12 Months';
+    } else {
+      priceChangePeriod = '12 Months';
+    }
+
+    // Fetch valuation name
+    let valuation = null;
+    if (stock.valuation_id) {
+      const valuationRecord = await db.Valuation.findByPk(stock.valuation_id);
+      valuation = valuationRecord ? valuationRecord.valuation_name : '₹100-500 Cr';
+    } else {
+      valuation = '₹100-500 Cr';
+    }
+
     const stockWithMasters = {
       ...stock.toJSON(),
       stock_masters: stockMasters,
       sectors: sectors,
       subsectors: subsectors,
+      price_change_period: priceChangePeriod,
+      valuation: valuation
     };
 
     return res.status(200).json({
@@ -354,17 +432,21 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       demand,
       homeDisplay,
       bannerDisplay,
-      valuation,
+      valuation_id,
       price_per_share,
       percentage_change,
       founded,
       sector_ids,
       subsector_ids,
+      theme_ids,
       headquarters,
       min_units,
       lot_size,
-      stock_master_ids
+      stock_master_ids,
+      price_change_period_id,
     } = cleanedBody;
+
+    console.log("Valuation ID received:", valuation_id);
 
     // Validate required fields
     if (!company_name) {
@@ -410,16 +492,18 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       demand: demand || 'Low Demand',
       homeDisplay: homeDisplay || 'no',
       bannerDisplay: bannerDisplay || 'no',
-      valuation: valuation || 'N/A',
+      valuation_id: valuation_id || null,
       price_per_share: price_per_share || 0,
       percentage_change: percentage_change || price_change || 0,
       founded: founded || new Date().getFullYear(),
       sector_ids: sector_ids || '[]',
       subsector_ids: subsector_ids || '[]',
+      theme_ids: theme_ids || '[]',
       headquarters: headquarters || 'N/A',
       min_units: min_units || 1,
       lot_size: lot_size || 1,
-      stock_master_ids: stock_master_ids || '[]'
+      stock_master_ids: stock_master_ids || '[]',
+      price_change_period_id: price_change_period_id || 4
     });
 
     return res.status(201).json({
@@ -456,7 +540,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       demand,
       homeDisplay,
       bannerDisplay,
-      valuation,
+      valuation_id,
       price_per_share,
       percentage_change,
       founded,
@@ -465,8 +549,11 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       headquarters,
       min_units,
       lot_size,
-      stock_master_ids
+      stock_master_ids,
+      price_change_period_id,
     } = req.body;
+
+    console.log("Update Stock - Valuation ID received:", valuation_id);
 
     const stock = await db.Product.findByPk(id);
     if (!stock) {
@@ -507,7 +594,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       demand: demand !== undefined ? demand : stock.demand,
       homeDisplay: homeDisplay !== undefined ? homeDisplay : stock.homeDisplay,
       bannerDisplay: bannerDisplay !== undefined ? bannerDisplay : stock.bannerDisplay,
-      valuation: valuation !== undefined ? valuation : stock.valuation,
+      valuation_id: valuation_id !== undefined ? valuation_id : stock.valuation_id,
       price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,
       percentage_change: percentage_change !== undefined ? percentage_change : stock.percentage_change,
       founded: founded !== undefined ? founded : stock.founded,
@@ -516,7 +603,8 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       headquarters: headquarters !== undefined ? headquarters : stock.headquarters,
       min_units: min_units !== undefined ? min_units : stock.min_units,
       lot_size: lot_size !== undefined ? lot_size : stock.lot_size,
-      stock_master_ids: stock_master_ids !== undefined ? stock_master_ids : stock.stock_master_ids
+      stock_master_ids: stock_master_ids !== undefined ? stock_master_ids : stock.stock_master_ids,
+      price_change_period_id: price_change_period_id !== undefined ? price_change_period_id : stock.price_change_period_id
     });
 
     return res.status(200).json({

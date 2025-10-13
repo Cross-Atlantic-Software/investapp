@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Clock, FileText } from 'lucide-react';
 import { useKYC } from '@/contexts/KYCContext';

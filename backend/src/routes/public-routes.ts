@@ -9,6 +9,8 @@ import { FinancialDataController } from "../controllers/admin/financialDataContr
 import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
 import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
 import { StockFaqController } from "../controllers/admin/stockFaqController";
+import { ContactFaqController } from "../controllers/admin/contactFaqController";
+import { ThemeController } from "../controllers/admin/themeController";
 
 const router = express.Router();
 
@@ -54,5 +56,12 @@ router.get("/news-sections/:id", StockNewsSectionController.getNewsSectionById);
 
 // Public Stock FAQ Routes (no authentication required)
 router.get("/stocks/:stockId/faqs", StockFaqController.getStockFaqs);
+
+// Public Contact FAQ Routes (no authentication required)
+router.get("/contact-faqs", ContactFaqController.getContactFaqs);
+
+// Public Theme Routes (no authentication required)
+router.get("/themes", ThemeController.getAllThemes);
+router.get("/themes/select", ThemeController.getThemesForSelect);
 
 export default router;

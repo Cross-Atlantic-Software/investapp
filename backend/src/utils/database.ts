@@ -12,6 +12,9 @@ import NotableActivity, { initializeNotableActivityModel } from "../Models/Notab
 import ActivityType, { initializeActivityTypeModel } from "../Models/ActivityType";
 import BulkDeals, { initializeBulkDealsModel } from "../Models/BulkDeals";
 import StockMaster, { initializeStockMasterModel } from "../Models/StockMaster";
+import PriceChangePeriod, { initializePriceChangePeriodModel } from "../Models/PriceChangePeriod";
+import Valuation, { initializeValuationModel } from "../Models/Valuation";
+import Theme, { initializeThemeModel } from "../Models/Theme";
 import StockScorecardModel, { initializeStockScorecardModel } from "../Models/StockScorecard";
 import StockInvestmentRationaleModel, { initializeStockInvestmentRationaleModel } from "../Models/StockInvestmentRationale";
 import StockPerformancePdfModel, { initializeStockPerformancePdfModel } from "../Models/StockPerformancePdf";
@@ -24,6 +27,7 @@ import ShareholderType, { initializeShareholderTypeModel } from "../Models/Share
 import Wishlist, { initializeWishlistModel } from "../Models/Wishlist";
 import StockNewsSection, { initializeStockNewsSectionModel } from "../Models/StockNewsSection";
 import { StockFaq, initializeStockFaqModel } from "../Models/StockFaq";
+import ContactFaq, { initializeContactFaqModel } from "../Models/ContactFaq";
 import { FinancialDataCsv, initializeFinancialDataCsvModel } from "../Models/FinancialDataCsv";
 import { Sector, initializeSectorModel } from "../Models/Sector";
 import { Subsector, initializeSubsectorModel } from "../Models/Subsector";
@@ -104,6 +108,15 @@ async function initializeSequelize() {
   // Initialize Stock Master model
   initializeStockMasterModel(sequelize);
   
+  // Initialize Price Change Period model
+  initializePriceChangePeriodModel(sequelize);
+  
+  // Initialize Valuation model
+  initializeValuationModel(sequelize);
+  
+  // Initialize Theme model
+  initializeThemeModel(sequelize);
+  
   // Initialize Stock Scorecard model
   initializeStockScorecardModel(sequelize);
   
@@ -130,6 +143,7 @@ async function initializeSequelize() {
   // Initialize Stock News Section model
   initializeStockNewsSectionModel(sequelize);
   initializeStockFaqModel(sequelize);
+  initializeContactFaqModel(sequelize);
   
   // Initialize Financial Data CSV model
   initializeFinancialDataCsvModel(sequelize);
@@ -325,6 +339,24 @@ export const db = {
     }
     return StockMaster;
   },
+  get PriceChangePeriod() {
+    if (!PriceChangePeriod) {
+      throw new Error('PriceChangePeriod model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return PriceChangePeriod;
+  },
+  get Valuation() {
+    if (!Valuation) {
+      throw new Error('Valuation model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Valuation;
+  },
+  get Theme() {
+    if (!Theme) {
+      throw new Error('Theme model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Theme;
+  },
   get StockScorecard() {
     if (!StockScorecardModel) {
       throw new Error('StockScorecard model not initialized yet. Wait for sequelizePromise to resolve.');
@@ -396,6 +428,12 @@ export const db = {
       throw new Error('StockFaq model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return StockFaq;
+  },
+  get ContactFaq() {
+    if (!ContactFaq) {
+      throw new Error('ContactFaq model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return ContactFaq;
   },
 
   get FinancialDataCsv() {
