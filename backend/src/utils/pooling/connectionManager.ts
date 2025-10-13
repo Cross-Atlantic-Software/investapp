@@ -179,32 +179,25 @@ export class ConnectionManager {
 
   // Cleanup method for error handling
   private async cleanup(): Promise<void> {
-    console.log('🧹 Starting cleanup...');
-    
     try {
       if (this.sequelize) {
-        console.log('🔌 Closing Sequelize connection...');
         await this.sequelize.close();
         this.sequelize = null;
-        console.log('✅ Sequelize connection closed');
       }
     } catch (error) {
-      console.error('❌ Error closing Sequelize:', error);
+      console.error('Error closing Sequelize:', error);
     }
 
     try {
       if (this.mysqlPool) {
-        console.log('🔌 Closing MySQL pool...');
         await this.mysqlPool.end();
         this.mysqlPool = null;
-        console.log('✅ MySQL pool closed');
       }
     } catch (error) {
-      console.error('❌ Error closing MySQL pool:', error);
+      console.error('Error closing MySQL pool:', error);
     }
 
     this.isInitialized = false;
-    console.log('✅ Cleanup completed');
   }
 
   // Graceful shutdown
