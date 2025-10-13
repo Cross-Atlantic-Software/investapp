@@ -14,6 +14,8 @@ const corsOptions = {
     process.env.FRONTEND_URL || 'http://localhost:3000',
     'https://investapp.click',
     'https://www.investapp.click',
+    'https://altstock.in',
+    'https://www.altstock.in',
     'http://localhost:3001', 
     'http://127.0.0.1:3000', 
     'http://65.2.169.56:3000',
