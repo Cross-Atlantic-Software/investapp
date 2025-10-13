@@ -159,8 +159,7 @@ export function initializeProductModel(sequelize: Sequelize) {
       },
       price_change_period_id: {
         type: DataTypes.INTEGER,
-        allowNull: true,
-        defaultValue: 4  // ID for '12 Months'
+        allowNull: true
       }
     }, {
       sequelize,

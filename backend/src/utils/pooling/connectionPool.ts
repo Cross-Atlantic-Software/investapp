@@ -87,9 +87,6 @@ export function createSequelizeWithPool(dbConfig: DatabaseConfig): Sequelize {
     },
     dialectOptions: {
       connectTimeout: 120000,  // 2 minutes connection timeout
-      acquireTimeout: 120000,  // 2 minutes acquire timeout
-      timeout: 120000,         // 2 minutes general timeout
-      reconnect: true,
       charset: 'utf8mb4',
       supportBigNumbers: true,
       bigNumberStrings: true

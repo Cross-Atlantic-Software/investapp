@@ -17,6 +17,7 @@ type Share = {
   changePct: string;   // like "66% ↑"
   price: string;
   valuation: string;
+  priceChangePeriod?: string; // e.g., "12M", "2Y"
 };
 
 type Props = {
@@ -119,7 +120,7 @@ export default function HighDemandStocks({
                     <div>
                       <p className="text-themeTealLighter">₹ Change</p>
                       <p className="flex items-center gap-1 font-semibold text-green-800">
-                        ₹{s.changeINR} <TrendingUp className="h-3.5 w-3.5" />
+                        ₹{s.changeINR} ({s.priceChangePeriod}) <TrendingUp className="h-3.5 w-3.5" />
                       </p>
                     </div>
                     <div>

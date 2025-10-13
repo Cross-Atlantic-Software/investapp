@@ -12,7 +12,7 @@ export type ProductItem = {
   logo: string;
   price_per_share: number;
   price_change: number;
-  price_change_period_id: number;
+  price_change_period_id: number | undefined;
   price_change_period?: string; // Optional for backward compatibility
   valuation: string;
   valuation_id?: number; // Added for filtering
@@ -146,7 +146,7 @@ function PageBtn({ n, active, onClick }: { n: number; active: boolean; onClick: 
 function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => void }) {
   const pos = item.price_change >= 0;
   const changeSign = pos ? "+" : "";
-  const periodName = item.price_change_period || '12 Months';
+  const periodName = item.price_change_period || 'No period assigned';
   return (
     <article className="w-full rounded-xl bg-themeTealWhite p-2 md:p-3">
       <div className="flex flex-col gap-4 xl:flex-row md:items-center md:justify-between">

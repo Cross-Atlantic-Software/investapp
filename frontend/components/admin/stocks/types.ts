@@ -19,7 +19,7 @@ export interface StockData {
   min_units: number;
   lot_size: number;
   stock_master_ids: number[];
-  price_change_period_id: number;
+  price_change_period_id: number | undefined;
   icon: File | null;
 }
 

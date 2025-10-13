@@ -90,10 +90,10 @@ const Step5: React.FC<StepProps & {
 
   // Memoize the price change period name to ensure it updates when dependencies change
   const priceChangePeriodName = useMemo(() => {
-    if (!formData.price_change_period_id) return '12 Months';
+    if (!formData.price_change_period_id) return 'No period selected';
     
     const period = priceChangePeriods.find(p => p.id === formData.price_change_period_id);
-    return period ? period.period : '12 Months';
+    return period ? period.period : 'Period not found';
   }, [formData.price_change_period_id, priceChangePeriods]);
 
   return (

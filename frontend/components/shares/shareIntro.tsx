@@ -12,7 +12,7 @@ export type ShareIntroProps = {
   company: string;
   investPrice: number;
   changeAbs: number;
-  priceChangePeriod?: string;
+  priceChangePeriod?: string | undefined;
   updatedAt: string;
   tags: string[];
   founded: string | number;
@@ -91,7 +91,7 @@ export default function ShareIntro(props: ShareIntroProps) {
               label="Price Change Period"
               value={
                 <span className={pos ? "text-green-600" : "text-rose-600"}>
-                  {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))} ({priceChangePeriod || '12 Months'})
+                  {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))} ({priceChangePeriod || 'No period assigned'})
                 </span>
               }
             />

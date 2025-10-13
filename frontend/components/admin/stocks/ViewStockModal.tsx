@@ -1,15 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { X } from 'lucide-react';
 import Image from 'next/image';
 import StepProgressIndicator from './StepProgressIndicator';
 import { ExistingStockData } from './types';
-
-interface PriceChangePeriod {
-  id: number;
-  period: string;
-}
 
 interface ViewStockModalProps {
   stock: ExistingStockData;
@@ -27,30 +22,9 @@ interface ViewStockModalProps {
 const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMasters = [], themes = [] }) => {
   const totalSteps = 4;
   const [currentStep, setCurrentStep] = useState(1);
-  const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
 
   // Debug logging
   console.log('ViewStockModal props:', { stock, stockMasters, themes });
-
-  useEffect(() => {
-    const fetchPriceChangePeriods = async () => {
-      try {
-        const response = await fetch('/api/admin/price-change-periods/select');
-        
-        if (response.ok) {
-          const data = await response.json();
-          
-          if (data.success && data.data?.periods) {
-            setPriceChangePeriods(data.data.periods);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching price change periods:', error);
-      }
-    };
-
-    fetchPriceChangePeriods();
-  }, []);
 
   const getStockMasterNames = () => {
     if (!stock.stock_masters || stock.stock_masters.length === 0) {
@@ -88,10 +62,13 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
   };
 
   const getPriceChangePeriodName = () => {
-    if (!stock.price_change_period_id) return '12 Months';
-    
-    const period = priceChangePeriods.find(p => p.id === stock.price_change_period_id);
-    return period ? period.period : '12 Months';
+    // Handle both string and object formats for price_change_period
+    if (typeof stock.price_change_period === 'string') {
+      return stock.price_change_period;
+    } else if (stock.price_change_period && typeof stock.price_change_period === 'object') {
+      return stock.price_change_period.period;
+    }
+    return 'No period assigned';
   };
 
   const handleGoToStep = (step: number) => {
