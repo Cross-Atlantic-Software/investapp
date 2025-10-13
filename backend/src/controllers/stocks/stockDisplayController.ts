@@ -3,7 +3,18 @@ import db from '../../utils/database';
 
 export class StockDisplayController {
   private async ensureDbReady() {
+    console.log('🔍 Waiting for database initialization...');
     await db.sequelizePromise;
+    console.log('✅ Database initialization promise resolved');
+    
+    // Test if we can actually access the models
+    try {
+      await db.sequelize.authenticate();
+      console.log('✅ Database authentication successful');
+    } catch (error) {
+      console.error('❌ Database authentication failed:', error);
+      throw error;
+    }
   }
 
   // Get stocks for banner display
@@ -91,9 +102,18 @@ export class StockDisplayController {
   // Get stocks for home display
   static async getHomeDisplayStocks(req: Request, res: Response) {
     try {
+      console.log('🔍 Starting getHomeDisplayStocks...');
       const controller = new StockDisplayController();
       await controller.ensureDbReady();
+      console.log('✅ Database is ready');
       
+      console.log('🔍 Checking db.Product model...');
+      if (!db.Product) {
+        throw new Error('db.Product model is not available');
+      }
+      console.log('✅ db.Product model is available');
+      
+      console.log('🔍 Querying stocks with homeDisplay="yes"...');
       const stocks = await db.Product.findAll({
         where: {
           homeDisplay: 'yes'
@@ -101,6 +121,7 @@ export class StockDisplayController {
         order: [['createdAt', 'DESC']],
         limit: 20 // Limit to 20 stocks for home display
       });
+      console.log(`✅ Found ${stocks.length} stocks with homeDisplay="yes"`);
 
       // Fetch price change periods and valuation names for all stocks
       const stocksWithPeriods = await Promise.all(
@@ -159,11 +180,18 @@ export class StockDisplayController {
         }
       });
     } catch (error) {
-      console.error('Error fetching home display stocks:', error);
+      console.error('❌ Error fetching home display stocks:', error);
+      console.error('❌ Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      console.error('❌ Error details:', {
+        name: error instanceof Error ? error.name : 'Unknown',
+        message: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
       res.status(500).json({
         success: false,
         message: 'Failed to fetch home display stocks',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
+        details: process.env.NODE_ENV === 'development' ? (error instanceof Error ? error.stack : 'No stack trace') : undefined
       });
     }
   }

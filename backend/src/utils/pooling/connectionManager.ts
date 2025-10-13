@@ -86,12 +86,19 @@ export class ConnectionManager {
   private async createDatabaseIfNotExists(dbConfig: any): Promise<void> {
     let connection;
     try {
+      if (!this.mysqlPool) {
+        console.log('MySQL pool not available, skipping database creation');
+        return;
+      }
       connection = await this.mysqlPool.getConnection();
       await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\`;`);
       console.log(`Database '${dbConfig.database}' ready`);
     } catch (error) {
       console.error('Error creating database:', error);
-      throw error;
+      // Don't throw error during shutdown
+      if (this.isInitialized) {
+        throw error;
+      }
     } finally {
       if (connection) {
         connection.release();
@@ -172,25 +179,32 @@ export class ConnectionManager {
 
   // Cleanup method for error handling
   private async cleanup(): Promise<void> {
+    console.log('🧹 Starting cleanup...');
+    
     try {
       if (this.sequelize) {
+        console.log('🔌 Closing Sequelize connection...');
         await this.sequelize.close();
         this.sequelize = null;
+        console.log('✅ Sequelize connection closed');
       }
     } catch (error) {
-      console.error('Error closing Sequelize:', error);
+      console.error('❌ Error closing Sequelize:', error);
     }
 
     try {
       if (this.mysqlPool) {
+        console.log('🔌 Closing MySQL pool...');
         await this.mysqlPool.end();
         this.mysqlPool = null;
+        console.log('✅ MySQL pool closed');
       }
     } catch (error) {
-      console.error('Error closing MySQL pool:', error);
+      console.error('❌ Error closing MySQL pool:', error);
     }
 
     this.isInitialized = false;
+    console.log('✅ Cleanup completed');
   }
 
   // Graceful shutdown
