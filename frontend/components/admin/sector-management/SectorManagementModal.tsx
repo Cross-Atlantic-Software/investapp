@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Edit, Trash2, Search, Building2, FolderOpen, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Building2, FolderOpen, Clock } from 'lucide-react';
 
 interface Sector {
   id: number;
@@ -472,7 +472,7 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
                       {searchTerm ? 'No sectors match your search' : 'No sectors found'}
                     </p>
                     {!searchTerm && (
-                      <p className="text-xs text-gray-400 mt-1">Click "Add Sector" to create your first sector</p>
+                      <p className="text-xs text-gray-400 mt-1">Click &quot;Add Sector&quot; to create your first sector</p>
                     )}
                   </div>
                 ) : (
@@ -648,7 +648,7 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
                       {searchTerm ? 'No subsectors match your search' : 'No subsectors found for this sector'}
                     </p>
                     {!searchTerm && (
-                      <p className="text-xs text-gray-400 mt-1">Click "Add Subsector" to create your first subsector</p>
+                      <p className="text-xs text-gray-400 mt-1">Click &quot;Add Subsector&quot; to create your first subsector</p>
                     )}
                   </div>
                 ) : (
