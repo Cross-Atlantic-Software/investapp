@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Eye, EyeOff, X } from 'lucide-react';
+import { NotificationContainer, NotificationData } from '@/components/admin/shared/Notification';
 
 interface ContactFaq {
   id: number;
@@ -25,7 +26,9 @@ interface Pagination {
 export default function ContactFaqsPage() {
   const [faqs, setFaqs] = useState<ContactFaq[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const [pagination, setPagination] = useState<Pagination>({
     currentPage: 1,
     totalPages: 1,
@@ -42,10 +45,24 @@ export default function ContactFaqsPage() {
     display_order: 0,
     is_active: true,
   });
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
-  const fetchFaqs = async (page = 1, search = '') => {
+  // Notification helper functions
+  const addNotification = (notification: Omit<NotificationData, 'id'>) => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { ...notification, id }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
+
+  const fetchFaqs = async (page = 1, search = '', showLoading: boolean = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+        setIsInitialLoad(true);
+      }
       const token = sessionStorage.getItem('adminToken');
       const params = new URLSearchParams({
         page: page.toString(),
@@ -66,8 +83,15 @@ export default function ContactFaqsPage() {
       }
     } catch (error) {
       console.error('Error fetching FAQs:', error);
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to fetch FAQs',
+        duration: 5000
+      });
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
   };
 
@@ -75,9 +99,23 @@ export default function ContactFaqsPage() {
     fetchFaqs();
   }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    fetchFaqs(1, searchTerm);
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    setIsSearching(true);
+    
+    // Debounce search
+    const timeoutId = setTimeout(() => {
+      fetchFaqs(1, value, false);
+      setIsSearching(false);
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    fetchFaqs(1, '', false);
   };
 
   const handlePageChange = (page: number) => {
@@ -128,13 +166,29 @@ export default function ContactFaqsPage() {
       const data = await response.json();
       if (data.success) {
         setShowModal(false);
-        fetchFaqs(pagination.currentPage, searchTerm);
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: editingFaq ? 'FAQ updated successfully!' : 'FAQ created successfully!',
+          duration: 5000
+        });
+        fetchFaqs(pagination.currentPage, searchTerm, false);
       } else {
-        alert(data.message || 'Failed to save FAQ');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to save FAQ',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error saving FAQ:', error);
-      alert('Failed to save FAQ');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to save FAQ',
+        duration: 5000
+      });
     }
   };
 
@@ -152,13 +206,29 @@ export default function ContactFaqsPage() {
 
       const data = await response.json();
       if (data.success) {
-        fetchFaqs(pagination.currentPage, searchTerm);
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'FAQ deleted successfully!',
+          duration: 5000
+        });
+        fetchFaqs(pagination.currentPage, searchTerm, false);
       } else {
-        alert(data.message || 'Failed to delete FAQ');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to delete FAQ',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error deleting FAQ:', error);
-      alert('Failed to delete FAQ');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to delete FAQ',
+        duration: 5000
+      });
     }
   };
 
@@ -179,171 +249,233 @@ export default function ContactFaqsPage() {
 
       const data = await response.json();
       if (data.success) {
-        fetchFaqs(pagination.currentPage, searchTerm);
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: `FAQ ${!faq.is_active ? 'activated' : 'deactivated'} successfully!`,
+          duration: 5000
+        });
+        fetchFaqs(pagination.currentPage, searchTerm, false);
       } else {
-        alert(data.message || 'Failed to update FAQ status');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to update FAQ status',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error updating FAQ status:', error);
-      alert('Failed to update FAQ status');
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to update FAQ status',
+        duration: 5000
+      });
     }
   };
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Contact FAQs</h1>
-        <button
-          onClick={handleCreate}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Add FAQ
-        </button>
-      </div>
+    <div className="space-y-6 relative overflow-hidden">
+      {/* Notifications */}
+      <NotificationContainer
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
 
-      {/* Search */}
-      <form onSubmit={handleSearch} className="mb-6">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            placeholder="Search FAQs..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 flex items-center gap-2"
-          >
-            <Search className="h-4 w-4" />
-            Search
-          </button>
+      {loading && isInitialLoad ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4"></div>
+            <p className="text-themeTeal">Loading FAQs...</p>
+          </div>
         </div>
-      </form>
+      ) : (
+        <>
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-lg font-bold text-themeTeal">Contact FAQs</h1>
+            <p className="text-sm text-themeTealLight">Manage frequently asked questions and answers here.</p>
+          </div>
 
-      {/* FAQs Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        {loading ? (
-          <div className="p-8 text-center">Loading...</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Order
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Question
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Answer
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {faqs.map((faq) => (
-                  <tr key={faq.id}>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {faq.display_order}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                      {faq.question}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                      {faq.answer}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          faq.is_active
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {faq.is_active ? 'Active' : 'Inactive'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(faq)}
-                          className="text-blue-600 hover:text-blue-900"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </button>
-                        <button
-                          onClick={() => handleToggleStatus(faq)}
-                          className={faq.is_active ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
-                        >
-                          {faq.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(faq.id)}
-                          className="text-red-600 hover:text-red-900"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
+          {/* Search Section */}
+          <div className="flex justify-between flex-col md:flex-row gap-4 md:items-center mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="bg-themeTeal/10 px-3 py-1.5 rounded-full">
+                <span className="text-sm font-medium text-themeTeal">
+                  All FAQs <span className="bg-themeTeal text-white px-2 py-0.5 rounded-full text-xs ml-1">{faqs.length}</span>
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                  placeholder="Search FAQs..."
+                  className="w-64 pl-10 pr-4 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal placeholder:text-themeTealLighter"
+                />
+                {isSearching ? (
+                  <svg className="absolute left-3 top-2.5 h-4 w-4 text-themeTeal animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-themeTealLighter"/>
+                )}
+                
+                {searchTerm && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="absolute right-3 top-2.5 h-4 w-4 text-themeTealLight hover:text-themeTealLighter"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              <button
+                onClick={handleCreate}
+                className="bg-themeTeal text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeSkyBlue transition duration-300 flex items-center cursor-pointer"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add FAQ
+              </button>
+            </div>
+          </div>
+
+          {/* FAQs Table */}
+          <div className="bg-white rounded-lg shadow-sm border border-themeTealLighter overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-themeTealLighter">
+                <thead className="bg-themeTealWhite">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-themeTeal uppercase tracking-wider">
+                      Order
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-themeTeal uppercase tracking-wider">
+                      Question
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-themeTeal uppercase tracking-wider">
+                      Answer
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-themeTeal uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-themeTeal uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="bg-white divide-y divide-themeTealLighter">
+                  {faqs.map((faq, index) => (
+                    <tr 
+                      key={faq.id}
+                      className={`hover:bg-themeTealWhite transition duration-300 ${
+                        index % 2 === 0 ? 'bg-white' : 'bg-themeTealWhite'
+                      }`}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
+                        {faq.display_order}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-themeTeal max-w-xs truncate">
+                        {faq.question}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-themeTeal max-w-xs truncate">
+                        {faq.answer}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span
+                          className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            faq.is_active
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {faq.is_active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEdit(faq)}
+                            className="p-2 text-themeTeal bg-themeTealWhite rounded transition duration-300 hover:bg-themeTeal hover:text-white cursor-pointer"
+                            title="Edit FAQ"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => handleToggleStatus(faq)}
+                            className={`p-2 rounded transition duration-300 cursor-pointer ${
+                              faq.is_active 
+                                ? 'text-red-600 bg-red-50 hover:bg-red-100' 
+                                : 'text-green-600 bg-green-50 hover:bg-green-100'
+                            }`}
+                            title={faq.is_active ? 'Deactivate FAQ' : 'Activate FAQ'}
+                          >
+                            {faq.is_active ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(faq.id)}
+                            className="p-2 text-red-600 bg-red-50 rounded transition duration-300 hover:bg-red-100 cursor-pointer"
+                            title="Delete FAQ"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
 
-      {/* Pagination */}
-      {pagination.totalPages > 1 && (
-        <div className="mt-6 flex justify-center">
-          <div className="flex gap-2">
-            <button
-              onClick={() => handlePageChange(pagination.currentPage - 1)}
-              disabled={!pagination.hasPrev}
-              className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Previous
-            </button>
-            <span className="px-3 py-2 text-sm text-gray-700">
-              Page {pagination.currentPage} of {pagination.totalPages}
-            </span>
-            <button
-              onClick={() => handlePageChange(pagination.currentPage + 1)}
-              disabled={!pagination.hasNext}
-              className="px-3 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-6 flex justify-center">
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPrev}
+                  className="px-3 py-2 border border-themeTealLighter rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-themeTealWhite text-themeTeal transition duration-300"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-2 text-sm text-themeTeal">
+                  Page {pagination.currentPage} of {pagination.totalPages}
+                </span>
+                <button
+                  onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNext}
+                  className="px-3 py-2 border border-themeTealLighter rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-themeTealWhite text-themeTeal transition duration-300"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">
+              <h2 className="text-lg font-semibold text-themeTeal">
                 {editingFaq ? 'Edit FAQ' : 'Add FAQ'}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                className="text-themeTealLight hover:text-themeTeal transition duration-300 cursor-pointer"
               >
-                ×
+                <X className="h-5 w-5" />
               </button>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-themeTeal mb-1">
                   Question *
                 </label>
                 <textarea
@@ -351,12 +483,12 @@ export default function ContactFaqsPage() {
                   onChange={(e) => setFormData({ ...formData, question: e.target.value })}
                   required
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal placeholder:text-themeTealLighter"
                   placeholder="Enter the question..."
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-themeTeal mb-1">
                   Answer *
                 </label>
                 <textarea
@@ -364,13 +496,13 @@ export default function ContactFaqsPage() {
                   onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
                   required
                   rows={5}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal placeholder:text-themeTealLighter"
                   placeholder="Enter the answer..."
                 />
               </div>
               {editingFaq && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-xs font-medium text-themeTeal mb-1">
                     Display Order
                   </label>
                   <input
@@ -378,7 +510,7 @@ export default function ContactFaqsPage() {
                     value={formData.display_order}
                     onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
                     min="0"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                   />
                 </div>
               )}
@@ -388,23 +520,23 @@ export default function ContactFaqsPage() {
                   id="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-themeTeal focus:ring-themeTeal border-themeTealLighter rounded"
                 />
-                <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+                <label htmlFor="is_active" className="ml-2 block text-sm text-themeTeal">
                   Active
                 </label>
               </div>
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                  className="bg-themeTeal text-themeTealWhite px-4 py-2 rounded hover:bg-themeSkyBlue transition duration-300"
                 >
                   {editingFaq ? 'Update' : 'Create'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400"
+                  className="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition duration-300"
                 >
                   Cancel
                 </button>

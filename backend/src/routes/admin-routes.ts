@@ -40,6 +40,7 @@ import { BulkDealsManagementController } from "../controllers/admin/bulkDealsMan
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 import { PriceChangePeriodController } from "../controllers/admin/priceChangePeriodController";
 import { ValuationController } from "../controllers/admin/valuationController";
+import { ThemeController } from "../controllers/admin/themeController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
@@ -245,6 +246,14 @@ router.get("/valuations/:id", ValuationController.getValuationById);
 router.post("/valuations", ValuationController.createValuation);
 router.put("/valuations/:id", ValuationController.updateValuation);
 router.delete("/valuations/:id", ValuationController.deleteValuation);
+
+// Theme Management Routes
+router.get("/themes", ThemeController.getAllThemes);
+router.get("/themes/select", ThemeController.getThemesForSelect);
+router.get("/themes/:id", ThemeController.getThemeById);
+router.post("/themes", ThemeController.createTheme);
+router.put("/themes/:id", ThemeController.updateTheme);
+router.delete("/themes/:id", ThemeController.deleteTheme);
 
 // Sector Management Routes
 router.get("/sectors", SectorManagementController.getAllSectors);

@@ -94,6 +94,10 @@ interface StockTableProps {
     name: string;
     sector_id: number;
   }>;
+  themes?: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
 
@@ -105,7 +109,7 @@ interface StockTableProps {
 // };
 
 
-const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification, stockMasters = [], sectors = [], subsectors = [] }) => {
+const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification, stockMasters = [], sectors = [], subsectors = [], themes = [] }) => {
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
   const [csvUploadModal, setCsvUploadModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
@@ -1373,7 +1377,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   {/* Valuation Column */}
                   <td className="px-4 py-3 text-left">
                     <div className="text-xs font-medium text-gray-900">
-                      {stock.valuation || 'N/A'}
+                      {typeof stock.valuation === 'string' ? stock.valuation : stock.valuation?.valuation_name || 'N/A'}
                     </div>
                   </td>
 
@@ -1461,6 +1465,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
           stockMasters={stockMasters}
           sectors={sectors}
           subsectors={subsectors}
+          themes={themes}
         />
       )}
 
@@ -1470,6 +1475,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
           stock={viewingStock}
           onClose={() => setViewingStock(null)}
           stockMasters={stockMasters}
+          themes={themes}
         />
       )}
 
@@ -1489,7 +1495,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Financial Data Upload Modal */}
       {financialDataModal.isOpen && financialDataModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t-lg">
@@ -1521,7 +1527,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Scorecard Management Modal */}
       {scorecardModal.isOpen && scorecardModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -1699,7 +1705,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Investment Rationale Management Modal */}
       {rationaleModal.isOpen && rationaleModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -1977,7 +1983,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Performance PDF Management Modal */}
       {pdfModal.isOpen && pdfModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -2206,7 +2212,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Replace PDF Modal */}
       {replacingPdf && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
             {/* Modal Header */}
             <div className="bg-orange-500 px-6 py-4 rounded-t">
@@ -2271,7 +2277,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Sector Outlook Management Modal */}
       {sectorOutlookModal.isOpen && sectorOutlookModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -2394,7 +2400,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Sector Insights PDF Management Modal */}
       {sectorInsightsPdfModal.isOpen && sectorInsightsPdfModal.stock && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
             {/* Modal Header */}
             <div className="bg-themeTeal px-6 py-4 rounded-t">
@@ -2624,7 +2630,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
 
       {/* Replace Sector Insights PDF Modal */}
       {replacingSectorInsightsPdf && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
             {/* Modal Header */}
             <div className="bg-orange-500 px-6 py-4 rounded-t">

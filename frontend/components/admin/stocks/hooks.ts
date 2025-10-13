@@ -18,6 +18,7 @@ export const useStockFormState = () => {
     founded: new Date().getFullYear(),
     sector_ids: [],
     subsector_ids: [],
+    theme_ids: [],
     headquarters: '',
     min_units: 1,
     lot_size: 1,

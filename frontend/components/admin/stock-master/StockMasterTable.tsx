@@ -93,7 +93,7 @@ const StockMasterTable: React.FC<StockMasterTableProps> = ({
             {stockMasters.length === 0 ? (
               <tr>
                 <td colSpan={4} className="px-6 py-12 text-center text-themeTeal">
-                  No stock masters found
+                  No stock tags found
                 </td>
               </tr>
             ) : (

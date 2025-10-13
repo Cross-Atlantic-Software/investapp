@@ -14,6 +14,7 @@ import BulkDeals, { initializeBulkDealsModel } from "../Models/BulkDeals";
 import StockMaster, { initializeStockMasterModel } from "../Models/StockMaster";
 import PriceChangePeriod, { initializePriceChangePeriodModel } from "../Models/PriceChangePeriod";
 import Valuation, { initializeValuationModel } from "../Models/Valuation";
+import Theme, { initializeThemeModel } from "../Models/Theme";
 import StockScorecardModel, { initializeStockScorecardModel } from "../Models/StockScorecard";
 import StockInvestmentRationaleModel, { initializeStockInvestmentRationaleModel } from "../Models/StockInvestmentRationale";
 import StockPerformancePdfModel, { initializeStockPerformancePdfModel } from "../Models/StockPerformancePdf";
@@ -112,6 +113,9 @@ async function initializeSequelize() {
   
   // Initialize Valuation model
   initializeValuationModel(sequelize);
+  
+  // Initialize Theme model
+  initializeThemeModel(sequelize);
   
   // Initialize Stock Scorecard model
   initializeStockScorecardModel(sequelize);
@@ -346,6 +350,12 @@ export const db = {
       throw new Error('Valuation model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return Valuation;
+  },
+  get Theme() {
+    if (!Theme) {
+      throw new Error('Theme model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Theme;
   },
   get StockScorecard() {
     if (!StockScorecardModel) {

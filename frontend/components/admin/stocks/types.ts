@@ -14,6 +14,7 @@ export interface StockData {
   founded: number;
   sector_ids: number[];
   subsector_ids: number[];
+  theme_ids: number[];
   headquarters: string;
   min_units: number;
   lot_size: number;
@@ -32,6 +33,10 @@ export interface ExistingStockData extends Omit<StockData, 'icon'> {
     id: number;
     name: string;
     sector_id: number;
+  }>;
+  themes?: Array<{
+    id: number;
+    name: string;
   }>;
   stock_masters?: Array<{
     id: number;
@@ -73,6 +78,10 @@ export interface AddStockModalProps {
     name: string;
     sector_id: number;
   }>;
+  themes?: Array<{
+    id: number;
+    name: string;
+  }>;
 }
 
 export interface StepProps {
@@ -91,6 +100,10 @@ export interface StepProps {
     id: number;
     name: string;
     sector_id: number;
+  }>;
+  themes?: Array<{
+    id: number;
+    name: string;
   }>;
 }
 

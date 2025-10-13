@@ -6,7 +6,7 @@ import StockTable from '@/components/admin/stocks/StockTable';
 import AddStockModal from '@/components/admin/stocks/AddStockModal';
 import Loader from '@/components/admin/shared/Loader';
 import { NotificationContainer, NotificationData } from '@/components/admin/shared/Notification';
-import { Plus, Search } from 'lucide-react';
+import { Plus, Search, Tag, Building2, Clock, DollarSign, Palette, FileText } from 'lucide-react';
 import { 
   StockMasterModal,
   StockMasterItem,
@@ -16,12 +16,15 @@ import { SectorManagementModal } from '@/components/admin/sector-management';
 import MethodologyModal from '@/components/admin/methodology/MethodologyModal';
 import PriceChangePeriodManagement from '@/components/admin/PriceChangePeriodManagement';
 import ValuationManagement from '@/components/admin/ValuationManagement';
+import ThemeManagement from '@/components/admin/ThemeManagement';
+import ManageDropdown from '@/components/admin/ManageDropdown';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
   const [stockMasters, setStockMasters] = useState<StockMasterItem[]>([]);
   const [sectors, setSectors] = useState<Array<{id: number; name: string}>>([]);
   const [subsectors, setSubsectors] = useState<Array<{id: number; name: string; sector_id: number}>>([]);
+  const [themes, setThemes] = useState<Array<{id: number; name: string}>>([]);
   const [loading, setLoading] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -29,6 +32,7 @@ export default function StocksPage() {
   const [showSectorModal, setShowSectorModal] = useState(false);
   const [showPriceChangePeriodModal, setShowPriceChangePeriodModal] = useState(false);
   const [showValuationModal, setShowValuationModal] = useState(false);
+  const [showThemeModal, setShowThemeModal] = useState(false);
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,6 +56,23 @@ export default function StocksPage() {
   useEffect(() => {
     sortOrderRef.current = sortOrder;
   }, [sortOrder]);
+
+  // Handle body overflow when modals are open
+  useEffect(() => {
+    const isAnyModalOpen = showAddModal || showStockMasterModal || showSectorModal || 
+                          showPriceChangePeriodModal || showValuationModal || showThemeModal || showMethodologyModal;
+    
+    if (isAnyModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddModal, showStockMasterModal, showSectorModal, showPriceChangePeriodModal, showValuationModal, showThemeModal, showMethodologyModal]);
   
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
@@ -186,12 +207,26 @@ export default function StocksPage() {
     }
   }, []);
 
+  const fetchThemes = useCallback(async () => {
+    try {
+      const response = await fetch('/api/themes/select');
+      const data = await response.json();
+
+      if (data.success) {
+        setThemes(data.data.themes || []);
+      }
+    } catch (error) {
+      console.error('Error fetching themes:', error);
+    }
+  }, []);
+
   // Initial load effect
   useEffect(() => {
     fetchStocks();
     fetchStockMasters();
     fetchSectors();
     fetchSubsectors();
+    fetchThemes();
     getCurrentUserRole();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run on mount
@@ -468,41 +503,17 @@ export default function StocksPage() {
                   </button>
                 )}
               </div>
-              <button
-                onClick={() => setShowStockMasterModal(true)}
-                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
-              >
-                <Plus width={16} height={16} className='mr-1'/>
-                Manage Stock Masters
-              </button>
-              <button
-                onClick={() => setShowSectorModal(true)}
-                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
-              >
-                <Plus width={16} height={16} className='mr-1'/>
-                Manage Sectors
-              </button>
-              <button
-                onClick={() => setShowPriceChangePeriodModal(true)}
-                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
-              >
-                <Plus width={16} height={16} className='mr-1'/>
-                Manage Price Change Periods
-              </button>
-              <button
-                onClick={() => setShowValuationModal(true)}
-                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
-              >
-                <Plus width={16} height={16} className='mr-1'/>
-                Manage Valuations
-              </button>
-              <button
-                onClick={() => setShowMethodologyModal(true)}
-                className="bg-themeTealLighter text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeTeal hover:text-white transition duration-300 flex items-center cursor-pointer"
-              >
-                <Plus width={16} height={16} className='mr-1'/>
-                Methodology Notes
-              </button>
+              <ManageDropdown
+                label="Manage"
+                options={[
+                  { label: 'Stock Tags', onClick: () => setShowStockMasterModal(true), icon: Tag },
+                  { label: 'Sectors', onClick: () => setShowSectorModal(true), icon: Building2 },
+                  { label: 'Price Change Periods', onClick: () => setShowPriceChangePeriodModal(true), icon: Clock },
+                  { label: 'Valuations', onClick: () => setShowValuationModal(true), icon: DollarSign },
+                  { label: 'Themes', onClick: () => setShowThemeModal(true), icon: Palette },
+                  { label: 'Methodology Notes', onClick: () => setShowMethodologyModal(true), icon: FileText },
+                ]}
+              />
               {canCreateStocks && (
                 <button
                   onClick={() => setShowAddModal(true)}
@@ -526,6 +537,7 @@ export default function StocksPage() {
             stockMasters={stockMasters}
             sectors={sectors}
             subsectors={subsectors}
+            themes={themes}
           />
           </div>
         </>
@@ -537,6 +549,7 @@ export default function StocksPage() {
           stockMasters={stockMasters}
           sectors={sectors}
           subsectors={subsectors}
+          themes={themes}
           onSubmit={(stockData) => {
             const adaptedData = {
               company_name: stockData.company_name,
@@ -555,6 +568,7 @@ export default function StocksPage() {
               founded: stockData.founded,
               sector_ids: stockData.sector_ids,
               subsector_ids: stockData.subsector_ids,
+              theme_ids: stockData.theme_ids,
               headquarters: stockData.headquarters,
               min_units: stockData.min_units,
               lot_size: stockData.lot_size,
@@ -587,36 +601,60 @@ export default function StocksPage() {
       />
 
       {showPriceChangePeriodModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg w-full max-w-6xl max-h-[90vh] overflow-y-auto">
-            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-themeTeal">Price Change Period Management</h2>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50" onClick={() => setShowPriceChangePeriodModal(false)}>
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-themeTealLighter" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-themeTeal text-white p-4 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Price Change Period Management</h2>
               <button
                 onClick={() => setShowPriceChangePeriodModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                className="text-white hover:text-gray-200 text-2xl font-bold transition duration-300"
               >
                 ×
               </button>
             </div>
-            <PriceChangePeriodManagement />
+            <div className="overflow-y-auto max-h-[calc(90vh-60px)]">
+              <PriceChangePeriodManagement />
+            </div>
           </div>
         </div>
       )}
 
       {/* Valuation Management Modal */}
       {showValuationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50" onClick={() => setShowValuationModal(false)}>
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-themeTealLighter" onClick={(e) => e.stopPropagation()}>
             <div className="bg-themeTeal text-white p-4 flex justify-between items-center">
               <h2 className="text-xl font-semibold">Manage Valuations</h2>
               <button
                 onClick={() => setShowValuationModal(false)}
-                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+                className="text-white hover:text-gray-200 text-2xl font-bold transition duration-300"
               >
                 ×
               </button>
             </div>
-            <ValuationManagement onClose={() => setShowValuationModal(false)} />
+            <div className="overflow-y-auto max-h-[calc(90vh-60px)]">
+              <ValuationManagement onClose={() => setShowValuationModal(false)} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Theme Management Modal */}
+      {showThemeModal && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50" onClick={() => setShowThemeModal(false)}>
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-themeTealLighter" onClick={(e) => e.stopPropagation()}>
+            <div className="bg-themeTeal text-white p-4 flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Manage Themes</h2>
+              <button
+                onClick={() => setShowThemeModal(false)}
+                className="text-white hover:text-gray-200 text-2xl font-bold transition duration-300"
+              >
+                ×
+              </button>
+            </div>
+            <div className="overflow-y-auto max-h-[calc(90vh-60px)]">
+              <ThemeManagement />
+            </div>
           </div>
         </div>
       )}

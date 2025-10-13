@@ -17,6 +17,7 @@ interface ProductAttributes {
   founded: number;
   sector_ids: string;
   subsector_ids: string;
+  theme_ids: string;
   headquarters: string;
   min_units: number;
   lot_size: number;
@@ -51,6 +52,7 @@ class Product
   public founded!: number;
   public sector_ids!: string;
   public subsector_ids!: string;
+  public theme_ids!: string;
   public headquarters!: string;
   public min_units!: number;
   public lot_size!: number;
@@ -132,6 +134,10 @@ export function initializeProductModel(sequelize: Sequelize) {
         allowNull: true
       },
       subsector_ids: {
+        type: DataTypes.TEXT,
+        allowNull: true
+      },
+      theme_ids: {
         type: DataTypes.TEXT,
         allowNull: true
       },

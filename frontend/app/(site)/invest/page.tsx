@@ -5,14 +5,22 @@ import { ProductItem } from '@/components/subcomponents/productsList';
 import { Search, SlidersHorizontal, X } from 'lucide-react';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { FilterState } from '@/components/subcomponents/filterssidebar';
 
 export default function Invest() {
   const { isAuthenticated } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [stocks, setStocks] = useState<ProductItem[]>([]);
+  const [allStocks, setAllStocks] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [, setActiveFilters] = useState<FilterState>({
+    valuation: [],
+    sectors: [],
+    subsectors: [],
+    themes: [],
+  });
 
   // Function to map backend data to frontend format
   const mapStockToProduct = useCallback((stock: {
@@ -23,13 +31,17 @@ export default function Invest() {
     price_change: number;
     price_change_period_id?: number;
     price_change_period?: string;
-    valuation: string;
+    valuation_id?: number;
+    valuation?: string;
     teaser: string;
     short_description: string;
     analysis: string;
+    sector_ids?: string;
+    subsector_ids?: string;
+    theme_ids?: string;
     createdAt?: Date;
     updatedAt?: Date;
-  }): ProductItem => {
+  }): ProductItem & { valuation_id?: number; sector_ids?: string; subsector_ids?: string; theme_ids?: string } => {
     return {
       id: stock.id.toString(),
       company_name: stock.company_name,
@@ -38,10 +50,14 @@ export default function Invest() {
       price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
       price_change_period_id: stock.price_change_period_id || 4, // Default to 12 Months
       price_change_period: stock.price_change_period, // Optional for backward compatibility
-      valuation: stock.valuation || '0',
+      valuation: stock.valuation || 'N/A',
+      valuation_id: stock.valuation_id,
       teaser: stock.teaser,
       short_description: stock.short_description,
       analysis: stock.analysis,
+      sector_ids: stock.sector_ids,
+      subsector_ids: stock.subsector_ids,
+      theme_ids: stock.theme_ids,
       createdAt: stock.createdAt?.toString(),
       updatedAt: stock.updatedAt?.toString()
     };
@@ -69,6 +85,7 @@ export default function Invest() {
       
       if (data.success && data.data?.stocks) {
         const mappedStocks = data.data.stocks.map(mapStockToProduct);
+        setAllStocks(mappedStocks);
         setStocks(mappedStocks);
       } else {
         setError(data.message || 'Failed to fetch stocks');
@@ -80,6 +97,92 @@ export default function Invest() {
       setLoading(false);
     }
   }, [mapStockToProduct]);
+
+  // Apply filters
+  const applyFilters = useCallback((filters: FilterState) => {
+    setActiveFilters(filters);
+    
+    let filteredStocks = [...allStocks];
+
+    // Filter by valuation
+    if (filters.valuation.length > 0) {
+      filteredStocks = filteredStocks.filter((stock: ProductItem & { valuation_id?: number }) => {
+        const valuationId = stock.valuation_id;
+        
+        // Assuming valuation_id references a price change period or valuation table
+        // For now, we'll use a simple logic based on the filter values
+        return filters.valuation.some(val => {
+          if (val === 'above-300') {
+            // Consider stocks with valuation_id >= 300 or specific IDs
+            return valuationId && valuationId >= 300;
+          } else if (val === 'below-300') {
+            // Consider stocks with valuation_id < 300
+            return !valuationId || valuationId < 300;
+          }
+          return false;
+        });
+      });
+    }
+
+    // Filter by sectors (Industry Groups)
+    if (filters.sectors.length > 0) {
+      filteredStocks = filteredStocks.filter((stock: ProductItem & { sector_ids?: string }) => {
+        if (!stock.sector_ids) return false;
+        try {
+          const stockSectors = JSON.parse(stock.sector_ids);
+          return filters.sectors.some(sectorId => 
+            stockSectors.includes(parseInt(sectorId))
+          );
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    // Filter by subsectors (Industries)
+    if (filters.subsectors.length > 0) {
+      filteredStocks = filteredStocks.filter((stock: ProductItem & { subsector_ids?: string }) => {
+        if (!stock.subsector_ids) return false;
+        try {
+          const stockSubsectors = JSON.parse(stock.subsector_ids);
+          return filters.subsectors.some(subsectorId => 
+            stockSubsectors.includes(parseInt(subsectorId))
+          );
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    // Filter by themes
+    if (filters.themes.length > 0) {
+      filteredStocks = filteredStocks.filter((stock: ProductItem & { theme_ids?: string }) => {
+        if (!stock.theme_ids) return false;
+        try {
+          const stockThemes = JSON.parse(stock.theme_ids);
+          return filters.themes.some(themeId => 
+            stockThemes.includes(parseInt(themeId))
+          );
+        } catch {
+          return false;
+        }
+      });
+    }
+
+    setStocks(filteredStocks);
+    setShowFilters(false); // Close mobile filter drawer
+  }, [allStocks]);
+
+  // Clear filters
+  const clearFilters = useCallback(() => {
+    setActiveFilters({
+      valuation: [],
+      sectors: [],
+      subsectors: [],
+      themes: [],
+    });
+    setStocks(allStocks);
+  }, [allStocks]);
 
   useEffect(() => {
     if (!showFilters) return;
@@ -129,7 +232,7 @@ export default function Invest() {
         <div className="grid grid-cols-1 gap-8 md:grid-cols-[max-content_minmax(0,1fr)]">
           {/* left column: desktop sidebar */}
           <aside className="hidden md:block md:w-auto md:max-w-max md:justify-self-start">
-            {/* <FilterSidebar /> */}
+            <FilterSidebar onApplyFilters={applyFilters} onClearFilters={clearFilters} stockData={allStocks} />
           </aside>
 
           {/* right column: results */}
@@ -207,7 +310,7 @@ export default function Invest() {
                 </button>
               </div>
               <div>
-                <FilterSidebar />
+                <FilterSidebar onApplyFilters={applyFilters} onClearFilters={clearFilters} stockData={allStocks} />
               </div>
             </div>
           </div>

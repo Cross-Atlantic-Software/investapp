@@ -151,7 +151,7 @@ const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 transition-opacity duration-300"
+        className="fixed inset-0 bg-black/30 backdrop-blur-md z-40 transition-opacity duration-300"
         onClick={onClose}
       />
 

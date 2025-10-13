@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, X } from 'lucide-react';
+import { Loader } from '@/components/admin/shared';
 
 interface PriceChangePeriod {
   id: number;
@@ -126,28 +127,18 @@ export default function PriceChangePeriodManagement() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-themeTeal"></div>
+      <div className="flex justify-center items-center py-12">
+        <Loader />
       </div>
     );
   }
 
   return (
     <div className="p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-themeTeal">Price Change Period Management</h1>
-        <button
-          onClick={handleCreate}
-          className="bg-themeTeal text-white px-4 py-2 rounded-lg hover:bg-themeTealDark transition duration-300 flex items-center gap-2"
-        >
-          <Plus className="w-4 h-4" />
-          Add Period
-        </button>
-      </div>
-
-      {/* Search */}
-      <div className="mb-6">
-        <div className="relative">
+      {/* Search and Add Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        {/* Search */}
+        <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
           <input
             type="text"
@@ -157,59 +148,73 @@ export default function PriceChangePeriodManagement() {
             className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
           />
         </div>
+
+        {/* Add Button */}
+        <button
+          onClick={handleCreate}
+          className="bg-themeTeal text-white px-4 py-2 rounded-lg hover:bg-themeTealDark transition duration-300 flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Add Period
+        </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Period
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Created At
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+      <div className="w-100 md:w-full overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-themeTealLighter">
+            <thead className="bg-themeTeal">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  ID
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Period
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Created At
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-themeTealLighter">
             {filteredPeriods.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
+                <td colSpan={4} className="px-6 py-4 text-center text-themeTeal">
                   {searchTerm ? 'No periods found matching your search' : 'No periods found'}
                 </td>
               </tr>
             ) : (
-              filteredPeriods.map((period) => (
-                <tr key={period.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+              filteredPeriods.map((period, index) => (
+                <tr key={period.id} className={index % 2 === 0 ? "bg-white" : "bg-themeTealWhite"}>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
                     {period.id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
                     {period.period}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
                     {period.created_at ? new Date(period.created_at).toLocaleDateString() : '-'}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <div className="flex space-x-2">
+                    <div className="flex items-center space-x-1">
                       <button
                         onClick={() => handleEdit(period)}
-                        className="text-themeTeal hover:text-themeTealDark"
+                        className="p-2 bg-themeTeal text-themeTealWhite hover:bg-themeTealWhite hover:text-themeTeal rounded transition duration-300 cursor-pointer flex gap-1"
+                        title="Edit Period"
                       >
-                        <Edit className="w-4 h-4" />
+                        <Edit width={16} height={16}/>
+                        <span className="text-xs font-medium">Edit</span>
                       </button>
                       <button
                         onClick={() => handleDelete(period.id)}
-                        className="text-red-600 hover:text-red-800"
+                        className="p-2 bg-red-700 text-themeTealWhite hover:text-red-700 hover:bg-white rounded transition duration-300 cursor-pointer flex gap-1"
+                        title="Delete Period"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 width={16} height={16}/>
+                        <span className="text-xs font-medium">Delete</span>
                       </button>
                     </div>
                   </td>
@@ -218,40 +223,47 @@ export default function PriceChangePeriodManagement() {
             )}
           </tbody>
         </table>
+        </div>
       </div>
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
+          <div className="bg-white rounded-lg p-6 w-full max-w-md relative shadow-2xl border border-themeTealLighter" onClick={(e) => e.stopPropagation()}>
+            <button
+              onClick={() => setShowModal(false)}
+              className="absolute top-4 right-4 text-themeTealLight hover:text-themeTeal transition duration-300"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-bold mb-4 text-themeTeal">
               {editingPeriod ? 'Edit Period' : 'Add Period'}
             </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-xs font-medium text-themeTeal mb-1">
                   Period
                 </label>
                 <input
                   type="text"
                   value={formData.period}
                   onChange={(e) => setFormData({ ...formData, period: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                  placeholder="e.g., 1 Month, 3 Months, 12 Months"
+                  className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-themeTeal text-themeTeal placeholder:text-themeTealLighter"
+                  placeholder="e.g., 1M, 3M, 12M, 2Y"
                   required
                 />
               </div>
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end space-x-2 pt-4">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition duration-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-themeTeal text-white rounded-lg hover:bg-themeTealDark"
+                  className="px-4 py-2 bg-themeTeal text-white rounded hover:bg-themeSkyBlue transition duration-300"
                 >
                   {editingPeriod ? 'Update' : 'Create'}
                 </button>

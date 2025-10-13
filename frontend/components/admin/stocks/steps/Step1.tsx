@@ -26,7 +26,9 @@ const Step1: React.FC<Step1Props> = ({
   onRemoveImage,
   sectors = [],
   subsectors = [],
+  themes = [],
 }) => {
+  
   const [availableSubsectors, setAvailableSubsectors] = useState<Array<{id: number; name: string; sector_id: number}>>([]);
   const isUpdatingRef = useRef(false);
 
@@ -148,6 +150,20 @@ const Step1: React.FC<Step1Props> = ({
         {formData.sector_ids.length === 0 && (
           <p className="text-xs text-gray-500 mt-1">Please select sectors first to choose subsectors</p>
         )}
+      </div>
+
+      {/* Themes */}
+      <div>
+        <label className="block text-xs font-medium text-themeTeal mb-1">
+          Themes
+        </label>
+        <GenericSearchableMultiSelect
+          options={themes.map(theme => ({ value: theme.id, label: theme.name }))}
+          selectedValues={formData.theme_ids}
+          onChange={(values) => onFormDataChange({ theme_ids: values })}
+          placeholder="Select themes..."
+          forceAbove={true}
+        />
       </div>
       
       {/* Stock Icon */}

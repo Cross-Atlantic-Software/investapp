@@ -62,7 +62,7 @@ export class StockDisplayController {
             logo: stock.logo,
             price_per_share: stock.price_per_share,
             percentage_change: stock.percentage_change,
-            valuation: valuationName
+            valuation_id: stock.valuation_id
           };
         })
       );
@@ -143,7 +143,7 @@ export class StockDisplayController {
             demand: stock.demand,
             homeDisplay: stock.homeDisplay,
             bannerDisplay: stock.bannerDisplay,
-            valuation: valuationName,
+            valuation_id: stock.valuation_id,
             price_per_share: stock.price_per_share,
             percentage_change: stock.percentage_change,
             createdAt: stock.createdAt,

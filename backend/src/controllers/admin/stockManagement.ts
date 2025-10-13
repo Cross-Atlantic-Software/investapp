@@ -27,7 +27,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 'price_change_period_id', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation_id', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 'price_change_period_id', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -39,9 +39,9 @@ export const getAllStocks = async (req: Request, res: Response) => {
       attributes: [
         'id', 'company_name', 'logo', 'price_change', 'teaser', 
         'short_description', 'analysis', 'demand', 'homeDisplay', 
-        'bannerDisplay', 'valuation', 'price_per_share', 
+        'bannerDisplay', 'valuation_id', 'price_per_share', 
         'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 
-        'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
+        'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
         'createdAt', 'updatedAt'
       ]
     });
@@ -116,6 +116,23 @@ export const getAllStocks = async (req: Request, res: Response) => {
           priceChangePeriod = '12 Months';
         }
 
+        // Fetch theme names
+        let themeIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).theme_ids || '[]');
+          if (Array.isArray(parsed)) {
+            themeIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing theme_ids:', (stock as any).theme_ids, error);
+          themeIds = [];
+        }
+        
+        const themes = await db.Theme.findAll({
+          where: { id: { [Op.in]: themeIds } },
+          attributes: ['id', 'name'],
+        });
+
         // Fetch valuation name
         let valuation = null;
         if (stock.valuation_id) {
@@ -130,6 +147,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
           stock_masters: stockMasters,
           sectors: sectors,
           subsectors: subsectors,
+          themes: themes,
           price_change_period: priceChangePeriod,
           valuation: valuation
         };
@@ -414,17 +432,18 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       demand,
       homeDisplay,
       bannerDisplay,
+      valuation_id,
       price_per_share,
       percentage_change,
       founded,
       sector_ids,
       subsector_ids,
+      theme_ids,
       headquarters,
       min_units,
       lot_size,
       stock_master_ids,
       price_change_period_id,
-      valuation_id
     } = cleanedBody;
 
     console.log("Valuation ID received:", valuation_id);
@@ -473,12 +492,13 @@ export const createStock = async (req: MulterRequest, res: Response) => {
       demand: demand || 'Low Demand',
       homeDisplay: homeDisplay || 'no',
       bannerDisplay: bannerDisplay || 'no',
-      valuation_id: valuation_id || 2,
+      valuation_id: valuation_id || null,
       price_per_share: price_per_share || 0,
       percentage_change: percentage_change || price_change || 0,
       founded: founded || new Date().getFullYear(),
       sector_ids: sector_ids || '[]',
       subsector_ids: subsector_ids || '[]',
+      theme_ids: theme_ids || '[]',
       headquarters: headquarters || 'N/A',
       min_units: min_units || 1,
       lot_size: lot_size || 1,
@@ -520,6 +540,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       demand,
       homeDisplay,
       bannerDisplay,
+      valuation_id,
       price_per_share,
       percentage_change,
       founded,
@@ -530,7 +551,6 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       lot_size,
       stock_master_ids,
       price_change_period_id,
-      valuation_id
     } = req.body;
 
     console.log("Update Stock - Valuation ID received:", valuation_id);
