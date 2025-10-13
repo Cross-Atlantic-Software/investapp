@@ -9,7 +9,7 @@ export async function GET(
   try {
     const { id } = await params;
     
-    const response = await fetch(`${API_BASE_URL}/api/stocks/${id}`);
+    const response = await fetch(`${API_BASE_URL}/backend/api/stocks/${id}`);
     const data = await response.json();
     
     return NextResponse.json(data);

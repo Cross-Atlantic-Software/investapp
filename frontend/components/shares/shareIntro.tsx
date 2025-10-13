@@ -3,14 +3,16 @@ import Breadcrumbs, { type Crumb } from "../subcomponents/breadcrumbs";
 import RegisterCard from "./registerCard";
 import WishlistCard from "./wishlistCard";
 import { Button, Heading } from "../ui";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 export type ShareIntroProps = {
+  stockId: string;
   breadcrumbs: Crumb[];
   logoUrl: string;
   company: string;
   investPrice: number;
   changeAbs: number;
-  changePct: number;
+  priceChangePeriod?: string | undefined;
   updatedAt: string;
   tags: string[];
   founded: string | number;
@@ -24,12 +26,13 @@ export type ShareIntroProps = {
 
 export default function ShareIntro(props: ShareIntroProps) {
   const {
-    breadcrumbs, logoUrl, company,
-    investPrice, changeAbs, changePct, updatedAt,
+    stockId, breadcrumbs, logoUrl, company,
+    investPrice, changeAbs, priceChangePeriod, updatedAt,
     tags, founded, sector, subsector, hq,
     about, website, valuation,
   } = props;
 
+  const { isAuthenticated } = useAuth();
   const pos = changeAbs >= 0;
 
   return (
@@ -40,24 +43,39 @@ export default function ShareIntro(props: ShareIntroProps) {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(320px,384px)]">
         {/* LEFT */}
         <div className="min-w-0">
-          <header className="flex items-center gap-3 mb-4">
-            <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-md bg-white overflow-hidden grid place-items-center">
-              <Image src={logoUrl} alt={`${company} logo`} width={64} height={64} className="h-full w-full object-contain" />
-            </div>
-            <Heading as="h4" className="text-themeTeal font-semibold">{company}</Heading>
-          </header>
+          {/* Header with floating WishlistCard */}
+          <div className="flex items-center justify-between mb-4">
+            <header className="flex items-center gap-3">
+              <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-md bg-white overflow-hidden grid place-items-center">
+                <Image src={logoUrl} alt={`${company} logo`} width={64} height={64} className="h-full w-full object-contain" />
+              </div>
+              <Heading as="h4" className="text-themeTeal font-semibold">{company}</Heading>
+            </header>
+            
+            {/* Floating WishlistCard - only for non-authenticated users */}
+            {!isAuthenticated && (
+              <div className="w-64 flex-shrink-0">
+                <WishlistCard 
+                  stockId={stockId}
+                  stockName={company}
+                  stockPrice={investPrice}
+                  variant="horizontal"
+                />
+              </div>
+            )}
+          </div>
 
           {/* KPIs: responsive grid */}
-          <div className="mt-4 flex flex-wrap items-start gap-x-8 gap-y-3">
+          <div className="flex flex-wrap items-start gap-x-8 gap-y-3">
             <Kpi
-              label="Current Price"
+              label="Price per share"
               value={
                 <div>
                   <div className="font-semibold text-themeTeal">
                     ₹ {formatINR(investPrice)}{" "}
-                    <span className={pos ? "text-green-600 text-sm" : "text-rose-600 text-sm"}>
+                    {/* <span className={pos ? "text-green-600 text-sm" : "text-rose-600 text-sm"}>
                       {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))} ({pos ? "+" : ""}{changePct.toFixed(2)}%)
-                    </span>
+                    </span> */}
                   </div>
                   <div className="text-xs text-themeTealLight">Updated {updatedAt}</div>
                 </div>
@@ -66,14 +84,14 @@ export default function ShareIntro(props: ShareIntroProps) {
             {valuation && (
               <Kpi
                 label="Valuation"
-                value={`₹${parseFloat(valuation).toLocaleString()}B`}
+                value={valuation}
               />
             )}
             <Kpi
-              label="Price Change"
+              label="Price Change Period"
               value={
                 <span className={pos ? "text-green-600" : "text-rose-600"}>
-                  {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))}
+                  {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))} ({priceChangePeriod || 'No period assigned'})
                 </span>
               }
             />
@@ -114,8 +132,15 @@ export default function ShareIntro(props: ShareIntroProps) {
 
         {/* RIGHT */}
         <div className="space-y-6">
-          <RegisterCard />
-          <WishlistCard name={company} sector={sector} priceINR={investPrice} />
+          {isAuthenticated ? (
+            <WishlistCard 
+              stockId={stockId}
+              stockName={company}
+              stockPrice={investPrice}
+            />
+          ) : (
+            <RegisterCard />
+          )}
         </div>
       </div>
     </section>

@@ -1,129 +1,305 @@
 "use client";
+import { useState, useEffect } from "react";
+import { ChevronDown, ChevronUp, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import PDFViewer from './PDFViewer';
 
-import Image from "next/image";
-import { useState } from "react";
-import { Plus, Minus, CircleCheck } from "lucide-react";
+interface SectorOutlookSectionProps {
+  stockId?: number;
+}
 
-type InsightCard = {
+interface AccordionItem {
+  id: number;
   title: string;
-  period?: string;
-  src: string;
-  alt?: string;
-};
+  analysis: string;
+  order_index: number;
+}
 
-type Props = {
-  cards?: InsightCard[];
-};
+interface SectorOutlook {
+  id: number;
+  stock_id: number;
+  description: string;
+  accordions: AccordionItem[];
+}
 
-export default function SectorOutlookSection({
-  cards = [
-    { title: "Sector performance", period: "Past 7 Days", src: "/images/graph1.png" },
-    { title: "Sector performance vs Marketplace Average", period: "Past 6 Months", src: "/images/graph2.png" },
-    { title: "Bid - Offer Ratio", period: "Past 8 Months", src: "/images/graph3.png" },
-    { title: "Sector performance vs Marketplace Average", period: "Past 6 Months", src: "/images/graph4.png" },
-    { title: "Total Raised to Date", src: "/images/graph5.png" },
-    { title: "Employee Count", period: "Past 6 Months", src: "/images/graph6.png" },
-  ],
-}: Props) {
-  const bullets = [
-    {
-      title: "Donec commodo dui sed enim commodo, nec aliquet lectus vestibulum.",
-      body:
-        "Vivamus rutrum metus convallis eros posuere tincidunt. Aenean venenatis rutrum metus, id cursus risus eleifend sed. Duis quis mattis nulla. Nunc fringilla fermentum fermentum. Ut orci tellus, viverra eu consequat et, porttitor eget leo. Aliquam nec erat porttitor, tempus metus quis, consequat nunc. Vivamus malesuada porttitor mattis.",
-    },
-    { title: "Donec commodo dui sed enim commodo, nec aliquet lectus vestibulum.", body: sample },
-    { title: "Donec commodo dui sed enim commodo, nec aliquet lectus vestibulum.", body: sample },
-    { title: "Donec commodo dui sed enim commodo, nec aliquet lectus vestibulum.", body: sample },
-  ];
+interface SectorInsightsPdf {
+  id: number;
+  stock_id: number;
+  title: string;
+  description?: string;
+  pdf_url: string;
+  file_name: string;
+  file_size: number;
+  page_count: number;
+  order_index: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export default function SectorOutlookSection({ stockId }: SectorOutlookSectionProps) {
+  const [sectorOutlook, setSectorOutlook] = useState<SectorOutlook | null>(null);
+  const [activePdf, setActivePdf] = useState<SectorInsightsPdf | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [expandedAccordions, setExpandedAccordions] = useState<Set<number>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [numPages, setNumPages] = useState<number | null>(null);
+  const [isAutoPlay, setIsAutoPlay] = useState(true);
+
+  useEffect(() => {
+    console.log('SectorOutlookSection useEffect - stockId:', stockId);
+    if (stockId) {
+      const fetchData = async () => {
+        try {
+          console.log('Starting to fetch sector outlook data...');
+          await Promise.all([fetchSectorOutlook(), fetchActivePdf()]);
+          console.log('Finished fetching sector outlook data');
+        } catch (error) {
+          console.error('Error fetching sector outlook data:', error);
+          setError('Failed to load sector outlook data');
+        } finally {
+          console.log('Setting loading to false');
+          setLoading(false);
+        }
+      };
+      fetchData();
+    } else {
+      console.log('No stockId provided, setting loading to false');
+      setLoading(false);
+    }
+  }, [stockId]);
+
+  // Auto-slideshow every 5 seconds
+  useEffect(() => {
+    if (!isAutoPlay || !activePdf || !numPages) return;
+
+    const interval = setInterval(() => {
+      setCurrentPage(prev => {
+        if (prev >= numPages) {
+          return 1; // Loop back to first page
+        }
+        return prev + 1;
+      });
+    }, 5000); // 5 seconds
+
+    return () => clearInterval(interval);
+  }, [isAutoPlay, activePdf, numPages]);
+
+  const fetchSectorOutlook = async () => {
+    try {
+      console.log('Fetching sector outlook for stockId:', stockId);
+      const response = await fetch(`/api/stocks/${stockId}/sector-outlooks`);
+      const data = await response.json();
+      
+      console.log('Sector outlook response:', data);
+      
+      if (data.success && data.data) {
+        setSectorOutlook(data.data);
+      } else {
+        console.log('No sector outlook data found');
+      }
+    } catch (error) {
+      console.error('Error fetching sector outlook:', error);
+      setError('Failed to load sector outlook');
+    }
+  };
+
+  const fetchActivePdf = async () => {
+    try {
+      console.log('Fetching sector insights PDF for stockId:', stockId);
+      const response = await fetch(`/api/stocks/${stockId}/sector-insights-pdfs`);
+      const data = await response.json();
+      
+      console.log('Sector insights PDF response:', data);
+      
+      if (data.success && data.data.pdfs && data.data.pdfs.length > 0) {
+        const activePdf = data.data.pdfs.find((pdf: SectorInsightsPdf) => pdf.is_active);
+        if (activePdf) {
+          setActivePdf(activePdf);
+          console.log('Active PDF found:', activePdf);
+        } else {
+          console.log('No active PDF found');
+        }
+      } else {
+        console.log('No sector insights PDFs found');
+      }
+    } catch (error) {
+      console.error('Error fetching sector insights PDF:', error);
+      setError('Failed to load sector insights PDF');
+    }
+  };
+
+  const toggleAccordion = (id: number) => {
+    const newExpanded = new Set(expandedAccordions);
+    if (newExpanded.has(id)) {
+      newExpanded.delete(id);
+    } else {
+      newExpanded.add(id);
+    }
+    setExpandedAccordions(newExpanded);
+  };
+
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    setCurrentPage(1);
+  };
+
+  const onDocumentLoadError = (error: Error) => {
+    console.error('Error loading PDF:', error);
+    setError('Failed to load PDF document');
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const goToNextPage = () => {
+    if (numPages && currentPage < numPages) {
+      setCurrentPage(currentPage + 1);
+    } else {
+      // Loop back to first page
+      setCurrentPage(1);
+    }
+  };
+
+  if (!stockId) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="text-center text-gray-500 py-8">
+          <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p>No stock ID provided.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="text-center text-red-600">
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-4">
-      <p className="text-themeTealLighter">
-        Kraken is a crypto exchange based on euro volume and liquidity. Globally, Kraken&apos;s client base trades
-        more than 100 digital assets and 8 different fiat currencies. Based in San Francisco, CA, Kraken was founded in
-        2011 by Jesse Powell and was the first U.S. crypto firm to receive a state-chartered banking license, as well as
-        one of the first exchanges to offer spot trading with margin, regulated derivatives and index services.
-      </p>
-
-      {/* Accordion */}
-      <div className="space-y-3">
-        {bullets.map((b, i) => (
-          <AccordionRow key={i} title={b.title} body={b.body} defaultOpen={i === 0} />
-        ))}
-      </div>
-
-      <div className="pt-1 text-themeTeal font-semibold text-lg">
-        Sector and Market Insights for sophisticated investors
-      </div>
-
-      {/* Cards */}
-      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-3">
-        {cards.map((c, i) => (
-          <div key={`${c.title}-${i}`} className="rounded-md bg-white p-4 md:p-5">
-            <div className="mb-3 flex items-center justify-between text-xs">
-              <span className="text-md font-medium text-themeTeal">{c.title}</span>
-              {c.period && <span className="text-themeTealLighter">{c.period}</span>}
+    <div className="space-y-6">
+      {/* Sector Outlook Content */}
+      {sectorOutlook && (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          {/* Description */}
+          {sectorOutlook.description && (
+            <div className="mb-6">
+              <p className="text-gray-700 text-sm leading-relaxed">{sectorOutlook.description}</p>
             </div>
+          )}
 
-            <div className="relative aspect-[16/10] w-full overflow-hidden rounded-xl bg-white">
-              <Image
-                src={c.src}
-                alt={c.alt ?? c.title}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                priority={i === 0}
+          {/* Accordion Items */}
+          {sectorOutlook.accordions && sectorOutlook.accordions.length > 0 && (
+            <div className="space-y-4">
+              {sectorOutlook.accordions
+                .sort((a, b) => a.order_index - b.order_index)
+                .map((item) => (
+                <div key={item.id} className="border border-gray-200 rounded-lg">
+                  <button
+                    onClick={() => toggleAccordion(item.id)}
+                    className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                  >
+                    <span className="font-medium text-sm text-gray-900">{item.title}</span>
+                    {expandedAccordions.has(item.id) ? (
+                      <ChevronUp className="w-5 h-5 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="w-5 h-5 text-gray-500" />
+                    )}
+                  </button>
+                  
+                  {expandedAccordions.has(item.id) && (
+                    <div className="px-4 pb-4">
+                      <div className="pt-2 border-t border-gray-100">
+                        <p className="text-gray-700 text-sm leading-relaxed">{item.analysis}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {(!sectorOutlook.description && (!sectorOutlook.accordions || sectorOutlook.accordions.length === 0)) && (
+            <div className="text-center text-gray-500 py-8">
+              <p>No sector outlook information available.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Sector Insights PDF */}
+      {activePdf && (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Sector and Market Insights for sophisticated investors</h3>
+          </div>
+
+          {/* PDF Viewer with Side Controls */}
+          <div className="flex justify-center items-center mb-6">
+            {/* Previous Button */}
+            <button
+              onClick={goToPreviousPage}
+              disabled={currentPage <= 1}
+              className="flex items-center justify-center w-12 h-12 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mr-4"
+              title="Previous Page"
+            >
+              <ChevronLeft className="w-8 h-8 text-gray-400 hover:text-themeTeal" />
+            </button>
+
+            {/* PDF Viewer */}
+            <div className="relative">
+              <PDFViewer
+                pdfUrl={activePdf.pdf_url}
+                currentPage={currentPage}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
               />
             </div>
+
+            {/* Next Button */}
+            <button
+              onClick={goToNextPage}
+              className="flex items-center justify-center w-12 h-12 transition-all duration-200 ml-4"
+              title="Next Page"
+            >
+              <ChevronRight className="w-8 h-8 text-gray-400 hover:text-themeTeal" />
+            </button>
           </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-/* ---------- Accordion row ---------- */
-
-function AccordionRow({
-  title,
-  body,
-  defaultOpen = false,
-}: {
-  title: string;
-  body: string;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-
-  return (
-    <div className="rounded border border-themeTealLighter bg-white">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left"
-      >
-        <div className="flex items-center gap-1">
-          <span className="grid">
-            <CircleCheck className="h-4 w-4 text-themeTeal" />
-          </span>
-          <span className="text-themeTeal font-medium">{title}</span>
+          {/* Page indicator at bottom */}
+          <div className="text-center mt-4">
+            <span className="text-sm text-gray-500">Page {currentPage} of {numPages || '...'}</span>
+          </div>
         </div>
-        {open ? <Minus className="h-5 w-5 text-themeTeal cursor-pointer" /> : <Plus className="h-5 w-5 text-themeTeal cursor-pointer" />}
-      </button>
+      )}
 
-      <div
-        className={[
-          "overflow-hidden border-t border-themeTealLighter px-3 transition-[max-height,opacity] duration-300",
-          open ? "max-h-96 opacity-100 py-2" : "max-h-0 opacity-0",
-        ].join(" ")}
-      >
-        <p className="text-themeTealLighter">{body}</p>
-      </div>
+      {!sectorOutlook && !activePdf && (
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="text-center text-gray-500 py-8">
+            <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+            <p>No sector outlook information available.</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-/* sample filler */
-const sample =
-  "Cras congue, odio non commodo iaculis, eros magna aliquet libero, eget dictum arcu mauris sed enim. Curabitur ultricies nunc quam, ac ultrices urna laoreet non.";

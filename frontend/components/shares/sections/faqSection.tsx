@@ -1,15 +1,119 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { Plus, Minus, HelpCircle } from "lucide-react";
 
-type QA = { q: string; a: string; defaultOpen?: boolean };
+type QA = { q: string; a: string; defaultOpen?: boolean; id?: number };
 
-export default function FaqSection({ items = DEFAULT_QA }: { items?: QA[] }) {
+type FaqData = {
+  id: number;
+  stock_id: number;
+  question: string;
+  answer: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export default function FaqSection({ 
+  items, 
+  stockId 
+}: { 
+  items?: QA[]; 
+  stockId?: number;
+}) {
+  const [faqItems, setFaqItems] = useState<QA[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadFaqItems = useCallback(async () => {
+    if (!stockId) return;
+    
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`/api/stocks/${stockId}/faqs`);
+      const result = await response.json();
+      
+      if (result.success && result.data?.faqs) {
+        // Sort FAQs by display_order to ensure proper ordering
+        const sortedFaqs = result.data.faqs.sort((a: FaqData, b: FaqData) => a.display_order - b.display_order);
+        
+        const formattedItems: QA[] = sortedFaqs.map((item: FaqData) => ({
+          q: item.question,
+          a: item.answer,
+          defaultOpen: false,
+          id: item.id // Add ID for better React key
+        }));
+        setFaqItems(formattedItems);
+      } else {
+        setFaqItems([]);
+      }
+    } catch (err) {
+      console.error('Error loading FAQ items:', err);
+      setError('Failed to load FAQ items');
+      setFaqItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [stockId]);
+
+  useEffect(() => {
+    if (items) {
+      // Use provided items if available
+      setFaqItems(items);
+    } else if (stockId) {
+      // Load from database if stockId is provided
+      loadFaqItems();
+    } else {
+      // Fallback to default content if no stockId and no items
+      setFaqItems(DEFAULT_QA);
+    }
+  }, [stockId, items, loadFaqItems]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <div className="text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto"></div>
+          <p className="mt-2 text-sm text-gray-600">Loading FAQs...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="space-y-3">
+        <div className="text-center py-8 text-red-600">
+          <p className="text-sm">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state
+  if (faqItems.length === 0) {
+    return (
+      <div className="space-y-3">
+        <div className="text-center py-8 text-gray-500">
+          <HelpCircle className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p className="text-sm">
+            {stockId ? "No FAQs available for this stock." : "No FAQs available at the moment."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
-      {items.map((it, i) => (
-        <FaqItem key={i} {...it} defaultOpen={i === 0} />
+      {faqItems.map((it, i) => (
+        <FaqItem key={it.id || i} {...it} defaultOpen={i === 0} />
       ))}
     </div>
   );

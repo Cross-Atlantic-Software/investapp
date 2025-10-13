@@ -55,6 +55,7 @@ export class EmailTemplateService {
    */
   static async getBuyConfirmationEmail(
     userEmail: string,
+    userName: string,
     companyName: string,
     quantity: number,
     price: number,
@@ -69,6 +70,7 @@ export class EmailTemplateService {
 
       const variables = {
         userEmail,
+        userName,
         companyName,
         quantity,
         price: price.toFixed(2),
@@ -238,6 +240,38 @@ export class EmailTemplateService {
       };
     } catch (error) {
       console.error('Error generating password reset email:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Get formatted KYC verification email
+   */
+  static async getKYCVerificationEmail(
+    userEmail: string,
+    userName: string
+  ): Promise<{ subject: string; body: string } | null> {
+    try {
+      const template = await this.getTemplateByType('KYC_Verification');
+      if (!template) {
+        console.error('KYC verification template not found');
+        return null;
+      }
+
+      const variables = {
+        userEmail,
+        userName
+      };
+
+      const formattedBody = this.replaceTemplateVariables(template.body, variables);
+      const formattedSubject = this.replaceTemplateVariables(template.subject, variables);
+
+      return {
+        subject: formattedSubject,
+        body: formattedBody
+      };
+    } catch (error) {
+      console.error('Error generating KYC verification email:', error);
       return null;
     }
   }

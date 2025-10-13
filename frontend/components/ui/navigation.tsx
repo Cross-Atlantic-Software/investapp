@@ -4,9 +4,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { ChevronDown, Menu, X } from "lucide-react";
+import { ChevronDown, Menu, X, User, LogOut } from "lucide-react";
 import Logo from "./logo";
 import Button from "./button";
+import { useAuth } from "@/lib/contexts/AuthContext";
+import { useRouter } from "next/navigation";
 
 export type MenuItem = {
   label: string;
@@ -18,6 +20,14 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [openIdx, setOpenIdx] = useState<number | null>(null);
+  const { isAuthenticated, user, logout } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    logout();
+    router.push('/');
+    setOpen(false);
+  };
 
   // -------- active-state helpers (memoized to satisfy exhaustive-deps) --------
   const normalize = (s?: string) => (s ? s.replace(/\/+$/, "") : "");
@@ -237,22 +247,52 @@ export default function Navigation({ items }: { items: MenuItem[] }) {
 
             {/* bottom CTAs */}
             <div className="mt-auto space-y-3 p-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              <Button
-                text="Sign In"
-                color="themeTeal"
-                variant="outline"
-                size="sm"
-                href="/login"
-                className="w-full"
-              />
-              <Button
-                text="Get Started"
-                color="themeTeal"
-                variant="solid"
-                size="sm"
-                href="/register/step-1"
-                className="w-full"
-              />
+              {isAuthenticated ? (
+                <div className="space-y-3">
+                  {/* User Profile Section */}
+                  <div className="flex items-center gap-3 px-3 py-2 bg-themeTeal/10 rounded-md">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-themeTeal text-white">
+                      <User className="h-4 w-4" />
+                    </div>
+                    <div className="flex flex-col flex-1">
+                      <span className="text-sm font-medium text-themeTeal">
+                        {user?.name || user?.email?.split('@')[0] || 'User'}
+                      </span>
+                      <span className="text-xs text-themeTealLighter">
+                        {user?.email}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Logout Button */}
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm text-themeTealLighter hover:text-themeTeal hover:bg-themeTeal/10 rounded-md transition-colors duration-200"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Logout
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <Button
+                    text="Sign In"
+                    color="themeTeal"
+                    variant="outline"
+                    size="sm"
+                    href="/login"
+                    className="w-full"
+                  />
+                  <Button
+                    text="Get Started"
+                    color="themeTeal"
+                    variant="solid"
+                    size="sm"
+                    href="/register/step-1"
+                    className="w-full"
+                  />
+                </>
+              )}
             </div>
           </div>
         </aside>

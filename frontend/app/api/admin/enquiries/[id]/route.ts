@@ -15,7 +15,7 @@ export async function GET(
 
     const { id } = await params;
     
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/enquiries/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/enquiries/${id}`, {
       headers: {
         'token': token,
       },
@@ -45,7 +45,7 @@ export async function DELETE(
 
     const { id } = await params;
     
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/enquiries/${id}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/enquiries/${id}`, {
       method: 'DELETE',
       headers: {
         'token': token,

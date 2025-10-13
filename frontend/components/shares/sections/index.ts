@@ -1,7 +1,8 @@
-export {default as PriceChartSection} from "./priceChartSection";
+export {default as PriceChart} from "./PriceChart";
 export {default as ScorecardSection} from "./scorecardSection";
 export {default as InvestmentRationaleSection} from "./investmentRationaleSection";
 export {default as PerformanceBenchmarkSection} from "./performanceBenchmarkSection";
+export {default as PDFViewer} from "./PDFViewer";
 export {default as SectorOutlookSection} from "./sectorOutlookSection";
 export {default as FinancialPerformanceSection} from "./financialPerformanceSection";
 export {default as ShareholdingSection} from "./shareholdingSection";

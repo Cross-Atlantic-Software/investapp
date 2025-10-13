@@ -1,25 +1,62 @@
 'use client';
 import { Section, SectionNav, ShareIntro, TradeTabsShell } from "@/components/shares";
-// Removed unused section imports since we only display stock details from our schema
+import { FaqSection, FinancialPerformanceSection, InvestmentRationaleSection, NewsSection, PerformanceBenchmarkSection, PriceChart, ScorecardSection, SectorOutlookSection, ShareholdingSection } from "@/components/shares/sections";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import Image from 'next/image';
 
 const NAV = [
-  { id: "stock-details", label: "Stock Details" },
+  { id: "price", label: "Price Chart" },
+  { id: "score", label: "Signal Analyzer" },
+  { id: "rationale", label: "Investment Rationale" },
+  { id: "bench", label: "Competitive Benchmarking" },
+  { id: "outlook", label: "SWOT & Porter Analysis" },
+  { id: "financials", label: "Financial Performance" },
+  { id: "holders", label: "Shareholding" },
+  { id: "news", label: "Related News" },
+  { id: "faq", label: "Frequently Asked Questions" },
 ];
 
 interface StockData {
   id: string;
   company_name: string;
   logo: string;
-  price: number;
+  price_per_share: number;
   price_change: number;
+  price_change_period_id?: number;
+  price_change_period?: string;
+  valuation: string;
   teaser: string;
   short_description: string;
   analysis: string;
+  founded: number;
+  sector_ids: number[];
+  subsector_ids: number[];
+  sectors?: Array<{
+    id: number;
+    name: string;
+  }>;
+  subsectors?: Array<{
+    id: number;
+    name: string;
+    sector_id: number;
+  }>;
+  headquarters: string;
+  min_units: number;
+  lot_size: number;
+  stock_masters?: Array<{
+    id: number;
+    name: string;
+  }>;
   createdAt?: string;
   updatedAt?: string;
+}
+
+interface MethodologyNote {
+  id: number;
+  section_key: string;
+  section_name: string;
+  methodology_text: string;
+  is_active: boolean;
 }
 
 export default function UnlistedCompanyDetails() {
@@ -28,6 +65,25 @@ export default function UnlistedCompanyDetails() {
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [methodologyNotes, setMethodologyNotes] = useState<MethodologyNote[]>([]);
+
+  const fetchMethodologyNotes = async () => {
+    try {
+      const response = await fetch('/api/methodology-notes');
+      const data = await response.json();
+      
+      if (data.success && data.data) {
+        setMethodologyNotes(data.data);
+      }
+    } catch (err) {
+      console.error('Error fetching methodology notes:', err);
+    }
+  };
+
+  const getMethodologyText = (sectionKey: string): string => {
+    const note = methodologyNotes.find(note => note.section_key === sectionKey);
+    return note ? note.methodology_text : 'Intraday private-market price. Delayed. Not investment advice.';
+  };
 
   useEffect(() => {
     const fetchStockData = async () => {
@@ -49,11 +105,23 @@ export default function UnlistedCompanyDetails() {
             id: stock.id.toString(),
             company_name: stock.company_name,
             logo: stock.logo,
-            price: typeof stock.price === 'string' ? parseFloat(stock.price) : stock.price,
+            price_per_share: typeof stock.price_per_share === 'string' ? parseFloat(stock.price_per_share) : stock.price_per_share,
             price_change: typeof stock.price_change === 'string' ? parseFloat(stock.price_change) : stock.price_change,
+            price_change_period_id: stock.price_change_period_id || null,
+            price_change_period: stock.price_change_period || 'No period assigned',
+            valuation: stock.valuation || '0',
             teaser: stock.teaser,
             short_description: stock.short_description,
             analysis: stock.analysis,
+            founded: typeof stock.founded === 'string' ? parseInt(stock.founded) : stock.founded,
+            sector_ids: Array.isArray(stock.sector_ids) ? stock.sector_ids : [],
+            subsector_ids: Array.isArray(stock.subsector_ids) ? stock.subsector_ids : [],
+            sectors: stock.sectors || [],
+            subsectors: stock.subsectors || [],
+            headquarters: stock.headquarters,
+            min_units: typeof stock.min_units === 'string' ? parseInt(stock.min_units) : stock.min_units,
+            lot_size: typeof stock.lot_size === 'string' ? parseInt(stock.lot_size) : stock.lot_size,
+            stock_masters: stock.stock_masters || [],
             createdAt: stock.createdAt?.toString(),
             updatedAt: stock.updatedAt?.toString()
           };
@@ -70,6 +138,7 @@ export default function UnlistedCompanyDetails() {
     };
 
     fetchStockData();
+    fetchMethodologyNotes();
   }, [companyName]);
 
   if (loading) {
@@ -91,6 +160,7 @@ export default function UnlistedCompanyDetails() {
   return (
     <>
       <ShareIntro
+        stockId={stockData.id}
         breadcrumbs={[
           { label: "Home", href: "/" },
           { label: "Invest", href: "/invest" },
@@ -98,15 +168,15 @@ export default function UnlistedCompanyDetails() {
         ]}
         logoUrl={stockData.logo}
         company={stockData.company_name}
-        investPrice={stockData.price}
+        investPrice={stockData.price_per_share}
         changeAbs={stockData.price_change}
-        changePct={0}
+        priceChangePeriod={stockData.price_change_period}
         updatedAt={stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }) : "Recently"}
-        tags={["Most Active", "Upcoming IPO", "Unicorn"]}
-        founded={1998}
-        sector="Technology"
-        subsector="Technology"
-        hq="Noida, Uttar Pradesh"
+        tags={stockData.stock_masters?.map(master => master.name) || []}
+        founded={stockData.founded}
+        sector={stockData.sectors?.map(s => s.name).join(', ') || 'No sectors assigned'}
+        subsector={stockData.subsectors?.map(s => s.name).join(', ') || 'No subsectors assigned'}
+        hq={stockData.headquarters}
         about={stockData.short_description}
         website={`${stockData.company_name.toLowerCase().replace(/\s+/g, '')}.com`}
       />
@@ -116,79 +186,23 @@ export default function UnlistedCompanyDetails() {
           <SectionNav items={NAV} offset={88} />
 
           <div className="space-y-6">
-            <Section id="stock-details" title="Stock Details" info="Real-time stock information from our database.">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
-                <div className="space-y-6">
-                  {/* Company Logo and Name */}
-                  <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-lg bg-gray-100 overflow-hidden">
-                      <Image src={stockData.logo} alt={`${stockData.company_name} logo`} width={64} height={64} className="h-full w-full object-cover" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">{stockData.company_name}</h2>
-                      <p className="text-gray-600">Stock ID: {stockData.id}</p>
-                    </div>
-                  </div>
-
-                  {/* Price Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Price Information</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Current Price:</span>
-                          <span className="font-medium text-green-600">₹{stockData.price.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Price Change:</span>
-                          <span className={`font-medium ${stockData.price_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {stockData.price_change >= 0 ? '+' : ''}₹{stockData.price_change.toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-gray-900">Timestamps</h3>
-                      <div className="space-y-3">
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Created:</span>
-                          <span className="font-medium text-sm">
-                            {stockData.createdAt ? new Date(stockData.createdAt).toLocaleDateString() : 'N/A'}
-                          </span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-gray-600">Last Updated:</span>
-                          <span className="font-medium text-sm">
-                            {stockData.updatedAt ? new Date(stockData.updatedAt).toLocaleDateString() : 'N/A'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Teaser */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Teaser</h3>
-                    <p className="text-gray-700 text-lg">{stockData.teaser}</p>
-                  </div>
-
-                  {/* Short Description */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Short Description</h3>
-                    <p className="text-gray-700">{stockData.short_description}</p>
-                  </div>
-
-                  {/* Analysis */}
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">Analysis</h3>
-                    <div className="prose max-w-none">
-                      <p className="text-gray-700 whitespace-pre-line">{stockData.analysis}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+            <Section id="price" title="Price Chart" info={getMethodologyText('price')}>
+              <PriceChart
+                stockId={parseInt(stockData.id)}
+                stockName={stockData.company_name}
+                currentPrice={stockData.price_per_share}
+                priceChange={stockData.price_change}
+                percentageChange={stockData.price_change / stockData.price_per_share * 100}
+              />
             </Section>
+            <Section id="score" title="Signal Analyzer" info={getMethodologyText('score')}><ScorecardSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="rationale" title="Investment Rationale" info={getMethodologyText('rationale')}><InvestmentRationaleSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="bench" title="Competitive Benchmarking" info={getMethodologyText('bench')}><PerformanceBenchmarkSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="outlook" title="SWOT & Porter Analysis" info={getMethodologyText('outlook')}><SectorOutlookSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="financials" title="Financial Performance" info={getMethodologyText('financials')}><FinancialPerformanceSection stockId={stockData.id} /></Section>
+            <Section id="holders" title="Shareholding" info={getMethodologyText('holders')}><ShareholdingSection stockId={stockData.id} /></Section>
+            <Section id="news" title="Related News" info={getMethodologyText('news')}><NewsSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="faq" title="Frequently Asked Questions" info={getMethodologyText('faq')}><FaqSection stockId={parseInt(stockData.id)} /></Section>
           </div>
         </div>
 
@@ -196,10 +210,9 @@ export default function UnlistedCompanyDetails() {
         <aside className="lg:sticky lg:top-20 lg:self-start lg:max-h-[calc(100vh-5rem)] overflow-y-auto">
           <TradeTabsShell
             company={stockData.company_name}
-            priceINR={stockData.price}
-            settlementDate="Aug 21, 2025"
-            minUnits={300}
-            lotSize={300}
+            priceINR={stockData.price_per_share}
+            minUnits={stockData.min_units}
+            lotSize={stockData.lot_size}
           />
         </aside>
       </div>

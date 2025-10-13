@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
       params.append('search', search);
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news?${params.toString()}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/private-market-news?${params.toString()}`, {
       headers: {
-        'token': token,
+        ...(token && { 'token': token }),
       },
     });
     const data = await response.json();
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
 
-    const response = await fetch(`${API_BASE_URL}/api/admin/private-market-news`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/private-market-news`, {
       method: 'POST',
       headers: {
         'token': token,

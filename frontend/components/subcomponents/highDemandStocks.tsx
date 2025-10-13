@@ -17,6 +17,7 @@ type Share = {
   changePct: string;   // like "66% ↑"
   price: string;
   valuation: string;
+  priceChangePeriod?: string; // e.g., "12M", "2Y"
 };
 
 type Props = {
@@ -104,21 +105,22 @@ export default function HighDemandStocks({
           >
             {items.map((s, i) => (
               <SwiperSlide key={`${s.id}-${i}`} className="h-auto">
-                <article className="h-full rounded-md border border-themeTealLighter bg-brandGradientGreen p-5">
-                  {/* Top */}
-                  <div className="mb-5 flex items-center gap-3">
-                    <Logo name={s.name} src={s.logo} />
-                    <Link href={`/unlisted-company-name/${encodeURIComponent(s.name)}`} className="font-semibold text-themeTeal transition duration-500 hover:text-themeSkyBlue">
-                      {s.name}
-                    </Link>
-                  </div>
+                <Link href={`/unlisted-company-name/${encodeURIComponent(s.name)}`} className="block h-full cursor-pointer">
+                  <article className="h-full rounded-md border border-themeTealLighter bg-brandGradientGreen p-5 hover:shadow-lg transition-all duration-300">
+                    {/* Top */}
+                    <div className="mb-5 flex items-center gap-3">
+                      <Logo name={s.name} src={s.logo} />
+                      <div className="font-semibold text-themeTeal transition duration-500 hover:text-themeSkyBlue">
+                        {s.name}
+                      </div>
+                    </div>
 
                   {/* Metrics */}
                   <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-left text-sm">
                     <div>
                       <p className="text-themeTealLighter">₹ Change</p>
                       <p className="flex items-center gap-1 font-semibold text-green-800">
-                        ₹{s.changeINR} <TrendingUp className="h-3.5 w-3.5" />
+                        ₹{s.changeINR} ({s.priceChangePeriod}) <TrendingUp className="h-3.5 w-3.5" />
                       </p>
                     </div>
                     <div>
@@ -136,7 +138,8 @@ export default function HighDemandStocks({
                       <p className="font-semibold text-themeTeal">{s.valuation}</p>
                     </div>
                   </div>
-                </article>
+                  </article>
+                </Link>
               </SwiperSlide>
             ))}
           </Swiper>

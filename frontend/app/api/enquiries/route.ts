@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Submit enquiry to backend
-    const response = await fetch(`${API_BASE_URL}/api/enquiries`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/enquiries`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

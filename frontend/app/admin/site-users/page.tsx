@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import Image from 'next/image';
 import { Loader, NotificationContainer, NotificationData, ConfirmationModal, SortableHeader, createSortHandler } from '@/components/admin/shared';
-import { Search, Trash2 } from 'lucide-react';
+import { Search, Trash2, X } from 'lucide-react';
 
 interface SiteUser {
   id: number;
@@ -16,8 +17,46 @@ interface SiteUser {
   email_verified: number;
   phone_verified: number;
   country_code: string;
+  buy_request?: string; // JSON string of buy requests
   createdAt: string;
   updatedAt: string;
+}
+
+interface WishlistItem {
+  id: number;
+  user_id: number;
+  stock_id: number;
+  created_at: string;
+  stock: {
+    id: number;
+    company_name: string;
+    price_per_share: number;
+    logo: string;
+  };
+}
+
+interface WishlistModalState {
+  isOpen: boolean;
+  userId: number | null;
+  userName: string;
+  wishlistItems: WishlistItem[];
+  loading: boolean;
+}
+
+interface BuyRequest {
+  stockName: string;
+  quantity: number;
+  price: number;
+  totalAmount: number;
+  timestamp: string;
+}
+
+interface BuyRequestsModalState {
+  isOpen: boolean;
+  userId: number | null;
+  userName: string;
+  buyRequests: BuyRequest[];
+  loading: boolean;
 }
 
 interface Pagination {
@@ -47,6 +86,21 @@ export default function SiteUsersPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [userToDelete, setUserToDelete] = useState<number | null>(null);
+  const [wishlistModal, setWishlistModal] = useState<WishlistModalState>({
+    isOpen: false,
+    userId: null,
+    userName: '',
+    wishlistItems: [],
+    loading: false,
+  });
+
+  const [buyRequestsModal, setBuyRequestsModal] = useState<BuyRequestsModalState>({
+    isOpen: false,
+    userId: null,
+    userName: '',
+    buyRequests: [],
+    loading: false,
+  });
 
   // Refs to store current values to avoid dependency issues
   const searchRef = useRef(search);
@@ -134,14 +188,14 @@ export default function SiteUsersPage() {
   // Initial load effect
   useEffect(() => {
     fetchUsers();
-  }, []); // Empty dependency array - only run on mount
+  }, [fetchUsers]); // Include fetchUsers dependency
 
   // Sorting effect
   useEffect(() => {
     if (sortBy !== 'createdAt' || sortOrder !== 'desc') {
       fetchUsers(1, false); // Don't show loading for sorting
     }
-  }, [sortBy, sortOrder]); // Remove fetchUsers from dependencies
+  }, [sortBy, sortOrder, fetchUsers]); // Include fetchUsers dependency
 
   // Debounced search effect
   useEffect(() => {
@@ -158,12 +212,89 @@ export default function SiteUsersPage() {
       clearTimeout(timeoutId);
       setIsSearching(false);
     };
-  }, [search]); // Remove fetchUsers from dependencies
+  }, [search, fetchUsers]); // Include fetchUsers dependency
 
   const handlePageChange = (page: number) => {
     fetchUsers(page);
   };
 
+  const handleViewWishlist = async (userId: number) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    setWishlistModal({
+      isOpen: true,
+      userId,
+      userName: `${user.first_name} ${user.last_name}`,
+      wishlistItems: [],
+      loading: true,
+    });
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/wishlist/user/${userId}`, {
+        method: 'GET',
+        headers: {
+          'token': token,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setWishlistModal(prev => ({
+          ...prev,
+          wishlistItems: data.data || [],
+          loading: false,
+        }));
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to load wishlist',
+          duration: 5000
+        });
+        setWishlistModal(prev => ({
+          ...prev,
+          loading: false,
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching wishlist:', error);
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to load wishlist',
+        duration: 5000
+      });
+      setWishlistModal(prev => ({
+        ...prev,
+        loading: false,
+      }));
+    }
+  };
+
+  const handleViewBuyRequests = (userId: number, buyRequestData?: string) => {
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+
+    let buyRequests: BuyRequest[] = [];
+    if (buyRequestData) {
+      try {
+        buyRequests = JSON.parse(buyRequestData);
+      } catch (error) {
+        console.error('Error parsing buy requests:', error);
+        buyRequests = [];
+      }
+    }
+
+    setBuyRequestsModal({
+      isOpen: true,
+      userId,
+      userName: `${user.first_name} ${user.last_name}`,
+      buyRequests,
+      loading: false,
+    });
+  };
 
   const handleDeleteUser = async (userId: number) => {
     setUserToDelete(userId);
@@ -316,6 +447,12 @@ export default function SiteUsersPage() {
                       <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                         Auth Provider
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                        Wishlist
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                        Buy Requests
+                      </th>
                       <SortableHeader
                         field="createdAt"
                         sortBy={sortBy}
@@ -362,6 +499,41 @@ export default function SiteUsersPage() {
                           <span className="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
                             {user.auth_provider}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => handleViewWishlist(user.id)}
+                            className="p-1 bg-blue-100 text-blue-600 hover:bg-blue-200 rounded transition duration-300 cursor-pointer"
+                            title="View Wishlist"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                          </button>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <button
+                            onClick={() => handleViewBuyRequests(user.id, user.buy_request)}
+                            className="p-2 bg-green-100 text-green-600 hover:bg-green-200 rounded transition duration-300 cursor-pointer flex items-center"
+                            title="View Buy Requests"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            {user.buy_request && (() => {
+                              try {
+                                const buyRequests = JSON.parse(user.buy_request);
+                                return buyRequests.length > 0 ? (
+                                  <span className="ml-1 text-xs font-bold">
+                                    {buyRequests.length}
+                                  </span>
+                                ) : null;
+                              } catch (error) {
+                                return null;
+                              }
+                            })()}
+                          </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
                           {formatDate(user.createdAt)}
@@ -481,6 +653,162 @@ export default function SiteUsersPage() {
         notifications={notifications}
         onRemove={removeNotification}
       />
+
+      {/* Wishlist Modal */}
+      {wishlistModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-xl font-bold text-themeTealWhite">
+                      {wishlistModal.userName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-themeTealWhite">Wishlist</h3>
+                    <p className="text-sm text-themeTealLighter">View wishlist for {wishlistModal.userName}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setWishlistModal(prev => ({ ...prev, isOpen: false }))}
+                  className="text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+            
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto">
+              {wishlistModal.loading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto"></div>
+                  <p className="mt-2 text-sm text-themeTealLight">Loading wishlist...</p>
+                </div>
+              ) : wishlistModal.wishlistItems.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="h-16 w-16 rounded-full bg-themeTealLighter flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-themeTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-themeTeal mb-2">No Items Found</h3>
+                  <p className="text-sm text-themeTealLight">This user hasn&apos;t added any items to their wishlist yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {wishlistModal.wishlistItems.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between p-4 border border-themeTealLighter rounded-lg bg-themeTealWhite hover:bg-white transition-colors duration-200">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-themeTealLighter rounded-lg flex items-center justify-center">
+                          {item.stock.logo ? (
+                            <Image 
+                              src={item.stock.logo} 
+                              alt={`${item.stock.company_name} logo`}
+                              width={32}
+                              height={32}
+                              className="object-contain"
+                            />
+                          ) : (
+                            <span className="text-themeTeal text-xs font-semibold">
+                              {item.stock.company_name.charAt(0)}
+                            </span>
+                          )}
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-themeTeal">{item.stock.company_name}</h3>
+                          <p className="text-sm text-themeTealLight">
+                            ₹{item.stock.price_per_share.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-sm text-themeTealLight">
+                        Added {new Date(item.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Buy Requests Modal */}
+      {buyRequestsModal.isOpen && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="bg-themeTeal px-6 py-4 rounded-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="h-12 w-12 rounded-full bg-white/20 flex items-center justify-center">
+                    <span className="text-xl font-bold text-themeTealWhite">
+                      {buyRequestsModal.userName.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-themeTealWhite">Buy Requests</h3>
+                    <p className="text-sm text-themeTealLighter">View buy requests for {buyRequestsModal.userName}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setBuyRequestsModal(prev => ({ ...prev, isOpen: false }))}
+                  className="text-white hover:text-gray-200 transition-colors duration-200 cursor-pointer"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 flex-1 overflow-y-auto">
+              {buyRequestsModal.buyRequests.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="h-16 w-16 rounded-full bg-themeTealLighter flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-themeTeal" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-themeTeal mb-2">No Buy Requests</h3>
+                  <p className="text-sm text-themeTealLight">This user hasn&apos;t made any buy requests yet.</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {buyRequestsModal.buyRequests.map((request, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border border-themeTealLighter rounded-lg bg-themeTealWhite hover:bg-white transition-colors duration-200">
+                      <div className="flex items-center space-x-4">
+                        <div className="w-12 h-12 bg-themeTealLighter rounded-lg flex items-center justify-center">
+                          <span className="text-themeTeal text-xs font-semibold">
+                            {request.stockName.charAt(0)}
+                          </span>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold text-themeTeal">{request.stockName}</h3>
+                          <p className="text-sm text-themeTealLight">
+                            Quantity: {request.quantity} | Price: ₹{request.price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-semibold text-themeTeal">
+                          ₹{request.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </div>
+                        <div className="text-xs text-themeTealLight">
+                          {new Date(request.timestamp).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { TrendingUp, TrendingDown, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { TrendingUp, TrendingDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 
@@ -10,8 +10,15 @@ export type ProductItem = {
   id: string;
   company_name: string;
   logo: string;
-  price: number;
+  price_per_share: number;
   price_change: number;
+  price_change_period_id: number | undefined;
+  price_change_period?: string; // Optional for backward compatibility
+  valuation: string;
+  valuation_id?: number; // Added for filtering
+  sector_ids?: string; // Added for filtering
+  subsector_ids?: string; // Added for filtering
+  theme_ids?: string; // Added for filtering
   teaser: string;
   short_description: string;
   analysis: string;
@@ -136,9 +143,10 @@ function PageBtn({ n, active, onClick }: { n: number; active: boolean; onClick: 
 }
 
 /* ---------- row (unchanged from your mobile-friendly version) ---------- */
-function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id: string) => void }) {
+function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => void }) {
   const pos = item.price_change >= 0;
   const changeSign = pos ? "+" : "";
+  const periodName = item.price_change_period || 'No period assigned';
   return (
     <article className="w-full rounded-xl bg-themeTealWhite p-2 md:p-3">
       <div className="flex flex-col gap-4 xl:flex-row md:items-center md:justify-between">
@@ -155,35 +163,37 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
             </h3>
             <p className="mt-1 text-sm text-themeTealLight line-clamp-3 md:line-clamp-1">{item.teaser}</p>
 
-            <div className="mt-2 flex justify-center md:hidden">
+            {/* <div className="mt-2 flex justify-center md:hidden">
               <WishBtn onClick={() => onWishlist?.(item.id)} />
-            </div>
+            </div> */}
           </div>
         </div>
 
-        <div className="hidden md:flex md:items-start md:justify-center md:flex-shrink-0">
+        {/* <div className="hidden md:flex md:items-start md:justify-center md:flex-shrink-0">
           <WishBtn onClick={() => onWishlist?.(item.id)} />
-        </div>
+        </div> */}
 
-        <div className="w-full md:w-auto md:min-w-[400px] lg:min-w-full xl:min-w-[500px]">
-          <div className="hidden md:grid grid-cols-2 bg-themeTeal px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white">
-            <div>Price</div><div>Change</div>
+        <div className="w-full md:w-auto md:min-w-[500px] lg:min-w-full xl:min-w-[600px]">
+          <div className="hidden md:grid grid-cols-3 bg-themeTeal px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white">
+            <div>Price per share</div><div>Price Change Period</div><div>Valuation (in Cr.)</div>
           </div>
-          <div className="hidden md:grid grid-cols-2 items-center gap-2 bg-white px-3 py-2 text-sm font-semibold text-themeTeal">
-            <div className="whitespace-nowrap">₹ {formatINR(item.price)}</div>
+          <div className="hidden md:grid grid-cols-3 items-center gap-2 bg-white px-3 py-2 text-sm font-semibold text-themeTeal">
+            <div className="whitespace-nowrap">₹ {formatINR(item.price_per_share)}</div>
             <div className={pos ? "text-green-700" : "text-rose-600"}>
-              {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
+              {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />} ({periodName})
             </div>
+            <div className="whitespace-nowrap">₹ {item.valuation}</div>
           </div>
 
-          <div className="grid md:hidden grid-cols-2 gap-3 bg-white p-3 text-sm text-themeTeal">
-            <MobileStat label="Price" value={`₹ ${formatINR(item.price)}`} />
+          <div className="grid md:hidden grid-cols-3 gap-3 bg-white p-3 text-sm text-themeTeal">
+            <MobileStat label="Price per share" value={`₹ ${formatINR(item.price_per_share)}`} />
             <MobileStat
-              label="Change"
+              label="Price Change Period"
               value={<span className={pos ? "text-green-700" : "text-rose-600"}>
-                {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />}
+                {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />} ({periodName})
               </span>}
             />
+            <MobileStat label="Valuation (in Cr.)" value={`₹ ${item.valuation}`} />
           </div>
         </div>
       </div>
@@ -191,7 +201,7 @@ function ProductRow({ item, onWishlist }: { item: ProductItem; onWishlist?: (id:
   );
 }
 
-function WishBtn({ onClick }: { onClick: () => void }) {
+/* function WishBtn({ onClick }: { onClick: () => void }) {
   return (
     <button
       type="button"
@@ -202,7 +212,7 @@ function WishBtn({ onClick }: { onClick: () => void }) {
       <Heart className="h-4 w-4" /> Add to Wishlist
     </button>
   );
-}
+} */
 function MobileStat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, A11y } from "swiper/modules";
 // If CSS-in-component fails in your setup, move these two lines into globals.css instead.
@@ -19,10 +20,11 @@ export type Slide = {
   title: string;
   highlight?: string; // e.g., HIGH DEMAND
   description?: string;
-  price?: string; // e.g., ₹ 290.58 ↑
+  price_change?: number; // e.g., ₹ 290.58 ↑
   changePct?: string; // e.g., 66% ↑
   pps?: string; // Price Per Share
   valuation?: string; // Valuation
+  price_change_period?: string; // e.g., 12M, 2Y
 };
 
 // API Response Types
@@ -30,8 +32,7 @@ interface ApiStock {
   id: number;
   company_name: string;
   logo: string;
-  price: string;
-  price_change: string;
+  price_change: number;
   teaser: string;
   short_description: string;
   analysis: string;
@@ -41,6 +42,7 @@ interface ApiStock {
   valuation: string;
   price_per_share: string;
   percentage_change: string;
+  price_change_period: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -56,7 +58,7 @@ interface ApiResponse {
 // API fetch function
 async function fetchBannerStocks(): Promise<Slide[]> {
   try {
-    const response = await fetch('http://localhost:3000/api/stocks/banner-display');
+    const response = await fetch('/api/stocks/banner-display');
     if (!response.ok) {
       throw new Error('Failed to fetch banner stocks');
     }
@@ -69,18 +71,19 @@ async function fetchBannerStocks(): Promise<Slide[]> {
     
     // Map API data to Slide format - only using fields that were already displayed in UI
     return apiData.data.stocks.map((stock: ApiStock): Slide => {
-      const priceChange = parseFloat(stock.price_change);
+      const priceChange = stock.price_change;
       const percentageChange = parseFloat(stock.percentage_change);
       
       return {
         logo: stock.logo,
         title: stock.company_name,
-        highlight: undefined, // Keep undefined since we're not using API demand field
+        highlight: stock.demand,
         description: stock.teaser,
-        price: `₹ ${stock.price} ${priceChange >= 0 ? '↑' : '↓'}`,
+        price_change: priceChange,
         changePct: `${percentageChange >= 0 ? '+' : ''}${stock.percentage_change}% ${percentageChange >= 0 ? '↑' : '↓'}`,
         pps: `₹ ${stock.price_per_share}`,
-        valuation: `₹ ${stock.valuation}B`,
+        valuation: stock.valuation,
+        price_change_period: stock.price_change_period,
       };
     });
   } catch (error) {
@@ -90,39 +93,39 @@ async function fetchBannerStocks(): Promise<Slide[]> {
   }
 }
 
-const demoSlides: Slide[] = [
-  {
-    logo: "/images/logos/tcs.webp",
-    title: "TATA Consultancy Services",
-    highlight: "HIGH DEMAND",
-    description:
-      "At Pine Labs, we’re proud of the way our merchant platform makes an impact on our customers’ lives.",
-    price: "₹ 290.58 ↑",
-    changePct: "66% ↑",
-    pps: "₹ 350.92",
-    valuation: "₹ 840.52B",
-  },
-  {
-    logo: "/images/logos/airtel.webp",
-    title: "Airtel",
-    highlight: "TRENDING",
-    description: "Global consulting and IT services leader delivering next‑gen solutions.",
-    price: "₹ 1,540.20 ↑",
-    changePct: "1.8% ↑",
-    pps: "₹ 1,540.20",
-    valuation: "₹ 6.4T",
-  },
-  {
-    logo: "/images/logos/tata.webp",
-    title: "TATA Motors",
-    highlight: "WATCHLIST",
-    description: "India’s leading private bank with consistent growth and strong fundamentals.",
-    price: "₹ 1,647.35 ↓",
-    changePct: "-0.6% ↓",
-    pps: "₹ 1,647.35",
-    valuation: "₹ 12.2T",
-  },
-];
+// const demoSlides: Slide[] = [
+//   {
+//     logo: "/images/logos/tcs.webp",
+//     title: "TATA Consultancy Services",
+//     highlight: "HIGH DEMAND",
+//     description:
+//       "At Pine Labs, we're proud of the way our merchant platform makes an impact on our customers' lives.",
+//     price_change: 290.58,
+//     changePct: "66% ↑",
+//     pps: "₹ 350.92",
+//     valuation: "₹ 840.52B",
+//   },
+//   {
+//     logo: "/images/logos/airtel.webp",
+//     title: "Airtel",
+//     highlight: "TRENDING",
+//     description: "Global consulting and IT services leader delivering next‑gen solutions.",
+//     price_change: 1540.20,
+//     changePct: "1.8% ↑",
+//     pps: "₹ 1,540.20",
+//     valuation: "₹ 6.4T",
+//   },
+//   {
+//     logo: "/images/logos/tata.webp",
+//     title: "TATA Motors",
+//     highlight: "WATCHLIST",
+//     description: "India's leading private bank with consistent growth and strong fundamentals.",
+//     price_change: 1647.35,
+//     changePct: "-0.6% ↓",
+//     pps: "₹ 1,647.35",
+//     valuation: "₹ 12.2T",
+//   },
+// ];
 
 function Logo({ title, src }: { title: string; src?: string }) {
   if (src) {
@@ -229,7 +232,7 @@ function Pill({ label }: { label?: string }) {
   );
 }
 
-function StatRow({ label, value }: { label: string; value?: string }) {
+function StatRow({ label, value }: { label: string; value?: (string | number) }) {
   return (
     <div className="flex flex-col">
       <span className="text-themeTealLight text-xs">{label}</span>
@@ -240,7 +243,7 @@ function StatRow({ label, value }: { label: string; value?: string }) {
 
 function Card({ slide }: { slide: Slide }) {
   return (
-    <div className="h-full w-full flex items-center justify-center">
+    <Link href={`/unlisted-company-name/${encodeURIComponent(slide.title)}`} className="h-full w-full flex items-center justify-center cursor-pointer">
       <div className="flex flex-col p-2">
         {/* Header */}
         <div className="text-center">
@@ -259,7 +262,7 @@ function Card({ slide }: { slide: Slide }) {
         {/* Stats */}
         <div className="mt-4 rounded bg-themeTealWhite p-2">
           <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-            <StatRow label="₹ Price" value={slide.price} />
+            <StatRow label="₹ Price Change" value={`${slide.price_change} (${slide.price_change_period || 'N/A'})`} />
             <StatRow label="% Change" value={slide.changePct} />
             <StatRow label="PPS" value={slide.pps} />
             <StatRow label="Valuation" value={slide.valuation} />
@@ -268,6 +271,6 @@ function Card({ slide }: { slide: Slide }) {
 
         <div className="flex-1" />
       </div>
-    </div>
+    </Link>
   );
 }

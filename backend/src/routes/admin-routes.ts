@@ -1,6 +1,7 @@
 import express from "express";
 import adminMiddleware from "../utils/middlewares/admin-middleware";
 import { uploadIcon } from "../utils/middlewares/s3Upload";
+import { uploadBanner } from "../utils/middlewares/s3Upload";
 import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
@@ -36,6 +37,47 @@ import { TaxonomyManagementController } from "../controllers/admin/taxonomyManag
 import { NotableActivityManagementController } from "../controllers/admin/notableActivityManagement";
 import { ActivityTypeManagementController } from "../controllers/admin/activityTypeManagement";
 import { BulkDealsManagementController } from "../controllers/admin/bulkDealsManagement";
+import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
+import { PriceChangePeriodController } from "../controllers/admin/priceChangePeriodController";
+import { ValuationController } from "../controllers/admin/valuationController";
+import { ThemeController } from "../controllers/admin/themeController";
+import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
+import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
+import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
+import { StockSectorOutlookManagementController } from "../controllers/admin/stockSectorOutlookManagement";
+import { StockSectorInsightsPdfManagementController } from "../controllers/admin/stockSectorInsightsPdfManagement";
+import { MethodologyNotesManagementController } from "../controllers/admin/methodologyNotesManagement";
+import { FinancialDataController } from "../controllers/admin/financialDataController";
+import { StockShareholdingController } from "../controllers/admin/stockShareholdingController";
+import { WishlistController } from "../controllers/stocks/wishlistController";
+import { ShareholderTypeController } from "../controllers/admin/shareholderTypeController";
+import { StockNewsSectionController } from "../controllers/admin/stockNewsSectionController";
+import { StockFaqController } from "../controllers/admin/stockFaqController";
+import { SectorManagementController } from "../controllers/admin/sectorManagement";
+import { ContactFaqController } from "../controllers/admin/contactFaqController";
+import { KYCManagementController } from "../controllers/admin/kycManagement";
+import { uploadPdf } from "../utils/middlewares/s3Upload";
+
+// Stock Draft Controllers
+import {
+  saveDraft,
+  getDrafts,
+  getDraftById,
+  deleteDraft,
+  cleanupExpiredDrafts
+} from "../controllers/admin/stockDraftController";
+
+// Stock Price Data Controllers
+import { 
+  uploadPriceDataCSV, 
+  getPriceData, 
+  getLatestPriceData, 
+  deleteAllPriceData, 
+  checkPriceDataExists,
+  exportPriceDataCSV,
+  deletePriceDataAdmin,
+  upload 
+} from "../controllers/admin/stockPriceController";
 
 // Enquiry Management Controllers
 import {
@@ -64,6 +106,8 @@ const taxonomyController = new TaxonomyManagementController();
 const notableActivityController = new NotableActivityManagementController();
 const activityTypeController = new ActivityTypeManagementController();
 const bulkDealsController = new BulkDealsManagementController();
+const stockMasterController = new StockMasterManagementController();
+const methodologyNotesController = new MethodologyNotesManagementController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -73,7 +117,15 @@ router.use((req, res, next) => {
   // Skip authentication for new feature routes during testing
   if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
-      req.path.includes('/bulk-deals')) {
+      req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
+      req.path.includes('/price-change-periods') ||
+      req.path.includes('/valuations') ||
+      req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
+      req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
+      req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
+      req.path.includes('/news-sections') || req.path.includes('/faqs') ||
+      req.path.includes('/sectors') || req.path.includes('/subsectors') ||
+      req.path.includes('/contact-faqs')) {
     return next();
   }
   return adminMiddleware(req, res, next);
@@ -138,7 +190,7 @@ router.delete("/private-market-news/:id", privateMarketNewsController.deletePriv
 // Taxonomy Management Routes
 router.get("/taxonomies", taxonomyController.getAllTaxonomies);
 router.get("/taxonomies/stats", taxonomyController.getTaxonomyStats);
-router.get("/taxonomies/active", taxonomyController.getActiveTaxonomies);
+router.get("/taxonomies/status/active", taxonomyController.getActiveTaxonomies);
 router.get("/taxonomies/:id", taxonomyController.getTaxonomyById);
 router.post("/taxonomies", taxonomyController.createTaxonomy);
 router.put("/taxonomies/:id", taxonomyController.updateTaxonomy);
@@ -169,5 +221,189 @@ router.post("/bulk-deals", uploadIcon.any(), bulkDealsController.createBulkDeal)
 router.put("/bulk-deals/:id", uploadIcon.any(), bulkDealsController.updateBulkDeal);
 router.delete("/bulk-deals/:id", bulkDealsController.deleteBulkDeal);
 router.delete("/bulk-deals/bulk", bulkDealsController.bulkDeleteBulkDeals);
+
+// Stock Master Management Routes
+router.get("/stock-masters", stockMasterController.getAllStockMasters);
+router.get("/stock-masters/stats", stockMasterController.getStockMasterStats);
+router.get("/stock-masters/select", stockMasterController.getAllStockMastersForSelect);
+router.get("/stock-masters/:id", stockMasterController.getStockMasterById);
+router.post("/stock-masters", stockMasterController.createStockMaster);
+router.put("/stock-masters/:id", stockMasterController.updateStockMaster);
+router.delete("/stock-masters/:id", stockMasterController.deleteStockMaster);
+
+// Price Change Period Management Routes
+router.get("/price-change-periods", PriceChangePeriodController.getAllPriceChangePeriods);
+router.get("/price-change-periods/select", PriceChangePeriodController.getPriceChangePeriodsForSelect);
+router.get("/price-change-periods/:id", PriceChangePeriodController.getPriceChangePeriodById);
+router.post("/price-change-periods", PriceChangePeriodController.createPriceChangePeriod);
+router.put("/price-change-periods/:id", PriceChangePeriodController.updatePriceChangePeriod);
+router.delete("/price-change-periods/:id", PriceChangePeriodController.deletePriceChangePeriod);
+
+// Valuation Management Routes
+router.get("/valuations", ValuationController.getAllValuations);
+router.get("/valuations/select", ValuationController.getValuationsForSelect);
+router.get("/valuations/:id", ValuationController.getValuationById);
+router.post("/valuations", ValuationController.createValuation);
+router.put("/valuations/:id", ValuationController.updateValuation);
+router.delete("/valuations/:id", ValuationController.deleteValuation);
+
+// Theme Management Routes
+router.get("/themes", ThemeController.getAllThemes);
+router.get("/themes/select", ThemeController.getThemesForSelect);
+router.get("/themes/:id", ThemeController.getThemeById);
+router.post("/themes", ThemeController.createTheme);
+router.put("/themes/:id", ThemeController.updateTheme);
+router.delete("/themes/:id", ThemeController.deleteTheme);
+
+// Sector Management Routes
+router.get("/sectors", SectorManagementController.getAllSectors);
+router.get("/sectors/stats", SectorManagementController.getSectorStats);
+router.get("/sectors/select", SectorManagementController.getAllSectorsForSelect);
+router.get("/sectors/:id", SectorManagementController.getSectorById);
+router.post("/sectors", SectorManagementController.createSector);
+router.put("/sectors/:id", SectorManagementController.updateSector);
+router.delete("/sectors/:id", SectorManagementController.deleteSector);
+
+// Subsector Management Routes
+router.get("/subsectors", SectorManagementController.getAllSubsectors);
+router.get("/sectors/:sectorId/subsectors", SectorManagementController.getSubsectorsBySectorId);
+router.get("/subsectors/:id", SectorManagementController.getSubsectorById);
+router.post("/subsectors", SectorManagementController.createSubsector);
+router.put("/subsectors/:id", SectorManagementController.updateSubsector);
+router.delete("/subsectors/:id", SectorManagementController.deleteSubsector);
+
+// Stock Scorecard Management Routes
+router.get("/stocks/:stockId/scorecards", StockScorecardManagementController.getScorecardsByStockId);
+router.get("/scorecards/:id", StockScorecardManagementController.getScorecardById);
+router.post("/stocks/:stockId/scorecards", StockScorecardManagementController.createScorecard);
+router.post("/stocks/:stockId/scorecards/bulk", StockScorecardManagementController.bulkCreateScorecards);
+router.put("/scorecards/:id", StockScorecardManagementController.updateScorecard);
+router.delete("/scorecards/:id", StockScorecardManagementController.deleteScorecard);
+router.get("/stocks/:stockId/scorecards/stats", StockScorecardManagementController.getScorecardStats);
+
+// Stock Investment Rationale Management Routes
+router.get("/stocks/:stockId/investment-rationales", StockInvestmentRationaleManagementController.getRationalesByStockId);
+router.get("/investment-rationales/:id", StockInvestmentRationaleManagementController.getRationaleById);
+router.post("/stocks/:stockId/investment-rationales", uploadIcon.single('icon'), StockInvestmentRationaleManagementController.createRationale);
+router.post("/stocks/:stockId/investment-rationales/bulk", StockInvestmentRationaleManagementController.bulkCreateRationales);
+router.put("/investment-rationales/:id", uploadIcon.single('icon'), StockInvestmentRationaleManagementController.updateRationale);
+router.delete("/investment-rationales/:id", StockInvestmentRationaleManagementController.deleteRationale);
+router.get("/stocks/:stockId/investment-rationales/stats", StockInvestmentRationaleManagementController.getRationaleStats);
+
+// Stock Performance PDF Management Routes
+router.get("/stocks/:stockId/performance-pdfs", StockPerformancePdfManagementController.getPdfsByStockId);
+router.get("/performance-pdfs/:id", StockPerformancePdfManagementController.getPdfById);
+router.post("/stocks/:stockId/performance-pdfs", uploadMiddleware, StockPerformancePdfManagementController.createPdf);
+router.post("/stocks/:stockId/performance-pdfs/bulk", StockPerformancePdfManagementController.bulkCreatePdfs);
+router.put("/performance-pdfs/:id", StockPerformancePdfManagementController.updatePdf);
+router.put("/performance-pdfs/:id/replace", uploadMiddleware, StockPerformancePdfManagementController.replacePdf);
+router.delete("/performance-pdfs/:id", StockPerformancePdfManagementController.deletePdf);
+router.get("/stocks/:stockId/performance-pdfs/stats", StockPerformancePdfManagementController.getPdfStats);
+
+// Stock Sector Outlook Management Routes
+router.get("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.getSectorOutlookByStockId);
+router.post("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.createOrUpdateSectorOutlook);
+router.delete("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.deleteSectorOutlook);
+router.get("/stocks/:stockId/sector-outlooks/stats", StockSectorOutlookManagementController.getSectorOutlookStats);
+
+// Stock Sector Insights PDF Management Routes
+router.get("/stocks/:stockId/sector-insights-pdfs", StockSectorInsightsPdfManagementController.getPdfsByStockId);
+router.get("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.getPdfById);
+router.post("/stocks/:stockId/sector-insights-pdfs", uploadPdf.single('pdf'), StockSectorInsightsPdfManagementController.createPdf);
+router.post("/stocks/:stockId/sector-insights-pdfs/bulk", StockSectorInsightsPdfManagementController.bulkCreatePdfs);
+router.put("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.updatePdf);
+router.put("/sector-insights-pdfs/:id/replace", uploadPdf.single('pdf'), StockSectorInsightsPdfManagementController.replacePdf);
+router.put("/sector-insights-pdfs/:id/set-active", StockSectorInsightsPdfManagementController.setActivePdf);
+router.delete("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.deletePdf);
+router.get("/stocks/:stockId/sector-insights-pdfs/stats", StockSectorInsightsPdfManagementController.getPdfStats);
+
+// Stock Draft Management Routes
+router.post("/stock-drafts", saveDraft);
+router.get("/stock-drafts", getDrafts);
+router.get("/stock-drafts/:id", getDraftById);
+router.delete("/stock-drafts/:id", deleteDraft);
+router.post("/stock-drafts/cleanup", cleanupExpiredDrafts);
+
+// Stock Price Data Management Routes
+router.post("/stocks/:id/price-data/upload", upload.single('csvFile'), uploadPriceDataCSV);
+router.get("/stocks/:id/price-data", getPriceData);
+router.get("/stocks/:id/price-data/export", exportPriceDataCSV);
+router.get("/stocks/:id/price-data/latest", getLatestPriceData);
+router.delete("/stocks/:id/price-data", deleteAllPriceData);
+router.delete("/stocks/:id/price-data/admin", deletePriceDataAdmin);
+router.get("/stocks/:id/price-data/exists", checkPriceDataExists);
+
+// Financial Data Management Routes
+router.get("/financial-kpis/:category", FinancialDataController.getKpisByCategory);
+router.get("/stocks/:stockId/financial-data/:category", FinancialDataController.getStockFinancialData);
+router.post("/stocks/:stockId/financial-data/:category/upload", upload.single('csvFile'), FinancialDataController.uploadFinancialDataCSV);
+router.get("/stocks/:stockId/financial-data/:category/export", FinancialDataController.exportFinancialDataCSV);
+router.delete("/stocks/:stockId/financial-data/:category", FinancialDataController.deleteFinancialData);
+router.get("/stocks/:stockId/financial-data/:category/exists", FinancialDataController.checkFinancialDataExists);
+
+// Methodology Notes Management Routes
+router.get("/methodology-notes", methodologyNotesController.getAllMethodologyNotes);
+router.get("/methodology-notes/active", methodologyNotesController.getAllActiveMethodologyNotes);
+router.get("/methodology-notes/:id", methodologyNotesController.getMethodologyNoteById);
+router.post("/methodology-notes", methodologyNotesController.createMethodologyNote);
+router.put("/methodology-notes/:id", methodologyNotesController.updateMethodologyNote);
+router.delete("/methodology-notes/:id", methodologyNotesController.deleteMethodologyNote);
+
+// Stock Shareholding Management Routes
+router.get("/stocks/:id/shareholding", StockShareholdingController.getStockShareholding);
+router.post("/stocks/:id/shareholding", StockShareholdingController.createShareholding);
+router.put("/shareholding/:id", StockShareholdingController.updateShareholding);
+router.delete("/shareholding/:id", StockShareholdingController.deleteShareholding);
+
+// Wishlist Management Routes
+router.get("/wishlist/user/:userId", WishlistController.getUserWishlistAdmin);
+
+// Shareholder Type Management Routes
+router.get("/shareholder-types", ShareholderTypeController.getAllShareholderTypesAdmin);
+router.post("/shareholder-types", ShareholderTypeController.createShareholderType);
+router.put("/shareholder-types/:id", ShareholderTypeController.updateShareholderType);
+router.delete("/shareholder-types/:id", ShareholderTypeController.deleteShareholderType);
+router.patch("/shareholder-types/:id/toggle-status", ShareholderTypeController.toggleActiveStatus);
+
+// Stock News Section Management Routes
+router.get("/news-sections", StockNewsSectionController.getAllNewsSections);
+router.get("/news-sections/:id", StockNewsSectionController.getNewsSectionById);
+router.post("/news-sections", StockNewsSectionController.createNewsSection);
+router.put("/news-sections/:id", StockNewsSectionController.updateNewsSection);
+router.delete("/news-sections/:id", StockNewsSectionController.deleteNewsSection);
+router.post("/news-sections/bulk-delete", StockNewsSectionController.bulkDeleteNewsSections);
+
+// Stock News Section File Upload Routes
+router.post("/news-sections/upload-banner", uploadBanner.single('banner'), StockNewsSectionController.uploadBanner);
+
+// Stock-specific News Section Routes
+router.get("/stocks/:stockId/news-sections", StockNewsSectionController.getStockNewsSections);
+
+// Stock FAQ Management Routes
+router.get("/faqs", StockFaqController.getAllFaqs);
+router.get("/faqs/:id", StockFaqController.getFaqById);
+router.post("/faqs", StockFaqController.createFaq);
+router.put("/faqs/:id", StockFaqController.updateFaq);
+router.delete("/faqs/:id", StockFaqController.deleteFaq);
+router.post("/faqs/bulk-delete", StockFaqController.bulkDeleteFaqs);
+
+// Stock-specific FAQ routes
+router.get("/stocks/:stockId/faqs", StockFaqController.getStockFaqsAdmin);
+
+// KYC Management Routes (Admin only)
+const kycController = new KYCManagementController();
+router.get("/kyc", kycController.getAllKYCApplications);
+router.get("/kyc/stats", kycController.getKYCStats);
+router.get("/kyc/:id", kycController.getKYCApplicationById);
+router.put("/kyc/:id/status", kycController.updateKYCStatus);
+router.delete("/kyc/:id", kycController.deleteKYCApplication);
+
+// Contact FAQ Management Routes (Admin only)
+router.get("/contact-faqs", ContactFaqController.getAllContactFaqs);
+router.get("/contact-faqs/:id", ContactFaqController.getFaqById);
+router.post("/contact-faqs", ContactFaqController.createFaq);
+router.put("/contact-faqs/:id", ContactFaqController.updateFaq);
+router.delete("/contact-faqs/:id", ContactFaqController.deleteFaq);
+router.delete("/contact-faqs/bulk-delete", ContactFaqController.bulkDeleteFaqs);
 
 export default router;

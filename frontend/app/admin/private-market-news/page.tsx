@@ -143,7 +143,7 @@ export default function PrivateMarketNewsPage() {
 
   const fetchTaxonomies = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/taxonomies/active');
+      const response = await fetch('/api/admin/taxonomies/status/active');
       const data = await response.json();
 
       if (data.success) {
@@ -183,14 +183,28 @@ export default function PrivateMarketNewsPage() {
         formData.append('icon', data.icon);
       }
 
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch('/api/admin/private-market-news', {
         method: 'POST',
+        headers: {
+          'token': token,
+        },
         body: formData,
       });
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -201,10 +215,12 @@ export default function PrivateMarketNewsPage() {
         setNewNews({ title: '', url: '', icon: null, taxonomy_ids: [] });
         fetchNews(searchTerm, false);
       } else {
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to create private market news';
         addNotification({
           type: 'error',
           title: 'Creation Failed',
-          message: result.message || 'Failed to create private market news',
+          message: errorMessage,
           duration: 5000
         });
       }
@@ -232,8 +248,22 @@ export default function PrivateMarketNewsPage() {
         formData.append('icon', data.icon);
       }
 
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch(`/api/admin/private-market-news/${editingItem.id}`, {
         method: 'PUT',
+        headers: {
+          'token': token,
+        },
         body: formData,
       });
 
@@ -278,8 +308,22 @@ export default function PrivateMarketNewsPage() {
     if (!newsToDelete) return;
 
     try {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch(`/api/admin/private-market-news/${newsToDelete}`, {
         method: 'DELETE',
+        headers: {
+          'token': token,
+        },
       });
 
       const data = await response.json();
@@ -316,17 +360,29 @@ export default function PrivateMarketNewsPage() {
 
   const createTaxonomy = async (data: NewTaxonomyForm) => {
     try {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch('/api/admin/taxonomies', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'token': token,
         },
         body: JSON.stringify(data),
       });
 
       const result = await response.json();
 
-      if (result.success) {
+      if (result.status === true || result.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -336,10 +392,12 @@ export default function PrivateMarketNewsPage() {
         setNewTaxonomy({ name: '', color: '#3B82F6' });
         fetchTaxonomies();
       } else {
+        // Handle both old and new error formats
+        const errorMessage = result.error?.message || result.message || 'Failed to create taxonomy';
         addNotification({
           type: 'error',
           title: 'Creation Failed',
-          message: result.message || 'Failed to create taxonomy',
+          message: errorMessage,
           duration: 5000
         });
       }
@@ -356,13 +414,27 @@ export default function PrivateMarketNewsPage() {
 
   const deleteTaxonomy = async (id: number) => {
     try {
+      const token = sessionStorage.getItem('adminToken');
+      if (!token) {
+        addNotification({
+          type: 'error',
+          title: 'Authentication Error',
+          message: 'No admin token found',
+          duration: 5000
+        });
+        return;
+      }
+
       const response = await fetch(`/api/admin/taxonomies/${id}`, {
         method: 'DELETE',
+        headers: {
+          'token': token,
+        },
       });
 
       const data = await response.json();
 
-      if (data.success) {
+      if (data.status === true || data.success === true) {
         addNotification({
           type: 'success',
           title: 'Success',
@@ -371,10 +443,12 @@ export default function PrivateMarketNewsPage() {
         });
         fetchTaxonomies();
       } else {
+        // Handle both old and new error formats
+        const errorMessage = data.error?.message || data.message || 'Failed to delete taxonomy';
         addNotification({
           type: 'error',
           title: 'Deletion Failed',
-          message: data.message || 'Failed to delete taxonomy',
+          message: errorMessage,
           duration: 5000
         });
       }

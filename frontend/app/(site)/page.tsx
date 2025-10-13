@@ -5,13 +5,13 @@ export default function Home() {
     <>
       <HeroSection />
       <FeaturesSection />
-      <InvestappPrice />
+      {/* <InvestappPrice /> */}
       <BeyondMarket />
       <MarketPortfolio />
       <BulkDeals />
-      <MarketInsight />
+      {/* <MarketInsight />
       <InvestorKnowledge />
-      <PrivateMarketTrends />
+      <PrivateMarketTrends /> */}
       <NewsletterCTA />
     </>
   );

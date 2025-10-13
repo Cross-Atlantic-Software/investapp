@@ -124,7 +124,7 @@ export default function Footer() {
             <p className="mt-1 mb-3 text-sm">
               Our team is ready to guide you through the next steps towards accessing the private market.
             </p>
-            <Button type="submit" variant="solid" color="skyblue" size="sm" text="Contact Us" href="/" />
+            <Button type="submit" variant="solid" color="skyblue" size="sm" text="Contact Us" href="/contact" />
           </div>
         </div>
 

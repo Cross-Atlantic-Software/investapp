@@ -22,7 +22,7 @@ export default function Page() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/dashboard");
+      router.push("/invest");
     }
   }, [isAuthenticated, router]);
 
@@ -40,8 +40,16 @@ export default function Page() {
         localStorage.setItem('pending_token', response.token);
       }
       router.push("/register/step-2");
-    } catch {
-      setError("Registration failed. Please try again.");
+    } catch (error) {
+      // Use the specific error message from the backend
+      let errorMessage = error instanceof Error ? error.message : "Registration failed. Please try again.";
+      
+      // Make the error message more user-friendly
+      if (errorMessage.toLowerCase().includes('already exists')) {
+        errorMessage = "User already exists. Please login instead.";
+      }
+      
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -104,12 +112,12 @@ export default function Page() {
             </li>
           </ul>
 
-          <figure className="mt-auto mb-6 md:mb-10 pt-6 text-sm leading-relaxed text-themeTealWhite">
+          {/* <figure className="mt-auto mb-6 md:mb-10 pt-6 text-sm leading-relaxed text-themeTealWhite">
             <blockquote>
               <i>“My brain is only a receiver, in the Universe there is a core from which we obtain knowledge, strength and inspiration. I have not penetrated into the secrets of this core, but I know that it exists.”</i>
             </blockquote>
             <figcaption className="mt-2 text-themeTealWhite">Nikola Tesla</figcaption>
-          </figure>
+          </figure> */}
         </aside>
 
         {/* RIGHT PANEL */}

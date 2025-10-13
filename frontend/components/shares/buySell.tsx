@@ -3,11 +3,11 @@
 import { Info } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
 
 type TradeTabsProps = {
   company: string;            // e.g. "Pine Labs"
   priceINR: number;           // e.g. 350.92
-  settlementDate: string;     // e.g. "Aug 21, 2025"
   minUnits?: number;          // e.g. 300
   lotSize?: number;           // e.g. 300
   onBuySubmit?: (p: { quantity: number; investINR: number }) => void;
@@ -17,7 +17,6 @@ type TradeTabsProps = {
 export default function TradeTabs({
   company,
   priceINR,
-  settlementDate,
   minUnits = 0,
   lotSize = 0,
   onBuySubmit,
@@ -42,6 +41,9 @@ export default function TradeTabs({
   
   // Loading state for buy/sell operations
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // Notification state
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
   // Check if user is authenticated
   const isAuthenticated = () => {
@@ -52,12 +54,48 @@ export default function TradeTabs({
     return false;
   };
 
+  // Notification helper functions
+  const addNotification = (notification: Omit<NotificationData, 'id'>) => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { ...notification, id }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  // Validation for quantity based on minUnits and lotSize
+  const validateQuantity = (quantity: number) => {
+    if (quantity <= 0) return false;
+    if (minUnits > 0 && quantity < minUnits) return false;
+    if (lotSize > 0 && quantity % lotSize !== 0) return false;
+    return true;
+  };
+
+  const getQuantityError = (quantity: number) => {
+    if (quantity <= 0) return
+    if (minUnits > 0 && quantity < minUnits) return `Minimum quantity is ${minUnits} units`;
+    if (lotSize > 0 && quantity % lotSize !== 0) return `Quantity must be in multiples of ${lotSize}`;
+    return null;
+  };
+
   // Handle buy button click with authentication check
   const handleBuyClick = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!isAuthenticated()) {
       router.push('/login');
+      return;
+    }
+    
+    // Validate quantity
+    if (!validateQuantity(qty)) {
+      const error = getQuantityError(qty);
+      addNotification({
+        type: 'error',
+        title: error || 'Invalid quantity',
+        duration: 6000
+      });
       return;
     }
     
@@ -92,14 +130,26 @@ export default function TradeTabs({
         // Call the original callback
         onBuySubmit?.({ quantity: qty, investINR: investFromQty });
         
-        // Show success message with email confirmation
-        alert(`✅ Buy order placed successfully!\n\n📧 A confirmation email has been sent to your registered email address.\n\nPlease check your inbox for the transaction details.`);
+        // Show success notification with email confirmation
+        addNotification({
+          type: 'success',
+          title: 'Buy order placed successfully!',
+          duration: 8000
+        });
       } else {
-        alert('❌ Failed to place buy order: ' + data.message);
+        addNotification({
+          type: 'error',
+          title: 'Failed to place buy order',
+          duration: 6000
+        });
       }
     } catch (error) {
       console.error('Error placing buy order:', error);
-      alert('❌ Failed to place buy order. Please check your internet connection and try again.');
+      addNotification({
+        type: 'error',
+        title: 'Failed to place buy order',
+        duration: 6000
+      });
     } finally {
       setIsLoading(false);
     }
@@ -153,133 +203,141 @@ export default function TradeTabs({
   // };
 
   return (
-    <div className="rounded bg-themeTealWhite">
-      {/* Tabs */}
-      <div className="flex items-center gap-6 border-b border-themeTealLighter px-4 sm:px-5">
-        <TabButton
-          active={tab === "buy"}
-          activeColor="emerald"
-          onClick={() => setTab("buy")}
-          label="Buy"
-        />
-        {/* <TabButton
-          active={tab === "sell"}
-          activeColor="red"
-          onClick={() => setTab("sell")}
-          label="Sell"
-        /> */}
+    <>
+      <div className="rounded bg-themeTealWhite">
+        {/* Tabs */}
+        <div className="flex items-center gap-6 border-b border-themeTealLighter px-4 sm:px-5">
+          <TabButton
+            active={tab === "buy"}
+            activeColor="emerald"
+            onClick={() => setTab("buy")}
+            label="Buy"
+          />
+          {/* <TabButton
+            active={tab === "sell"}
+            activeColor="red"
+            onClick={() => setTab("sell")}
+            label="Sell"
+          /> */}
+        </div>
+
+        {/* BUY */}
+        {tab === "buy" && (
+          <form
+            className="p-4 sm:p-6 space-y-5"
+            onSubmit={handleBuyClick}
+          >
+            <HeaderRow company={company} priceINR={priceINR} />
+
+            <MetaRow
+              minUnits={minUnits}
+              lotSize={lotSize}
+            />
+
+            <div className="h-px bg-themeTealLighter" />
+
+            <Field
+              label="Quantity"
+              input={
+                <NumberInput
+                  value={qty}
+                  onChange={(v) => setQty(sanitizeInt(v))}
+                  placeholder="0"
+                />
+              }
+              hint={getQuantityError(qty) || ""}
+              error={getQuantityError(qty)}
+            />
+
+            <Field
+              label="Invest"
+              input={
+                <CurrencyInput
+                  value={invest}
+                  readOnly
+                  prefix="₹"
+                  ariaLabel="Invest amount"
+                />
+              }
+              hint="Auto-calculated from quantity × price"
+            />
+
+            <button
+              type="submit"
+              disabled={isLoading || !validateQuantity(qty)}
+              className={`w-full rounded-md px-4 py-3 text-white font-semibold transition duration-500 ${
+                isLoading || !validateQuantity(qty)
+                  ? 'bg-gray-500 cursor-not-allowed' 
+                  : 'bg-emerald-700 cursor-pointer hover:bg-emerald-800'
+              }`}
+            >
+              {isLoading ? 'Processing...' : 'Invest Now'}
+            </button>
+          </form>
+        )}
+
+        {/* SELL */}
+        {tab === "sell" && (
+          <form
+            className="p-4 sm:p-6 space-y-5"
+            // onSubmit={handleSellClick}
+          >
+            <SellHeaderRow company={company} />
+
+            <Field
+              label="Quantity*"
+              input={
+                <NumberInput
+                  value={sellQty}
+                  onChange={(v) => setSellQty(sanitizeInt(v))}
+                  placeholder="0"
+                  required
+                />
+              }
+            />
+
+            <Field
+              label="Selling Price*"
+              input={
+                <CurrencyInput
+                  value={sellPrice}
+                  onChange={(v) => setSellPrice(sanitizeFloat(v))}
+                  prefix="₹"
+                  placeholder="0"
+                  required
+                />
+              }
+            />
+
+            <Field
+              label="Message*"
+              input={
+                <textarea
+                  required
+                  value={sellMsg}
+                  onChange={(e) => setSellMsg(e.target.value)}
+                  className="w-full min-h-28 rounded border border-themeTealLighter bg-white px-3 py-2 outline-none"
+                  placeholder="Add any details for the buyer"
+                />
+              }
+            />
+
+            <button
+              type="submit"
+              className="w-full rounded-md bg-red-600 px-4 py-3 text-white font-semibold cursor-pointer hover:bg-red-700 transition duration-500"
+            >
+              Sell
+            </button>
+          </form>
+        )}
       </div>
-
-      {/* BUY */}
-      {tab === "buy" && (
-        <form
-          className="p-4 sm:p-6 space-y-5"
-          onSubmit={handleBuyClick}
-        >
-          <HeaderRow company={company} priceINR={priceINR} />
-
-          <MetaRow
-            settlementDate={settlementDate}
-            minUnits={minUnits}
-            lotSize={lotSize}
-            settlementInfo="Trades settle on T+7 working days. Dates may shift on market/bank holidays."
-          />
-
-          <div className="h-px bg-themeTealLighter" />
-
-          <Field
-            label="Quantity"
-            input={
-              <NumberInput
-                value={qty}
-                onChange={(v) => setQty(sanitizeInt(v))}
-                placeholder="0"
-              />
-            }
-          />
-
-          <Field
-            label="Invest"
-            input={
-              <CurrencyInput
-                value={invest}
-                readOnly
-                prefix="₹"
-                ariaLabel="Invest amount"
-              />
-            }
-            hint="Auto-calculated from quantity × price"
-          />
-
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`w-full rounded-md px-4 py-3 text-white font-semibold transition duration-500 ${
-              isLoading 
-                ? 'bg-gray-500 cursor-not-allowed' 
-                : 'bg-emerald-700 cursor-pointer hover:bg-emerald-800'
-            }`}
-          >
-            {isLoading ? 'Processing...' : 'Invest Now'}
-          </button>
-        </form>
-      )}
-
-      {/* SELL */}
-      {tab === "sell" && (
-        <form
-          className="p-4 sm:p-6 space-y-5"
-          // onSubmit={handleSellClick}
-        >
-          <SellHeaderRow company={company} />
-
-          <Field
-            label="Quantity*"
-            input={
-              <NumberInput
-                value={sellQty}
-                onChange={(v) => setSellQty(sanitizeInt(v))}
-                placeholder="0"
-                required
-              />
-            }
-          />
-
-          <Field
-            label="Selling Price*"
-            input={
-              <CurrencyInput
-                value={sellPrice}
-                onChange={(v) => setSellPrice(sanitizeFloat(v))}
-                prefix="₹"
-                placeholder="0"
-                required
-              />
-            }
-          />
-
-          <Field
-            label="Message*"
-            input={
-              <textarea
-                required
-                value={sellMsg}
-                onChange={(e) => setSellMsg(e.target.value)}
-                className="w-full min-h-28 rounded border border-themeTealLighter bg-white px-3 py-2 outline-none"
-                placeholder="Add any details for the buyer"
-              />
-            }
-          />
-
-          <button
-            type="submit"
-            className="w-full rounded-md bg-red-600 px-4 py-3 text-white font-semibold cursor-pointer hover:bg-red-700 transition duration-500"
-          >
-            Sell
-          </button>
-        </form>
-      )}
-    </div>
+      
+      {/* Notification Container */}
+      <NotificationContainer
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+    </>
   );
 }
 
@@ -335,21 +393,24 @@ function SellHeaderRow({ company }: { company: string }) {
 /* === UPDATED: MetaRow with Info popover === */
 
 function MetaRow({
-  settlementDate,
   minUnits,
   lotSize,
-  settlementInfo = "Trades settle on T+7 working days. Dates may shift on market/bank holidays.",
 }: {
-  settlementDate: string;
   minUnits: number;
   lotSize: number;
-  settlementInfo?: string;
 }) {
   return (
     <dl className="space-y-3 text-sm">
-      <RowWithInfo label="Settlement Period" value={settlementDate} info={settlementInfo} />
-      <RowWithInfo label="Min. Units" value={String(minUnits)} />
-      <RowWithInfo label="Lot Size" value={String(lotSize)} />
+      <RowWithInfo 
+        label="Min. Units" 
+        value={String(minUnits)} 
+        info={minUnits > 0 ? `You must buy at least ${minUnits} units of this stock.` : "No minimum unit requirement."}
+      />
+      <RowWithInfo 
+        label="Lot Size" 
+        value={String(lotSize)} 
+        info={lotSize > 0 ? `Quantity must be in multiples of ${lotSize}. For example: ${lotSize}, ${lotSize * 2}, ${lotSize * 3}, etc.` : "No lot size restrictions."}
+      />
     </dl>
   );
 }
@@ -414,16 +475,22 @@ function Field({
   label,
   input,
   hint,
+  error,
 }: {
   label: string;
   input: React.ReactNode;
   hint?: string;
+  error?: string | null;
 }) {
   return (
     <label className="block">
       <div className="mb-1 text-themeTealLight text-base">{label}</div>
       {input}
-      {hint ? <div className="mt-1 text-xs text-themeTealLight">{hint}</div> : null}
+      {error ? (
+        <div className="mt-1 text-xs text-red-600">{error}</div>
+      ) : hint ? (
+        <div className="mt-1 text-xs text-themeTealLight">{hint}</div>
+      ) : null}
     </label>
   );
 }

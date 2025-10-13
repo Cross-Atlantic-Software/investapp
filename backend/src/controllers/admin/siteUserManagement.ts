@@ -50,7 +50,7 @@ export class SiteUserManagementController {
         attributes: [
           'id', 'first_name', 'last_name', 'email', 'phone', 
           'role', 'status', 'auth_provider', 'email_verified', 
-          'phone_verified', 'country_code', 'createdAt', 'updatedAt'
+          'phone_verified', 'country_code', 'buy_request', 'createdAt', 'updatedAt'
         ],
         order: validSortBy === 'first_name' || validSortBy === 'last_name' 
           ? [[db.sequelize.fn('LOWER', db.sequelize.col(validSortBy)), validSortOrder]]
@@ -92,7 +92,7 @@ export class SiteUserManagementController {
         attributes: [
           'id', 'first_name', 'last_name', 'email', 'phone', 
           'role', 'status', 'auth_provider', 'email_verified', 
-          'phone_verified', 'country_code', 'createdAt', 'updatedAt'
+          'phone_verified', 'country_code', 'buy_request', 'createdAt', 'updatedAt'
         ]
       });
 

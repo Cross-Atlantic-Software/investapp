@@ -85,7 +85,7 @@ All routes are protected with admin middleware:
 
 #### Taxonomy Routes
 - `GET /api/admin/taxonomies` - List taxonomies with pagination/search
-- `GET /api/admin/taxonomies/active` - Get active taxonomies only
+- `GET /api/admin/taxonomies/status/active` - Get active taxonomies only
 - `GET /api/admin/taxonomies/:id` - Get specific taxonomy
 - `POST /api/admin/taxonomies` - Create new taxonomy
 - `PUT /api/admin/taxonomies/:id` - Update taxonomy

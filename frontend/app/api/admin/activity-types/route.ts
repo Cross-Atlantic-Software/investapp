@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const queryString = searchParams.toString();
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/activity-types?${queryString}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/activity-types?${queryString}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE_URL}/api/admin/activity-types`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/activity-types`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

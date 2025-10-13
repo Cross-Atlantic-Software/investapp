@@ -1,5 +1,5 @@
 import { Sequelize } from "sequelize";
-import mysql from "mysql2/promise";
+import * as mysql from "mysql2/promise";
 
 // Connection Pool Configuration
 export interface PoolConfig {
@@ -15,8 +15,8 @@ export interface PoolConfig {
 export const DEFAULT_POOL_CONFIG: PoolConfig = {
   min: 2,           // Minimum connections in pool
   max: 10,          // Maximum connections in pool (for 10 users)
-  acquire: 30000,   // Maximum time to get connection (30 seconds)
-  idle: 10000,      // Maximum idle time (10 seconds)
+  acquire: 60000,   // Maximum time to get connection (60 seconds)
+  idle: 30000,      // Maximum idle time (30 seconds)
   evict: 1000,      // Check for idle connections every 1 second
   handleDisconnects: true
 };
@@ -64,7 +64,8 @@ export function createMySQLPool(dbConfig: DatabaseConfig) {
     waitForConnections: true,
     connectionLimit: POOL_CONFIGS[dbConfig.environment as keyof typeof POOL_CONFIGS].max,
     queueLimit: 0,
-    idleTimeout: POOL_CONFIGS[dbConfig.environment as keyof typeof POOL_CONFIGS].idle
+    idleTimeout: POOL_CONFIGS[dbConfig.environment as keyof typeof POOL_CONFIGS].idle,
+    charset: 'utf8mb4'
   });
 }
 
@@ -85,7 +86,10 @@ export function createSequelizeWithPool(dbConfig: DatabaseConfig): Sequelize {
       evict: poolConfig.evict
     },
     dialectOptions: {
-      connectTimeout: 60000
+      connectTimeout: 120000,  // 2 minutes connection timeout
+      charset: 'utf8mb4',
+      supportBigNumbers: true,
+      bigNumberStrings: true
     },
     retry: {
       match: [
@@ -105,7 +109,8 @@ export function createSequelizeWithPool(dbConfig: DatabaseConfig): Sequelize {
         /SequelizeInvalidConnectionError/,
         /SequelizeConnectionTimedOutError/
       ],
-      max: 3
+      max: 5,
+      timeout: 30000  // 30 seconds between retries
     }
   });
 }

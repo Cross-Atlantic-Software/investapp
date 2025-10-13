@@ -12,6 +12,7 @@ type NewsItem = {
   initials: string;          // e.g., "CL"
   iconUrl?: string;          // S3 URL for uploaded icon
   title: string;             // e.g., "CloudTech raises ₹150M Series C"
+  url: string;               // URL to redirect to when clicked
   tags: { label: string; variant: TagVariant; color?: string }[];
   timeAgo: string;           // "2h ago"
   highlight?: boolean;       // renders the middle white bubble
@@ -100,6 +101,7 @@ export default function PrivateMarketNews({
           initials: item.icon && !item.icon.startsWith('http') ? item.icon : item.title.substring(0, 2).toUpperCase(),
           iconUrl: item.icon && item.icon.startsWith('http') ? item.icon : undefined,
           title: item.title,
+          url: item.url,
           tags: transformTags(item.taxonomy_ids, taxonomiesData),
           timeAgo: getTimeAgo(item.created_at),
           highlight: index === 1, // Highlight second item
@@ -217,14 +219,19 @@ export default function PrivateMarketNews({
           <p className="text-xs text-themeTealLighter mt-1">Check back later for updates</p>
         </div>
       ) : (
-        <ul className="flex flex-col gap-4 text-left">
+        <ul className="flex flex-col gap-1 text-left">
           {newsItems.map((n) => (
             <li
               key={n.id}
               className={[
-                "rounded-xl transition duration-500 hover:bg-white p-3 md:p-4",
+                "rounded-xl transition duration-500 hover:bg-white p-3 md:p-4 cursor-pointer",
                 n.highlight ? "" : "",
               ].join(" ")}
+              onClick={() => {
+                if (n.url) {
+                  window.open(n.url, '_blank', 'noopener,noreferrer');
+                }
+              }}
             >
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-themeTealLighter text-md font-semibold text-themeTealWhite overflow-hidden">
@@ -259,7 +266,7 @@ export default function PrivateMarketNews({
                       </span>
                     ))}
                   </div>
-                  <p className="text-md font-semibold text-themeTeal">{n.title}</p>
+                  <p className="text-md font-semibold text-themeTeal hover:text-themeSkyBlue transition-colors duration-200">{n.title}</p>
                   <p className="mt-1 text-xs text-themeTealLighter">{n.timeAgo}</p>
                 </div>
               </div>

@@ -23,8 +23,8 @@ export default function Section({ id, title, children, info }: Props) {
   }, [open]);
 
   return (
-    <section id={id} className="scroll-mt-24 rounded border border-themeTealLighter bg-themeTealWhite p-4">
-      <div className="mb-3 flex items-center gap-2 border-b border-themeTealLighter pb-2">
+    <section id={id} className="scroll-mt-24 rounded border border-themeTealLighter bg-themeTealWhite p-6">
+      <div className="mb-3 flex items-center gap-2 pb-2 border-b border-themeTealLighter">
         <Heading as="h5" className="font-semibold text-themeTeal">{title}</Heading>
 
         {info ? (

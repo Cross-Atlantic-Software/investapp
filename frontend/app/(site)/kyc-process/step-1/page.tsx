@@ -1,13 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle2, Info, Landmark, CreditCard,
-  FileText, MapPin, UserRoundCheck, PenLine, Video,
+  FileText, MapPin, UserRoundCheck, PenLine,
 } from "lucide-react";
+import { useKYC } from "@/contexts/KYCContext";
 
-export default function KYCStep1Documents({ onContinue }: { onContinue: () => void }) {
+export default function KYCStep1Documents() {
   const [acknowledged, setAcknowledged] = useState(false);
+  const router = useRouter();
+  const { markStepCompleted } = useKYC();
+
+  const handleContinue = () => {
+    if (acknowledged) {
+      markStepCompleted(1);
+      router.push('/kyc-process/step-2');
+    }
+  };
 
   const steps = [
     { label: "Documents", icon: FileText },
@@ -15,7 +26,6 @@ export default function KYCStep1Documents({ onContinue }: { onContinue: () => vo
     { label: "Address Verification", icon: MapPin },
     { label: "Bank Proof", icon: Landmark },
     { label: "Demat Account", icon: UserRoundCheck },
-    { label: "Video KYC", icon: Video },
     { label: "eSign & Consent", icon: PenLine },
   ];
 
@@ -25,7 +35,7 @@ export default function KYCStep1Documents({ onContinue }: { onContinue: () => vo
         {/* Step Navigation with Icons */}
         <div className="-mx-4 px-4 mb-10 lg:mb-16 overflow-x-auto no-scrollbar">
           <div className="flex lg:justify-between gap-4 sm:gap-6 min-w-[680px] lg:min-w-0">
-            {steps.map(({ label, icon: Icon }, idx) => { // <-- no any
+            {steps.map(({ label, icon: Icon }, idx) => {
               const active = idx === 0;
               return (
                 <div key={label} className="min-w-[88px] flex flex-col items-center text-center group">
@@ -158,7 +168,7 @@ export default function KYCStep1Documents({ onContinue }: { onContinue: () => vo
         <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:justify-end">
           <button
             disabled={!acknowledged}
-            onClick={onContinue}
+            onClick={handleContinue}
             className={[
               "w-full sm:w-auto py-3 px-6 rounded font-medium",
               acknowledged ? "bg-themeSkyBlue text-themeTealWhite cursor-pointer" : "bg-themeTealLighter text-white cursor-not-allowed",

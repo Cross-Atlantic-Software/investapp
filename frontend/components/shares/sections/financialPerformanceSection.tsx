@@ -1,46 +1,125 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { FinancialPerformanceSectionProps, FinancialDataResponse, StockFinancialData } from '../../admin/stocks/types';
 
-type FinRow = { label: string; values: (number | string)[] };
+export default function FinancialPerformanceSection({ stockId }: FinancialPerformanceSectionProps) {
+  const [activeTab, setActiveTab] = useState<"income_statement" | "balance_sheet" | "cash_flow">("income_statement");
+  const [financialData, setFinancialData] = useState<StockFinancialData[]>([]);
+  const [years, setYears] = useState<number[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-const YEARS = ["FY24", "FY23", "FY22", "FY21", "FY20", "FY19"];
+  useEffect(() => {
+    loadFinancialData();
+  }, [stockId, activeTab]);
 
-const PNL_ROWS: FinRow[] = [
-  { label: "Net Revenue", values: [1158.42, 939.6, 502.3, 267.6, 781.3, 748.2] },
-  { label: "Growth %", values: [1158.42, 939.6, 502.3, 267.6, 781.3, 748.2] },
-  { label: "Total Operating Expenses", values: [1158.42, 939.6, 502.3, 267.6, 781.3, 748.2] },
-  { label: "Operating Profit (EBITDA)", values: [1158.42, 939.6, 502.3, 267.6, 781.3, 748.2] },
-  { label: "Operating Profit Margin %", values: [1158.42, 939.6, 502.3, 267.6, 781.3, 748.2] },
-  { label: "Other Income", values: [1158.42, 939.6, 502.3, 267.6, 781.3, 748.2] },
-  { label: "Finance Costs", values: [1158.42, 939.6, 502.3, 267.6, 781.3, 748.2] },
-  { label: "Depreciation and Amortization Expense", values: [1158.42, 939.6, 502.3, 267.6, 781.3, 748.2] },
-];
+  const loadFinancialData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const response = await fetch(`/api/stocks/${stockId}/financial-data/${activeTab}`);
+      const result: FinancialDataResponse = await response.json();
+      
+      if (result.success) {
+        setFinancialData(result.data.kpis);
+        setYears(result.data.years);
+      } else {
+        setError('Failed to load financial data');
+      }
+    } catch (err) {
+      console.error('Error loading financial data:', err);
+      setError('Network error. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const BS_ROWS: FinRow[] = [
-  { label: "Share Capital", values: [120.1, 118.6, 115.3, 110.4, 108.2, 100.1] },
-  { label: "Reserves & Surplus", values: [890.2, 810.3, 760.1, 710.9, 650.4, 600.2] },
-  { label: "Total Borrowings", values: [320.4, 300.2, 280.5, 260.1, 240.9, 210.3] },
-  { label: "Fixed Assets", values: [420.6, 410.2, 395.0, 380.2, 360.4, 340.6] },
-  { label: "Investments", values: [210.1, 190.3, 180.4, 170.2, 160.9, 150.2] },
-  { label: "Cash & Cash Equivalents", values: [98.2, 92.5, 85.4, 80.1, 72.3, 60.7] },
-  { label: "Total Assets", values: [1540.9, 1460.1, 1406.7, 1340.3, 1283.6, 1212.1] },
-];
+  const formatYear = (year: number) => {
+    return `FY${year.toString().slice(-2)}`;
+  };
 
-export default function FinancialPerformanceSection() {
-  const [tab, setTab] = useState<"pnl" | "bs">("pnl");
-  const rows = tab === "pnl" ? PNL_ROWS : BS_ROWS;
+  const formatValue = (value: number | null, unit: string) => {
+    if (value === null || value === undefined) return '-';
+    
+    if (unit === '%') {
+      return `${value.toFixed(1)}%`;
+    }
+    
+    return new Intl.NumberFormat("en-IN", {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+  const getTabLabel = (category: string) => {
+    switch (category) {
+      case 'income_statement':
+        return 'Income Statement';
+      case 'balance_sheet':
+        return 'Balance Sheet';
+      case 'cash_flow':
+        return 'Cash Flow';
+      default:
+        return category;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <div className="text-themeTeal font-semibold text-lg">Key Financials</div>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-3">
+        <div className="flex justify-between items-center">
+          <div className="text-themeTeal font-semibold text-lg">Key Financials</div>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">{error}</p>
+          <button
+            onClick={loadFinancialData}
+            className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
         <div className="text-themeTeal font-semibold text-lg">Key Financials</div>
         <div className="flex items-center justify-end gap-2">
-          <TabBtn active={tab === "pnl"} onClick={() => setTab("pnl")}>
-            Profit &amp; Loss
+          <TabBtn 
+            active={activeTab === "income_statement"} 
+            onClick={() => setActiveTab("income_statement")}
+          >
+            Income Statement
           </TabBtn>
-          <TabBtn active={tab === "bs"} onClick={() => setTab("bs")}>
+          <TabBtn 
+            active={activeTab === "balance_sheet"} 
+            onClick={() => setActiveTab("balance_sheet")}
+          >
             Balance Sheet
+          </TabBtn>
+          <TabBtn 
+            active={activeTab === "cash_flow"} 
+            onClick={() => setActiveTab("cash_flow")}
+          >
+            Cash Flow
           </TabBtn>
         </div>
       </div>
@@ -50,20 +129,32 @@ export default function FinancialPerformanceSection() {
           <thead>
             <tr className="text-sm text-themeTealLight border-b border-themeTealLighter">
               <th className="text-left py-3 font-medium">(in Rs. Crore)</th>
-              {YEARS.map((y) => (
-                <th key={y} className="py-3 text-center text-themeTealLight font-medium">{y}</th>
+              {years.map((year) => (
+                <th key={year} className="py-3 text-center text-themeTealLight font-medium">
+                  {formatYear(year)}
+                </th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.label} className="border-b border-themeTealLighter last:border-0">
-                <th className="text-left font-semibold py-4">{r.label}</th>
-                {r.values.map((v, i) => (
-                  <td key={i} className="py-4 text-center text-themeTealLight">{formatNum(v)}</td>
+            {financialData.length === 0 ? (
+              <tr>
+                <td colSpan={years.length + 1} className="py-8 text-center text-gray-500">
+                  No financial data available for {getTabLabel(activeTab)}
+                </td>
+              </tr>
+            ) : (
+              financialData.map((kpi) => (
+                <tr key={kpi.kpi_id} className="border-b border-themeTealLighter last:border-0">
+                  <th className="text-left font-semibold text-md py-4">{kpi.name}</th>
+                  {years.map((year) => (
+                    <td key={year} className="py-4 text-center text-sm text-themeTealLight">
+                      {formatValue(kpi.values[year], kpi.unit)}
+                    </td>
                 ))}
               </tr>
-            ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -93,12 +184,4 @@ function TabBtn({
       {children}
     </button>
   );
-}
-
-function formatNum(n: number | string) {
-  if (typeof n === "string") return n;
-  return new Intl.NumberFormat("en-IN", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(n);
 }

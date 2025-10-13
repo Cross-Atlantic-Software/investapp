@@ -5,11 +5,14 @@ import GoogleAuthController from "../controllers/googleAuth";
 import { ForgotPasswordService } from "../controllers/auth/forgotPassword";
 import { ResetPasswordService } from "../controllers/auth/resetPassword";
 import jwtAuthMiddleware from "../utils/middleware";
+import { KYCManagementController } from "../controllers/admin/kycManagement";
+import { uploadKYCDocuments } from "../utils/middlewares/s3Upload";
 
 const AuthCtrl = new AuthController();
 const GoogleAuthCtrl = new GoogleAuthController();
 const ForgotPasswordCtrl = new ForgotPasswordService();
 const ResetPasswordCtrl = new ResetPasswordService();
+const kycController = new KYCManagementController();
 
 const authRouter = express.Router();
 
@@ -26,5 +29,12 @@ authRouter.post('/reset-password', ResetPasswordCtrl.resetPassword);
 authRouter.get('/google', GoogleAuthCtrl.googleAuth);
 authRouter.get('/google/callback', GoogleAuthCtrl.googleCallback);
 authRouter.post('/google/verify', GoogleAuthCtrl.googleTokenVerify);
+
+// KYC routes for authenticated site users
+authRouter.post('/kyc', jwtAuthMiddleware, uploadKYCDocuments.fields([
+  { name: 'bank_proof', maxCount: 1 },
+  { name: 'sign', maxCount: 1 }
+]), kycController.createKYCApplication);
+authRouter.get('/kyc/my', jwtAuthMiddleware, kycController.getMyKYCApplication);
 
 export default authRouter;

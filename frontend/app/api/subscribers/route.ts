@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Call backend API
-    const response = await fetch(`${API_BASE_URL}/api/subscribers`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/subscribers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

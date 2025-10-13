@@ -59,7 +59,7 @@ export default function PortfolioTable({ rows, pageSize = 8 }: Props) {
             <tr>
               <th className="px-4 py-3">Company</th>
               <th className="px-4 py-3">Shares</th>
-              <th className="px-4 py-3">Price</th>
+              <th className="px-4 py-3">Price per share</th>
               <th className="px-4 py-3">Value</th>
               <th className="px-4 py-3">Change</th>
               <th className="px-4 py-3 text-center">Risk Level</th>

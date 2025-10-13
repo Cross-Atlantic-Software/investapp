@@ -37,7 +37,7 @@ function GoogleAuthSuccessContent() {
           refreshAuthState();
 
           // Redirect to dashboard
-          router.push('/dashboard');
+          router.push('/invest');
         } catch (error) {
           console.error('Error processing Google auth success:', error);
           router.push('/login?error=google_auth_failed');

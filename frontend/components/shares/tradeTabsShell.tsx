@@ -5,7 +5,6 @@ import TradeTabs from "./buySell";
 type Props = {
   company: string;
   priceINR: number;
-  settlementDate: string;
   minUnits?: number;
   lotSize?: number;
 };

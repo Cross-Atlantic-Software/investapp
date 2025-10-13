@@ -27,7 +27,7 @@ export async function GET(request: NextRequest) {
       params.append('search', search);
     }
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies?${params.toString()}`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/taxonomies?${params.toString()}`, {
       headers: {
         'token': token,
       },
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/api/admin/taxonomies`, {
+    const response = await fetch(`${NEXT_PUBLIC_API_BASE_URL}/backend/api/admin/taxonomies`, {
       method: 'POST',
       headers: {
         'token': token,

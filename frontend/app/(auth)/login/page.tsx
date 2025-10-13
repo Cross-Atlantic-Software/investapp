@@ -22,7 +22,7 @@ export default function Page() {
   // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/dashboard");
+      router.push("/invest");
     }
   }, [isAuthenticated, router]);
 
@@ -34,10 +34,12 @@ export default function Page() {
 
     try {
       await login({ email, password });
-      router.push("/dashboard");
+      router.push("/invest");
     } catch (err) {
       console.error('Login error:', err);
-      setError("Login failed. Please check your credentials and try again.");
+      // Use the specific error message from the backend
+      const errorMessage = err instanceof Error ? err.message : "Login failed. Please check your credentials and try again.";
+      setError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

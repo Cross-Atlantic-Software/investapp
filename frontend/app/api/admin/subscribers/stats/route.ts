@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Call backend API
-    const response = await fetch(`${API_BASE_URL}/api/admin/subscribers/stats`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/subscribers/stats`, {
       method: 'GET',
       headers: {
         'token': token,
