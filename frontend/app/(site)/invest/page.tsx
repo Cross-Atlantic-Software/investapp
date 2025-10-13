@@ -107,17 +107,17 @@ export default function Invest() {
     // Filter by valuation
     if (filters.valuation.length > 0) {
       filteredStocks = filteredStocks.filter((stock: ProductItem & { valuation_id?: number }) => {
-        const valuationId = stock.valuation_id;
+        const valuationString = stock.valuation; // Get the valuation string like "300Cr"
         
-        // Assuming valuation_id references a price change period or valuation table
-        // For now, we'll use a simple logic based on the filter values
         return filters.valuation.some(val => {
           if (val === 'above-300') {
-            // Consider stocks with valuation_id >= 300 or specific IDs
-            return valuationId && valuationId >= 300;
+            // Extract numeric value from strings like "300Cr", "500Cr", etc.
+            const numericValue = parseFloat(valuationString?.replace(/[^\d.]/g, '') || '0');
+            return numericValue > 300;
           } else if (val === 'below-300') {
-            // Consider stocks with valuation_id < 300
-            return !valuationId || valuationId < 300;
+            // Extract numeric value from strings like "300Cr", "500Cr", etc.
+            const numericValue = parseFloat(valuationString?.replace(/[^\d.]/g, '') || '0');
+            return numericValue <= 300;
           }
           return false;
         });
