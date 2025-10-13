@@ -228,7 +228,7 @@ export default function PriceChangePeriodManagement() {
 
       {/* Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50" onClick={() => setShowModal(false)}>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[60]" onClick={() => setShowModal(false)}>
           <div className="bg-white rounded-lg p-6 w-full max-w-md relative shadow-2xl border border-themeTealLighter" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setShowModal(false)}

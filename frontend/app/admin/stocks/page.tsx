@@ -623,7 +623,7 @@ export default function StocksPage() {
 
       {/* Valuation Management Modal */}
       {showValuationModal && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50" onClick={() => setShowValuationModal(false)}>
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[70]" onClick={() => setShowValuationModal(false)}>
           <div className="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-themeTealLighter" onClick={(e) => e.stopPropagation()}>
             <div className="bg-themeTeal text-white p-4 flex justify-between items-center">
               <h2 className="text-xl font-semibold">Manage Valuations</h2>

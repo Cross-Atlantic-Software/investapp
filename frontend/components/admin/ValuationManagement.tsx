@@ -132,16 +132,16 @@ const ValuationManagement: React.FC<ValuationManagementProps> = ({ onClose }) =>
   );
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-themeTealLighter">
         {/* Header */}
-        <div className="bg-themeTeal text-white p-6 flex justify-between items-center">
+        <div className="bg-themeTeal text-white p-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold">Manage Valuations</h2>
           <button
             onClick={onClose}
-            className="text-white hover:text-gray-200 transition-colors"
+            className="text-white hover:text-gray-200 text-2xl font-bold transition duration-300"
           >
-            <X className="w-6 h-6" />
+            ×
           </button>
         </div>
 
@@ -256,11 +256,19 @@ const ValuationManagement: React.FC<ValuationManagementProps> = ({ onClose }) =>
 
         {/* Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-60">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-              <h3 className="text-lg font-semibold mb-4">
-                {editingValuation ? 'Edit Valuation' : 'Add New Valuation'}
-              </h3>
+          <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[80]">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-md p-6 border border-themeTealLighter">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-lg font-semibold text-themeTeal">
+                  {editingValuation ? 'Edit Valuation' : 'Add New Valuation'}
+                </h3>
+                <button
+                  onClick={handleCloseModal}
+                  className="text-themeTealLight hover:text-themeTeal transition duration-300"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
               
               <form onSubmit={handleSubmit}>
                 <div className="mb-4">
@@ -277,14 +285,7 @@ const ValuationManagement: React.FC<ValuationManagementProps> = ({ onClose }) =>
                   />
                 </div>
                 
-                <div className="flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={handleCloseModal}
-                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
+                <div className="flex justify-end">
                   <button
                     type="submit"
                     disabled={submitting}

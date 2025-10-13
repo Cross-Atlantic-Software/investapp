@@ -202,7 +202,7 @@ export default function ThemeManagement() {
       {/* Modal */}
       {showModal && (
         <div 
-          className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-50" 
+          className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[60]" 
           onClick={() => setShowModal(false)}
         >
           <div 

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Edit, Trash2 } from 'lucide-react';
+import { X, Plus, Edit, Trash2, Search, Building2, FolderOpen, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
 interface Sector {
   id: number;
@@ -46,6 +46,11 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
   const [newSector, setNewSector] = useState<NewSectorForm>({ name: '' });
   const [newSubsector, setNewSubsector] = useState<NewSubsectorForm>({ sector_id: 0, name: '' });
   const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [editingSector, setEditingSector] = useState<Sector | null>(null);
+  const [editingSubsector, setEditingSubsector] = useState<Subsector | null>(null);
+  const [editSectorName, setEditSectorName] = useState('');
+  const [editSubsectorName, setEditSubsectorName] = useState('');
 
   // Fetch sectors
   const fetchSectors = async () => {
@@ -214,6 +219,89 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
     }
   };
 
+  const handleEditSector = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSector || !editSectorName.trim()) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/admin/sectors/${editingSector.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: editSectorName }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setEditingSector(null);
+        setEditSectorName('');
+        fetchSectors();
+      } else {
+        alert(data.message || 'Failed to update sector');
+      }
+    } catch (error) {
+      console.error('Error updating sector:', error);
+      alert('Error updating sector');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditSubsector = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSubsector || !editSubsectorName.trim()) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`/api/admin/subsectors/${editingSubsector.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name: editSubsectorName }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        setEditingSubsector(null);
+        setEditSubsectorName('');
+        if (selectedSectorId) {
+          fetchSubsectors(selectedSectorId);
+        }
+      } else {
+        alert(data.message || 'Failed to update subsector');
+      }
+    } catch (error) {
+      console.error('Error updating subsector:', error);
+      alert('Error updating subsector');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const startEditSector = (sector: Sector) => {
+    setEditingSector(sector);
+    setEditSectorName(sector.name);
+    setIsCreatingSector(false);
+  };
+
+  const startEditSubsector = (subsector: Subsector) => {
+    setEditingSubsector(subsector);
+    setEditSubsectorName(subsector.name);
+    setIsCreatingSubsector(false);
+  };
+
+  // Filter sectors and subsectors based on search term
+  const filteredSectors = sectors.filter(sector =>
+    sector.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredSubsectors = subsectors.filter(subsector =>
+    subsector.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   const formatDate = (dateString: string) => {
     try {
       if (!dateString || dateString === null || dateString === undefined) {
@@ -243,20 +331,38 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-50 p-4 m-0">
-      <div className="bg-white rounded shadow w-full max-w-6xl mx-4 mt-8 mb-4 max-h-[95vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[70] p-4">
+      <div className="bg-white rounded-lg shadow-2xl w-full max-w-7xl max-h-[90vh] overflow-hidden border border-themeTealLighter">
         {/* Modal Header */}
-        <div className="bg-themeTeal px-6 py-4 rounded-t flex-shrink-0">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-themeTealWhite">Manage Sectors & Subsectors</h3>
+        <div className="bg-themeTeal text-white p-4 flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+              <Building2 className="w-5 h-5 text-white" />
             </div>
-            <button
-              onClick={onClose}
-              className="text-themeTealWhite transition duration-300 cursor-pointer"
-            >
-              <X width={20} height={20}/>
-            </button>
+            <div>
+              <h2 className="text-xl font-semibold">Manage Sectors & Subsectors</h2>
+              <p className="text-sm text-themeTealLighter">Organize your investment categories</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white hover:text-gray-200 text-2xl font-bold transition duration-300"
+          >
+            ×
+          </button>
+        </div>
+
+        {/* Search Bar */}
+        <div className="p-4 border-b border-themeTealLighter bg-themeTealWhite">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+            <input
+              type="text"
+              placeholder="Search sectors and subsectors..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent"
+            />
           </div>
         </div>
         
@@ -266,12 +372,18 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
             {/* Sectors Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-themeTeal">Sectors</h3>
+                <div className="flex items-center space-x-2">
+                  <Building2 className="w-5 h-5 text-themeTeal" />
+                  <h3 className="text-lg font-semibold text-themeTeal">Sectors</h3>
+                  <span className="bg-themeTeal/10 text-themeTeal px-2 py-1 rounded-full text-xs font-medium">
+                    {filteredSectors.length}
+                  </span>
+                </div>
                 <button
                   onClick={() => setIsCreatingSector(!isCreatingSector)}
-                  className="flex items-center px-3 py-1 text-sm bg-themeTeal text-white rounded hover:bg-themeTealDark transition duration-200"
+                  className="flex items-center px-4 py-2 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition duration-200 shadow-sm"
                 >
-                  <Plus className="h-4 w-4 mr-1" />
+                  <Plus className="h-4 w-4 mr-2" />
                   {isCreatingSector ? 'Cancel' : 'Add Sector'}
                 </button>
               </div>
@@ -313,37 +425,103 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
                 </form>
               )}
 
+              {/* Edit Sector Form */}
+              {editingSector && (
+                <form onSubmit={handleEditSector} className="bg-blue-50 p-4 rounded-lg border border-blue-200 mb-4">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-themeTeal mb-2">
+                      Edit Sector Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editSectorName}
+                      onChange={(e) => setEditSectorName(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-lg focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                      placeholder="Enter sector name"
+                      required
+                    />
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingSector(null);
+                        setEditSectorName('');
+                      }}
+                      className="px-4 py-2 text-sm text-themeTeal bg-white border border-themeTealLighter rounded-lg hover:bg-themeTealWhite transition duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-4 py-2 text-sm text-white bg-themeTeal rounded-lg hover:bg-themeTealLight transition duration-200 disabled:opacity-50"
+                    >
+                      {loading ? 'Updating...' : 'Update'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
               {/* Sectors List */}
-              <div className="bg-white rounded border border-themeTealLighter max-h-96 overflow-y-auto">
-                {sectors.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-themeTealLighter">No sectors found</p>
+              <div className="bg-white rounded-lg border border-themeTealLighter max-h-96 overflow-y-auto shadow-sm">
+                {filteredSectors.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Building2 className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-themeTealLighter">
+                      {searchTerm ? 'No sectors match your search' : 'No sectors found'}
+                    </p>
+                    {!searchTerm && (
+                      <p className="text-xs text-gray-400 mt-1">Click "Add Sector" to create your first sector</p>
+                    )}
                   </div>
                 ) : (
                   <div className="divide-y divide-themeTealLighter">
-                    {sectors.map((sector) => (
+                    {filteredSectors.map((sector) => (
                       <div
                         key={sector.id}
-                        className={`p-3 cursor-pointer hover:bg-themeTealWhite transition duration-200 ${
+                        className={`p-4 cursor-pointer hover:bg-themeTealWhite transition duration-200 ${
                           selectedSectorId === sector.id ? 'bg-themeTealWhite border-l-4 border-themeTeal' : ''
                         }`}
                         onClick={() => setSelectedSectorId(sector.id)}
                       >
                         <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="text-sm font-medium text-themeTeal">{sector.name}</h4>
-                            <p className="text-xs text-themeTealLighter">{formatDate(sector.created_at)}</p>
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                              selectedSectorId === sector.id ? 'bg-themeTeal text-white' : 'bg-themeTeal/10 text-themeTeal'
+                            }`}>
+                              <Building2 className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-themeTeal">{sector.name}</h4>
+                              <div className="flex items-center space-x-2 text-xs text-themeTealLighter">
+                                <Clock className="w-3 h-3" />
+                                <span>{formatDate(sector.created_at)}</span>
+                              </div>
+                            </div>
                           </div>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteSector(sector.id);
-                            }}
-                            className="p-1 text-red-600 hover:text-red-800 transition duration-200"
-                            title="Delete Sector"
-                          >
-                            <Trash2 width={14} height={14}/>
-                          </button>
+                          <div className="flex items-center space-x-1">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEditSector(sector);
+                              }}
+                              className="p-2 text-themeTeal hover:text-themeTealLight hover:bg-themeTeal/10 rounded transition duration-200"
+                              title="Edit Sector"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteSector(sector.id);
+                              }}
+                              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition duration-200"
+                              title="Delete Sector"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -355,15 +533,26 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
             {/* Subsectors Section */}
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-medium text-themeTeal">
-                  Subsectors {selectedSectorId && `(${sectors.find(s => s.id === selectedSectorId)?.name})`}
-                </h3>
+                <div className="flex items-center space-x-2">
+                  <FolderOpen className="w-5 h-5 text-themeTeal" />
+                  <h3 className="text-lg font-semibold text-themeTeal">
+                    Subsectors
+                    {selectedSectorId && (
+                      <span className="text-sm font-normal text-themeTealLighter ml-2">
+                        ({sectors.find(s => s.id === selectedSectorId)?.name})
+                      </span>
+                    )}
+                  </h3>
+                  <span className="bg-themeTeal/10 text-themeTeal px-2 py-1 rounded-full text-xs font-medium">
+                    {filteredSubsectors.length}
+                  </span>
+                </div>
                 {selectedSectorId && (
                   <button
                     onClick={() => setIsCreatingSubsector(!isCreatingSubsector)}
-                    className="flex items-center px-3 py-1 text-sm bg-themeTeal text-white rounded hover:bg-themeTealDark transition duration-200"
+                    className="flex items-center px-4 py-2 text-sm bg-themeTeal text-white rounded-lg hover:bg-themeTealLight transition duration-200 shadow-sm"
                   >
-                    <Plus className="h-4 w-4 mr-1" />
+                    <Plus className="h-4 w-4 mr-2" />
                     {isCreatingSubsector ? 'Cancel' : 'Add Subsector'}
                   </button>
                 )}
@@ -406,32 +595,95 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
                 </form>
               )}
 
-              {/* Subsectors List */}
-              <div className="bg-white rounded border border-themeTealLighter max-h-96 overflow-y-auto">
-                {!selectedSectorId ? (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-themeTealLighter">Select a sector to view subsectors</p>
+              {/* Edit Subsector Form */}
+              {editingSubsector && (
+                <form onSubmit={handleEditSubsector} className="bg-green-50 p-4 rounded-lg border border-green-200 mb-4">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-themeTeal mb-2">
+                      Edit Subsector Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={editSubsectorName}
+                      onChange={(e) => setEditSubsectorName(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-lg focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                      placeholder="Enter subsector name"
+                      required
+                    />
                   </div>
-                ) : subsectors.length === 0 ? (
-                  <div className="text-center py-8">
-                    <p className="text-sm text-themeTealLighter">No subsectors found for this sector</p>
+                  <div className="flex justify-end space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingSubsector(null);
+                        setEditSubsectorName('');
+                      }}
+                      className="px-4 py-2 text-sm text-themeTeal bg-white border border-themeTealLighter rounded-lg hover:bg-themeTealWhite transition duration-200"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="px-4 py-2 text-sm text-white bg-themeTeal rounded-lg hover:bg-themeTealLight transition duration-200 disabled:opacity-50"
+                    >
+                      {loading ? 'Updating...' : 'Update'}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Subsectors List */}
+              <div className="bg-white rounded-lg border border-themeTealLighter max-h-96 overflow-y-auto shadow-sm">
+                {!selectedSectorId ? (
+                  <div className="text-center py-12">
+                    <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-themeTealLighter">Select a sector to view subsectors</p>
+                    <p className="text-xs text-gray-400 mt-1">Choose a sector from the left panel</p>
+                  </div>
+                ) : filteredSubsectors.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FolderOpen className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                    <p className="text-sm text-themeTealLighter">
+                      {searchTerm ? 'No subsectors match your search' : 'No subsectors found for this sector'}
+                    </p>
+                    {!searchTerm && (
+                      <p className="text-xs text-gray-400 mt-1">Click "Add Subsector" to create your first subsector</p>
+                    )}
                   </div>
                 ) : (
                   <div className="divide-y divide-themeTealLighter">
-                    {subsectors.map((subsector) => (
-                      <div key={subsector.id} className="p-3 hover:bg-themeTealWhite transition duration-200">
+                    {filteredSubsectors.map((subsector) => (
+                      <div key={subsector.id} className="p-4 hover:bg-themeTealWhite transition duration-200">
                         <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="text-sm font-medium text-themeTeal">{subsector.name}</h4>
-                            <p className="text-xs text-themeTealLighter">{formatDate(subsector.created_at)}</p>
+                          <div className="flex items-center space-x-3">
+                            <div className="w-8 h-8 rounded-full bg-themeTeal/10 text-themeTeal flex items-center justify-center">
+                              <FolderOpen className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-themeTeal">{subsector.name}</h4>
+                              <div className="flex items-center space-x-2 text-xs text-themeTealLighter">
+                                <Clock className="w-3 h-3" />
+                                <span>{formatDate(subsector.created_at)}</span>
+                              </div>
+                            </div>
                           </div>
-                          <button
-                            onClick={() => handleDeleteSubsector(subsector.id)}
-                            className="p-1 text-red-600 hover:text-red-800 transition duration-200"
-                            title="Delete Subsector"
-                          >
-                            <Trash2 width={14} height={14}/>
-                          </button>
+                          <div className="flex items-center space-x-1">
+                            <button
+                              onClick={() => startEditSubsector(subsector)}
+                              className="p-2 text-themeTeal hover:text-themeTealLight hover:bg-themeTeal/10 rounded transition duration-200"
+                              title="Edit Subsector"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteSubsector(subsector.id)}
+                              className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition duration-200"
+                              title="Delete Subsector"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
