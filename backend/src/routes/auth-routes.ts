@@ -36,5 +36,6 @@ authRouter.post('/kyc', jwtAuthMiddleware, uploadKYCDocuments.fields([
   { name: 'sign', maxCount: 1 }
 ]), kycController.createKYCApplication);
 authRouter.get('/kyc/my', jwtAuthMiddleware, kycController.getMyKYCApplication);
+authRouter.get('/kyc/status', jwtAuthMiddleware, kycController.getKYCStatus);
 
 export default authRouter;

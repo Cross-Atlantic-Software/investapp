@@ -4,6 +4,7 @@ import { Info } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
+import { useAuth } from "@/lib/contexts/AuthContext";
 
 type TradeTabsProps = {
   company: string;            // e.g. "Pine Labs"
@@ -22,6 +23,7 @@ export default function TradeTabs({
   onBuySubmit,
   // onSellSubmit,
 }: TradeTabsProps) {
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<"buy" | "sell">("buy");
 
@@ -45,13 +47,36 @@ export default function TradeTabs({
   // Notification state
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
 
-  // Check if user is authenticated
-  const isAuthenticated = () => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
-      return !!token;
+  // Check if user's KYC is verified
+  const checkKYCStatus = async () => {
+    try {
+      const sessionToken = sessionStorage.getItem('auth_token');
+      const localToken = localStorage.getItem('auth_token');
+      const token = sessionToken || localToken;
+      
+      console.log('Checking KYC status with token:', token ? 'Present' : 'Missing');
+      
+      const response = await fetch('/api/kyc/status', {
+        method: 'GET',
+        headers: {
+          'token': token || '',
+        },
+      });
+
+      console.log('KYC status response:', response.status, response.statusText);
+      const data = await response.json();
+      console.log('KYC status data:', data);
+      
+      if (data.success && data.data?.status === 'verified') {
+        console.log('KYC is verified');
+        return true;
+      }
+      console.log('KYC is not verified, status:', data.data?.status);
+      return false;
+    } catch (error) {
+      console.error('Error checking KYC status:', error);
+      return false;
     }
-    return false;
   };
 
   // Notification helper functions
@@ -79,16 +104,36 @@ export default function TradeTabs({
     return null;
   };
 
-  // Handle buy button click with authentication check
+  // Handle buy button click with authentication and KYC check
   const handleBuyClick = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!isAuthenticated()) {
+    console.log('Buy button clicked');
+    
+    if (!isAuthenticated) {
+      console.log('User not authenticated, redirecting to login');
       router.push('/login');
       return;
     }
     
-    // Validate quantity
+    console.log('User is authenticated, checking KYC status...');
+    
+    // Check KYC status
+    const isKYCVerified = await checkKYCStatus();
+    console.log('KYC verification result:', isKYCVerified);
+    
+    if (!isKYCVerified) {
+      console.log('KYC not verified, redirecting to KYC process');
+      addNotification({
+        type: 'error',
+        title: 'KYC verification required to invest',
+        duration: 6000
+      });
+      router.push('/kyc-process/step-1');
+      return;
+    }
+    
+    console.log('KYC verified, proceeding with buy order...');
     if (!validateQuantity(qty)) {
       const error = getQuantityError(qty);
       addNotification({
@@ -107,8 +152,10 @@ export default function TradeTabs({
     setIsLoading(true);
     
     try {
-      // Get token from localStorage or sessionStorage
-      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      // Get token from sessionStorage or localStorage
+      const sessionToken = sessionStorage.getItem('auth_token');
+      const localToken = localStorage.getItem('auth_token');
+      const token = sessionToken || localToken;
       
       const response = await fetch('/api/trading/buy', {
         method: 'POST',
@@ -136,12 +183,20 @@ export default function TradeTabs({
           title: 'Buy order placed successfully!',
           duration: 8000
         });
+        
+        // Reset form fields after successful order
+        setQty(0);
+        setInvest(0);
       } else {
         addNotification({
           type: 'error',
           title: 'Failed to place buy order',
           duration: 6000
         });
+        
+        // Reset form fields after failed order
+        setQty(0);
+        setInvest(0);
       }
     } catch (error) {
       console.error('Error placing buy order:', error);
@@ -150,6 +205,10 @@ export default function TradeTabs({
         title: 'Failed to place buy order',
         duration: 6000
       });
+      
+      // Reset form fields after error
+      setQty(0);
+      setInvest(0);
     } finally {
       setIsLoading(false);
     }

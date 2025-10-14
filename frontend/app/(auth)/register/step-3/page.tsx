@@ -99,9 +99,9 @@ function Step3Content() {
       // Show welcome message instead of immediate redirect
       setProfileCompleted(true);
       
-      // Redirect to dashboard after 3 seconds
+      // Redirect to KYC step after 3 seconds
       setTimeout(() => {
-        router.push("/invest");
+        router.push("/register/step-4");
       }, 3000);
     } catch (err) {
       console.error('Profile completion error:', err);
@@ -198,12 +198,12 @@ function Step3Content() {
                       Your profile has been completed successfully
                     </p>
                     <p className="text-sm text-themeTealLighter">
-                      Redirecting you to your dashboard in a moment...
+                      Redirecting you to complete your verification...
                     </p>
                     <div className="mt-6">
                       <div className="inline-flex items-center gap-2 text-themeTeal">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-themeTeal"></div>
-                        <span className="text-sm">Loading dashboard...</span>
+                        <span className="text-sm">Loading next step...</span>
                       </div>
                     </div>
                   </div>
@@ -252,6 +252,7 @@ function Step3Content() {
                     <span className="mb-2 block text-sm font-medium text-themeTeal">Email <span className="text-red-500">*</span></span>
                     <input
                       type="email"
+                      disabled
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full rounded border border-themeTealLighter bg-white px-4 py-3 outline-none focus:border-themeTeal transition duration-500"

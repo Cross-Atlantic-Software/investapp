@@ -289,6 +289,53 @@ export class KYCManagementController {
     }
   };
 
+  // Get KYC status for authenticated user
+  getKYCStatus = async (req: Request, res: Response): Promise<void> => {
+    try {
+      await this.ensureDbReady();
+      
+      // Get user_id from authenticated user (site user)
+      const user_id = parseInt((req.user as any)?.user_id || '0');
+      
+      if (!user_id) {
+        res.status(HttpStatusCode.UNAUTHORIZED).json({
+          success: false,
+          message: 'User not authenticated'
+        });
+        return;
+      }
+
+      const kycApplication = await this.kycModel.findOne({
+        where: { user_id },
+        attributes: ['id', 'status', 'createdAt', 'updatedAt']
+      });
+
+      if (!kycApplication) {
+        res.status(HttpStatusCode.OK).json({
+          success: true,
+          data: { status: 'not_submitted' }
+        });
+        return;
+      }
+
+      res.status(HttpStatusCode.OK).json({
+        success: true,
+        data: { 
+          status: kycApplication.status,
+          id: kycApplication.id,
+          createdAt: kycApplication.createdAt,
+          updatedAt: kycApplication.updatedAt
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching KYC status:', error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to fetch KYC status'
+      });
+    }
+  };
+
   // Update KYC application status
   updateKYCStatus = async (req: Request, res: Response): Promise<void> => {
     try {
