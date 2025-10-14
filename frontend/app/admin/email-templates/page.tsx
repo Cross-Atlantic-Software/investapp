@@ -603,7 +603,7 @@ export default function EmailTemplatesPage() {
               </div>
               <button
                 onClick={handleAddTemplate}
-                className="bg-themeTeal text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeSkyBlue transition duration-300 flex items-center cursor-pointer"
+                className="buttonStyle flex items-center gap-1"
                 >
                   <Plus width={16} height={16} className='mr-1'/>
                 Add Template
@@ -772,13 +772,13 @@ export default function EmailTemplatesPage() {
                   {/* Type Field */}
                   <div>
                     <label className="block text-xs font-medium text-themeTeal mb-1">
-                      Type <span className="text-red-500">*</span>
+                      Type<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                      className="input-theme"
                       placeholder="e.g., Buy_Order_Success, Sell_Order_Success, Contact_Us"
                     />
                   </div>
@@ -786,13 +786,13 @@ export default function EmailTemplatesPage() {
                   {/* Subject Field */}
                   <div>
                     <label className="block text-xs font-medium text-themeTeal mb-1">
-                      Subject <span className="text-red-500">*</span>
+                      Subject<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                      className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                      className="input-theme"
                       placeholder="Email subject line"
                     />
                   </div>
@@ -801,7 +801,7 @@ export default function EmailTemplatesPage() {
                 {/* Body Field */}
                 <div>
                   <label className="block text-xs font-medium text-themeTeal mb-1">
-                    Body (HTML) <span className="text-red-500">*</span>
+                    Body (HTML)<span className="text-red-500">*</span>
                   </label>
                   
                   {/* Template Selector */}
@@ -842,7 +842,7 @@ export default function EmailTemplatesPage() {
                   <textarea
                     value={formData.body}
                     onChange={(e) => setFormData({ ...formData, body: e.target.value })}
-                    className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                    className="input-theme"
                     placeholder="Email body content (HTML format). Use variables like {{otpCode}}, {{companyName}}, {{quantity}}, {{price}}, {{totalAmount}}, {{userName}}, {{userEmail}}"
                     rows={12}
                   />
@@ -871,7 +871,7 @@ export default function EmailTemplatesPage() {
                 type="submit"
                 form="email-template-form"
                 onClick={handleSaveTemplate}
-                className="px-4 py-3 text-sm bg-themeTeal text-white rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50 font-medium cursor-pointer"
+                className="buttonStyle"
               >
                 {editingTemplate ? 'Update Template' : 'Create Template'}
               </button>

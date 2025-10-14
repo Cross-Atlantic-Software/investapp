@@ -29,7 +29,7 @@ const ModalFooter: React.FC<ModalFooterProps> = ({
           <button
             type="button"
             onClick={onPrevStep}
-            className="px-4 py-2 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition duration-200 font-medium cursor-pointer flex items-center"
+            className="buttonStyleLight flex items-center gap-1"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Previous

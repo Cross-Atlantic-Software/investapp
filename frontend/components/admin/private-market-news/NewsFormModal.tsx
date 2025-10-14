@@ -101,34 +101,34 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
         <div className="p-6 flex-1 overflow-y-auto">
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-themeTeal mb-1">Title</label>
+              <label className="block text-sm text-themeTeal mb-1">Title</label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => setFormData({...formData, title: e.target.value})}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none placeholder:text-themeTealLighter focus:border-themeTeal text-themeTeal"
+                className="input-theme"
                 placeholder="Enter news title"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-themeTeal mb-1">URL</label>
+              <label className="block text-sm text-themeTeal mb-1">URL</label>
               <input
                 type="url"
                 value={formData.url}
                 onChange={(e) => setFormData({...formData, url: e.target.value})}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal text-themeTeal placeholder:text-themeTealLighter"
+                className="input-theme"
                 placeholder="https://example.com/news-article"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-themeTeal mb-1">Icon</label>
+              <label className="block text-sm text-themeTeal mb-1">Icon</label>
               <input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setFormData({...formData, icon: e.target.files?.[0] || null})}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none focus:border-themeTeal text-themeTeal placeholder:text-themeTealLighter"
+                className="input-theme"
               />
               {formData.icon && (
                 <div className="mt-2">
@@ -180,14 +180,14 @@ const NewsFormModal: React.FC<NewsFormModalProps> = ({
           <div className="flex justify-end space-x-3">
             <button
               onClick={handleClose}
-              className="px-5 py-3 text-themeTealWhite bg-themeTealLighter rounded hover:bg-themeTealLight transition duration-300 cursor-pointer"
+              className="buttonStyleLight"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!formData.title || !formData.url || (!formData.icon && !editingItem?.icon) || loading}
-              className="px-5 py-3 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 cursor-pointer"
+              className="buttonStyle"
             >
               {loading ? 'Processing...' : submitLabel}
             </button>

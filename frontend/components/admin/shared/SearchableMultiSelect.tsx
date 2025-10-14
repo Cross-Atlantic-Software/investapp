@@ -150,7 +150,7 @@ export default function SearchableMultiSelect({
     <div className={`relative ${className}`} ref={dropdownRef}>
       {/* Selected items display */}
       <div
-        className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none text-themeTeal cursor-pointer min-h-[42px] flex flex-wrap gap-1 items-center placeholder:text-themeTealLighter"
+        className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none text-themeTeal cursor-pointer min-h-[42px] flex flex-wrap gap-1 items-center placeholder:text-themeTealLighter"
         onClick={handleToggle}
       >
         {selectedOptions.length === 0 ? (
@@ -187,9 +187,9 @@ export default function SearchableMultiSelect({
           dropdownPosition === 'above' ? 'bottom-full mb-1' : 'top-full mt-1'
         }`}>
           {/* Search input */}
-          <div className="p-2 border-b border-gray-200">
+          <div className="p-2 border-b border-themeTealLighter">
             <div className="relative">
-              <Search className="absolute left-2 top-2.5 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-2 top-2.5 w-4 h-4 text-themeTealLight" />
               <input
                 ref={searchInputRef}
                 type="text"
@@ -197,7 +197,7 @@ export default function SearchableMultiSelect({
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Search taxonomies..."
-                className="w-full pl-8 pr-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="input-theme pl-8 w-full"
               />
             </div>
           </div>

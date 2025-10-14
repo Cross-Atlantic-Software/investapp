@@ -86,7 +86,7 @@ const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal placeholder:text-themeTealLighter text-themeTeal"
+                className="input-theme"
                 rows={3}
                 placeholder="Enter activity description..."
               />
@@ -114,7 +114,7 @@ const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
                 type="file"
                 accept="image/*"
                 onChange={(e) => setFormData({ ...formData, icon: e.target.files?.[0] || null })}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none placeholder:text-themeTealLigher text-themeTeal focus:border-themeTeal"
+                className="input-theme"
               />
               {editingItem?.icon && (
                 <div className="mt-2">
@@ -131,14 +131,14 @@ const ActivityFormModal: React.FC<ActivityFormModalProps> = ({
           <div className="flex justify-end gap-2">
             <button
               onClick={handleClose}
-              className="px-5 py-2 text-themeTealWhite bg-themeTealLighter rounded hover:bg-themeTealLight transition duration-300 cursor-pointer"
+              className="buttonStyleLight"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!formData.description || loading}
-              className="px-5 py-2 bg-themeTeal text-white rounded hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300 cursor-pointer"
+              className="buttonStyle"
             >
               {loading ? 'Processing...' : submitLabel}
             </button>

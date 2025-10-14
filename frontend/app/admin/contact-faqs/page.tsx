@@ -476,27 +476,27 @@ export default function ContactFaqsPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Question *
+                  Question<span className='text-rose-600'>*</span>
                 </label>
                 <textarea
                   value={formData.question}
                   onChange={(e) => setFormData({ ...formData, question: e.target.value })}
                   required
                   rows={3}
-                  className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal placeholder:text-themeTealLighter"
+                  className="input-theme"
                   placeholder="Enter the question..."
                 />
               </div>
               <div>
                 <label className="block text-xs font-medium text-themeTeal mb-1">
-                  Answer *
+                  Answer<span className='text-rose-600'>*</span>
                 </label>
                 <textarea
                   value={formData.answer}
                   onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
                   required
                   rows={5}
-                  className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal placeholder:text-themeTealLighter"
+                  className="input-theme"
                   placeholder="Enter the answer..."
                 />
               </div>
@@ -510,7 +510,7 @@ export default function ContactFaqsPage() {
                     value={formData.display_order}
                     onChange={(e) => setFormData({ ...formData, display_order: parseInt(e.target.value) || 0 })}
                     min="0"
-                    className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
+                    className="input-theme"
                   />
                 </div>
               )}
@@ -529,14 +529,14 @@ export default function ContactFaqsPage() {
               <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className="bg-themeTeal text-themeTealWhite px-4 py-2 rounded hover:bg-themeSkyBlue cursor-pointer transition duration-300"
+                  className="buttonStyle"
                 >
                   {editingFaq ? 'Update' : 'Create'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="bg-themeTealLighter text-themeTealWhite px-4 py-2 rounded hover:bg-themeTeal cursor-pointer transition duration-300"
+                  className="buttonStyleLight"
                 >
                   Cancel
                 </button>

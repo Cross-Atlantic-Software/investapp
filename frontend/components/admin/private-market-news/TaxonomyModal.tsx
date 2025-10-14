@@ -49,7 +49,7 @@ const TaxonomyModal: React.FC<TaxonomyModalProps> = ({
                   type="text"
                   value={newTaxonomy.name}
                   onChange={(e) => setNewTaxonomy({...newTaxonomy, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none placeholder:text-themeTealLighter text-themeTeal focus:border-themeTeal"
+                  className="input-theme"
                   placeholder="Enter taxonomy name"
                 />
               </div>
@@ -61,13 +61,13 @@ const TaxonomyModal: React.FC<TaxonomyModalProps> = ({
                     type="color"
                     value={newTaxonomy.color}
                     onChange={(e) => setNewTaxonomy({...newTaxonomy, color: e.target.value})}
-                    className="w-12 h-8 border border-themeTealLighter rounded cursor-pointer"
+                    className="input-theme w-11 h-11 p-0 border-0 rounded"
                   />
                   <input
                     type="text"
                     value={newTaxonomy.color}
                     onChange={(e) => setNewTaxonomy({...newTaxonomy, color: e.target.value})}
-                    className="flex-1 px-3 py-2 border border-themeTealLighter rounded-md focus:outline-none placeholder:text-themeTealLighter text-themeTeal focus:border-themeTeal mb-3"
+                    className="input-theme"
                     placeholder="#0097D1"
                   />
                 </div>
@@ -76,7 +76,7 @@ const TaxonomyModal: React.FC<TaxonomyModalProps> = ({
               <button
                 onClick={handleSubmit}
                 disabled={!newTaxonomy.name}
-                className="w-full px-4 py-3 bg-themeTeal text-white rounded-md hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+                className="buttonStyle w-full text-center py-3"
               >
                 Create Taxonomy
               </button>
@@ -113,7 +113,7 @@ const TaxonomyModal: React.FC<TaxonomyModalProps> = ({
           <div className="flex justify-end">
             <button
               onClick={onClose}
-              className="px-5 py-3 text-themeTealWhite bg-themeTeal rounded-md hover:bg-themeTealLight transition duration-300 cursor-pointer"
+              className="buttonStyle"
             >
               Close
             </button>

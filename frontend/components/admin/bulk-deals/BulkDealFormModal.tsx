@@ -105,7 +105,7 @@ const BulkDealFormModal: React.FC<BulkDealFormModalProps> = ({
                 type="text"
                 value={formData.value}
                 onChange={(e) => setFormData({ ...formData, value: e.target.value })}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal"
+                className="input-theme"
                 placeholder="Enter value (e.g., ₹50 Cr, 100+ Deals)"
               />
             </div>
@@ -117,7 +117,7 @@ const BulkDealFormModal: React.FC<BulkDealFormModalProps> = ({
               <textarea
                 value={formData.label}
                 onChange={(e) => setFormData({ ...formData, label: e.target.value })}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal"
+                className="input-theme"
                 rows={3}
                 placeholder="Enter label description..."
               />
@@ -132,10 +132,10 @@ const BulkDealFormModal: React.FC<BulkDealFormModalProps> = ({
                 type="file"
                 accept="image/*"
                 onChange={(e) => setFormData({ ...formData, icon: e.target.files?.[0] || null })}
-                className="w-full px-3 py-2 border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal"
+                className="input-theme"
               />
               {editingItem?.icon && (
-                <div className="mt-2">
+                <div className="mt-5">
                   <p className="text-sm text-themeTeal">Current icon:</p>
                   <img src={editingItem.icon} alt="Current icon" className="h-8 w-8 rounded-full object-cover" />
                 </div>
@@ -149,14 +149,14 @@ const BulkDealFormModal: React.FC<BulkDealFormModalProps> = ({
           <div className="flex justify-end gap-2">
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-themeTeal border border-themeTealLighter rounded hover:bg-themeTealWhite transition duration-300"
+              className="buttonStyleLight"
             >
               Cancel
             </button>
             <button
               onClick={handleSubmit}
               disabled={!formData.value || !formData.label || loading}
-              className="px-4 py-2 bg-themeTeal text-white rounded hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300"
+              className="buttonStyle"
             >
               {loading ? 'Processing...' : submitLabel}
             </button>

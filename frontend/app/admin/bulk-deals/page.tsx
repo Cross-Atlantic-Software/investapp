@@ -319,7 +319,7 @@ export default function BulkDealsPage() {
             <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => setShowCreateModal(true)}
-                className="bg-themeTeal text-themeTealWhite px-4 py-2 text-sm rounded hover:bg-themeSkyBlue transition duration-300 flex items-center cursor-pointer"
+                className="buttonStyle flex items-center gap-1"
           >
                 <Plus width={16} height={16} className='mr-1'/>
             Add Bulk Deal

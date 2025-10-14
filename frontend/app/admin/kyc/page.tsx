@@ -468,7 +468,7 @@ export default function KYCPage() {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-themeTealLighter">
+            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-none transition duration-300">
               <div className="flex items-center">
                 <div className="p-2 bg-themeTeal/10 rounded-lg">
                   <div className="w-6 h-6 bg-themeTeal rounded"></div>
@@ -479,7 +479,7 @@ export default function KYCPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-themeTealLighter">
+            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-none transition duration-300">
               <div className="flex items-center">
                 <div className="p-2 bg-yellow-100 rounded-lg">
                   <div className="w-6 h-6 bg-yellow-600 rounded"></div>
@@ -490,7 +490,7 @@ export default function KYCPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-themeTealLighter">
+            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-none transition duration-300">
               <div className="flex items-center">
                 <div className="p-2 bg-green-100 rounded-lg">
                   <div className="w-6 h-6 bg-green-600 rounded"></div>
@@ -501,7 +501,7 @@ export default function KYCPage() {
                 </div>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-themeTealLighter">
+            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-none transition duration-300">
               <div className="flex items-center">
                 <div className="p-2 bg-red-100 rounded-lg">
                   <div className="w-6 h-6 bg-red-600 rounded"></div>

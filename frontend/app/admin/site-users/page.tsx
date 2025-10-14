@@ -433,7 +433,7 @@ export default function SiteUsersPage() {
                         sortOrder={sortOrder}
                         onSort={handleSort}
                       >
-                        User Name
+                        User Name 
                       </SortableHeader>
                       <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                         Phone
