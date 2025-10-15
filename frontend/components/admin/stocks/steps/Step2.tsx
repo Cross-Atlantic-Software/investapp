@@ -54,7 +54,7 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
       {/* Valuation */}
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Valuation <span className="text-red-500">*</span>
+          Valuation (in Cr.) <span className="text-red-500">*</span>
         </label>
         <select
           name="valuation_id"

@@ -85,7 +85,7 @@ const StockMasterModal: React.FC<StockMasterModalProps> = ({
         <div className="bg-themeTeal px-6 py-4 rounded-t flex-shrink-0">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-base font-semibold text-themeTealWhite">Manage Stock Tags</h3>
+              <h3 className="text-base font-semibold text-themeTealWhite">Manage Filing Status & Attractiveness</h3>
             </div>
             <button
               onClick={onClose}

@@ -3,6 +3,8 @@ import db, { sequelizePromise } from "../../utils/database";
 import { HttpStatusCode } from "../../utils/httpStatusCode";
 import sendMail from "../../utils";
 import { EmailTemplateService } from "../../utils/emailTemplateService";
+import { BuyRequest } from "../../Models/BuyRequest";
+import Product from "../../Models/Product";
 
 export class BuyStockService {
   private userModel = db.User;
@@ -51,25 +53,31 @@ export class BuyStockService {
       
       console.log('✅ User found:', user.email);
 
-      // Add buy request to user's buy_request array
+      // Add buy request to the buy_requests table
       try {
-        const currentBuyRequests = user.buy_request ? JSON.parse(user.buy_request) : [];
-        const newBuyRequest = {
-          stockName: companyName,
+        // Find the stock/product by company name
+        const stock = await Product.findOne({
+          where: {
+            company_name: companyName
+          }
+        });
+
+        if (!stock) {
+          console.error('❌ Stock not found for company:', companyName);
+          return (res as any).error("Stock not found", HttpStatusCode.NOT_FOUND);
+        }
+
+        // Create new buy request record
+        await BuyRequest.create({
+          user_id: parseInt(userId),
+          stock_id: stock.id,
+          stock_name: companyName,
           quantity: quantity,
           price: price,
-          totalAmount: totalAmount,
-          timestamp: new Date().toISOString()
-        };
-        
-        currentBuyRequests.push(newBuyRequest);
-        
-        // Update user's buy_request field
-        await user.update({
-          buy_request: JSON.stringify(currentBuyRequests)
+          total_amount: totalAmount
         });
         
-        console.log('✅ Buy request added to user profile');
+        console.log('✅ Buy request saved to buy_requests table');
       } catch (buyRequestError) {
         console.error('❌ Failed to save buy request:', buyRequestError);
         // Don't fail the transaction if buy request save fails

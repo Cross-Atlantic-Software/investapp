@@ -5,6 +5,7 @@ import { Subsector, initializeSubsectorModel } from './Subsector';
 import Wishlist, { initializeWishlistModel } from './Wishlist';
 import Product from './Product';
 import User from './User';
+import BuyRequest, { initializeBuyRequestModel } from './BuyRequest';
 
 export function initializeFinancialDataModels(sequelize: any) {
   // Initialize models first
@@ -65,5 +66,36 @@ export function initializeWishlistModels(sequelize: any) {
   Product.hasMany(Wishlist, {
     foreignKey: 'stock_id',
     as: 'stockWishlist'
+  });
+}
+
+export function initializeBuyRequestModels(sequelize: any) {
+  // Initialize BuyRequest model first
+  initializeBuyRequestModel(sequelize);
+
+  // Check if associations are already defined to prevent duplicates
+  if (BuyRequest.associations.User && BuyRequest.associations.Product) {
+    return; // Associations already defined
+  }
+
+  // Define BuyRequest associations
+  BuyRequest.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'User'
+  });
+
+  BuyRequest.belongsTo(Product, {
+    foreignKey: 'stock_id',
+    as: 'Product'
+  });
+
+  User.hasMany(BuyRequest, {
+    foreignKey: 'user_id',
+    as: 'UserBuyRequests'
+  });
+
+  Product.hasMany(BuyRequest, {
+    foreignKey: 'stock_id',
+    as: 'ProductBuyRequests'
   });
 }

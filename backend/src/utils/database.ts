@@ -32,6 +32,8 @@ import { FinancialDataCsv, initializeFinancialDataCsvModel } from "../Models/Fin
 import { Sector, initializeSectorModel } from "../Models/Sector";
 import { Subsector, initializeSubsectorModel } from "../Models/Subsector";
 import KYCApplication, { initializeKYCApplicationModel } from "../Models/KYCApplication";
+import BuyRequest, { initializeBuyRequestModel } from "../Models/BuyRequest";
+import ValuationRange, { initializeValuationRangeModel } from "../Models/ValuationRange";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -155,6 +157,12 @@ async function initializeSequelize() {
   // Initialize KYC Application model
   initializeKYCApplicationModel(sequelize);
   
+  // Initialize BuyRequest model
+  initializeBuyRequestModel(sequelize);
+  
+  // Initialize ValuationRange model
+  initializeValuationRangeModel(sequelize);
+  
   // Set up Sector and Subsector associations
   Sector.hasMany(Subsector, {
     foreignKey: 'sector_id',
@@ -209,6 +217,27 @@ async function initializeSequelize() {
   Product.hasMany(Wishlist, {
     foreignKey: 'stock_id',
     as: 'stockWishlist'
+  });
+
+  // Set up BuyRequest associations
+  BuyRequest.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'User'
+  });
+
+  BuyRequest.belongsTo(Product, {
+    foreignKey: 'stock_id',
+    as: 'Product'
+  });
+
+  User.hasMany(BuyRequest, {
+    foreignKey: 'user_id',
+    as: 'UserBuyRequests'
+  });
+
+  Product.hasMany(BuyRequest, {
+    foreignKey: 'stock_id',
+    as: 'ProductBuyRequests'
   });
 
   // Set up associations for ShareholderType
@@ -462,6 +491,20 @@ export const db = {
       throw new Error('KYCApplication model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return KYCApplication;
+  },
+
+  get BuyRequest() {
+    if (!BuyRequest) {
+      throw new Error('BuyRequest model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return BuyRequest;
+  },
+
+  get ValuationRange() {
+    if (!ValuationRange) {
+      throw new Error('ValuationRange model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return ValuationRange;
   },
 };
 

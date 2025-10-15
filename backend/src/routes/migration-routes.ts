@@ -975,12 +975,173 @@ router.post("/create-kyc-applications-table", async (req, res) => {
     }
   });
 
-  // Add buy_request column to users table
-  router.post("/add-buy-request-to-users", async (req, res) => {
+
+  // Create buy_requests table
+router.post("/create-buy-requests-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-buy-requests-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'buy_requests'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'buy_requests' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'buy_requests' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE buy_requests (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id INT UNSIGNED NOT NULL,
+        stock_id INT NOT NULL,
+        stock_name VARCHAR(255) NOT NULL,
+        quantity INT NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
+        total_amount DECIMAL(10,2) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (stock_id) REFERENCES products(id) ON DELETE CASCADE,
+        INDEX idx_user_id (user_id),
+        INDEX idx_stock_id (stock_id),
+        INDEX idx_created_at (created_at)
+      )
+    `);
+    
+    console.log("✅ Created buy_requests table successfully");
+    
+    res.json({
+      success: true,
+      message: "Buy requests table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Create valuation_ranges table
+router.post("/create-valuation-ranges-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-valuation-ranges-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'valuation_ranges'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'valuation_ranges' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'valuation_ranges' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE valuation_ranges (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(255) NOT NULL,
+        value VARCHAR(255) NOT NULL UNIQUE,
+        sort_order INT DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_sort_order (sort_order),
+        INDEX idx_value (value)
+      )
+    `);
+    
+    // Insert default ranges
+    await db.sequelize.query(`
+      INSERT INTO valuation_ranges (name, value, sort_order) VALUES
+      ('Below 1000 Cr', 'below-1000', 1),
+      ('1000-2500 Cr', '1000-2500', 2),
+      ('2500-5000 Cr', '2500-5000', 3),
+      ('5000+ Cr', '5000-plus', 4)
+    `);
+    
+    console.log("✅ Created valuation_ranges table with default data");
+    
+    res.json({
+      success: true,
+      message: "Valuation ranges table created successfully with default data"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Insert default valuation ranges
+router.post("/insert-default-valuation-ranges", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: insert-default-valuation-ranges");
+    
+    // Check if data already exists
+    const [existingData] = await db.sequelize.query(`
+      SELECT COUNT(*) as count FROM valuation_ranges
+    `) as [{ count: number }[], unknown];
+    
+    if (existingData[0].count > 0) {
+      console.log("✅ Default valuation ranges already exist");
+      return res.json({
+        success: true,
+        message: "Default valuation ranges already exist"
+      });
+    }
+
+    // Insert default ranges
+    await db.sequelize.query(`
+      INSERT INTO valuation_ranges (name, value, sort_order, created_at, updated_at) VALUES
+      ('Below 1000 Cr', 'below-1000', 1, NOW(), NOW()),
+      ('1000-2500 Cr', '1000-2500', 2, NOW(), NOW()),
+      ('2500-5000 Cr', '2500-5000', 3, NOW(), NOW()),
+      ('5000+ Cr', '5000-plus', 4, NOW(), NOW())
+    `);
+    
+    console.log("✅ Inserted default valuation ranges successfully");
+    
+    res.json({
+      success: true,
+      message: "Default valuation ranges inserted successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+  // Drop buy_request column from users table
+  router.post("/drop-buy-request-from-users", async (req, res) => {
     try {
       await sequelizePromise;
       
-      // Check if column already exists
+      // Check if column exists
       const [results] = await db.sequelize.query(`
         SELECT COLUMN_NAME 
         FROM INFORMATION_SCHEMA.COLUMNS 
@@ -989,36 +1150,28 @@ router.post("/create-kyc-applications-table", async (req, res) => {
         AND COLUMN_NAME = 'buy_request'
       `);
 
-      if (results.length > 0) {
+      if (results.length === 0) {
         return res.status(200).json({
           success: true,
-          message: "buy_request column already exists in users table"
+          message: "buy_request column does not exist in users table"
         });
       }
 
-      // Add buy_request column
+      // Drop buy_request column
       await db.sequelize.query(`
         ALTER TABLE users 
-        ADD COLUMN buy_request TEXT 
-        AFTER phone_verified
-      `);
-
-      // Update existing users to have empty array
-      await db.sequelize.query(`
-        UPDATE users 
-        SET buy_request = '[]' 
-        WHERE buy_request IS NULL
+        DROP COLUMN buy_request
       `);
 
       res.status(200).json({
         success: true,
-        message: "Successfully added buy_request column to users table"
+        message: "Successfully dropped buy_request column from users table"
       });
     } catch (error) {
-      console.error("Error adding buy_request column:", error);
+      console.error("Error dropping buy_request column:", error);
       res.status(500).json({
         success: false,
-        message: "Failed to add buy_request column",
+        message: "Failed to drop buy_request column",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }
@@ -1288,6 +1441,47 @@ router.post("/create-kyc-applications-table", async (req, res) => {
       res.status(500).json({
         success: false,
         message: "Failed to create valuations table",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  // Drop min_value and max_value columns from valuations table
+  router.post("/drop-valuation-value-columns", async (req, res) => {
+    try {
+      const { db } = await import("../utils/database");
+      
+      // Check if min_value column exists
+      const [columnResults] = await db.sequelize.query(`
+        SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'valuations' 
+        AND COLUMN_NAME = 'min_value'
+      `);
+      
+      if (columnResults.length > 0) {
+        // Drop min_value and max_value columns
+        await db.sequelize.query(`
+          ALTER TABLE valuations 
+          DROP COLUMN min_value,
+          DROP COLUMN max_value
+        `);
+        
+        res.json({
+          success: true,
+          message: "Min value and max value columns dropped successfully from valuations table"
+        });
+      } else {
+        res.json({
+          success: true,
+          message: "Min value and max value columns do not exist in valuations table"
+        });
+      }
+    } catch (error) {
+      console.error("Error dropping valuation value columns:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to drop valuation value columns",
         error: error instanceof Error ? error.message : "Unknown error"
       });
     }

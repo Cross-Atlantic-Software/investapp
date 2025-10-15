@@ -240,12 +240,12 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
               </div>
             </div>
 
-            <div>
+            {/* <div>
               <label className="block text-xs font-medium text-themeTeal mb-1">Analysis</label>
               <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700 min-h-[120px] whitespace-pre-wrap">
                 {stock.analysis || 'No analysis available'}
               </div>
-            </div>
+            </div> */}
           </div>
         );
 

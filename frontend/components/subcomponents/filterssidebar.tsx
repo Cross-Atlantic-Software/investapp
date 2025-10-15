@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, ArrowRight, PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { ChevronRight, PanelLeftOpen, PanelLeftClose } from "lucide-react";
 import { useId, useState, useEffect, useMemo } from "react";
 import { Button } from "../ui";
 
@@ -142,6 +142,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
   const [sectors, setSectors] = useState<FilterOption[]>([]);
   const [subsectors, setSubsectors] = useState<FilterOption[]>([]);
   const [themes, setThemes] = useState<FilterOption[]>([]);
+  const [valuationRanges, setValuationRanges] = useState<FilterOption[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch sectors and subsectors
@@ -188,6 +189,19 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
           }));
           setThemes(themeOptions);
         }
+
+        // Fetch valuation ranges
+        const valuationRangesResponse = await fetch('/api/admin/valuation-ranges/filters');
+        const valuationRangesData = await valuationRangesResponse.json();
+        
+        if (valuationRangesData.success && valuationRangesData.data?.valuationRanges) {
+          const valuationRangeOptions = valuationRangesData.data.valuationRanges.map((range: { id: string; name: string; value: string }) => ({
+            id: range.id,
+            name: range.name,
+            value: range.value
+          }));
+          setValuationRanges(valuationRangeOptions);
+        }
       } catch (error) {
         console.error('Error fetching filter data:', error);
       } finally {
@@ -198,11 +212,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
     fetchFilterData();
   }, []);
 
-  // Static valuation options
-  const valuationOptions: FilterOption[] = [
-    { id: 'above-300', name: 'Above 300 Cr', value: 'above-300' },
-    { id: 'below-300', name: 'Below 300 Cr', value: 'below-300' },
-  ];
+  // Valuation options are now fetched from backend
 
   // Filter sectors based on actual stock data
   const filteredSectors = useMemo(() => {
@@ -342,17 +352,19 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
             {/* { title: "VC Investors", items: ["Investor 1", "Investor 2"] } */}
 
             {/* Active Filters - Valuation first */}
-            <FilterItem
-              title="Valuation"
-              options={valuationOptions}
-              selectedValues={selectedFilters.valuation}
-              onSelectionChange={(values) => handleSelectionChange('valuation', values)}
-              isRadio={true}
-            />
+            {valuationRanges.length > 0 && (
+              <FilterItem
+                title="Valuation"
+                options={valuationRanges}
+                selectedValues={selectedFilters.valuation}
+                onSelectionChange={(values) => handleSelectionChange('valuation', values)}
+                isRadio={true}
+              />
+            )}
 
             {filteredSectors.length > 0 && (
               <FilterItem
-                title="Industry Groups"
+                title="PrimaryIndustry"
                 options={filteredSectors}
                 selectedValues={selectedFilters.sectors}
                 onSelectionChange={(values) => handleSelectionChange('sectors', values)}
@@ -361,7 +373,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
 
             {filteredSubsectors.length > 0 && (
               <FilterItem
-                title="Industries"
+                title="Sub-Sectors"
                 options={filteredSubsectors}
                 selectedValues={selectedFilters.subsectors}
                 onSelectionChange={(values) => handleSelectionChange('subsectors', values)}

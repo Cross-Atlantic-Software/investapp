@@ -12,6 +12,7 @@ export type ShareIntroProps = {
   company: string;
   investPrice: number;
   changeAbs: number;
+  percentage_change?: number;
   priceChangePeriod?: string | undefined;
   updatedAt: string;
   tags: string[];
@@ -27,7 +28,7 @@ export type ShareIntroProps = {
 export default function ShareIntro(props: ShareIntroProps) {
   const {
     stockId, breadcrumbs, logoUrl, company,
-    investPrice, changeAbs, priceChangePeriod, updatedAt,
+    investPrice, changeAbs, percentage_change, priceChangePeriod, updatedAt,
     tags, founded, sector, subsector, hq,
     about, website, valuation,
   } = props;
@@ -83,18 +84,28 @@ export default function ShareIntro(props: ShareIntroProps) {
             />
             {valuation && (
               <Kpi
-                label="Valuation"
+                label="Valuation (in Cr)"
                 value={valuation}
               />
             )}
             <Kpi
-              label="Price Change Period"
+              label="Price Change"
               value={
                 <span className={pos ? "text-green-600" : "text-rose-600"}>
                   {pos ? "+" : ""}₹{formatINR(Math.abs(changeAbs))} ({priceChangePeriod || 'No period assigned'})
                 </span>
               }
             />
+            {percentage_change !== undefined && (
+              <Kpi
+                label="Percentage Change"
+                value={
+                  <span className={pos ? "text-green-600" : "text-rose-600"}>
+                    {pos ? "+" : ""}{percentage_change.toFixed(2)}%
+                  </span>
+                }
+              />
+            )}
           </div>
 
           {/* Tags */}

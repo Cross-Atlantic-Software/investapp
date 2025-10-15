@@ -40,6 +40,7 @@ import { BulkDealsManagementController } from "../controllers/admin/bulkDealsMan
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 import { PriceChangePeriodController } from "../controllers/admin/priceChangePeriodController";
 import { ValuationController } from "../controllers/admin/valuationController";
+import { ValuationRangeController } from "../controllers/admin/valuationRangeController";
 import { ThemeController } from "../controllers/admin/themeController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
@@ -57,6 +58,7 @@ import { SectorManagementController } from "../controllers/admin/sectorManagemen
 import { ContactFaqController } from "../controllers/admin/contactFaqController";
 import { KYCManagementController } from "../controllers/admin/kycManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
+import { getBuyRequestsCount, getBuyRequestsData } from "../controllers/admin/buyRequestsController";
 
 // Stock Draft Controllers
 import {
@@ -119,7 +121,8 @@ router.use((req, res, next) => {
       req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
       req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
       req.path.includes('/price-change-periods') ||
-      req.path.includes('/valuations') ||
+      req.path.includes('/valuations') || req.path.includes('/valuation-ranges') ||
+      req.path.includes('/valuation-mapping') ||
       req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
       req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
       req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
@@ -242,10 +245,22 @@ router.delete("/price-change-periods/:id", PriceChangePeriodController.deletePri
 // Valuation Management Routes
 router.get("/valuations", ValuationController.getAllValuations);
 router.get("/valuations/select", ValuationController.getValuationsForSelect);
+router.get("/valuations/ranges", ValuationController.getValuationRanges);
 router.get("/valuations/:id", ValuationController.getValuationById);
 router.post("/valuations", ValuationController.createValuation);
 router.put("/valuations/:id", ValuationController.updateValuation);
 router.delete("/valuations/:id", ValuationController.deleteValuation);
+
+// Valuation Range Management Routes
+router.get("/valuation-ranges", ValuationRangeController.getAllValuationRanges);
+router.get("/valuation-ranges/filters", ValuationRangeController.getValuationRangesForFilters);
+router.get("/valuation-ranges/:id", ValuationRangeController.getValuationRangeById);
+router.post("/valuation-ranges", ValuationRangeController.createValuationRange);
+router.put("/valuation-ranges/:id", ValuationRangeController.updateValuationRange);
+router.delete("/valuation-ranges/:id", ValuationRangeController.deleteValuationRange);
+
+// Valuation mapping endpoint
+router.get("/valuation-mapping", ValuationController.getValuationMapping);
 
 // Theme Management Routes
 router.get("/themes", ThemeController.getAllThemes);
@@ -405,5 +420,9 @@ router.post("/contact-faqs", ContactFaqController.createFaq);
 router.put("/contact-faqs/:id", ContactFaqController.updateFaq);
 router.delete("/contact-faqs/:id", ContactFaqController.deleteFaq);
 router.delete("/contact-faqs/bulk-delete", ContactFaqController.bulkDeleteFaqs);
+
+// Buy Requests Management Routes (Admin only)
+router.post("/buy-requests-count", getBuyRequestsCount);
+router.post("/buy-requests-data", getBuyRequestsData);
 
 export default router;

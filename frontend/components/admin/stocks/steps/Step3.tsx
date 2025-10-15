@@ -39,7 +39,7 @@ const Step3: React.FC<StepProps> = ({ formData, onFormDataChange }) => {
       </div>
 
       {/* Analysis */}
-      <div>
+      {/* <div>
         <label className="block text-xs font-medium text-themeTeal mb-1">
           Analysis <span className="text-red-500">*</span>
         </label>
@@ -49,7 +49,7 @@ const Step3: React.FC<StepProps> = ({ formData, onFormDataChange }) => {
           placeholder="Enter detailed analysis..."
           height="200px"
         />
-      </div>
+      </div> */}
     </div>
   );
 };

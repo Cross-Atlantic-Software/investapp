@@ -26,7 +26,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Auto-open users menu on user-related pages
   useEffect(() => {
-    const userRelatedPages = ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'];
+    const userRelatedPages = ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers', '/admin/buy-requests'];
     setIsUsersMenuOpen(userRelatedPages.includes(pathname));
     // Close sidebar on route change (mobile)
     setSidebarOpen(false);
@@ -345,7 +345,7 @@ function Sidebar({
                     <button
                       onClick={() => setIsUsersMenuOpen(!isUsersMenuOpen)}
               className={`${linkBase} ${
-                        ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'].includes(pathname)
+                        ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers', '/admin/buy-requests'].includes(pathname)
                           ? 'bg-themeTeal text-white shadow-lg shadow-themeTeal/25'
                   : 'text-themeTeal hover:bg-themeTealWhite hover:text-themeTeal hover:shadow-md'
               } w-full justify-between`}
@@ -355,7 +355,7 @@ function Sidebar({
                       <div className="flex items-center">
                 <div
                   className={`mr-3 p-1.5 rounded-full transition duration-300 ${
-                          ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers'].includes(pathname)
+                          ['/admin/users', '/admin/site-users', '/admin/enquiries', '/admin/subscribers', '/admin/buy-requests'].includes(pathname)
                             ? 'bg-white/20'
                       : 'bg-themeTealWhite group-hover:bg-themeTeal group-hover:text-themeTealWhite'
                   }`}
@@ -406,6 +406,16 @@ function Sidebar({
                   active={pathname === '/admin/subscribers'}
                   icon={<UserPlus className="h-3 w-3" />}
                   label="Subscribers"
+                />
+                <SubLink
+                          href="/admin/buy-requests"
+                  active={pathname === '/admin/buy-requests'}
+                  icon={
+                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  }
+                  label="Buy Requests"
                 />
                       </div>
                     </div>

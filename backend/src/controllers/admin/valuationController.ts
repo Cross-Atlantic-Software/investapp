@@ -257,5 +257,209 @@ export class ValuationController {
       });
     }
   }
+
+  static async getValuationRanges(req: Request, res: Response) {
+    try {
+      const controller = new ValuationController();
+      await controller.ensureDbReady();
+
+      const valuationRanges = await db.ValuationRange.findAll({
+        attributes: ['id', 'name', 'value', 'min_value', 'max_value'],
+        order: [['sort_order', 'ASC'], ['name', 'ASC']]
+      });
+
+      res.status(HttpStatusCode.OK).json({
+        success: true,
+        message: 'Valuation ranges fetched successfully',
+        data: { valuationRanges }
+      });
+    } catch (error) {
+      console.error('Error fetching valuation ranges:', error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to fetch valuation ranges',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  static async getValuationMapping(req: Request, res: Response) {
+    try {
+      const controller = new ValuationController();
+      await controller.ensureDbReady();
+
+      // Fetch both valuation ranges and valuations
+      const [valuationRanges, valuations] = await Promise.all([
+        db.ValuationRange.findAll({
+          attributes: ['id', 'name', 'value'],
+          order: [['sort_order', 'ASC'], ['name', 'ASC']]
+        }),
+        db.Valuation.findAll({
+          attributes: ['id', 'valuation_name'],
+          order: [['valuation_name', 'ASC']]
+        })
+      ]);
+
+      // Create intelligent mapping based on valuation names
+      const mapping = valuationRanges.map(range => {
+        let matchingValuationIds: number[] = [];
+        
+        // Parse the range name to determine which valuations match
+        const rangeName = range.name.toLowerCase();
+        
+        if (rangeName.includes('below') || rangeName.includes('under')) {
+          // For "Below X" ranges, match valuations that are under the threshold
+          const threshold = ValuationController.extractNumberFromRange(rangeName);
+          matchingValuationIds = valuations.filter(v => {
+            const valName = v.valuation_name.toLowerCase();
+            return ValuationController.isValuationUnderThreshold(valName, threshold);
+          }).map(v => v.id);
+        } else if (rangeName.includes('+') || rangeName.includes('above') || rangeName.includes('over')) {
+          // For "X+" ranges, match valuations that are above the threshold
+          const threshold = ValuationController.extractNumberFromRange(rangeName);
+          matchingValuationIds = valuations.filter(v => {
+            const valName = v.valuation_name.toLowerCase();
+            return ValuationController.isValuationAboveThreshold(valName, threshold);
+          }).map(v => v.id);
+        } else if (rangeName.includes('-')) {
+          // For "X-Y" ranges, match valuations within the range
+          const [minThreshold, maxThreshold] = ValuationController.extractRangeFromName(rangeName);
+          matchingValuationIds = valuations.filter(v => {
+            const valName = v.valuation_name.toLowerCase();
+            return ValuationController.isValuationInRange(valName, minThreshold, maxThreshold);
+          }).map(v => v.id);
+        } else {
+          // Fallback: return all valuations if we can't parse the range
+          matchingValuationIds = valuations.map(v => v.id);
+        }
+
+        return {
+          range: range,
+          matchingValuationIds: matchingValuationIds
+        };
+      });
+
+      res.status(HttpStatusCode.OK).json({
+        success: true,
+        message: 'Valuation mapping fetched successfully',
+        data: { 
+          mapping,
+          valuationRanges,
+          valuations 
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching valuation mapping:', error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to fetch valuation mapping',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
+  // Helper method to extract number from range name (e.g., "below 1000" -> 1000)
+  private static extractNumberFromRange(rangeName: string): number {
+    const match = rangeName.match(/(\d+(?:\.\d+)?)/);
+    return match ? parseFloat(match[1]) : 0;
+  }
+
+  // Helper method to extract range from name (e.g., "1000-2500" -> [1000, 2500])
+  private static extractRangeFromName(rangeName: string): [number, number] {
+    const matches = rangeName.match(/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)/);
+    if (matches) {
+      return [parseFloat(matches[1]), parseFloat(matches[2])];
+    }
+    return [0, 0];
+  }
+
+  // Helper method to check if valuation is under threshold
+  private static isValuationUnderThreshold(valuationName: string, threshold: number): boolean {
+    // Handle simple numeric values (e.g., "500", "1000", "3000 Cr")
+    const numericMatch = valuationName.match(/^(\d+(?:\.\d+)?)\s*(?:cr)?$/i);
+    if (numericMatch) {
+      const val = parseFloat(numericMatch[1]);
+      return val < threshold;
+    }
+    
+    // Handle "Under ₹X Cr" format
+    if (valuationName.includes('under')) {
+      const valThreshold = this.extractNumberFromRange(valuationName);
+      return valThreshold < threshold;
+    }
+    
+    // Handle "₹X-Y Cr" format where Y < threshold
+    if (valuationName.includes('-')) {
+      const [, maxVal] = this.extractRangeFromName(valuationName);
+      return maxVal < threshold;
+    }
+    
+    // Handle "Above ₹X Cr" format (never under threshold)
+    if (valuationName.includes('above')) {
+      return false;
+    }
+    
+    return false;
+  }
+
+  // Helper method to check if valuation is above threshold
+  private static isValuationAboveThreshold(valuationName: string, threshold: number): boolean {
+    // Handle simple numeric values (e.g., "500", "1000", "3000 Cr")
+    const numericMatch = valuationName.match(/^(\d+(?:\.\d+)?)\s*(?:cr)?$/i);
+    if (numericMatch) {
+      const val = parseFloat(numericMatch[1]);
+      return val >= threshold;
+    }
+    
+    // Handle "Above ₹X Cr" format
+    if (valuationName.includes('above')) {
+      const valThreshold = this.extractNumberFromRange(valuationName);
+      return valThreshold >= threshold;
+    }
+    
+    // Handle "₹X-Y Cr" format where X >= threshold
+    if (valuationName.includes('-')) {
+      const [minVal] = this.extractRangeFromName(valuationName);
+      return minVal >= threshold;
+    }
+    
+    // Handle "Under ₹X Cr" format (never above threshold)
+    if (valuationName.includes('under')) {
+      return false;
+    }
+    
+    return false;
+  }
+
+  // Helper method to check if valuation is within range
+  private static isValuationInRange(valuationName: string, minThreshold: number, maxThreshold: number): boolean {
+    // Handle simple numeric values (e.g., "500", "1000", "3000 Cr")
+    const numericMatch = valuationName.match(/^(\d+(?:\.\d+)?)\s*(?:cr)?$/i);
+    if (numericMatch) {
+      const val = parseFloat(numericMatch[1]);
+      return val >= minThreshold && val < maxThreshold;
+    }
+    
+    // Handle "₹X-Y Cr" format
+    if (valuationName.includes('-')) {
+      const [minVal, maxVal] = this.extractRangeFromName(valuationName);
+      // Check if ranges overlap
+      return !(maxVal < minThreshold || minVal > maxThreshold);
+    }
+    
+    // Handle "Under ₹X Cr" format
+    if (valuationName.includes('under')) {
+      const valThreshold = this.extractNumberFromRange(valuationName);
+      return valThreshold < maxThreshold;
+    }
+    
+    // Handle "Above ₹X Cr" format
+    if (valuationName.includes('above')) {
+      const valThreshold = this.extractNumberFromRange(valuationName);
+      return valThreshold >= minThreshold;
+    }
+    
+    return false;
+  }
 }
 

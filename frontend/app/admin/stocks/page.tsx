@@ -506,12 +506,12 @@ export default function StocksPage() {
                 )}
               </div>
               <ManageDropdown
-                label="Manage"
+                label="Manage Taxonomies & Tags"
                 options={[
-                  { label: 'Stock Tags', onClick: () => setShowStockMasterModal(true), icon: Tag },
+                  { label: 'Filing Status & Attractiveness', onClick: () => setShowStockMasterModal(true), icon: Tag },
+                  { label: 'Valuations', onClick: () => setShowValuationModal(true), icon: DollarSign },
                   { label: 'Sectors', onClick: () => setShowSectorModal(true), icon: Building2 },
                   { label: 'Price Change Periods', onClick: () => setShowPriceChangePeriodModal(true), icon: Clock },
-                  { label: 'Valuations', onClick: () => setShowValuationModal(true), icon: DollarSign },
                   { label: 'Themes', onClick: () => setShowThemeModal(true), icon: Palette },
                   { label: 'Methodology Notes', onClick: () => setShowMethodologyModal(true), icon: FileText },
                 ]}

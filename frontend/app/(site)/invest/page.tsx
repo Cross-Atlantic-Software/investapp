@@ -21,6 +21,29 @@ export default function Invest() {
     subsectors: [],
     themes: [],
   });
+  
+  // State for valuation mapping
+  const [valuationMapping, setValuationMapping] = useState<any[]>([]);
+
+  // Fetch valuation mapping
+  const fetchValuationMapping = useCallback(async () => {
+    try {
+      console.log('🔄 Fetching valuation mapping...');
+      const response = await fetch('/api/admin/valuation-mapping');
+      const data = await response.json();
+      
+      console.log('📡 Valuation mapping response:', data);
+      
+      if (data.success && data.data?.mapping) {
+        console.log('✅ Setting valuation mapping:', data.data.mapping);
+        setValuationMapping(data.data.mapping);
+      } else {
+        console.log('❌ Failed to fetch valuation mapping:', data);
+      }
+    } catch (error) {
+      console.error('Error fetching valuation mapping:', error);
+    }
+  }, []);
 
   // Function to map backend data to frontend format
   const mapStockToProduct = useCallback((stock: {
@@ -104,22 +127,40 @@ export default function Invest() {
     
     let filteredStocks = [...allStocks];
 
-    // Filter by valuation
+    // Filter by valuation ranges
     if (filters.valuation.length > 0) {
+      console.log('🔍 Filtering by valuation:', filters.valuation);
+      console.log('📊 Current valuationMapping:', valuationMapping);
+      
       filteredStocks = filteredStocks.filter((stock: ProductItem & { valuation_id?: number }) => {
-        const valuationString = stock.valuation; // Get the valuation string like "300Cr"
-        
         return filters.valuation.some(val => {
-          if (val === 'above-300') {
-            // Extract numeric value from strings like "300Cr", "500Cr", etc.
-            const numericValue = parseFloat(valuationString?.replace(/[^\d.]/g, '') || '0');
-            return numericValue > 300;
-          } else if (val === 'below-300') {
-            // Extract numeric value from strings like "300Cr", "500Cr", etc.
-            const numericValue = parseFloat(valuationString?.replace(/[^\d.]/g, '') || '0');
-            return numericValue <= 300;
+          // Find the mapping for this valuation range
+          const mapping = valuationMapping.find(m => m.range.value === val);
+          
+          console.log(`🎯 Looking for range "${val}", found mapping:`, mapping);
+          
+          if (mapping && mapping.matchingValuationIds.length > 0) {
+            // Check if stock's valuation_id matches any of the mapped valuation IDs
+            const matches = stock.valuation_id && mapping.matchingValuationIds.includes(stock.valuation_id);
+            console.log(`✅ Stock ${stock.company_name} (valuation_id: ${stock.valuation_id}) matches range "${val}":`, matches);
+            return matches;
           }
-          return false;
+          
+          console.log(`⚠️ No dynamic mapping found for "${val}", using fallback`);
+          
+          // Fallback to old hardcoded mapping if no dynamic mapping available
+          switch (val) {
+            case 'below-1000':
+              return stock.valuation_id && stock.valuation_id <= 2;
+            case '1000-2500':
+              return stock.valuation_id && stock.valuation_id === 3;
+            case '2500-5000':
+              return stock.valuation_id && stock.valuation_id === 4;
+            case '5000-plus':
+              return stock.valuation_id && stock.valuation_id >= 5;
+            default:
+              return false;
+          }
         });
       });
     }
@@ -194,7 +235,8 @@ export default function Invest() {
   // Load stocks on component mount
   useEffect(() => {
     fetchStocks();
-  }, [fetchStocks]);
+    fetchValuationMapping();
+  }, [fetchStocks, fetchValuationMapping]);
 
   // Handle search with debouncing
   useEffect(() => {

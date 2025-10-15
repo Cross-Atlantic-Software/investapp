@@ -46,17 +46,17 @@ export default function ManageDropdown({ options, label = 'Manage' }: ManageDrop
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 m-0">
+        <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 m-0">
           {options.map((option, index) => {
             const IconComponent = option.icon;
             return (
               <button
                 key={index}
                 onClick={() => handleOptionClick(option)}
-                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-themeTealWhite hover:text-themeTeal transition-colors duration-150 flex items-center gap-2 whitespace-nowrap"
+                className="w-full px-4 py-3 text-left text-sm text-gray-700 hover:bg-themeTealWhite hover:text-themeTeal transition-colors duration-150 flex items-center gap-3 whitespace-nowrap"
               >
-                {IconComponent && <IconComponent className="w-4 h-4" />}
-                {option.label}
+                {IconComponent && <IconComponent className="w-5 h-5 flex-shrink-0" />}
+                <span className="flex-1">{option.label}</span>
               </button>
             );
           })}
