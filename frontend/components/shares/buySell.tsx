@@ -112,6 +112,10 @@ export default function TradeTabs({
     
     if (!isAuthenticated) {
       console.log('User not authenticated, redirecting to login');
+      // Store the current page URL to return after registration/login
+      const currentUrl = window.location.pathname + window.location.search;
+      sessionStorage.setItem('returnAfterAuth', currentUrl);
+      sessionStorage.setItem('authFlow', 'stock-buy');
       router.push('/login');
       return;
     }
@@ -129,6 +133,10 @@ export default function TradeTabs({
         title: 'KYC verification required to invest',
         duration: 6000
       });
+      // Store the current page URL to return after KYC completion
+      const currentUrl = window.location.pathname + window.location.search;
+      sessionStorage.setItem('returnAfterKYC', currentUrl);
+      sessionStorage.setItem('kycFlow', 'stock-buy');
       router.push('/kyc-process/step-1');
       return;
     }

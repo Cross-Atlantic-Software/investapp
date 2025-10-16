@@ -15,16 +15,36 @@ export default function Page() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState("");
+  const [hasLoggedIn, setHasLoggedIn] = useState(false); // Flag to prevent useEffect after login
   
   const { login, googleAuth, error: authError, clearError, isAuthenticated } = useAuth();
   const router = useRouter();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated (but not during login process)
   useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/invest");
+    console.log('useEffect triggered:', { isAuthenticated, isSubmitting, isGoogleLoading, hasLoggedIn });
+    
+    if (isAuthenticated && !isSubmitting && !isGoogleLoading && !hasLoggedIn) {
+      // Check if this is a stock-buy flow
+      const authFlow = sessionStorage.getItem('authFlow');
+      const returnUrl = sessionStorage.getItem('returnAfterAuth');
+      
+      console.log('Already authenticated - checking return flow:', { authFlow, returnUrl });
+      
+      if (authFlow === 'stock-buy' && returnUrl) {
+        // Return to the stock page
+        console.log('useEffect: Redirecting to stock page:', returnUrl);
+        router.push(returnUrl);
+        // Clean up after successful redirect
+        sessionStorage.removeItem('authFlow');
+        sessionStorage.removeItem('returnAfterAuth');
+      } else {
+        // Default redirect to invest page
+        console.log('useEffect: Redirecting to invest page');
+        router.push("/invest");
+      }
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, isSubmitting, isGoogleLoading, hasLoggedIn, router]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +54,28 @@ export default function Page() {
 
     try {
       await login({ email, password });
-      router.push("/invest");
+      
+      // Set flag to prevent useEffect from running
+      setHasLoggedIn(true);
+      
+      // Check if this is a stock-buy flow
+      const authFlow = sessionStorage.getItem('authFlow');
+      const returnUrl = sessionStorage.getItem('returnAfterAuth');
+      
+      console.log('Login successful - checking return flow:', { authFlow, returnUrl });
+      
+      if (authFlow === 'stock-buy' && returnUrl) {
+        // Return to the stock page
+        console.log('Redirecting to stock page:', returnUrl);
+        router.push(returnUrl);
+        // Clean up after successful redirect
+        sessionStorage.removeItem('authFlow');
+        sessionStorage.removeItem('returnAfterAuth');
+      } else {
+        // Default redirect to invest page
+        console.log('Redirecting to invest page');
+        router.push("/invest");
+      }
     } catch (err) {
       console.error('Login error:', err);
       // Use the specific error message from the backend
@@ -50,7 +91,13 @@ export default function Page() {
       setIsGoogleLoading(true);
       setError("");
       clearError();
+      
+      // Set flag to prevent useEffect from running
+      setHasLoggedIn(true);
+      
       await googleAuth();
+      // Note: Google auth redirects to /register/step-3, so this code won't execute
+      // The return logic is handled in /register/step-3/page.tsx
     } catch {
       setError("Google authentication failed. Please try again.");
       setIsGoogleLoading(false);

@@ -31,14 +31,32 @@ function Step4Content() {
 
   const handleKYCStart = () => {
     setIsSubmitting(true);
+    // Check if this is a stock-buy flow
+    const authFlow = sessionStorage.getItem('authFlow');
+    if (authFlow === 'stock-buy') {
+      // Store the flow type for KYC process
+      sessionStorage.setItem('kycFlow', 'stock-buy');
+    }
     // Redirect to KYC process
     router.push("/kyc-process/step-1");
   };
 
   const handleSkipKYC = () => {
     setIsSubmitting(true);
-    // Redirect to invest page
-    router.push("/invest");
+    // Check if this is a stock-buy flow
+    const authFlow = sessionStorage.getItem('authFlow');
+    const returnUrl = sessionStorage.getItem('returnAfterAuth');
+    
+    if (authFlow === 'stock-buy' && returnUrl) {
+      // Return to the stock page
+      router.push(returnUrl);
+      // Clean up after successful redirect
+      sessionStorage.removeItem('authFlow');
+      sessionStorage.removeItem('returnAfterAuth');
+    } else {
+      // Default redirect to invest page
+      router.push("/invest");
+    }
   };
 
   return (

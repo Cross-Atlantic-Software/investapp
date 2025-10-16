@@ -50,6 +50,19 @@ function Step3Content() {
           }));
         }
         
+        // Check if this is a stock-buy flow and redirect immediately
+        const authFlow = sessionStorage.getItem('authFlow');
+        const returnUrl = sessionStorage.getItem('returnAfterAuth');
+        
+        if (authFlow === 'stock-buy' && returnUrl) {
+          // Return to the stock page immediately, skip profile completion
+          router.push(returnUrl);
+          // Clean up after successful redirect
+          sessionStorage.removeItem('authFlow');
+          sessionStorage.removeItem('returnAfterAuth');
+          return; // Don't proceed with profile completion
+        }
+        
         // Clear the URL parameters to clean up the URL
         const url = new URL(window.location.href);
         url.searchParams.delete('data');
@@ -99,9 +112,22 @@ function Step3Content() {
       // Show welcome message instead of immediate redirect
       setProfileCompleted(true);
       
-      // Redirect to KYC step after 3 seconds
+      // Check if this is a stock-buy flow before redirecting
+      const authFlow = sessionStorage.getItem('authFlow');
+      const returnUrl = sessionStorage.getItem('returnAfterAuth');
+      
+      // Redirect after 3 seconds
       setTimeout(() => {
-        router.push("/register/step-4");
+        if (authFlow === 'stock-buy' && returnUrl) {
+          // Return to the stock page
+          router.push(returnUrl);
+          // Clean up after successful redirect
+          sessionStorage.removeItem('authFlow');
+          sessionStorage.removeItem('returnAfterAuth');
+        } else {
+          // Default redirect to KYC step
+          router.push("/register/step-4");
+        }
       }, 3000);
     } catch (err) {
       console.error('Profile completion error:', err);

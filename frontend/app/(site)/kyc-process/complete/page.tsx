@@ -14,7 +14,57 @@ export default function KYCCompletePage() {
   const handleNavigation = (path: string) => {
     // Reset form data when user navigates away
     resetFormData();
-    router.push(path);
+    
+    // Check if this is a stock-buy flow
+    const kycFlow = sessionStorage.getItem('kycFlow');
+    const returnUrl = sessionStorage.getItem('returnAfterKYC');
+    
+    if (kycFlow === 'stock-buy' && returnUrl) {
+      // Return to the stock page
+      router.push(returnUrl);
+      // Clean up after successful redirect
+      sessionStorage.removeItem('kycFlow');
+      sessionStorage.removeItem('returnAfterKYC');
+    } else {
+      // Default navigation
+      router.push(path);
+    }
+  };
+
+  const handleDashboardChoice = () => {
+    // Check if this is a stock-buy flow
+    const kycFlow = sessionStorage.getItem('kycFlow');
+    const returnUrl = sessionStorage.getItem('returnAfterKYC');
+    
+    if (kycFlow === 'stock-buy' && returnUrl) {
+      // Return to the stock page
+      router.push(returnUrl);
+      // Clean up after successful redirect
+      sessionStorage.removeItem('kycFlow');
+      sessionStorage.removeItem('returnAfterKYC');
+    } else {
+      // Default redirect to dashboard
+      resetFormData();
+      router.push('/dashboard');
+    }
+  };
+
+  const handleHomeChoice = () => {
+    // Check if this is a stock-buy flow
+    const kycFlow = sessionStorage.getItem('kycFlow');
+    const returnUrl = sessionStorage.getItem('returnAfterKYC');
+    
+    if (kycFlow === 'stock-buy' && returnUrl) {
+      // Return to the stock page
+      router.push(returnUrl);
+      // Clean up after successful redirect
+      sessionStorage.removeItem('kycFlow');
+      sessionStorage.removeItem('returnAfterKYC');
+    } else {
+      // Default redirect to home
+      resetFormData();
+      router.push('/');
+    }
   };
 
   return (
@@ -140,14 +190,14 @@ export default function KYCCompletePage() {
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
-              onClick={() => handleNavigation('/dashboard')}
+              onClick={handleDashboardChoice}
               className="px-6 py-3 bg-themeSkyBlue text-white rounded-lg font-medium hover:bg-themeTeal transition-colors"
             >
               Go to Dashboard
             </button>
             
             <button
-              onClick={() => handleNavigation('/')}
+              onClick={handleHomeChoice}
               className="px-6 py-3 border border-themeTealLighter text-themeTeal rounded-lg font-medium hover:bg-themeTealWhite transition-colors"
             >
               Back to Home
