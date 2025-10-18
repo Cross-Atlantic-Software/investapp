@@ -6,6 +6,13 @@ import Wishlist, { initializeWishlistModel } from './Wishlist';
 import Product from './Product';
 import User from './User';
 import BuyRequest, { initializeBuyRequestModel } from './BuyRequest';
+import { InsightSector, initializeInsightSectorModel } from './InsightSector';
+import { InsightSubsector, initializeInsightSubsectorModel } from './InsightSubsector';
+import { InsightTopic, initializeInsightTopicModel } from './InsightTopic';
+import { InsightSubtopic, initializeInsightSubtopicModel } from './InsightSubtopic';
+import { InsightTheme, initializeInsightThemeModel } from './InsightTheme';
+import { MarketInsight, initializeMarketInsightModel } from './MarketInsight';
+import { MarketInsightCompany, initializeMarketInsightCompanyModel } from './MarketInsightCompany';
 
 export function initializeFinancialDataModels(sequelize: any) {
   // Initialize models first
@@ -69,33 +76,107 @@ export function initializeWishlistModels(sequelize: any) {
   });
 }
 
-export function initializeBuyRequestModels(sequelize: any) {
-  // Initialize BuyRequest model first
-  initializeBuyRequestModel(sequelize);
+export function initializeMarketInsightModels(sequelize: any) {
+  // Initialize all market insight models first
+  initializeInsightSectorModel(sequelize);
+  initializeInsightSubsectorModel(sequelize);
+  initializeInsightTopicModel(sequelize);
+  initializeInsightSubtopicModel(sequelize);
+  initializeInsightThemeModel(sequelize);
+  initializeMarketInsightModel(sequelize);
+  initializeMarketInsightCompanyModel(sequelize);
 
   // Check if associations are already defined to prevent duplicates
-  if (BuyRequest.associations.User && BuyRequest.associations.Product) {
+  if (InsightSubsector.associations.InsightSector && MarketInsight.associations.InsightSector) {
     return; // Associations already defined
   }
 
-  // Define BuyRequest associations
-  BuyRequest.belongsTo(User, {
-    foreignKey: 'user_id',
-    as: 'User'
+  // Insight Sector and Subsector associations
+  InsightSector.hasMany(InsightSubsector, {
+    foreignKey: 'insight_sector_id',
+    as: 'subsectors'
   });
 
-  BuyRequest.belongsTo(Product, {
-    foreignKey: 'stock_id',
-    as: 'Product'
+  InsightSubsector.belongsTo(InsightSector, {
+    foreignKey: 'insight_sector_id',
+    as: 'sector'
   });
 
-  User.hasMany(BuyRequest, {
-    foreignKey: 'user_id',
-    as: 'UserBuyRequests'
+  // Insight Topic and Subtopic associations
+  InsightTopic.hasMany(InsightSubtopic, {
+    foreignKey: 'insight_topic_id',
+    as: 'subtopics'
   });
 
-  Product.hasMany(BuyRequest, {
-    foreignKey: 'stock_id',
-    as: 'ProductBuyRequests'
+  InsightSubtopic.belongsTo(InsightTopic, {
+    foreignKey: 'insight_topic_id',
+    as: 'topic'
+  });
+
+  // Market Insight associations with taxonomies
+  MarketInsight.belongsTo(InsightSector, {
+    foreignKey: 'insight_sector_id',
+    as: 'InsightSector'
+  });
+
+  MarketInsight.belongsTo(InsightSubsector, {
+    foreignKey: 'insight_subsector_id',
+    as: 'InsightSubsector'
+  });
+
+  MarketInsight.belongsTo(InsightTopic, {
+    foreignKey: 'insight_topic_id',
+    as: 'InsightTopic'
+  });
+
+  MarketInsight.belongsTo(InsightSubtopic, {
+    foreignKey: 'insight_subtopic_id',
+    as: 'InsightSubtopic'
+  });
+
+  MarketInsight.belongsTo(InsightTheme, {
+    foreignKey: 'insight_theme_id',
+    as: 'InsightTheme'
+  });
+
+  // Market Insight Company associations (many-to-many with Product)
+  MarketInsight.belongsToMany(Product, {
+    through: MarketInsightCompany,
+    foreignKey: 'market_insight_id',
+    otherKey: 'product_id',
+    as: 'Companies'
+  });
+
+  Product.belongsToMany(MarketInsight, {
+    through: MarketInsightCompany,
+    foreignKey: 'product_id',
+    otherKey: 'market_insight_id',
+    as: 'MarketInsights'
+  });
+
+  // Reverse associations for taxonomies
+  InsightSector.hasMany(MarketInsight, {
+    foreignKey: 'insight_sector_id',
+    as: 'MarketInsights'
+  });
+
+  InsightSubsector.hasMany(MarketInsight, {
+    foreignKey: 'insight_subsector_id',
+    as: 'MarketInsights'
+  });
+
+  InsightTopic.hasMany(MarketInsight, {
+    foreignKey: 'insight_topic_id',
+    as: 'MarketInsights'
+  });
+
+  InsightSubtopic.hasMany(MarketInsight, {
+    foreignKey: 'insight_subtopic_id',
+    as: 'MarketInsights'
+  });
+
+  InsightTheme.hasMany(MarketInsight, {
+    foreignKey: 'insight_theme_id',
+    as: 'MarketInsights'
   });
 }

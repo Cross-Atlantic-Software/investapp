@@ -41,6 +41,31 @@ export const uploadIcon = multer({
   }
 });
 
+export const uploadBlogImage = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.S3_BUCKET!,
+    contentType: (req, file, cb) => {
+      cb(null, file.mimetype);
+    },
+    key: (_req: Request, file: any, cb: (error: any, key?: string) => void) => {
+      const uniqueName = `blog-images/${Date.now()}-${file.originalname}`;
+      cb(null, uniqueName);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    // Only accept image files for blog images
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed for blog images'));
+    }
+  },
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit for blog images
+  }
+});
+
 export const uploadPdf = multer({
   storage: multerS3({
     s3,

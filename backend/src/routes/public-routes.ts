@@ -11,6 +11,7 @@ import { StockNewsSectionController } from "../controllers/admin/stockNewsSectio
 import { StockFaqController } from "../controllers/admin/stockFaqController";
 import { ContactFaqController } from "../controllers/admin/contactFaqController";
 import { ThemeController } from "../controllers/admin/themeController";
+import { MarketInsightController } from "../controllers/admin/marketInsightController";
 
 const router = express.Router();
 
@@ -66,5 +67,10 @@ router.get("/contact-faqs", ContactFaqController.getContactFaqs);
 // Public Theme Routes (no authentication required)
 router.get("/themes", ThemeController.getAllThemes);
 router.get("/themes/select", ThemeController.getThemesForSelect);
+
+// Public Market Insights Routes (no authentication required)
+router.get("/market-insights", MarketInsightController.getAllMarketInsights);
+router.get("/market-insights/featured", MarketInsightController.getFeaturedMarketInsights);
+router.get("/market-insights/slug/:slug", MarketInsightController.getMarketInsightBySlug);
 
 export default router;

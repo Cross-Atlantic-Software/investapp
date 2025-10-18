@@ -1,7 +1,6 @@
 import express from "express";
 import adminMiddleware from "../utils/middlewares/admin-middleware";
-import { uploadIcon } from "../utils/middlewares/s3Upload";
-import { uploadBanner } from "../utils/middlewares/s3Upload";
+import { uploadIcon, uploadBanner, uploadBlogImage } from "../utils/middlewares/s3Upload";
 import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
@@ -42,6 +41,12 @@ import { PriceChangePeriodController } from "../controllers/admin/priceChangePer
 import { ValuationController } from "../controllers/admin/valuationController";
 import { ValuationRangeController } from "../controllers/admin/valuationRangeController";
 import { ThemeController } from "../controllers/admin/themeController";
+import { InsightSectorController } from "../controllers/admin/insightSectorController";
+import { InsightSubsectorController } from "../controllers/admin/insightSubsectorController";
+import { InsightTopicController } from "../controllers/admin/insightTopicController";
+import { InsightSubtopicController } from "../controllers/admin/insightSubtopicController";
+import { InsightThemeController } from "../controllers/admin/insightThemeController";
+import { MarketInsightController } from "../controllers/admin/marketInsightController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
@@ -424,5 +429,50 @@ router.delete("/contact-faqs/bulk-delete", ContactFaqController.bulkDeleteFaqs);
 // Buy Requests Management Routes (Admin only)
 router.post("/buy-requests-count", getBuyRequestsCount);
 router.post("/buy-requests-data", getBuyRequestsData);
+
+// Market Insights Management Routes (Admin only)
+// Insight Sectors
+router.get("/insight-sectors", InsightSectorController.getAllInsightSectors);
+router.get("/insight-sectors/:id", InsightSectorController.getInsightSectorById);
+router.post("/insight-sectors", InsightSectorController.createInsightSector);
+router.put("/insight-sectors/:id", InsightSectorController.updateInsightSector);
+router.delete("/insight-sectors/:id", InsightSectorController.deleteInsightSector);
+
+// Insight Subsectors
+router.get("/insight-subsectors", InsightSubsectorController.getAllInsightSubsectors);
+router.get("/insight-subsectors/:id", InsightSubsectorController.getInsightSubsectorById);
+router.post("/insight-subsectors", InsightSubsectorController.createInsightSubsector);
+router.put("/insight-subsectors/:id", InsightSubsectorController.updateInsightSubsector);
+router.delete("/insight-subsectors/:id", InsightSubsectorController.deleteInsightSubsector);
+
+// Insight Topics
+router.get("/insight-topics", InsightTopicController.getAllInsightTopics);
+router.get("/insight-topics/:id", InsightTopicController.getInsightTopicById);
+router.post("/insight-topics", InsightTopicController.createInsightTopic);
+router.put("/insight-topics/:id", InsightTopicController.updateInsightTopic);
+router.delete("/insight-topics/:id", InsightTopicController.deleteInsightTopic);
+
+// Insight Subtopics
+router.get("/insight-subtopics", InsightSubtopicController.getAllInsightSubtopics);
+router.get("/insight-subtopics/:id", InsightSubtopicController.getInsightSubtopicById);
+router.post("/insight-subtopics", InsightSubtopicController.createInsightSubtopic);
+router.put("/insight-subtopics/:id", InsightSubtopicController.updateInsightSubtopic);
+router.delete("/insight-subtopics/:id", InsightSubtopicController.deleteInsightSubtopic);
+
+// Insight Themes
+router.get("/insight-themes", InsightThemeController.getAllInsightThemes);
+router.get("/insight-themes/:id", InsightThemeController.getInsightThemeById);
+router.post("/insight-themes", InsightThemeController.createInsightTheme);
+router.put("/insight-themes/:id", InsightThemeController.updateInsightTheme);
+router.delete("/insight-themes/:id", InsightThemeController.deleteInsightTheme);
+
+// Market Insights
+router.get("/market-insights", MarketInsightController.getAllMarketInsights);
+router.get("/market-insights/featured", MarketInsightController.getFeaturedMarketInsights);
+router.get("/market-insights/slug/:slug", MarketInsightController.getMarketInsightBySlug);
+router.get("/market-insights/:id", MarketInsightController.getMarketInsightById);
+router.post("/market-insights", uploadBlogImage.single('blog_image'), MarketInsightController.createMarketInsight);
+router.put("/market-insights/:id", uploadBlogImage.single('blog_image'), MarketInsightController.updateMarketInsight);
+router.delete("/market-insights/:id", MarketInsightController.deleteMarketInsight);
 
 export default router;
