@@ -11,10 +11,11 @@ interface MarketInsightAttributes {
   first_part: string;
   second_part: string;
   insight_sector_id?: number;
-  insight_subsector_id?: number;
+  insight_subsector_ids?: string; // JSON string of array
   insight_topic_id?: number;
-  insight_subtopic_id?: number;
+  insight_subtopic_ids?: string; // JSON string of array
   insight_theme_id?: number;
+  company_ids?: string; // JSON string of array
   created_at: Date;
   updated_at: Date;
 }
@@ -32,10 +33,11 @@ export class MarketInsight extends Model<MarketInsightAttributes, MarketInsightC
   public first_part!: string;
   public second_part!: string;
   public insight_sector_id?: number;
-  public insight_subsector_id?: number;
+  public insight_subsector_ids?: string;
   public insight_topic_id?: number;
-  public insight_subtopic_id?: number;
+  public insight_subtopic_ids?: string;
   public insight_theme_id?: number;
+  public company_ids?: string;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
 }
@@ -92,14 +94,10 @@ export function initializeMarketInsightModel(sequelize: Sequelize) {
         },
         onDelete: 'SET NULL',
       },
-      insight_subsector_id: {
-        type: DataTypes.INTEGER,
+      insight_subsector_ids: {
+        type: DataTypes.TEXT,
         allowNull: true,
-        references: {
-          model: 'insight_subsectors',
-          key: 'id',
-        },
-        onDelete: 'SET NULL',
+        comment: 'JSON string of subsector IDs array'
       },
       insight_topic_id: {
         type: DataTypes.INTEGER,
@@ -110,14 +108,10 @@ export function initializeMarketInsightModel(sequelize: Sequelize) {
         },
         onDelete: 'SET NULL',
       },
-      insight_subtopic_id: {
-        type: DataTypes.INTEGER,
+      insight_subtopic_ids: {
+        type: DataTypes.TEXT,
         allowNull: true,
-        references: {
-          model: 'insight_subtopics',
-          key: 'id',
-        },
-        onDelete: 'SET NULL',
+        comment: 'JSON string of subtopic IDs array'
       },
       insight_theme_id: {
         type: DataTypes.INTEGER,
@@ -127,6 +121,11 @@ export function initializeMarketInsightModel(sequelize: Sequelize) {
           key: 'id',
         },
         onDelete: 'SET NULL',
+      },
+      company_ids: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        comment: 'JSON string of company IDs array'
       },
       created_at: {
         type: DataTypes.DATE,
@@ -159,16 +158,8 @@ export function initializeMarketInsightModel(sequelize: Sequelize) {
           name: 'idx_market_insights_sector_id'
         },
         {
-          fields: ['insight_subsector_id'],
-          name: 'idx_market_insights_subsector_id'
-        },
-        {
           fields: ['insight_topic_id'],
           name: 'idx_market_insights_topic_id'
-        },
-        {
-          fields: ['insight_subtopic_id'],
-          name: 'idx_market_insights_subtopic_id'
         },
         {
           fields: ['insight_theme_id'],

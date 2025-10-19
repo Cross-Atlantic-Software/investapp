@@ -40,7 +40,6 @@ import { InsightTopic, initializeInsightTopicModel } from "../Models/InsightTopi
 import { InsightSubtopic, initializeInsightSubtopicModel } from "../Models/InsightSubtopic";
 import { InsightTheme, initializeInsightThemeModel } from "../Models/InsightTheme";
 import { MarketInsight, initializeMarketInsightModel } from "../Models/MarketInsight";
-import { MarketInsightCompany, initializeMarketInsightCompanyModel } from "../Models/MarketInsightCompany";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -177,7 +176,6 @@ async function initializeSequelize() {
   initializeInsightSubtopicModel(sequelize);
   initializeInsightThemeModel(sequelize);
   initializeMarketInsightModel(sequelize);
-  initializeMarketInsightCompanyModel(sequelize);
   
   // Set up Sector and Subsector associations
   Sector.hasMany(Subsector, {
@@ -282,38 +280,14 @@ async function initializeSequelize() {
     as: 'InsightSector'
   });
 
-  MarketInsight.belongsTo(InsightSubsector, {
-    foreignKey: 'insight_subsector_id',
-    as: 'InsightSubsector'
-  });
-
   MarketInsight.belongsTo(InsightTopic, {
     foreignKey: 'insight_topic_id',
     as: 'InsightTopic'
   });
 
-  MarketInsight.belongsTo(InsightSubtopic, {
-    foreignKey: 'insight_subtopic_id',
-    as: 'InsightSubtopic'
-  });
-
   MarketInsight.belongsTo(InsightTheme, {
     foreignKey: 'insight_theme_id',
     as: 'InsightTheme'
-  });
-
-  MarketInsight.belongsToMany(Product, {
-    through: MarketInsightCompany,
-    foreignKey: 'market_insight_id',
-    otherKey: 'product_id',
-    as: 'Companies'
-  });
-
-  Product.belongsToMany(MarketInsight, {
-    through: MarketInsightCompany,
-    foreignKey: 'product_id',
-    otherKey: 'market_insight_id',
-    as: 'MarketInsights'
   });
 
   // Set up associations for ShareholderType
@@ -623,13 +597,6 @@ export const db = {
       throw new Error('MarketInsight model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return MarketInsight;
-  },
-
-  get MarketInsightCompany() {
-    if (!MarketInsightCompany) {
-      throw new Error('MarketInsightCompany model not initialized yet. Wait for sequelizePromise to resolve.');
-    }
-    return MarketInsightCompany;
   },
 };
 

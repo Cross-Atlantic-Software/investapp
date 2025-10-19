@@ -12,7 +12,6 @@ import { InsightTopic, initializeInsightTopicModel } from './InsightTopic';
 import { InsightSubtopic, initializeInsightSubtopicModel } from './InsightSubtopic';
 import { InsightTheme, initializeInsightThemeModel } from './InsightTheme';
 import { MarketInsight, initializeMarketInsightModel } from './MarketInsight';
-import { MarketInsightCompany, initializeMarketInsightCompanyModel } from './MarketInsightCompany';
 
 export function initializeFinancialDataModels(sequelize: any) {
   // Initialize models first
@@ -84,7 +83,6 @@ export function initializeMarketInsightModels(sequelize: any) {
   initializeInsightSubtopicModel(sequelize);
   initializeInsightThemeModel(sequelize);
   initializeMarketInsightModel(sequelize);
-  initializeMarketInsightCompanyModel(sequelize);
 
   // Check if associations are already defined to prevent duplicates
   if (InsightSubsector.associations.InsightSector && MarketInsight.associations.InsightSector) {
@@ -119,39 +117,14 @@ export function initializeMarketInsightModels(sequelize: any) {
     as: 'InsightSector'
   });
 
-  MarketInsight.belongsTo(InsightSubsector, {
-    foreignKey: 'insight_subsector_id',
-    as: 'InsightSubsector'
-  });
-
   MarketInsight.belongsTo(InsightTopic, {
     foreignKey: 'insight_topic_id',
     as: 'InsightTopic'
   });
 
-  MarketInsight.belongsTo(InsightSubtopic, {
-    foreignKey: 'insight_subtopic_id',
-    as: 'InsightSubtopic'
-  });
-
   MarketInsight.belongsTo(InsightTheme, {
     foreignKey: 'insight_theme_id',
     as: 'InsightTheme'
-  });
-
-  // Market Insight Company associations (many-to-many with Product)
-  MarketInsight.belongsToMany(Product, {
-    through: MarketInsightCompany,
-    foreignKey: 'market_insight_id',
-    otherKey: 'product_id',
-    as: 'Companies'
-  });
-
-  Product.belongsToMany(MarketInsight, {
-    through: MarketInsightCompany,
-    foreignKey: 'product_id',
-    otherKey: 'market_insight_id',
-    as: 'MarketInsights'
   });
 
   // Reverse associations for taxonomies
@@ -160,18 +133,8 @@ export function initializeMarketInsightModels(sequelize: any) {
     as: 'MarketInsights'
   });
 
-  InsightSubsector.hasMany(MarketInsight, {
-    foreignKey: 'insight_subsector_id',
-    as: 'MarketInsights'
-  });
-
   InsightTopic.hasMany(MarketInsight, {
     foreignKey: 'insight_topic_id',
-    as: 'MarketInsights'
-  });
-
-  InsightSubtopic.hasMany(MarketInsight, {
-    foreignKey: 'insight_subtopic_id',
     as: 'MarketInsights'
   });
 

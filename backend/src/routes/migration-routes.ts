@@ -1608,6 +1608,38 @@ router.post("/create-market-insights-tables", async (req, res) => {
         INDEX idx_product_id (product_id)
       )
     `);
+
+    // Create market_insight_subsectors junction table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS market_insight_subsectors (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        market_insight_id INT NOT NULL,
+        insight_subsector_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (market_insight_id) REFERENCES market_insights(id) ON DELETE CASCADE,
+        FOREIGN KEY (insight_subsector_id) REFERENCES insight_subsectors(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_insight_subsector (market_insight_id, insight_subsector_id),
+        INDEX idx_insight_id (market_insight_id),
+        INDEX idx_subsector_id (insight_subsector_id)
+      )
+    `);
+
+    // Create market_insight_subtopics junction table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS market_insight_subtopics (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        market_insight_id INT NOT NULL,
+        insight_subtopic_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (market_insight_id) REFERENCES market_insights(id) ON DELETE CASCADE,
+        FOREIGN KEY (insight_subtopic_id) REFERENCES insight_subtopics(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_insight_subtopic (market_insight_id, insight_subtopic_id),
+        INDEX idx_insight_id (market_insight_id),
+        INDEX idx_subtopic_id (insight_subtopic_id)
+      )
+    `);
     
     console.log("✅ Created market insights tables successfully");
     
@@ -1687,6 +1719,33 @@ router.post("/insert-default-market-insights-taxonomy", async (req, res) => {
     res.json({
       success: true,
       message: "Default market insights taxonomy data inserted successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// Add multiselect fields to market_insights table
+router.post("/add-company-ids-to-market-insights", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: add-company-ids-to-market-insights");
+    
+    // Add company_ids column
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      ADD COLUMN company_ids TEXT NULL COMMENT 'JSON string of company IDs array'
+    `);
+    
+    console.log("✅ Added company_ids field to market_insights table successfully");
+    
+    res.json({
+      success: true,
+      message: "Company IDs field added to market_insights table successfully"
     });
   } catch (error) {
     console.error("❌ Migration failed:", error);

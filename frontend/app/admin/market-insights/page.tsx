@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Plus, Search, Filter, Edit, Trash2, Eye, Calendar, Tag, Building, Users, Building2, Clock, DollarSign, Palette, FileText, Upload, X } from "lucide-react";
 import ManageDropdown from "@/components/admin/ManageDropdown";
 import InsightTaxonomyModal from "@/components/admin/InsightTaxonomyModal";
+import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
 import Image from "next/image";
 
 interface MarketInsight {
@@ -17,16 +18,14 @@ interface MarketInsight {
   first_part: string;
   second_part: string;
   insight_sector_id?: number;
-  insight_subsector_id?: number;
+  insight_subsector_ids?: string; // JSON string of array
   insight_topic_id?: number;
-  insight_subtopic_id?: number;
+  insight_subtopic_ids?: string; // JSON string of array
   insight_theme_id?: number;
+  company_ids?: string; // JSON string of array
   InsightSector?: { id: number; name: string };
-  InsightSubsector?: { id: number; name: string };
   InsightTopic?: { id: number; name: string };
-  InsightSubtopic?: { id: number; name: string };
   InsightTheme?: { id: number; name: string };
-  Companies?: Array<{ id: number; company_name: string }>;
   created_at: string;
   updated_at: string;
 }
@@ -87,10 +86,7 @@ export default function MarketInsightsPage() {
   
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedSector, setSelectedSector] = useState("");
-  const [selectedTopic, setSelectedTopic] = useState("");
-  const [selectedTheme, setSelectedTheme] = useState("");
-  const [showFeaturedOnly, setShowFeaturedOnly] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
   
   const [showModal, setShowModal] = useState(false);
   const [editingInsight, setEditingInsight] = useState<MarketInsight | null>(null);
@@ -108,9 +104,9 @@ export default function MarketInsightsPage() {
     first_part: "",
     second_part: "",
     insight_sector_id: "",
-    insight_subsector_id: "",
+    insight_subsector_ids: [] as number[],
     insight_topic_id: "",
-    insight_subtopic_id: "",
+    insight_subtopic_ids: [] as number[],
     insight_theme_id: "",
     company_ids: [] as number[]
   });
@@ -123,12 +119,32 @@ export default function MarketInsightsPage() {
     error: null,
   });
 
-  // Fetch data
+  const [companySearchTerm, setCompanySearchTerm] = useState("");
+  const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+
+  // Close dropdown when clicking outside
   useEffect(() => {
-    fetchMarketInsights();
-    fetchTaxonomies();
-    fetchProducts();
-  }, []);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showCompanyDropdown && !(event.target as Element).closest('.company-dropdown')) {
+        setShowCompanyDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showCompanyDropdown]);
+
+  // Notification helper functions
+  const addNotification = (notification: Omit<NotificationData, 'id'>) => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { ...notification, id }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  };
 
   const fetchMarketInsights = async () => {
     try {
@@ -203,9 +219,9 @@ export default function MarketInsightsPage() {
       formDataToSend.append('first_part', formData.first_part);
       formDataToSend.append('second_part', formData.second_part);
       formDataToSend.append('insight_sector_id', formData.insight_sector_id);
-      formDataToSend.append('insight_subsector_id', formData.insight_subsector_id);
+      formDataToSend.append('insight_subsector_ids', JSON.stringify(formData.insight_subsector_ids));
       formDataToSend.append('insight_topic_id', formData.insight_topic_id);
-      formDataToSend.append('insight_subtopic_id', formData.insight_subtopic_id);
+      formDataToSend.append('insight_subtopic_ids', JSON.stringify(formData.insight_subtopic_ids));
       formDataToSend.append('insight_theme_id', formData.insight_theme_id);
       formDataToSend.append('company_ids', JSON.stringify(formData.company_ids));
       
@@ -227,8 +243,19 @@ export default function MarketInsightsPage() {
         setShowModal(false);
         resetForm();
         fetchMarketInsights();
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Market insight created successfully!',
+          duration: 5000
+        });
       } else {
-        alert(data.message || 'Failed to create market insight');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to create market insight',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error creating market insight:', error);
@@ -252,9 +279,9 @@ export default function MarketInsightsPage() {
       formDataToSend.append('first_part', formData.first_part);
       formDataToSend.append('second_part', formData.second_part);
       formDataToSend.append('insight_sector_id', formData.insight_sector_id);
-      formDataToSend.append('insight_subsector_id', formData.insight_subsector_id);
+      formDataToSend.append('insight_subsector_ids', JSON.stringify(formData.insight_subsector_ids));
       formDataToSend.append('insight_topic_id', formData.insight_topic_id);
-      formDataToSend.append('insight_subtopic_id', formData.insight_subtopic_id);
+      formDataToSend.append('insight_subtopic_ids', JSON.stringify(formData.insight_subtopic_ids));
       formDataToSend.append('insight_theme_id', formData.insight_theme_id);
       formDataToSend.append('company_ids', JSON.stringify(formData.company_ids));
       
@@ -277,8 +304,19 @@ export default function MarketInsightsPage() {
         setEditingInsight(null);
         resetForm();
         fetchMarketInsights();
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Market insight updated successfully!',
+          duration: 5000
+        });
       } else {
-        alert(data.message || 'Failed to update market insight');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to update market insight',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error updating market insight:', error);
@@ -299,8 +337,19 @@ export default function MarketInsightsPage() {
       const data = await response.json();
       if (data.success) {
         fetchMarketInsights();
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: 'Market insight deleted successfully!',
+          duration: 5000
+        });
       } else {
-        alert(data.message || 'Failed to delete market insight');
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to delete market insight',
+          duration: 5000
+        });
       }
     } catch (error) {
       console.error('Error deleting market insight:', error);
@@ -319,20 +368,14 @@ export default function MarketInsightsPage() {
       first_part: "",
       second_part: "",
       insight_sector_id: "",
-      insight_subsector_id: "",
+      insight_subsector_ids: [],
       insight_topic_id: "",
-      insight_subtopic_id: "",
+      insight_subtopic_ids: [],
       insight_theme_id: "",
-      company_ids: []
+      company_ids: [] as number[]
     });
-    setIsViewMode(false);
-    setImageUpload({
-      file: null,
-      preview: null,
-      uploading: false,
-      progress: 0,
-      error: null,
-    });
+    setCompanySearchTerm("");
+    setShowCompanyDropdown(false);
   };
 
   // Image upload handlers
@@ -386,7 +429,7 @@ export default function MarketInsightsPage() {
     if (file) {
       const inputEvent = {
         target: { files: [file] }
-      } as React.ChangeEvent<HTMLInputElement>;
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
       handleFileChange(inputEvent);
     }
   };
@@ -417,11 +460,11 @@ export default function MarketInsightsPage() {
       first_part: insight.first_part,
       second_part: insight.second_part,
       insight_sector_id: insight.insight_sector_id?.toString() || "",
-      insight_subsector_id: insight.insight_subsector_id?.toString() || "",
+      insight_subsector_ids: insight.insight_subsector_ids ? JSON.parse(insight.insight_subsector_ids) : [],
       insight_topic_id: insight.insight_topic_id?.toString() || "",
-      insight_subtopic_id: insight.insight_subtopic_id?.toString() || "",
+      insight_subtopic_ids: insight.insight_subtopic_ids ? JSON.parse(insight.insight_subtopic_ids) : [],
       insight_theme_id: insight.insight_theme_id?.toString() || "",
-      company_ids: insight.Companies?.map(c => c.id) || []
+      company_ids: insight.company_ids ? JSON.parse(insight.company_ids) : []
     });
     setShowModal(true);
   };
@@ -439,11 +482,11 @@ export default function MarketInsightsPage() {
       first_part: insight.first_part,
       second_part: insight.second_part,
       insight_sector_id: insight.insight_sector_id?.toString() || "",
-      insight_subsector_id: insight.insight_subsector_id?.toString() || "",
+      insight_subsector_ids: insight.insight_subsector_ids ? JSON.parse(insight.insight_subsector_ids) : [],
       insight_topic_id: insight.insight_topic_id?.toString() || "",
-      insight_subtopic_id: insight.insight_subtopic_id?.toString() || "",
+      insight_subtopic_ids: insight.insight_subtopic_ids ? JSON.parse(insight.insight_subtopic_ids) : [],
       insight_theme_id: insight.insight_theme_id?.toString() || "",
-      company_ids: insight.Companies?.map(c => c.id) || []
+      company_ids: insight.company_ids ? JSON.parse(insight.company_ids) : []
     });
     setShowModal(true);
   };
@@ -451,12 +494,8 @@ export default function MarketInsightsPage() {
   const filteredInsights = marketInsights.filter(insight => {
     const matchesSearch = insight.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          insight.teaser.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSector = !selectedSector || insight.insight_sector_id?.toString() === selectedSector;
-    const matchesTopic = !selectedTopic || insight.insight_topic_id?.toString() === selectedTopic;
-    const matchesTheme = !selectedTheme || insight.insight_theme_id?.toString() === selectedTheme;
-    const matchesFeatured = !showFeaturedOnly || insight.is_featured;
     
-    return matchesSearch && matchesSector && matchesTopic && matchesTheme && matchesFeatured;
+    return matchesSearch;
   });
 
   const formatDate = (dateString: string) => {
@@ -500,7 +539,7 @@ export default function MarketInsightsPage() {
 
       {/* Filters */}
       <div className="bg-white p-4 rounded-lg shadow-sm border">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-themeTealLighter w-4 h-4" />
             <input
@@ -511,49 +550,6 @@ export default function MarketInsightsPage() {
               className="w-full pl-10 pr-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
             />
           </div>
-          
-          <select
-            value={selectedSector}
-            onChange={(e) => setSelectedSector(e.target.value)}
-            className="px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-          >
-            <option value="">All Sectors</option>
-            {insightSectors.map(sector => (
-              <option key={sector.id} value={sector.id.toString()}>{sector.name}</option>
-            ))}
-          </select>
-          
-          <select
-            value={selectedTopic}
-            onChange={(e) => setSelectedTopic(e.target.value)}
-            className="px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-          >
-            <option value="">All Topics</option>
-            {insightTopics.map(topic => (
-              <option key={topic.id} value={topic.id.toString()}>{topic.name}</option>
-            ))}
-          </select>
-          
-          <select
-            value={selectedTheme}
-            onChange={(e) => setSelectedTheme(e.target.value)}
-            className="px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-          >
-            <option value="">All Themes</option>
-            {insightThemes.map(theme => (
-              <option key={theme.id} value={theme.id.toString()}>{theme.name}</option>
-            ))}
-          </select>
-          
-          <label className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={showFeaturedOnly}
-              onChange={(e) => setShowFeaturedOnly(e.target.checked)}
-              className="rounded border-themeTealLighter"
-            />
-            <span className="text-sm text-themeTeal">Featured Only</span>
-          </label>
         </div>
       </div>
 
@@ -643,10 +639,23 @@ export default function MarketInsightsPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <h2 className="text-xl font-bold text-themeTeal mb-4">
-              {isViewMode ? 'View Market Insight' : editingInsight ? 'Edit Market Insight' : 'Add Market Insight'}
-            </h2>
+          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-themeTeal">
+                {isViewMode ? 'View Market Insight' : editingInsight ? 'Edit Market Insight' : 'Add Market Insight'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowModal(false);
+                  setEditingInsight(null);
+                  resetForm();
+                }}
+                className="text-themeTealLighter hover:text-themeTeal transition-colors"
+                title="Close"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -846,9 +855,8 @@ export default function MarketInsightsPage() {
                 <label className="block text-sm font-medium text-themeTeal mb-1">Sector</label>
                 <select
                   value={formData.insight_sector_id}
-                  onChange={(e) => setFormData({...formData, insight_sector_id: e.target.value})}
+                  onChange={(e) => setFormData({...formData, insight_sector_id: e.target.value, insight_subsector_ids: []})}
                   className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                  disabled={isViewMode}
                   disabled={isViewMode}
                 >
                   <option value="">Select Sector</option>
@@ -859,27 +867,57 @@ export default function MarketInsightsPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-themeTeal mb-1">Subsector</label>
-                <select
-                  value={formData.insight_subsector_id}
-                  onChange={(e) => setFormData({...formData, insight_subsector_id: e.target.value})}
-                  className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                  disabled={isViewMode}
-                >
-                  <option value="">Select Subsector</option>
-                  {insightSubsectors
-                    .filter(sub => sub.insight_sector_id.toString() === formData.insight_sector_id)
-                    .map(subsector => (
-                      <option key={subsector.id} value={subsector.id.toString()}>{subsector.name}</option>
-                    ))}
-                </select>
+                <label className="block text-sm font-medium text-themeTeal mb-1">Subsectors</label>
+                {isViewMode ? (
+                  /* View Mode - Show selected subsectors as read-only list */
+                  <div className="max-h-32 overflow-y-auto border border-themeTealLighter rounded-lg p-2">
+                    {formData.insight_subsector_ids.length > 0 ? (
+                      formData.insight_subsector_ids.map(subsectorId => {
+                        const subsector = insightSubsectors.find(s => s.id === subsectorId);
+                        return subsector ? (
+                          <div key={subsector.id} className="flex items-center gap-2 p-1 bg-themeTealWhite rounded">
+                            <span className="text-sm text-themeTeal">{subsector.name}</span>
+                          </div>
+                        ) : null;
+                      })
+                    ) : (
+                      <div className="text-sm text-themeTealLighter p-2">No subsectors selected</div>
+                    )}
+                  </div>
+                ) : (
+                  /* Edit Mode - Show checkboxes */
+                  <div className="max-h-32 overflow-y-auto border border-themeTealLighter rounded-lg p-2">
+                    {insightSubsectors
+                      .filter(sub => formData.insight_sector_id && sub.insight_sector_id.toString() === formData.insight_sector_id)
+                      .map(subsector => (
+                        <label key={subsector.id} className="flex items-center gap-2 p-1 hover:bg-themeTealWhite rounded">
+                          <input
+                            type="checkbox"
+                            checked={formData.insight_subsector_ids.includes(subsector.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({...formData, insight_subsector_ids: [...formData.insight_subsector_ids, subsector.id]});
+                              } else {
+                                setFormData({...formData, insight_subsector_ids: formData.insight_subsector_ids.filter(id => id !== subsector.id)});
+                              }
+                            }}
+                            className="rounded border-themeTealLighter"
+                          />
+                          <span className="text-sm text-themeTeal">{subsector.name}</span>
+                        </label>
+                      ))}
+                    {formData.insight_sector_id && insightSubsectors.filter(sub => sub.insight_sector_id.toString() === formData.insight_sector_id).length === 0 && (
+                      <div className="text-sm text-themeTealLighter p-2">No subsectors available for selected sector</div>
+                    )}
+                  </div>
+                )}
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-themeTeal mb-1">Topic</label>
                 <select
                   value={formData.insight_topic_id}
-                  onChange={(e) => setFormData({...formData, insight_topic_id: e.target.value})}
+                  onChange={(e) => setFormData({...formData, insight_topic_id: e.target.value, insight_subtopic_ids: []})}
                   className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
                   disabled={isViewMode}
                 >
@@ -891,20 +929,50 @@ export default function MarketInsightsPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-themeTeal mb-1">Subtopic</label>
-                <select
-                  value={formData.insight_subtopic_id}
-                  onChange={(e) => setFormData({...formData, insight_subtopic_id: e.target.value})}
-                  className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                  disabled={isViewMode}
-                >
-                  <option value="">Select Subtopic</option>
-                  {insightSubtopics
-                    .filter(sub => sub.insight_topic_id.toString() === formData.insight_topic_id)
-                    .map(subtopic => (
-                      <option key={subtopic.id} value={subtopic.id.toString()}>{subtopic.name}</option>
-                    ))}
-                </select>
+                <label className="block text-sm font-medium text-themeTeal mb-1">Subtopics</label>
+                {isViewMode ? (
+                  /* View Mode - Show selected subtopics as read-only list */
+                  <div className="max-h-32 overflow-y-auto border border-themeTealLighter rounded-lg p-2">
+                    {formData.insight_subtopic_ids.length > 0 ? (
+                      formData.insight_subtopic_ids.map(subtopicId => {
+                        const subtopic = insightSubtopics.find(s => s.id === subtopicId);
+                        return subtopic ? (
+                          <div key={subtopic.id} className="flex items-center gap-2 p-1 bg-themeTealWhite rounded">
+                            <span className="text-sm text-themeTeal">{subtopic.name}</span>
+                          </div>
+                        ) : null;
+                      })
+                    ) : (
+                      <div className="text-sm text-themeTealLighter p-2">No subtopics selected</div>
+                    )}
+                  </div>
+                ) : (
+                  /* Edit Mode - Show checkboxes */
+                  <div className="max-h-32 overflow-y-auto border border-themeTealLighter rounded-lg p-2">
+                    {insightSubtopics
+                      .filter(sub => formData.insight_topic_id && sub.insight_topic_id.toString() === formData.insight_topic_id)
+                      .map(subtopic => (
+                        <label key={subtopic.id} className="flex items-center gap-2 p-1 hover:bg-themeTealWhite rounded">
+                          <input
+                            type="checkbox"
+                            checked={formData.insight_subtopic_ids.includes(subtopic.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setFormData({...formData, insight_subtopic_ids: [...formData.insight_subtopic_ids, subtopic.id]});
+                              } else {
+                                setFormData({...formData, insight_subtopic_ids: formData.insight_subtopic_ids.filter(id => id !== subtopic.id)});
+                              }
+                            }}
+                            className="rounded border-themeTealLighter"
+                          />
+                          <span className="text-sm text-themeTeal">{subtopic.name}</span>
+                        </label>
+                      ))}
+                    {formData.insight_topic_id && insightSubtopics.filter(sub => sub.insight_topic_id.toString() === formData.insight_topic_id).length === 0 && (
+                      <div className="text-sm text-themeTealLighter p-2">No subtopics available for selected topic</div>
+                    )}
+                  </div>
+                )}
               </div>
               
               <div>
@@ -922,27 +990,109 @@ export default function MarketInsightsPage() {
                 </select>
               </div>
               
-              <div className="md:col-span-2">
+              <div>
                 <label className="block text-sm font-medium text-themeTeal mb-1">Companies</label>
-                <div className="max-h-32 overflow-y-auto border border-themeTealLighter rounded-lg p-2">
-                  {(products || []).map(product => (
-                    <label key={product.id} className="flex items-center gap-2 p-1 hover:bg-themeTealWhite rounded">
-                      <input
-                        type="checkbox"
-                        checked={formData.company_ids.includes(product.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setFormData({...formData, company_ids: [...formData.company_ids, product.id]});
-                          } else {
-                            setFormData({...formData, company_ids: formData.company_ids.filter(id => id !== product.id)});
-                          }
-                        }}
-                        className="rounded border-themeTealLighter"
-                      />
-                      <span className="text-sm text-themeTeal">{product.company_name}</span>
-                    </label>
-                  ))}
-                </div>
+                {isViewMode ? (
+                  /* View Mode - Show selected companies as read-only list */
+                  <div className="max-h-32 overflow-y-auto border border-themeTealLighter rounded-lg p-2">
+                    {formData.company_ids.length > 0 ? (
+                      formData.company_ids.map(companyId => {
+                        const company = products.find(p => p.id === companyId);
+                        return company ? (
+                          <div key={company.id} className="flex items-center gap-2 p-1 bg-themeTealWhite rounded">
+                            <span className="text-sm text-themeTeal">{company.company_name}</span>
+                          </div>
+                        ) : null;
+                      })
+                    ) : (
+                      <div className="text-sm text-themeTealLighter p-2">No companies selected</div>
+                    )}
+                  </div>
+                ) : (
+                  /* Edit Mode - Show searchable multiselect dropdown */
+                  <div className="relative company-dropdown">
+                    {/* Selected companies display */}
+                    <div 
+                      className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal cursor-pointer min-h-[40px] flex flex-wrap gap-1 items-center"
+                      onClick={() => setShowCompanyDropdown(!showCompanyDropdown)}
+                    >
+                      {formData.company_ids.length > 0 ? (
+                        formData.company_ids.map(companyId => {
+                          const company = products.find(p => p.id === companyId);
+                          return company ? (
+                            <span key={company.id} className="inline-flex items-center gap-1 px-2 py-1 bg-themeTeal text-white text-xs rounded">
+                              {company.company_name}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFormData({...formData, company_ids: formData.company_ids.filter(id => id !== company.id)});
+                                }}
+                                className="ml-1 hover:bg-themeTealDark rounded-full w-4 h-4 flex items-center justify-center"
+                              >
+                                ×
+                              </button>
+                            </span>
+                          ) : null;
+                        })
+                      ) : (
+                        <span className="text-themeTealLighter">Select companies...</span>
+                      )}
+                    </div>
+
+                    {/* Dropdown */}
+                    {showCompanyDropdown && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-themeTealLighter rounded-lg shadow-lg max-h-60 overflow-hidden">
+                        {/* Search input */}
+                        <div className="p-2 border-b border-themeTealLighter">
+                          <input
+                            type="text"
+                            placeholder="Search companies..."
+                            value={companySearchTerm}
+                            onChange={(e) => setCompanySearchTerm(e.target.value)}
+                            className="w-full px-2 py-1 border border-themeTealLighter rounded focus:outline-none focus:ring-1 focus:ring-themeTeal text-sm"
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        </div>
+
+                        {/* Options list */}
+                        <div className="max-h-48 overflow-y-auto">
+                          {(products || [])
+                            .filter(product => 
+                              product.company_name.toLowerCase().includes(companySearchTerm.toLowerCase())
+                            )
+                            .map(product => (
+                              <label 
+                                key={product.id} 
+                                className="flex items-center gap-2 p-2 hover:bg-themeTealWhite cursor-pointer"
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={formData.company_ids.includes(product.id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setFormData({...formData, company_ids: [...formData.company_ids, product.id]});
+                                    } else {
+                                      setFormData({...formData, company_ids: formData.company_ids.filter(id => id !== product.id)});
+                                    }
+                                  }}
+                                  className="rounded border-themeTealLighter"
+                                />
+                                <span className="text-sm text-themeTeal">{product.company_name}</span>
+                              </label>
+                            ))}
+                          {((products || []).filter(product => 
+                            product.company_name.toLowerCase().includes(companySearchTerm.toLowerCase())
+                          )).length === 0 && (
+                            <div className="p-2 text-sm text-themeTealLighter text-center">
+                              No companies found
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
             
@@ -996,6 +1146,12 @@ export default function MarketInsightsPage() {
           fetchTaxonomies(); // Refresh taxonomy data when modal closes
         }}
         type="themes"
+      />
+
+      {/* Notification Container */}
+      <NotificationContainer
+        notifications={notifications}
+        onRemove={removeNotification}
       />
     </div>
   );

@@ -12,9 +12,7 @@ export class MarketInsightController {
         search = "", 
         is_featured,
         insight_sector_id,
-        insight_subsector_id,
         insight_topic_id,
-        insight_subtopic_id,
         insight_theme_id,
         sort_by = "updated_at", 
         sort_order = "DESC" 
@@ -37,14 +35,8 @@ export class MarketInsightController {
       if (insight_sector_id) {
         whereClause.insight_sector_id = insight_sector_id;
       }
-      if (insight_subsector_id) {
-        whereClause.insight_subsector_id = insight_subsector_id;
-      }
       if (insight_topic_id) {
         whereClause.insight_topic_id = insight_topic_id;
-      }
-      if (insight_subtopic_id) {
-        whereClause.insight_subtopic_id = insight_subtopic_id;
       }
       if (insight_theme_id) {
         whereClause.insight_theme_id = insight_theme_id;
@@ -62,30 +54,14 @@ export class MarketInsightController {
             attributes: ['id', 'name']
           },
           {
-            model: db.InsightSubsector,
-            as: 'InsightSubsector',
-            attributes: ['id', 'name']
-          },
-          {
             model: db.InsightTopic,
             as: 'InsightTopic',
-            attributes: ['id', 'name']
-          },
-          {
-            model: db.InsightSubtopic,
-            as: 'InsightSubtopic',
             attributes: ['id', 'name']
           },
           {
             model: db.InsightTheme,
             as: 'InsightTheme',
             attributes: ['id', 'name']
-          },
-          {
-            model: db.Product,
-            as: 'Companies',
-            attributes: ['id', 'company_name'],
-            through: { attributes: [] }
           }
         ]
       });
@@ -126,30 +102,14 @@ export class MarketInsightController {
             attributes: ['id', 'name']
           },
           {
-            model: db.InsightSubsector,
-            as: 'InsightSubsector',
-            attributes: ['id', 'name']
-          },
-          {
             model: db.InsightTopic,
             as: 'InsightTopic',
-            attributes: ['id', 'name']
-          },
-          {
-            model: db.InsightSubtopic,
-            as: 'InsightSubtopic',
             attributes: ['id', 'name']
           },
           {
             model: db.InsightTheme,
             as: 'InsightTheme',
             attributes: ['id', 'name']
-          },
-          {
-            model: db.Product,
-            as: 'Companies',
-            attributes: ['id', 'company_name'],
-            through: { attributes: [] }
           }
         ]
       });
@@ -181,30 +141,14 @@ export class MarketInsightController {
             attributes: ['id', 'name']
           },
           {
-            model: db.InsightSubsector,
-            as: 'InsightSubsector',
-            attributes: ['id', 'name']
-          },
-          {
             model: db.InsightTopic,
             as: 'InsightTopic',
-            attributes: ['id', 'name']
-          },
-          {
-            model: db.InsightSubtopic,
-            as: 'InsightSubtopic',
             attributes: ['id', 'name']
           },
           {
             model: db.InsightTheme,
             as: 'InsightTheme',
             attributes: ['id', 'name']
-          },
-          {
-            model: db.Product,
-            as: 'Companies',
-            attributes: ['id', 'company_name'],
-            through: { attributes: [] }
           }
         ]
       });
@@ -242,30 +186,14 @@ export class MarketInsightController {
             attributes: ['id', 'name']
           },
           {
-            model: db.InsightSubsector,
-            as: 'InsightSubsector',
-            attributes: ['id', 'name']
-          },
-          {
             model: db.InsightTopic,
             as: 'InsightTopic',
-            attributes: ['id', 'name']
-          },
-          {
-            model: db.InsightSubtopic,
-            as: 'InsightSubtopic',
             attributes: ['id', 'name']
           },
           {
             model: db.InsightTheme,
             as: 'InsightTheme',
             attributes: ['id', 'name']
-          },
-          {
-            model: db.Product,
-            as: 'Companies',
-            attributes: ['id', 'company_name'],
-            through: { attributes: [] }
           }
         ]
       });
@@ -303,11 +231,11 @@ export class MarketInsightController {
         first_part,
         second_part,
         insight_sector_id,
-        insight_subsector_id,
+        insight_subsector_ids = [],
         insight_topic_id,
-        insight_subtopic_id,
+        insight_subtopic_ids = [],
         insight_theme_id,
-        company_ids = []
+        company_ids = [],
       } = req.body;
 
       // Parse company_ids if it's a JSON string
@@ -322,6 +250,46 @@ export class MarketInsightController {
           });
         }
       }
+
+      // Validate company_ids if provided
+      if (parsedCompanyIds && parsedCompanyIds.length > 0) {
+        const companies = await db.Product.findAll({
+          where: { id: parsedCompanyIds }
+        });
+        if (companies.length !== parsedCompanyIds.length) {
+          return res.status(400).json({
+            success: false,
+            message: "One or more companies not found"
+          });
+        }
+      }
+
+      // Parse subsector_ids if it's a JSON string
+      let parsedSubsectorIds = insight_subsector_ids;
+      if (typeof insight_subsector_ids === 'string') {
+        try {
+          parsedSubsectorIds = JSON.parse(insight_subsector_ids);
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid insight_subsector_ids format"
+          });
+        }
+      }
+
+      // Parse subtopic_ids if it's a JSON string
+      let parsedSubtopicIds = insight_subtopic_ids;
+      if (typeof insight_subtopic_ids === 'string') {
+        try {
+          parsedSubtopicIds = JSON.parse(insight_subtopic_ids);
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid insight_subtopic_ids format"
+          });
+        }
+      }
+
 
       // Get blog image URL from uploaded file
       const blog_image = (req as any).file?.location || '';
@@ -357,12 +325,15 @@ export class MarketInsightController {
         }
       }
 
-      if (insight_subsector_id) {
-        const subsector = await db.InsightSubsector.findByPk(insight_subsector_id);
-        if (!subsector) {
+      // Validate subsector IDs if provided
+      if (parsedSubsectorIds && parsedSubsectorIds.length > 0) {
+        const subsectors = await db.InsightSubsector.findAll({
+          where: { id: parsedSubsectorIds }
+        });
+        if (subsectors.length !== parsedSubsectorIds.length) {
           return res.status(400).json({
             success: false,
-            message: "Insight subsector not found"
+            message: "One or more subsectors not found"
           });
         }
       }
@@ -377,12 +348,15 @@ export class MarketInsightController {
         }
       }
 
-      if (insight_subtopic_id) {
-        const subtopic = await db.InsightSubtopic.findByPk(insight_subtopic_id);
-        if (!subtopic) {
+      // Validate subtopic IDs if provided
+      if (parsedSubtopicIds && parsedSubtopicIds.length > 0) {
+        const subtopics = await db.InsightSubtopic.findAll({
+          where: { id: parsedSubtopicIds }
+        });
+        if (subtopics.length !== parsedSubtopicIds.length) {
           return res.status(400).json({
             success: false,
-            message: "Insight subtopic not found"
+            message: "One or more subtopics not found"
           });
         }
       }
@@ -398,17 +372,6 @@ export class MarketInsightController {
       }
 
       // Validate company IDs if provided
-      if (parsedCompanyIds && parsedCompanyIds.length > 0) {
-        const companies = await db.Product.findAll({
-          where: { id: parsedCompanyIds }
-        });
-        if (companies.length !== parsedCompanyIds.length) {
-          return res.status(400).json({
-            success: false,
-            message: "One or more companies not found"
-          });
-        }
-      }
 
       // Create the market insight
       const marketInsight = await db.MarketInsight.create({
@@ -421,27 +384,12 @@ export class MarketInsightController {
         first_part: first_part.trim(),
         second_part: second_part.trim(),
         insight_sector_id: insight_sector_id || null,
-        insight_subsector_id: insight_subsector_id || null,
+        insight_subsector_ids: parsedSubsectorIds.length > 0 ? JSON.stringify(parsedSubsectorIds) : undefined,
         insight_topic_id: insight_topic_id || null,
-        insight_subtopic_id: insight_subtopic_id || null,
-        insight_theme_id: insight_theme_id || null
+        insight_subtopic_ids: parsedSubtopicIds.length > 0 ? JSON.stringify(parsedSubtopicIds) : undefined,
+        insight_theme_id: insight_theme_id || null,
+        company_ids: parsedCompanyIds.length > 0 ? JSON.stringify(parsedCompanyIds) : undefined,
       });
-
-      // Associate companies if provided
-      if (parsedCompanyIds && parsedCompanyIds.length > 0) {
-        // Clear existing associations
-        await db.MarketInsightCompany.destroy({
-          where: { market_insight_id: marketInsight.id }
-        });
-        
-        // Create new associations
-        const companyAssociations = parsedCompanyIds.map((product_id: number) => ({
-          market_insight_id: marketInsight.id,
-          product_id: product_id
-        }));
-        
-        await db.MarketInsightCompany.bulkCreate(companyAssociations);
-      }
 
       res.status(201).json({
         success: true,
@@ -471,16 +419,16 @@ export class MarketInsightController {
         first_part,
         second_part,
         insight_sector_id,
-        insight_subsector_id,
+        insight_subsector_ids = [],
         insight_topic_id,
-        insight_subtopic_id,
+        insight_subtopic_ids = [],
         insight_theme_id,
-        company_ids
+        company_ids = [],
       } = req.body;
 
       // Parse company_ids if it's a JSON string
       let parsedCompanyIds = company_ids;
-      if (company_ids && typeof company_ids === 'string') {
+      if (typeof company_ids === 'string') {
         try {
           parsedCompanyIds = JSON.parse(company_ids);
         } catch (error) {
@@ -490,6 +438,46 @@ export class MarketInsightController {
           });
         }
       }
+
+      // Validate company_ids if provided
+      if (parsedCompanyIds && parsedCompanyIds.length > 0) {
+        const companies = await db.Product.findAll({
+          where: { id: parsedCompanyIds }
+        });
+        if (companies.length !== parsedCompanyIds.length) {
+          return res.status(400).json({
+            success: false,
+            message: "One or more companies not found"
+          });
+        }
+      }
+
+      // Parse subsector_ids if it's a JSON string
+      let parsedSubsectorIds = insight_subsector_ids;
+      if (typeof insight_subsector_ids === 'string') {
+        try {
+          parsedSubsectorIds = JSON.parse(insight_subsector_ids);
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid insight_subsector_ids format"
+          });
+        }
+      }
+
+      // Parse subtopic_ids if it's a JSON string
+      let parsedSubtopicIds = insight_subtopic_ids;
+      if (typeof insight_subtopic_ids === 'string') {
+        try {
+          parsedSubtopicIds = JSON.parse(insight_subtopic_ids);
+        } catch (error) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid insight_subtopic_ids format"
+          });
+        }
+      }
+
 
       // Get blog image URL from uploaded file (if new file uploaded)
       const blog_image = (req as any).file?.location;
@@ -527,12 +515,15 @@ export class MarketInsightController {
         }
       }
 
-      if (insight_subsector_id) {
-        const subsector = await db.InsightSubsector.findByPk(insight_subsector_id);
-        if (!subsector) {
+      // Validate subsector IDs if provided
+      if (parsedSubsectorIds && parsedSubsectorIds.length > 0) {
+        const subsectors = await db.InsightSubsector.findAll({
+          where: { id: parsedSubsectorIds }
+        });
+        if (subsectors.length !== parsedSubsectorIds.length) {
           return res.status(400).json({
             success: false,
-            message: "Insight subsector not found"
+            message: "One or more subsectors not found"
           });
         }
       }
@@ -547,12 +538,15 @@ export class MarketInsightController {
         }
       }
 
-      if (insight_subtopic_id) {
-        const subtopic = await db.InsightSubtopic.findByPk(insight_subtopic_id);
-        if (!subtopic) {
+      // Validate subtopic IDs if provided
+      if (parsedSubtopicIds && parsedSubtopicIds.length > 0) {
+        const subtopics = await db.InsightSubtopic.findAll({
+          where: { id: parsedSubtopicIds }
+        });
+        if (subtopics.length !== parsedSubtopicIds.length) {
           return res.status(400).json({
             success: false,
-            message: "Insight subtopic not found"
+            message: "One or more subtopics not found"
           });
         }
       }
@@ -568,17 +562,6 @@ export class MarketInsightController {
       }
 
       // Validate company IDs if provided
-      if (parsedCompanyIds && parsedCompanyIds.length > 0) {
-        const companies = await db.Product.findAll({
-          where: { id: parsedCompanyIds }
-        });
-        if (companies.length !== parsedCompanyIds.length) {
-          return res.status(400).json({
-            success: false,
-            message: "One or more companies not found"
-          });
-        }
-      }
 
       // Update the market insight
       await marketInsight.update({
@@ -591,29 +574,12 @@ export class MarketInsightController {
         ...(first_part && { first_part: first_part.trim() }),
         ...(second_part && { second_part: second_part.trim() }),
         ...(insight_sector_id !== undefined && { insight_sector_id: insight_sector_id || null }),
-        ...(insight_subsector_id !== undefined && { insight_subsector_id: insight_subsector_id || null }),
+        ...(insight_subsector_ids !== undefined && { insight_subsector_ids: parsedSubsectorIds.length > 0 ? JSON.stringify(parsedSubsectorIds) : undefined }),
         ...(insight_topic_id !== undefined && { insight_topic_id: insight_topic_id || null }),
-        ...(insight_subtopic_id !== undefined && { insight_subtopic_id: insight_subtopic_id || null }),
-        ...(insight_theme_id !== undefined && { insight_theme_id: insight_theme_id || null })
+        ...(insight_subtopic_ids !== undefined && { insight_subtopic_ids: parsedSubtopicIds.length > 0 ? JSON.stringify(parsedSubtopicIds) : undefined }),
+        ...(insight_theme_id !== undefined && { insight_theme_id: insight_theme_id || null }),
+        ...(company_ids !== undefined && { company_ids: parsedCompanyIds.length > 0 ? JSON.stringify(parsedCompanyIds) : undefined }),
       });
-
-      // Update company associations if provided
-      if (company_ids !== undefined) {
-        // Clear existing associations
-        await db.MarketInsightCompany.destroy({
-          where: { market_insight_id: marketInsight.id }
-        });
-        
-        // Create new associations if any companies provided
-        if (parsedCompanyIds && parsedCompanyIds.length > 0) {
-          const companyAssociations = parsedCompanyIds.map((product_id: number) => ({
-            market_insight_id: marketInsight.id,
-            product_id: product_id
-          }));
-          
-          await db.MarketInsightCompany.bulkCreate(companyAssociations);
-        }
-      }
 
       res.json({
         success: true,
