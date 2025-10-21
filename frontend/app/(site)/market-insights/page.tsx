@@ -70,35 +70,6 @@ function formatDate(iso: string) {
 /* =========================
    UI Parts
    ========================= */
-function SmallCard({ item }: { item: MarketInsight }) {
-  return (
-    <a href={`/market-insights/${item.slug}`} className="group block rounded overflow-hidden">
-      <div className="aspect-[16/10] overflow-hidden">
-        <Image
-          src={item.blog_image}
-          alt={item.title}
-          width={800}
-          height={500}
-          className="h-full w-full object-cover transition group-hover:scale-[1.02]"
-        />
-      </div>
-      <div className="pt-3">
-        <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
-          <BookOpenText className="h-3.5 w-3.5" />
-          <span>{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
-        </div>
-        <h3 className="mt-1 text-base font-semibold text-themeTeal group-hover:text-themeSkyBlue transition duration-500">
-          {item.title}
-        </h3>
-        <div className="mt-1 flex items-center gap-2 text-xs text-themeTealLighter">
-          <CalendarDays className="h-3 w-3" />
-          <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
-        </div>
-      </div>
-    </a>
-  );
-}
-
 function GridCard({ item }: { item: MarketInsight }) {
   return (
     <a href={`/market-insights/${item.slug}`} className="group block rounded overflow-hidden border border-themeTealLighter/50 bg-white/5">
@@ -128,40 +99,6 @@ function GridCard({ item }: { item: MarketInsight }) {
   );
 }
 
-function HeroCard({ item }: { item: MarketInsight }) {
-  return (
-    <a href={`/market-insights/${item.slug}`} className="group block rounded overflow-hidden">
-        <div className="relative aspect-[16/9] w-full">
-            <Image
-            src={item.blog_image}
-            alt={item.title}
-            fill
-            sizes="(min-width:1024px) 66vw, 100vw"
-            className="object-cover"
-            />
-        </div>
-
-        {/* text sits BELOW the image */}
-        <div className="py-4">
-            <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
-            <BookOpenText className="h-3.5 w-3.5" />
-            <span>{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
-            </div>
-
-            <h3 className="mt-1 mb-2 text-2xl font-semibold text-themeTeal group-hover:text-themeSkyBlue transition line-clamp-2">{item.title}</h3>
-
-            <p className="text-themeTealLighter mb-3">{item.summary}</p>
-            <div className="mt-1 flex items-center gap-2 text-xs text-themeTealLighter">
-            <CalendarDays className="h-3 w-3" />
-            <time dateTime={item.created_at}>
-                {formatDate(item.created_at)}
-            </time>
-            </div>
-        </div>
-        </a>
-
-  );
-}
 
 /* =========================
    Page
@@ -425,32 +362,10 @@ export default function MarketInsightsPage() {
           ) : featuredInsights.length === 0 ? (
             <div className="text-center py-8 text-themeTealLighter">No featured insights available</div>
           ) : (
-            <div className="grid gap-6 lg:grid-cols-12">
-              {/* Left column: two small cards */}
-              <div className="lg:col-span-3 space-y-6">
-                {featuredInsights.slice(0, 2).map((item) => (
-                  <SmallCard key={item.id} item={item} />
-                ))}
-              </div>
-
-              {/* Center hero */}
-              <div className="lg:col-span-6">
-                {featuredInsights[2] && <HeroCard item={featuredInsights[2]} />}
-              </div>
-
-              {/* Right column: headline list */}
-              <div className="lg:col-span-3 space-y-6 divide divide-y divide-themeTeal">
-                {featuredInsights.slice(3).map((item) => (
-                  <a key={item.id} href={`/market-insights/${item.slug}`} className="block pb-6 hover:border-themeTeal transition">
-                    <div className="text-xs uppercase tracking-wide text-themeTealLighter">{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</div>
-                    <div className="mt-1 line-clamp-2 font-medium text-themeTeal hover:text-themeSkyBlue transition duration-500">{item.title}</div>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-themeTealLighter">
-                      <CalendarDays className="h-3 w-3" />
-                      <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
-                    </div>
-                  </a>
-                ))}
-              </div>
+            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              {featuredInsights.map((item) => (
+                <GridCard key={item.id} item={item} />
+              ))}
             </div>
           )}
         </section>
