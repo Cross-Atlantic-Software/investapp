@@ -9,8 +9,8 @@ export default function Home() {
       <BeyondMarket />
       <MarketPortfolio />
       <BulkDeals />
-      {/* <MarketInsight />
-      <InvestorKnowledge />
+      <MarketInsight />
+      {/* <InvestorKnowledge />
       <PrivateMarketTrends /> */}
       <NewsletterCTA />
     </>

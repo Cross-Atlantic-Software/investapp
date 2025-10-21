@@ -23,7 +23,15 @@ export type RelatedItem = {
 const DATE = new Intl.DateTimeFormat("en-US", {
   month: "short", day: "numeric", year: "numeric", timeZone: "UTC",
 });
-const fmt = (iso: string) => DATE.format(new Date(`${iso}T00:00:00Z`));
+const fmt = (iso: string) => {
+  try {
+    // Handle both date-only and full ISO strings
+    const date = iso.includes('T') ? new Date(iso) : new Date(`${iso}T00:00:00Z`);
+    return DATE.format(date);
+  } catch {
+    return iso;
+  }
+};
 
 export default function RelatedCarousel({ items }: { items: RelatedItem[] }) {
   const unique = useMemo(() => {

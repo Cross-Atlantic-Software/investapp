@@ -1487,4 +1487,324 @@ router.post("/insert-default-valuation-ranges", async (req, res) => {
     }
   });
 
+// Run migration to create market insights tables
+router.post("/create-market-insights-tables", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-market-insights-tables");
+    
+    // Create insight_sectors table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS insight_sectors (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_is_active (is_active)
+      )
+    `);
+
+    // Create insight_subsectors table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS insight_subsectors (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        insight_sector_id INT NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (insight_sector_id) REFERENCES insight_sectors(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_subsector_per_sector (insight_sector_id, name),
+        INDEX idx_sector_id (insight_sector_id),
+        INDEX idx_is_active (is_active)
+      )
+    `);
+
+    // Create insight_topics table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS insight_topics (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_is_active (is_active)
+      )
+    `);
+
+    // Create insight_subtopics table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS insight_subtopics (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        insight_topic_id INT NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (insight_topic_id) REFERENCES insight_topics(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_subtopic_per_topic (insight_topic_id, name),
+        INDEX idx_topic_id (insight_topic_id),
+        INDEX idx_is_active (is_active)
+      )
+    `);
+
+    // Create insight_themes table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS insight_themes (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        name VARCHAR(100) NOT NULL UNIQUE,
+        is_active BOOLEAN NOT NULL DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_is_active (is_active)
+      )
+    `);
+
+    // Create market_insights table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS market_insights (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        slug VARCHAR(255) NOT NULL UNIQUE,
+        is_featured BOOLEAN NOT NULL DEFAULT false,
+        title VARCHAR(255) NOT NULL,
+        blog_image VARCHAR(500) NOT NULL,
+        teaser TEXT NOT NULL,
+        summary TEXT NOT NULL,
+        first_part TEXT NOT NULL,
+        second_part TEXT NOT NULL,
+        insight_sector_id INT NULL,
+        insight_subsector_id INT NULL,
+        insight_topic_id INT NULL,
+        insight_subtopic_id INT NULL,
+        insight_theme_id INT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (insight_sector_id) REFERENCES insight_sectors(id) ON DELETE SET NULL,
+        FOREIGN KEY (insight_subsector_id) REFERENCES insight_subsectors(id) ON DELETE SET NULL,
+        FOREIGN KEY (insight_topic_id) REFERENCES insight_topics(id) ON DELETE SET NULL,
+        FOREIGN KEY (insight_subtopic_id) REFERENCES insight_subtopics(id) ON DELETE SET NULL,
+        FOREIGN KEY (insight_theme_id) REFERENCES insight_themes(id) ON DELETE SET NULL,
+        INDEX idx_is_featured (is_featured),
+        INDEX idx_sector_id (insight_sector_id),
+        INDEX idx_subsector_id (insight_subsector_id),
+        INDEX idx_topic_id (insight_topic_id),
+        INDEX idx_subtopic_id (insight_subtopic_id),
+        INDEX idx_theme_id (insight_theme_id)
+      )
+    `);
+
+    // Create market_insight_companies junction table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS market_insight_companies (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        market_insight_id INT NOT NULL,
+        product_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (market_insight_id) REFERENCES market_insights(id) ON DELETE CASCADE,
+        FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_insight_company (market_insight_id, product_id),
+        INDEX idx_insight_id (market_insight_id),
+        INDEX idx_product_id (product_id)
+      )
+    `);
+
+    // Create market_insight_subsectors junction table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS market_insight_subsectors (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        market_insight_id INT NOT NULL,
+        insight_subsector_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (market_insight_id) REFERENCES market_insights(id) ON DELETE CASCADE,
+        FOREIGN KEY (insight_subsector_id) REFERENCES insight_subsectors(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_insight_subsector (market_insight_id, insight_subsector_id),
+        INDEX idx_insight_id (market_insight_id),
+        INDEX idx_subsector_id (insight_subsector_id)
+      )
+    `);
+
+    // Create market_insight_subtopics junction table
+    await db.sequelize.query(`
+      CREATE TABLE IF NOT EXISTS market_insight_subtopics (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        market_insight_id INT NOT NULL,
+        insight_subtopic_id INT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        FOREIGN KEY (market_insight_id) REFERENCES market_insights(id) ON DELETE CASCADE,
+        FOREIGN KEY (insight_subtopic_id) REFERENCES insight_subtopics(id) ON DELETE CASCADE,
+        UNIQUE KEY unique_insight_subtopic (market_insight_id, insight_subtopic_id),
+        INDEX idx_insight_id (market_insight_id),
+        INDEX idx_subtopic_id (insight_subtopic_id)
+      )
+    `);
+    
+    console.log("✅ Created market insights tables successfully");
+    
+    res.json({
+      success: true,
+      message: "Market insights tables created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// Run migration to insert default market insights taxonomy data
+router.post("/insert-default-market-insights-taxonomy", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: insert-default-market-insights-taxonomy");
+    
+    // Insert default insight sectors
+    await db.sequelize.query(`
+      INSERT IGNORE INTO insight_sectors (name, is_active, created_at, updated_at) VALUES
+      ('Technology', true, NOW(), NOW()),
+      ('Healthcare', true, NOW(), NOW()),
+      ('Finance', true, NOW(), NOW()),
+      ('Energy', true, NOW(), NOW()),
+      ('Consumer Goods', true, NOW(), NOW())
+    `);
+
+    // Insert default insight subsectors
+    await db.sequelize.query(`
+      INSERT IGNORE INTO insight_subsectors (insight_sector_id, name, is_active, created_at, updated_at) VALUES
+      (1, 'Software', true, NOW(), NOW()),
+      (1, 'Hardware', true, NOW(), NOW()),
+      (2, 'Pharmaceuticals', true, NOW(), NOW()),
+      (2, 'Medical Devices', true, NOW(), NOW()),
+      (3, 'Banking', true, NOW(), NOW()),
+      (3, 'Insurance', true, NOW(), NOW())
+    `);
+
+    // Insert default insight topics
+    await db.sequelize.query(`
+      INSERT IGNORE INTO insight_topics (name, is_active, created_at, updated_at) VALUES
+      ('Market Analysis', true, NOW(), NOW()),
+      ('Company Updates', true, NOW(), NOW()),
+      ('Sector Trends', true, NOW(), NOW()),
+      ('Policy & Rates', true, NOW(), NOW()),
+      ('Private Markets', true, NOW(), NOW())
+    `);
+
+    // Insert default insight subtopics
+    await db.sequelize.query(`
+      INSERT IGNORE INTO insight_subtopics (insight_topic_id, name, is_active, created_at, updated_at) VALUES
+      (1, 'Market Outlook', true, NOW(), NOW()),
+      (1, 'Economic Indicators', true, NOW(), NOW()),
+      (2, 'Earnings Reports', true, NOW(), NOW()),
+      (2, 'Mergers & Acquisitions', true, NOW(), NOW()),
+      (3, 'Industry Growth', true, NOW(), NOW()),
+      (3, 'Competitive Landscape', true, NOW(), NOW())
+    `);
+
+    // Insert default insight themes
+    await db.sequelize.query(`
+      INSERT IGNORE INTO insight_themes (name, is_active, created_at, updated_at) VALUES
+      ('Growth Investing', true, NOW(), NOW()),
+      ('Value Investing', true, NOW(), NOW()),
+      ('ESG Investing', true, NOW(), NOW()),
+      ('Technology Disruption', true, NOW(), NOW()),
+      ('Market Volatility', true, NOW(), NOW())
+    `);
+    
+    console.log("✅ Inserted default market insights taxonomy data successfully");
+    
+    res.json({
+      success: true,
+      message: "Default market insights taxonomy data inserted successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// Add multiselect fields to market_insights table
+router.post("/add-company-ids-to-market-insights", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: add-company-ids-to-market-insights");
+    
+    // Add company_ids column
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      ADD COLUMN company_ids TEXT NULL COMMENT 'JSON string of company IDs array'
+    `);
+    
+    console.log("✅ Added company_ids field to market_insights table successfully");
+    
+    res.json({
+      success: true,
+      message: "Company IDs field added to market_insights table successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
+// Add content type and video file fields to market insights
+router.post("/add-content-type-to-market-insights", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: add-content-type-to-market-insights");
+    
+    // Add content_type column with default value TEXT
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      ADD COLUMN content_type ENUM('TEXT', 'VIDEO') NOT NULL DEFAULT 'TEXT'
+    `);
+    
+    // Add video_file column
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      ADD COLUMN video_file VARCHAR(500) NULL COMMENT 'S3 URL for uploaded video file'
+    `);
+    
+    // Modify first_part and second_part to allow NULL
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      MODIFY COLUMN first_part TEXT NULL
+    `);
+    
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      MODIFY COLUMN second_part TEXT NULL
+    `);
+    
+    // Add index for content_type
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      ADD INDEX idx_market_insights_content_type (content_type)
+    `);
+    
+    console.log("✅ Added content_type and video_file fields to market_insights table successfully");
+    
+    res.json({
+      success: true,
+      message: "Content type and video file fields added to market_insights table successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
 export default router;

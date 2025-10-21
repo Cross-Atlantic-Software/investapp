@@ -34,6 +34,18 @@ import { Subsector, initializeSubsectorModel } from "../Models/Subsector";
 import KYCApplication, { initializeKYCApplicationModel } from "../Models/KYCApplication";
 import BuyRequest, { initializeBuyRequestModel } from "../Models/BuyRequest";
 import ValuationRange, { initializeValuationRangeModel } from "../Models/ValuationRange";
+import { InsightSector, initializeInsightSectorModel } from "../Models/InsightSector";
+import { InsightSubsector, initializeInsightSubsectorModel } from "../Models/InsightSubsector";
+import { InsightTopic, initializeInsightTopicModel } from "../Models/InsightTopic";
+import { InsightSubtopic, initializeInsightSubtopicModel } from "../Models/InsightSubtopic";
+import { InsightTheme, initializeInsightThemeModel } from "../Models/InsightTheme";
+import { MarketInsight, initializeMarketInsightModel } from "../Models/MarketInsight";
+import { KnowledgeSector, initializeKnowledgeSectorModel } from "../Models/KnowledgeSector";
+import { KnowledgeSubsector, initializeKnowledgeSubsectorModel } from "../Models/KnowledgeSubsector";
+import { KnowledgeTopic, initializeKnowledgeTopicModel } from "../Models/KnowledgeTopic";
+import { KnowledgeSubtopic, initializeKnowledgeSubtopicModel } from "../Models/KnowledgeSubtopic";
+import { KnowledgeTheme, initializeKnowledgeThemeModel } from "../Models/KnowledgeTheme";
+import { KnowledgeCenter, initializeKnowledgeCenterModel } from "../Models/KnowledgeCenter";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -163,6 +175,22 @@ async function initializeSequelize() {
   // Initialize ValuationRange model
   initializeValuationRangeModel(sequelize);
   
+  // Initialize Market Insight models
+  initializeInsightSectorModel(sequelize);
+  initializeInsightSubsectorModel(sequelize);
+  initializeInsightTopicModel(sequelize);
+  initializeInsightSubtopicModel(sequelize);
+  initializeInsightThemeModel(sequelize);
+  initializeMarketInsightModel(sequelize);
+  
+  // Initialize Knowledge Center models
+  initializeKnowledgeSectorModel(sequelize);
+  initializeKnowledgeSubsectorModel(sequelize);
+  initializeKnowledgeTopicModel(sequelize);
+  initializeKnowledgeSubtopicModel(sequelize);
+  initializeKnowledgeThemeModel(sequelize);
+  initializeKnowledgeCenterModel(sequelize);
+  
   // Set up Sector and Subsector associations
   Sector.hasMany(Subsector, {
     foreignKey: 'sector_id',
@@ -238,6 +266,78 @@ async function initializeSequelize() {
   Product.hasMany(BuyRequest, {
     foreignKey: 'stock_id',
     as: 'ProductBuyRequests'
+  });
+
+  // Set up Market Insight associations
+  InsightSector.hasMany(InsightSubsector, {
+    foreignKey: 'insight_sector_id',
+    as: 'subsectors'
+  });
+
+  InsightSubsector.belongsTo(InsightSector, {
+    foreignKey: 'insight_sector_id',
+    as: 'sector'
+  });
+
+  InsightTopic.hasMany(InsightSubtopic, {
+    foreignKey: 'insight_topic_id',
+    as: 'subtopics'
+  });
+
+  InsightSubtopic.belongsTo(InsightTopic, {
+    foreignKey: 'insight_topic_id',
+    as: 'topic'
+  });
+
+  MarketInsight.belongsTo(InsightSector, {
+    foreignKey: 'insight_sector_id',
+    as: 'InsightSector'
+  });
+
+  MarketInsight.belongsTo(InsightTopic, {
+    foreignKey: 'insight_topic_id',
+    as: 'InsightTopic'
+  });
+
+  MarketInsight.belongsTo(InsightTheme, {
+    foreignKey: 'insight_theme_id',
+    as: 'InsightTheme'
+  });
+
+  // Set up Knowledge Center associations
+  KnowledgeSector.hasMany(KnowledgeSubsector, {
+    foreignKey: 'knowledge_sector_id',
+    as: 'subsectors'
+  });
+
+  KnowledgeSubsector.belongsTo(KnowledgeSector, {
+    foreignKey: 'knowledge_sector_id',
+    as: 'sector'
+  });
+
+  KnowledgeTopic.hasMany(KnowledgeSubtopic, {
+    foreignKey: 'knowledge_topic_id',
+    as: 'subtopics'
+  });
+
+  KnowledgeSubtopic.belongsTo(KnowledgeTopic, {
+    foreignKey: 'knowledge_topic_id',
+    as: 'topic'
+  });
+
+  KnowledgeCenter.belongsTo(KnowledgeSector, {
+    foreignKey: 'knowledge_sector_id',
+    as: 'KnowledgeSector'
+  });
+
+  KnowledgeCenter.belongsTo(KnowledgeTopic, {
+    foreignKey: 'knowledge_topic_id',
+    as: 'KnowledgeTopic'
+  });
+
+  KnowledgeCenter.belongsTo(KnowledgeTheme, {
+    foreignKey: 'knowledge_theme_id',
+    as: 'KnowledgeTheme'
   });
 
   // Set up associations for ShareholderType
@@ -505,6 +605,90 @@ export const db = {
       throw new Error('ValuationRange model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return ValuationRange;
+  },
+
+  get InsightSector() {
+    if (!InsightSector) {
+      throw new Error('InsightSector model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return InsightSector;
+  },
+
+  get InsightSubsector() {
+    if (!InsightSubsector) {
+      throw new Error('InsightSubsector model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return InsightSubsector;
+  },
+
+  get InsightTopic() {
+    if (!InsightTopic) {
+      throw new Error('InsightTopic model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return InsightTopic;
+  },
+
+  get InsightSubtopic() {
+    if (!InsightSubtopic) {
+      throw new Error('InsightSubtopic model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return InsightSubtopic;
+  },
+
+  get InsightTheme() {
+    if (!InsightTheme) {
+      throw new Error('InsightTheme model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return InsightTheme;
+  },
+
+  get MarketInsight() {
+    if (!MarketInsight) {
+      throw new Error('MarketInsight model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return MarketInsight;
+  },
+
+  get KnowledgeSector() {
+    if (!KnowledgeSector) {
+      throw new Error('KnowledgeSector model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return KnowledgeSector;
+  },
+
+  get KnowledgeSubsector() {
+    if (!KnowledgeSubsector) {
+      throw new Error('KnowledgeSubsector model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return KnowledgeSubsector;
+  },
+
+  get KnowledgeTopic() {
+    if (!KnowledgeTopic) {
+      throw new Error('KnowledgeTopic model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return KnowledgeTopic;
+  },
+
+  get KnowledgeSubtopic() {
+    if (!KnowledgeSubtopic) {
+      throw new Error('KnowledgeSubtopic model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return KnowledgeSubtopic;
+  },
+
+  get KnowledgeTheme() {
+    if (!KnowledgeTheme) {
+      throw new Error('KnowledgeTheme model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return KnowledgeTheme;
+  },
+
+  get KnowledgeCenter() {
+    if (!KnowledgeCenter) {
+      throw new Error('KnowledgeCenter model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return KnowledgeCenter;
   },
 };
 
