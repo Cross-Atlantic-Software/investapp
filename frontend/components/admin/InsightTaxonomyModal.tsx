@@ -42,7 +42,7 @@ interface InsightSubtopic {
 interface InsightTaxonomyModalProps {
   isOpen: boolean;
   onClose: () => void;
-  type: 'sectors' | 'topics' | 'themes';
+  type: 'sectors' | 'topics' | 'themes' | 'knowledge-sectors' | 'knowledge-topics' | 'knowledge-themes';
 }
 
 const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
@@ -76,12 +76,15 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       
-      if (type === 'sectors') {
+      if (type === 'sectors' || type === 'knowledge-sectors') {
+        const baseUrl = type === 'sectors' ? '/api/admin/insight-sectors' : '/api/admin/knowledge-sectors';
+        const subsectorUrl = type === 'sectors' ? '/api/admin/insight-subsectors' : '/api/admin/knowledge-subsectors';
+        
         const [sectorsRes, subsectorsRes] = await Promise.all([
-          fetch('/api/admin/insight-sectors', {
+          fetch(baseUrl, {
             headers: { 'token': token }
           }),
-          fetch('/api/admin/insight-subsectors', {
+          fetch(subsectorUrl, {
             headers: { 'token': token }
           })
         ]);
@@ -93,12 +96,15 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
 
         if (sectorsData.success) setSectors(sectorsData.data);
         if (subsectorsData.success) setSubsectors(subsectorsData.data);
-      } else if (type === 'topics') {
+      } else if (type === 'topics' || type === 'knowledge-topics') {
+        const baseUrl = type === 'topics' ? '/api/admin/insight-topics' : '/api/admin/knowledge-topics';
+        const subtopicUrl = type === 'topics' ? '/api/admin/insight-subtopics' : '/api/admin/knowledge-subtopics';
+        
         const [topicsRes, subtopicsRes] = await Promise.all([
-          fetch('/api/admin/insight-topics', {
+          fetch(baseUrl, {
             headers: { 'token': token }
           }),
-          fetch('/api/admin/insight-subtopics', {
+          fetch(subtopicUrl, {
             headers: { 'token': token }
           })
         ]);
@@ -110,8 +116,10 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
 
         if (topicsData.success) setTopics(topicsData.data);
         if (subtopicsData.success) setSubtopics(subtopicsData.data);
-      } else if (type === 'themes') {
-        const response = await fetch('/api/admin/insight-themes', {
+      } else if (type === 'themes' || type === 'knowledge-themes') {
+        const baseUrl = type === 'themes' ? '/api/admin/insight-themes' : '/api/admin/knowledge-themes';
+        
+        const response = await fetch(baseUrl, {
           headers: { 'token': token }
         });
         const data = await response.json();
@@ -138,22 +146,22 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
       let endpoint = '';
       let payload: any = { name: formData.name.trim(), is_active: formData.is_active };
 
-      if (type === 'sectors') {
+      if (type === 'sectors' || type === 'knowledge-sectors') {
         if (activeTab === 'sectors') {
-          endpoint = '/api/admin/insight-sectors';
+          endpoint = type === 'sectors' ? '/api/admin/insight-sectors' : '/api/admin/knowledge-sectors';
         } else {
-          endpoint = '/api/admin/insight-subsectors';
-          payload.insight_sector_id = parseInt(formData.insight_sector_id);
+          endpoint = type === 'sectors' ? '/api/admin/insight-subsectors' : '/api/admin/knowledge-subsectors';
+          payload[type === 'sectors' ? 'insight_sector_id' : 'knowledge_sector_id'] = parseInt(formData.insight_sector_id);
         }
-      } else if (type === 'topics') {
+      } else if (type === 'topics' || type === 'knowledge-topics') {
         if (activeTab === 'topics') {
-          endpoint = '/api/admin/insight-topics';
+          endpoint = type === 'topics' ? '/api/admin/insight-topics' : '/api/admin/knowledge-topics';
         } else {
-          endpoint = '/api/admin/insight-subtopics';
-          payload.insight_topic_id = parseInt(formData.insight_topic_id);
+          endpoint = type === 'topics' ? '/api/admin/insight-subtopics' : '/api/admin/knowledge-subtopics';
+          payload[type === 'topics' ? 'insight_topic_id' : 'knowledge_topic_id'] = parseInt(formData.insight_topic_id);
         }
-      } else if (type === 'themes') {
-        endpoint = '/api/admin/insight-themes';
+      } else if (type === 'themes' || type === 'knowledge-themes') {
+        endpoint = type === 'themes' ? '/api/admin/insight-themes' : '/api/admin/knowledge-themes';
       }
 
       const response = await fetch(endpoint, {
@@ -190,22 +198,22 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
       let endpoint = '';
       let payload: any = { name: formData.name.trim(), is_active: formData.is_active };
 
-      if (type === 'sectors') {
+      if (type === 'sectors' || type === 'knowledge-sectors') {
         if (activeTab === 'sectors') {
-          endpoint = `/api/admin/insight-sectors/${editingItem.id}`;
+          endpoint = type === 'sectors' ? `/api/admin/insight-sectors/${editingItem.id}` : `/api/admin/knowledge-sectors/${editingItem.id}`;
         } else {
-          endpoint = `/api/admin/insight-subsectors/${editingItem.id}`;
-          payload.insight_sector_id = parseInt(formData.insight_sector_id);
+          endpoint = type === 'sectors' ? `/api/admin/insight-subsectors/${editingItem.id}` : `/api/admin/knowledge-subsectors/${editingItem.id}`;
+          payload[type === 'sectors' ? 'insight_sector_id' : 'knowledge_sector_id'] = parseInt(formData.insight_sector_id);
         }
-      } else if (type === 'topics') {
+      } else if (type === 'topics' || type === 'knowledge-topics') {
         if (activeTab === 'topics') {
-          endpoint = `/api/admin/insight-topics/${editingItem.id}`;
+          endpoint = type === 'topics' ? `/api/admin/insight-topics/${editingItem.id}` : `/api/admin/knowledge-topics/${editingItem.id}`;
         } else {
-          endpoint = `/api/admin/insight-subtopics/${editingItem.id}`;
-          payload.insight_topic_id = parseInt(formData.insight_topic_id);
+          endpoint = type === 'topics' ? `/api/admin/insight-subtopics/${editingItem.id}` : `/api/admin/knowledge-subtopics/${editingItem.id}`;
+          payload[type === 'topics' ? 'insight_topic_id' : 'knowledge_topic_id'] = parseInt(formData.insight_topic_id);
         }
-      } else if (type === 'themes') {
-        endpoint = `/api/admin/insight-themes/${editingItem.id}`;
+      } else if (type === 'themes' || type === 'knowledge-themes') {
+        endpoint = type === 'themes' ? `/api/admin/insight-themes/${editingItem.id}` : `/api/admin/knowledge-themes/${editingItem.id}`;
       }
 
       const response = await fetch(endpoint, {
@@ -239,20 +247,20 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
     try {
       const token = sessionStorage.getItem('adminToken') || '';
       let endpoint = '';
-      if (type === 'sectors') {
+      if (type === 'sectors' || type === 'knowledge-sectors') {
         if (activeTab === 'sectors') {
-          endpoint = `/api/admin/insight-sectors/${id}`;
+          endpoint = type === 'sectors' ? `/api/admin/insight-sectors/${id}` : `/api/admin/knowledge-sectors/${id}`;
         } else {
-          endpoint = `/api/admin/insight-subsectors/${id}`;
+          endpoint = type === 'sectors' ? `/api/admin/insight-subsectors/${id}` : `/api/admin/knowledge-subsectors/${id}`;
         }
-      } else if (type === 'topics') {
+      } else if (type === 'topics' || type === 'knowledge-topics') {
         if (activeTab === 'topics') {
-          endpoint = `/api/admin/insight-topics/${id}`;
+          endpoint = type === 'topics' ? `/api/admin/insight-topics/${id}` : `/api/admin/knowledge-topics/${id}`;
         } else {
-          endpoint = `/api/admin/insight-subtopics/${id}`;
+          endpoint = type === 'topics' ? `/api/admin/insight-subtopics/${id}` : `/api/admin/knowledge-subtopics/${id}`;
         }
-      } else if (type === 'themes') {
-        endpoint = `/api/admin/insight-themes/${id}`;
+      } else if (type === 'themes' || type === 'knowledge-themes') {
+        endpoint = type === 'themes' ? `/api/admin/insight-themes/${id}` : `/api/admin/knowledge-themes/${id}`;
       }
 
       const response = await fetch(endpoint, { 
@@ -292,9 +300,9 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
   };
 
   const getCurrentData = () => {
-    if (type === 'sectors') {
+    if (type === 'sectors' || type === 'knowledge-sectors') {
       return activeTab === 'sectors' ? sectors : subsectors;
-    } else if (type === 'topics') {
+    } else if (type === 'topics' || type === 'knowledge-topics') {
       return activeTab === 'topics' ? topics : subtopics;
     } else {
       return sectors; // For themes, reuse sectors state
@@ -321,6 +329,9 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
       case 'sectors': return 'Manage Insight Sectors & Subsectors';
       case 'topics': return 'Manage Insight Topics & Subtopics';
       case 'themes': return 'Manage Insight Themes';
+      case 'knowledge-sectors': return 'Manage Knowledge Sectors & Subsectors';
+      case 'knowledge-topics': return 'Manage Knowledge Topics & Subtopics';
+      case 'knowledge-themes': return 'Manage Knowledge Themes';
       default: return 'Manage Taxonomies';
     }
   };
@@ -330,6 +341,9 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
       case 'sectors': return activeTab === 'sectors' ? 'Sectors' : 'Subsectors';
       case 'topics': return activeTab === 'topics' ? 'Topics' : 'Subtopics';
       case 'themes': return 'Themes';
+      case 'knowledge-sectors': return activeTab === 'sectors' ? 'Sectors' : 'Subsectors';
+      case 'knowledge-topics': return activeTab === 'topics' ? 'Topics' : 'Subtopics';
+      case 'knowledge-themes': return 'Themes';
       default: return 'Items';
     }
   };
@@ -353,39 +367,39 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
         </div>
 
         {/* Tabs - Show for sectors and topics */}
-        {(type === 'sectors' || type === 'topics') && (
+        {(type === 'sectors' || type === 'topics' || type === 'knowledge-sectors' || type === 'knowledge-topics') && (
           <div className="flex border-b">
             <button
               onClick={() => {
-                setActiveTab(type === 'sectors' ? 'sectors' : 'topics');
+                setActiveTab((type === 'sectors' || type === 'knowledge-sectors') ? 'sectors' : 'topics');
                 resetForm();
                 setEditingItem(null);
                 setIsCreating(false);
               }}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === (type === 'sectors' ? 'sectors' : 'topics')
+                activeTab === ((type === 'sectors' || type === 'knowledge-sectors') ? 'sectors' : 'topics')
                   ? 'border-themeTeal text-themeTeal'
                   : 'border-transparent text-themeTealLighter hover:text-themeTeal'
               }`}
             >
-              {type === 'sectors' ? <Building2 className="w-4 h-4" /> : <Tag className="w-4 h-4" />}
-              {type === 'sectors' ? 'Sectors' : 'Topics'}
+              {(type === 'sectors' || type === 'knowledge-sectors') ? <Building2 className="w-4 h-4" /> : <Tag className="w-4 h-4" />}
+              {(type === 'sectors' || type === 'knowledge-sectors') ? 'Sectors' : 'Topics'}
             </button>
             <button
               onClick={() => {
-                setActiveTab(type === 'sectors' ? 'subsectors' : 'subtopics');
+                setActiveTab((type === 'sectors' || type === 'knowledge-sectors') ? 'subsectors' : 'subtopics');
                 resetForm();
                 setEditingItem(null);
                 setIsCreating(false);
               }}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === (type === 'sectors' ? 'subsectors' : 'subtopics')
+                activeTab === ((type === 'sectors' || type === 'knowledge-sectors') ? 'subsectors' : 'subtopics')
                   ? 'border-themeTeal text-themeTeal'
                   : 'border-transparent text-themeTealLighter hover:text-themeTeal'
               }`}
             >
-              {type === 'sectors' ? <Building className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
-              {type === 'sectors' ? 'Subsectors' : 'Subtopics'}
+              {(type === 'sectors' || type === 'knowledge-sectors') ? <Building className="w-4 h-4" /> : <FileText className="w-4 h-4" />}
+              {(type === 'sectors' || type === 'knowledge-sectors') ? 'Subsectors' : 'Subtopics'}
             </button>
           </div>
         )}
@@ -423,7 +437,7 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
                 {editingItem ? 'Edit' : 'Add'} {getTabLabel().slice(0, -1)}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {type === 'sectors' && activeTab === 'subsectors' && (
+                {(type === 'sectors' || type === 'knowledge-sectors') && activeTab === 'subsectors' && (
                   <div>
                     <label className="block text-sm font-medium text-themeTeal mb-1">Sector *</label>
                     <select
@@ -439,7 +453,7 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
                   </div>
                 )}
 
-                {type === 'topics' && activeTab === 'subtopics' && (
+                {(type === 'topics' || type === 'knowledge-topics') && activeTab === 'subtopics' && (
                   <div>
                     <label className="block text-sm font-medium text-themeTeal mb-1">Topic *</label>
                     <select

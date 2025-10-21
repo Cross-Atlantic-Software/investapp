@@ -146,6 +146,37 @@ export const uploadInsightVideo = multer({
   }
 });
 
+// Knowledge Center Upload Middleware - Separate folders for Knowledge Center content
+export const uploadKnowledgeCenterImage = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.S3_BUCKET!,
+    contentType: (req, file, cb) => {
+      console.log('📁 Knowledge Center file upload:', file.originalname, 'MIME:', file.mimetype);
+      cb(null, file.mimetype);
+    },
+    key: (_req: Request, file: any, cb: (error: any, key?: string) => void) => {
+      // Check if it's a video or image based on mimetype
+      const isVideo = file.mimetype === 'video/mp4';
+      const folder = isVideo ? 'knowledge-videos' : 'knowledge-blogs';
+      const uniqueName = `${folder}/${Date.now()}-${file.originalname}`;
+      console.log('🔑 Knowledge Center S3 Key:', uniqueName);
+      cb(null, uniqueName);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    // Accept both image files and MP4 videos for knowledge centers
+    if (file.mimetype.startsWith('image/') || file.mimetype === 'video/mp4') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image and MP4 video files are allowed'));
+    }
+  },
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit to accommodate videos
+  }
+});
+
 // KYC Document Upload Middleware
 export const uploadKYCDocuments = multer({
   storage: multerS3({

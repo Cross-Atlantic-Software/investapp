@@ -1,6 +1,6 @@
 import express from "express";
 import adminMiddleware from "../utils/middlewares/admin-middleware";
-import { uploadIcon, uploadBanner, uploadBlogImage, uploadInsightVideo } from "../utils/middlewares/s3Upload";
+import { uploadIcon, uploadBanner, uploadBlogImage, uploadInsightVideo, uploadKnowledgeCenterImage } from "../utils/middlewares/s3Upload";
 import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
@@ -47,6 +47,12 @@ import { InsightTopicController } from "../controllers/admin/insightTopicControl
 import { InsightSubtopicController } from "../controllers/admin/insightSubtopicController";
 import { InsightThemeController } from "../controllers/admin/insightThemeController";
 import { MarketInsightController } from "../controllers/admin/marketInsightController";
+import { KnowledgeCenterController } from "../controllers/admin/knowledgeCenterController";
+import { KnowledgeSectorController } from "../controllers/admin/knowledgeSectorController";
+import { KnowledgeSubsectorController } from "../controllers/admin/knowledgeSubsectorController";
+import { KnowledgeTopicController } from "../controllers/admin/knowledgeTopicController";
+import { KnowledgeSubtopicController } from "../controllers/admin/knowledgeSubtopicController";
+import { KnowledgeThemeController } from "../controllers/admin/knowledgeThemeController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
@@ -480,5 +486,55 @@ router.put("/market-insights/:id", uploadBlogImage.fields([
   { name: 'video_file', maxCount: 1 }
 ]), MarketInsightController.updateMarketInsight);
 router.delete("/market-insights/:id", MarketInsightController.deleteMarketInsight);
+
+// Knowledge Centers - handle both blog_image and video_file
+router.get("/knowledge-centers", KnowledgeCenterController.getAllKnowledgeCenters);
+router.get("/knowledge-centers/featured", KnowledgeCenterController.getFeaturedKnowledgeCenters);
+router.get("/knowledge-centers/slug/:slug", KnowledgeCenterController.getKnowledgeCenterBySlug);
+router.get("/knowledge-centers/:id", KnowledgeCenterController.getKnowledgeCenterById);
+router.post("/knowledge-centers", uploadKnowledgeCenterImage.fields([
+  { name: 'blog_image', maxCount: 1 },
+  { name: 'video_file', maxCount: 1 }
+]), KnowledgeCenterController.createKnowledgeCenter);
+router.put("/knowledge-centers/:id", uploadKnowledgeCenterImage.fields([
+  { name: 'blog_image', maxCount: 1 },
+  { name: 'video_file', maxCount: 1 }
+]), KnowledgeCenterController.updateKnowledgeCenter);
+router.delete("/knowledge-centers/:id", KnowledgeCenterController.deleteKnowledgeCenter);
+
+// Knowledge Sectors
+router.get("/knowledge-sectors", KnowledgeSectorController.getAllKnowledgeSectors);
+router.get("/knowledge-sectors/:id", KnowledgeSectorController.getKnowledgeSectorById);
+router.post("/knowledge-sectors", KnowledgeSectorController.createKnowledgeSector);
+router.put("/knowledge-sectors/:id", KnowledgeSectorController.updateKnowledgeSector);
+router.delete("/knowledge-sectors/:id", KnowledgeSectorController.deleteKnowledgeSector);
+
+// Knowledge Subsectors
+router.get("/knowledge-subsectors", KnowledgeSubsectorController.getAllKnowledgeSubsectors);
+router.get("/knowledge-subsectors/:id", KnowledgeSubsectorController.getKnowledgeSubsectorById);
+router.post("/knowledge-subsectors", KnowledgeSubsectorController.createKnowledgeSubsector);
+router.put("/knowledge-subsectors/:id", KnowledgeSubsectorController.updateKnowledgeSubsector);
+router.delete("/knowledge-subsectors/:id", KnowledgeSubsectorController.deleteKnowledgeSubsector);
+
+// Knowledge Topics
+router.get("/knowledge-topics", KnowledgeTopicController.getAllKnowledgeTopics);
+router.get("/knowledge-topics/:id", KnowledgeTopicController.getKnowledgeTopicById);
+router.post("/knowledge-topics", KnowledgeTopicController.createKnowledgeTopic);
+router.put("/knowledge-topics/:id", KnowledgeTopicController.updateKnowledgeTopic);
+router.delete("/knowledge-topics/:id", KnowledgeTopicController.deleteKnowledgeTopic);
+
+// Knowledge Subtopics
+router.get("/knowledge-subtopics", KnowledgeSubtopicController.getAllKnowledgeSubtopics);
+router.get("/knowledge-subtopics/:id", KnowledgeSubtopicController.getKnowledgeSubtopicById);
+router.post("/knowledge-subtopics", KnowledgeSubtopicController.createKnowledgeSubtopic);
+router.put("/knowledge-subtopics/:id", KnowledgeSubtopicController.updateKnowledgeSubtopic);
+router.delete("/knowledge-subtopics/:id", KnowledgeSubtopicController.deleteKnowledgeSubtopic);
+
+// Knowledge Themes
+router.get("/knowledge-themes", KnowledgeThemeController.getAllKnowledgeThemes);
+router.get("/knowledge-themes/:id", KnowledgeThemeController.getKnowledgeThemeById);
+router.post("/knowledge-themes", KnowledgeThemeController.createKnowledgeTheme);
+router.put("/knowledge-themes/:id", KnowledgeThemeController.updateKnowledgeTheme);
+router.delete("/knowledge-themes/:id", KnowledgeThemeController.deleteKnowledgeTheme);
 
 export default router;
