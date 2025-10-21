@@ -746,7 +746,9 @@ export default function KnowledgeCentersPage() {
                         Featured
                       </span>
                     ) : (
-                      <span className="text-themeTealLighter">-</span>
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+                        Unfeatured
+                      </span>
                     )}
                   </td>
                   <td className="px-4 py-3 text-sm text-themeTealLighter">

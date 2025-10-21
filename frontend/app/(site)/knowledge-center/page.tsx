@@ -348,9 +348,50 @@ export default function KnowledgeCenterPage() {
             </div>
         </section>
 
+        {/* Featured band */}
+        <section className="mb-10">
+          <Heading as="h4" className="mb-4 font-semibold">
+            Featured Knowledge Center
+          </Heading>
+
+          {loading ? (
+            <div className="text-center py-8 text-themeTealLighter">Loading...</div>
+          ) : featuredCenters.length === 0 ? (
+            <div className="text-center py-8 text-themeTealLighter">No featured content available</div>
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-12">
+              {/* Left column: two small cards */}
+              <div className="lg:col-span-3 space-y-6">
+                {featuredCenters.slice(0, 2).map((item) => (
+                  <Card key={item.id} item={item} />
+                ))}
+              </div>
+
+              {/* Center hero */}
+              <div className="lg:col-span-6">
+                {featuredCenters[2] && <Card item={featuredCenters[2]} />}
+              </div>
+
+              {/* Right column: headline list */}
+              <div className="lg:col-span-3 space-y-6 divide divide-y divide-themeTeal">
+                {featuredCenters.slice(3).map((item) => (
+                  <a key={item.id} href={`/knowledge-center/${item.slug}`} className="block pb-6 hover:border-themeTeal transition">
+                    <div className="text-xs uppercase tracking-wide text-themeTealLighter">{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</div>
+                    <div className="mt-1 line-clamp-2 font-medium text-themeTeal hover:text-themeSkyBlue transition duration-500">{item.title}</div>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-themeTealLighter">
+                      <CalendarDays className="h-3 w-3" />
+                      <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+
         {/* Grid */}
         <section>
-            <Heading as="h4" className="mt-4 mb-4 font-semibold">Knowledge Center</Heading>
+            <Heading as="h4" className="mt-4 mb-4 font-semibold">All Knowledge Center</Heading>
 
             {loading ? (
                 <div className="text-center py-8 text-themeTealLighter">Loading...</div>

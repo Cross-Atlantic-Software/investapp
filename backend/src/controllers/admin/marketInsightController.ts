@@ -432,7 +432,7 @@ export class MarketInsightController {
       // Create the market insight
       const marketInsight = await db.MarketInsight.create({
         slug: slug.trim(),
-        is_featured: Boolean(is_featured),
+        is_featured: is_featured === 'true' || is_featured === true,
         title: title.trim(),
         blog_image: blog_image, // S3 URL, no need to trim
         teaser: teaser.trim(),
@@ -656,7 +656,7 @@ export class MarketInsightController {
       // Update the market insight
       await marketInsight.update({
         ...(slug && { slug: slug.trim() }),
-        ...(is_featured !== undefined && { is_featured: Boolean(is_featured) }),
+        ...(is_featured !== undefined && { is_featured: is_featured === 'true' || is_featured === true }),
         ...(title && { title: title.trim() }),
         ...(blog_image && { blog_image: blog_image }), // S3 URL, no need to trim
         ...(teaser && { teaser: teaser.trim() }),

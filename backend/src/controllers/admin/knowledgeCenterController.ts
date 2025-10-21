@@ -432,7 +432,7 @@ export class KnowledgeCenterController {
       // Create the knowledge center
       const knowledgeCenter = await db.KnowledgeCenter.create({
         slug: slug.trim(),
-        is_featured: Boolean(is_featured),
+        is_featured: is_featured === 'true' || is_featured === true,
         title: title.trim(),
         blog_image: blog_image, // S3 URL, no need to trim
         teaser: teaser.trim(),
@@ -656,7 +656,7 @@ export class KnowledgeCenterController {
       // Update the knowledge center
       await knowledgeCenter.update({
         ...(slug && { slug: slug.trim() }),
-        ...(is_featured !== undefined && { is_featured: Boolean(is_featured) }),
+        ...(is_featured !== undefined && { is_featured: is_featured === 'true' || is_featured === true }),
         ...(title && { title: title.trim() }),
         ...(blog_image && { blog_image: blog_image }), // S3 URL, no need to trim
         ...(teaser && { teaser: teaser.trim() }),
