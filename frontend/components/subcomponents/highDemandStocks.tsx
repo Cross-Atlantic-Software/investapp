@@ -24,6 +24,7 @@ type Props = {
   title?: string;
   items: Share[];
   autoplayMs?: number;
+  singleSlide?: boolean;
 };
 
 function Logo({ name, src }: { name: string; src: string }) {
@@ -69,6 +70,7 @@ export default function HighDemandStocks({
   title = "High Demand Stocks",
   items,
   autoplayMs = 5000,
+  singleSlide = false,
 }: Props) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -93,10 +95,11 @@ export default function HighDemandStocks({
           <Swiper
             modules={[Autoplay, A11y]}
             autoplay={{ delay: autoplayMs, disableOnInteraction: false }}
-            slidesPerView={1.05}
+            slidesPerView={singleSlide ? 1 : 1.05}
             spaceBetween={12}
             pagination={{ clickable: true }}
-            breakpoints={{
+            loop={singleSlide}
+            breakpoints={singleSlide ? {} : {
               640: { slidesPerView: 2, spaceBetween: 16 },
               768: { slidesPerView: 2.5, spaceBetween: 18 },
               1024: { slidesPerView: 3, spaceBetween: 20 },

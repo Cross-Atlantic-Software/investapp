@@ -15,7 +15,7 @@ const items: MenuItem[] = [
   //     { label: "Reports", href: "/market-insights" },
   //   ],
   // },
-  // { label: "Knowledge Center", href: "/knowledge-center" },
+  { label: "Knowledge Center", href: "/knowledge-center" },
   // { label: "Partner Program", href: "/partner-program" },
   { label: "About", href: "/about" },
   { label: "Contact", href: "/contact" },

@@ -12,6 +12,11 @@ import { StockFaqController } from "../controllers/admin/stockFaqController";
 import { ContactFaqController } from "../controllers/admin/contactFaqController";
 import { ThemeController } from "../controllers/admin/themeController";
 import { MarketInsightController } from "../controllers/admin/marketInsightController";
+import { KnowledgeCenterController } from "../controllers/admin/knowledgeCenterController";
+import { InsightTopicController } from "../controllers/admin/insightTopicController";
+import { InsightSubtopicController } from "../controllers/admin/insightSubtopicController";
+import { KnowledgeTopicController } from "../controllers/admin/knowledgeTopicController";
+import { KnowledgeSubtopicController } from "../controllers/admin/knowledgeSubtopicController";
 
 const router = express.Router();
 
@@ -72,5 +77,18 @@ router.get("/themes/select", ThemeController.getThemesForSelect);
 router.get("/market-insights", MarketInsightController.getAllMarketInsights);
 router.get("/market-insights/featured", MarketInsightController.getFeaturedMarketInsights);
 router.get("/market-insights/slug/:slug", MarketInsightController.getMarketInsightBySlug);
+
+// Public Knowledge Center Routes (no authentication required)
+router.get("/knowledge-centers", KnowledgeCenterController.getAllKnowledgeCenters);
+router.get("/knowledge-centers/featured", KnowledgeCenterController.getFeaturedKnowledgeCenters);
+router.get("/knowledge-centers/slug/:slug", KnowledgeCenterController.getKnowledgeCenterBySlug);
+
+// Public Insight Topics Routes (no authentication required)
+router.get("/insight-topics", InsightTopicController.getAllInsightTopics);
+router.get("/insight-subtopics", InsightSubtopicController.getAllInsightSubtopics);
+
+// Public Knowledge Topics Routes (no authentication required)
+router.get("/knowledge-topics", KnowledgeTopicController.getAllKnowledgeTopics);
+router.get("/knowledge-subtopics", KnowledgeSubtopicController.getAllKnowledgeSubtopics);
 
 export default router;

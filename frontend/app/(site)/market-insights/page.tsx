@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Filter, CalendarDays, BookOpenText } from "lucide-react";
+import { Search, Filter, CalendarDays, BookOpenText, ChevronDown } from "lucide-react";
 import Breadcrumbs, { type Crumb } from "@/components/subcomponents/breadcrumbs";
 import { Heading } from "@/components/ui";
 import Image from "next/image";
@@ -9,93 +9,59 @@ import Image from "next/image";
 /* =========================
    Types
    ========================= */
-export type Topic =
-  | "All Topics"
-  | "Market Outlook"
-  | "Company Updates"
-  | "Sector Trends"
-  | "Policy & Rates"
-  | "Private Markets";
-
-type ItemType = "Guide" | "Article";
-
-export type InsightItem = {
-  id: string;
-  type: ItemType;
-  topic: Exclude<Topic, "All Topics">;
+export interface MarketInsight {
+  id: number;
+  slug: string;
+  is_featured: boolean;
   title: string;
-  dateISO: string; // YYYY-MM-DD
-  image: string;
-  href?: string;
-  summary?: string;
-};
+  blog_image: string;
+  teaser: string;
+  summary: string;
+  content_type: 'TEXT' | 'VIDEO';
+  first_part?: string;
+  second_part?: string;
+  video_file?: string;
+  insight_sector_id?: number;
+  insight_subsector_ids?: string;
+  insight_topic_id?: number;
+  insight_subtopic_ids?: string;
+  insight_theme_id?: number;
+  company_ids?: string;
+  InsightSector?: { id: number; name: string };
+  InsightTopic?: { id: number; name: string };
+  InsightTheme?: { id: number; name: string };
+  created_at: string;
+  updated_at: string;
+}
 
-/* =========================
-   Seed (swap for CMS/API)
-   ========================= */
-const SEED = (
-  [
-    {
-      id: "1",
-      type: "Guide",
-      topic: "Market Outlook",
-      title: "How will the tariff sell-off hit private company valuations?",
-      dateISO: "2025-08-20",
-      image: "/images/news2.webp",
-      href: "/market-insights/an-introduction-to-the-role-of-a-investapps-private-market-specialist",
-    },
-    {
-      id: "2",
-      type: "Guide",
-      topic: "Private Markets",
-      title: "Investing in private company shares: A guide for new investors",
-      dateISO: "2025-08-06",
-      image: "/images/news1.webp",
-      href: "/market-insights/investing-in-private-company-shares-a-guide-for-new-investors",
-      summary: "Praesent id dignissim magna. Aliquam malesuada nisi ac tellus tempus, vel imperdiet erat accumsan. Curabitur lacinia vitae sem in ornare. Vestibulum id nisi sit amet tortor condimentum laoreet et id leo. "
+export interface InsightTopic {
+  id: number;
+  name: string;
+  is_active: boolean;
+}
 
-    },
-    ...Array.from({ length: 16 }).map((_, i): InsightItem => ({
-      id: `${i + 3}`,
-      type: "Article",
-      topic:
-        i % 4 === 0
-          ? "Sector Trends"
-          : i % 4 === 1
-          ? "Company Updates"
-          : i % 4 === 2
-          ? "Policy & Rates"
-          : "Private Markets",
-      title: "Investing in private company shares: A guide for new investors",
-      dateISO: "2025-08-03",
-      image: i % 2 ? "/images/news1.webp" : "/images/news2.webp",
-      href: "/market-insights/investing-in-private-company-shares-a-guide-for-new-investors",
-      summary: "Praesent id dignissim magna. Aliquam malesuada nisi ac tellus tempus, vel imperdiet erat accumsan. Curabitur lacinia vitae sem in ornare. Vestibulum id nisi sit amet tortor condimentum laoreet et id leo. "
-    })),
-  ] as InsightItem[]
-) satisfies InsightItem[];
+export interface InsightSubtopic {
+  id: number;
+  name: string;
+  insight_topic_id: number;
+  is_active: boolean;
+}
 
 /* =========================
    Constants
    ========================= */
-const TOPICS: Topic[] = [
-  "All Topics",
-  "Market Outlook",
-  "Company Updates",
-  "Sector Trends",
-  "Policy & Rates",
-  "Private Markets",
-];
-
 const DATE_FMT = new Intl.DateTimeFormat("en-US", {
   month: "short",
-  day: "numeric",
+  day: "numeric", 
   year: "numeric",
   timeZone: "UTC",
 });
+
 function formatDate(iso: string) {
   try {
-    return DATE_FMT.format(new Date(`${iso}T00:00:00Z`));
+    // Handle both date-only and full ISO strings
+    const date = iso.includes('T') ? new Date(iso) : new Date(`${iso}T00:00:00Z`);
+    return DATE_FMT.format(date);
   } catch {
     return iso;
   }
@@ -104,12 +70,12 @@ function formatDate(iso: string) {
 /* =========================
    UI Parts
    ========================= */
-function SmallCard({ item }: { item: InsightItem }) {
+function SmallCard({ item }: { item: MarketInsight }) {
   return (
-    <a href={item.href ?? "#"} className="group block rounded overflow-hidden">
+    <a href={`/market-insights/${item.slug}`} className="group block rounded overflow-hidden">
       <div className="aspect-[16/10] overflow-hidden">
         <Image
-          src={item.image}
+          src={item.blog_image}
           alt={item.title}
           width={800}
           height={500}
@@ -118,33 +84,27 @@ function SmallCard({ item }: { item: InsightItem }) {
       </div>
       <div className="pt-3">
         <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
-          {item.type === "Guide" ? (
-            <BookOpenText className="h-3.5 w-3.5" />
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden fill="currentColor">
-              <circle cx="12" cy="12" r="10" />
-            </svg>
-          )}
-          <span>{item.type}</span>
+          <BookOpenText className="h-3.5 w-3.5" />
+          <span>{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
         </div>
         <h3 className="mt-1 text-base font-semibold text-themeTeal group-hover:text-themeSkyBlue transition duration-500">
           {item.title}
         </h3>
         <div className="mt-1 flex items-center gap-2 text-xs text-themeTealLighter">
           <CalendarDays className="h-3 w-3" />
-          <time suppressHydrationWarning dateTime={item.dateISO}>{formatDate(item.dateISO)}</time>
+          <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
         </div>
       </div>
     </a>
   );
 }
 
-function GridCard({ item }: { item: InsightItem }) {
+function GridCard({ item }: { item: MarketInsight }) {
   return (
-    <a href={item.href ?? "#"} className="group block rounded overflow-hidden border border-themeTealLighter/50 bg-white/5">
+    <a href={`/market-insights/${item.slug}`} className="group block rounded overflow-hidden border border-themeTealLighter/50 bg-white/5">
       <div className="aspect-[16/10] overflow-hidden">
         <Image
-          src={item.image}
+          src={item.blog_image}
           alt={item.title}
           width={1200}
           height={600}
@@ -153,33 +113,27 @@ function GridCard({ item }: { item: InsightItem }) {
       </div>
       <div className="p-4">
         <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
-          {item.type === "Guide" ? (
-            <BookOpenText className="h-3.5 w-3.5" />
-          ) : (
-            <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden fill="currentColor">
-              <circle cx="12" cy="12" r="10" />
-            </svg>
-          )}
-          <span>{item.type}</span>
+          <BookOpenText className="h-3.5 w-3.5" />
+          <span>{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
         </div>
         <h3 className="mt-2 text-base font-semibold text-themeTeal group-hover:text-themeSkyBlue transition">
           {item.title}
         </h3>
         <div className="mt-2 flex items-center gap-2 text-xs text-themeTealLighter">
           <CalendarDays className="h-3 w-3" />
-          <time suppressHydrationWarning dateTime={item.dateISO}>{formatDate(item.dateISO)}</time>
+          <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
         </div>
       </div>
     </a>
   );
 }
 
-function HeroCard({ item }: { item: InsightItem }) {
+function HeroCard({ item }: { item: MarketInsight }) {
   return (
-    <a href={item.href ?? "#"} className="group block rounded overflow-hidden">
+    <a href={`/market-insights/${item.slug}`} className="group block rounded overflow-hidden">
         <div className="relative aspect-[16/9] w-full">
             <Image
-            src={item.image}
+            src={item.blog_image}
             alt={item.title}
             fill
             sizes="(min-width:1024px) 66vw, 100vw"
@@ -190,14 +144,8 @@ function HeroCard({ item }: { item: InsightItem }) {
         {/* text sits BELOW the image */}
         <div className="py-4">
             <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
-            {item.type === "Guide" ? (
-                <BookOpenText className="h-3.5 w-3.5" />
-            ) : (
-                <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden fill="currentColor">
-                <circle cx="12" cy="12" r="10" />
-                </svg>
-            )}
-            <span>{item.type}</span>
+            <BookOpenText className="h-3.5 w-3.5" />
+            <span>{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
             </div>
 
             <h3 className="mt-1 mb-2 text-2xl font-semibold text-themeTeal group-hover:text-themeSkyBlue transition line-clamp-2">{item.title}</h3>
@@ -205,8 +153,8 @@ function HeroCard({ item }: { item: InsightItem }) {
             <p className="text-themeTealLighter mb-3">{item.summary}</p>
             <div className="mt-1 flex items-center gap-2 text-xs text-themeTealLighter">
             <CalendarDays className="h-3 w-3" />
-            <time suppressHydrationWarning dateTime={item.dateISO}>
-                {formatDate(item.dateISO)}
+            <time dateTime={item.created_at}>
+                {formatDate(item.created_at)}
             </time>
             </div>
         </div>
@@ -219,35 +167,127 @@ function HeroCard({ item }: { item: InsightItem }) {
    Page
    ========================= */
 export default function MarketInsightsPage() {
-  const [topic, setTopic] = useState<Topic>("All Topics");
+  const [marketInsights, setMarketInsights] = useState<MarketInsight[]>([]);
+  const [featuredInsights, setFeaturedInsights] = useState<MarketInsight[]>([]);
+  const [topics, setTopics] = useState<InsightTopic[]>([]);
+  const [subtopics, setSubtopics] = useState<InsightSubtopic[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedTopic, setSelectedTopic] = useState<number | null>(null);
+  const [selectedSubtopic, setSelectedSubtopic] = useState<number | null>(null);
   const [q, setQ] = useState("");
   const [sortLatest, setSortLatest] = useState(true);
   const [page, setPage] = useState(1);
+  const [showTopicDropdown, setShowTopicDropdown] = useState(false);
+  const [showSubtopicDropdown, setShowSubtopicDropdown] = useState(false);
   const pageSize = 12;
 
-  // Featured: top by date
-  const featured = useMemo(() => {
-    return [...SEED].sort((a, b) => b.dateISO.localeCompare(a.dateISO)).slice(0, 7);
+  // Fetch data from API
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [insightsRes, featuredRes, topicsRes, subtopicsRes] = await Promise.all([
+          fetch('/api/market-insights'),
+          fetch('/api/market-insights/featured'),
+          fetch('/api/insight-topics'),
+          fetch('/api/insight-subtopics')
+        ]);
+
+        const [insightsData, featuredData, topicsData, subtopicsData] = await Promise.all([
+          insightsRes.json(),
+          featuredRes.json(),
+          topicsRes.json(),
+          subtopicsRes.json()
+        ]);
+
+        if (insightsData.success) {
+          setMarketInsights(insightsData.data);
+        }
+        if (featuredData.success) {
+          setFeaturedInsights(featuredData.data);
+        }
+        if (topicsData.success) {
+          setTopics(topicsData.data);
+        }
+        if (subtopicsData.success) {
+          setSubtopics(subtopicsData.data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
-  // Filters
-  const filtered = useMemo(() => {
-    const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const rows = SEED.filter((r) => (topic === "All Topics" ? true : r.topic === topic)).filter((r) =>
-      words.length === 0 ? true : words.every((w) => [r.title, r.type, r.topic].join(" ").toLowerCase().includes(w))
-    );
-    rows.sort((a, b) => (sortLatest ? b.dateISO.localeCompare(a.dateISO) : a.dateISO.localeCompare(b.dateISO)));
-    return rows;
-  }, [topic, q, sortLatest]);
+  // Filter insights based on selected topic/subtopic and search
+  const filteredInsights = useMemo(() => {
+    let filtered = marketInsights;
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
-  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+    // Filter by topic
+    if (selectedTopic) {
+      filtered = filtered.filter(insight => insight.insight_topic_id === selectedTopic);
+    }
+
+    // Filter by subtopic
+    if (selectedSubtopic) {
+      filtered = filtered.filter(insight => {
+        const subtopicIds = insight.insight_subtopic_ids ? JSON.parse(insight.insight_subtopic_ids) : [];
+        return subtopicIds.includes(selectedSubtopic);
+      });
+    }
+
+    // Filter by search
+    if (q.trim()) {
+      const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+      filtered = filtered.filter(insight =>
+        words.every(word => 
+          insight.title.toLowerCase().includes(word) ||
+          insight.summary.toLowerCase().includes(word) ||
+          insight.teaser.toLowerCase().includes(word)
+        )
+      );
+    }
+
+    // Sort by date
+    filtered.sort((a, b) => 
+      sortLatest 
+        ? new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        : new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
+
+    return filtered;
+  }, [marketInsights, selectedTopic, selectedSubtopic, q, sortLatest]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredInsights.length / pageSize));
+  const pageItems = filteredInsights.slice((page - 1) * pageSize, page * pageSize);
 
   const crumbs: Crumb[] = [{ label: "Home", href: "/" }, { label: "Market Insights" }];
 
   useEffect(() => {
     setPage(1);
-  }, [topic, q, sortLatest]);
+  }, [selectedTopic, selectedSubtopic, q, sortLatest]);
+
+  // Get subtopics for selected topic
+  const availableSubtopics = useMemo(() => {
+    if (!selectedTopic) return [];
+    return subtopics.filter(subtopic => subtopic.insight_topic_id === selectedTopic);
+  }, [subtopics, selectedTopic]);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowTopicDropdown(false);
+      setShowSubtopicDropdown(false);
+    };
+    
+    if (showTopicDropdown || showSubtopicDropdown) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [showTopicDropdown, showSubtopicDropdown]);
 
   return (
     <main className="min-h-screen">
@@ -260,23 +300,85 @@ export default function MarketInsightsPage() {
       {/* Controls */}
       <div className="appContainer py-8 md:py-12">
         <section className="mb-8">
-
-          {/* Topic pills */}
-          <div className="mt-4 flex flex-wrap gap-2">
-            {TOPICS.map((t) => (
+          {/* Hierarchical Topic Dropdowns */}
+          <div className="mt-4 flex flex-wrap gap-3">
+            {/* Topic Dropdown */}
+            <div className="relative">
               <button
-                key={t}
-                onClick={() => setTopic(t)}
-                className={
-                  "rounded border px-3 py-2 text-sm transitionduration-500 cursor-pointer " +
-                  (topic === t
-                    ? "border-themeTeal bg-themeTeal text-themeTealWhite"
-                    : "border-themeTealLighter text-themeTealLighter hover:border-themeTeal hover:bg-themeTeal hover:text-themeTealWhite")
-                }
+                onClick={() => setShowTopicDropdown(!showTopicDropdown)}
+                className="flex items-center gap-2 rounded border px-3 py-2 text-sm transition duration-500 cursor-pointer border-themeTealLighter text-themeTealLighter hover:border-themeTeal hover:bg-themeTeal hover:text-themeTealWhite"
               >
-                {t}
+                <span>{selectedTopic ? topics.find(t => t.id === selectedTopic)?.name : "All Topics"}</span>
+                <ChevronDown className="h-4 w-4" />
               </button>
-            ))}
+              
+              {showTopicDropdown && (
+                <div className="absolute top-full left-0 mt-1 w-48 rounded border border-themeTealLighter bg-white shadow-lg z-10">
+                  <button
+                    onClick={() => {
+                      setSelectedTopic(null);
+                      setSelectedSubtopic(null);
+                      setShowTopicDropdown(false);
+                    }}
+                    className="w-full px-3 py-2 text-left text-sm hover:bg-themeTealWhite"
+                  >
+                    All Topics
+                  </button>
+                  {topics.map((topic) => (
+                    <button
+                      key={topic.id}
+                      onClick={() => {
+                        setSelectedTopic(topic.id);
+                        setSelectedSubtopic(null);
+                        setShowTopicDropdown(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-themeTealWhite"
+                    >
+                      {topic.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Subtopic Dropdown */}
+            {selectedTopic && availableSubtopics.length > 0 && (
+              <div className="relative">
+                <button
+                  onClick={() => setShowSubtopicDropdown(!showSubtopicDropdown)}
+                  className="flex items-center gap-2 rounded border px-3 py-2 text-sm transition duration-500 cursor-pointer border-themeTealLighter text-themeTealLighter hover:border-themeTeal hover:bg-themeTeal hover:text-themeTealWhite"
+                >
+                  <span>{selectedSubtopic ? subtopics.find(s => s.id === selectedSubtopic)?.name : "All Subtopics"}</span>
+                  <ChevronDown className="h-4 w-4" />
+                </button>
+                
+                {showSubtopicDropdown && (
+                  <div className="absolute top-full left-0 mt-1 w-48 rounded border border-themeTealLighter bg-white shadow-lg z-10">
+                    <button
+                      onClick={() => {
+                        setSelectedSubtopic(null);
+                        setShowSubtopicDropdown(false);
+                      }}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-themeTealWhite"
+                    >
+                      All Subtopics
+                    </button>
+                    {availableSubtopics.map((subtopic) => (
+                      <button
+                        key={subtopic.id}
+                        onClick={() => {
+                          setSelectedSubtopic(subtopic.id);
+                          setShowSubtopicDropdown(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-themeTealWhite"
+                      >
+                        {subtopic.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
           <div className="mt-4 flex flex-col sm:flex-row items-stretch gap-3">
             <div className="relative flex-1">
@@ -300,7 +402,8 @@ export default function MarketInsightsPage() {
               <button
                 onClick={() => {
                   setQ("");
-                  setTopic("All Topics");
+                  setSelectedTopic(null);
+                  setSelectedSubtopic(null);
                   setSortLatest(true);
                 }}
                 className="rounded bg-themeTeal px-3 py-2 text-sm hover:bg-themeSkyBlue transition duration-500 cursor-pointer"
@@ -317,33 +420,39 @@ export default function MarketInsightsPage() {
             Featured Insights
           </Heading>
 
-          <div className="grid gap-6 lg:grid-cols-12">
-            {/* Left column: two small cards */}
-            <div className="lg:col-span-3 space-y-6">
-              {featured.slice(0, 2).map((it) => (
-                <SmallCard key={it.id} item={it} />
-              ))}
-            </div>
+          {loading ? (
+            <div className="text-center py-8 text-themeTealLighter">Loading...</div>
+          ) : featuredInsights.length === 0 ? (
+            <div className="text-center py-8 text-themeTealLighter">No featured insights available</div>
+          ) : (
+            <div className="grid gap-6 lg:grid-cols-12">
+              {/* Left column: two small cards */}
+              <div className="lg:col-span-3 space-y-6">
+                {featuredInsights.slice(0, 2).map((item) => (
+                  <SmallCard key={item.id} item={item} />
+                ))}
+              </div>
 
-            {/* Center hero */}
-            <div className="lg:col-span-6">
-              {featured[2] && <HeroCard item={featured[2]} />}
-            </div>
+              {/* Center hero */}
+              <div className="lg:col-span-6">
+                {featuredInsights[2] && <HeroCard item={featuredInsights[2]} />}
+              </div>
 
-            {/* Right column: headline list */}
-            <div className="lg:col-span-3 space-y-6 divide divide-y divide-themeTeal">
-              {featured.slice(3).map((it) => (
-                <a key={it.id} href={it.href ?? "#"} className="block pb-6 hover:border-themeTeal transition">
-                  <div className="text-xs uppercase tracking-wide text-themeTealLighter">{it.type}</div>
-                  <div className="mt-1 line-clamp-2 font-medium text-themeTeal hover:text-themeSkyBlue transition duration-500">{it.title}</div>
-                  <div className="mt-1 flex items-center gap-2 text-xs text-themeTealLighter">
-                    <CalendarDays className="h-3 w-3" />
-                    <time suppressHydrationWarning dateTime={it.dateISO}>{formatDate(it.dateISO)}</time>
-                  </div>
-                </a>
-              ))}
+              {/* Right column: headline list */}
+              <div className="lg:col-span-3 space-y-6 divide divide-y divide-themeTeal">
+                {featuredInsights.slice(3).map((item) => (
+                  <a key={item.id} href={`/market-insights/${item.slug}`} className="block pb-6 hover:border-themeTeal transition">
+                    <div className="text-xs uppercase tracking-wide text-themeTealLighter">{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</div>
+                    <div className="mt-1 line-clamp-2 font-medium text-themeTeal hover:text-themeSkyBlue transition duration-500">{item.title}</div>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-themeTealLighter">
+                      <CalendarDays className="h-3 w-3" />
+                      <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
+                    </div>
+                  </a>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </section>
 
         {/* All Insights grid */}
@@ -352,7 +461,9 @@ export default function MarketInsightsPage() {
             All Insights
           </Heading>
 
-          {pageItems.length === 0 ? (
+          {loading ? (
+            <div className="text-center py-8 text-themeTealLighter">Loading...</div>
+          ) : pageItems.length === 0 ? (
             <p className="text-themeTealLighter">No results. Adjust filters.</p>
           ) : (
             <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
@@ -365,7 +476,7 @@ export default function MarketInsightsPage() {
           {/* Pagination */}
           <div className="mt-8 flex items-center justify-between">
             <p className="text-sm text-themeTealLighter">
-              Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filtered.length)} of {filtered.length}
+              Showing {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, filteredInsights.length)} of {filteredInsights.length}
             </p>
             <div className="flex gap-2">
               <button
