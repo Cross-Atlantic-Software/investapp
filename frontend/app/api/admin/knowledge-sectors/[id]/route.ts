@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8888";
 
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('token');
     
@@ -10,7 +10,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/knowledge-sectors/${params.id}`, {
+    const { id } = await params;
+    
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/knowledge-sectors/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('token');
     
@@ -42,9 +44,10 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/knowledge-sectors/${params.id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/knowledge-sectors/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -69,7 +72,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const token = request.headers.get('token');
     
@@ -77,7 +80,9 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/knowledge-sectors/${params.id}`, {
+    const { id } = await params;
+    
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/knowledge-sectors/${id}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

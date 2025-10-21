@@ -144,7 +144,7 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
       setLoading(true);
       const token = sessionStorage.getItem('adminToken') || '';
       let endpoint = '';
-      let payload: any = { name: formData.name.trim(), is_active: formData.is_active };
+      const payload: any = { name: formData.name.trim(), is_active: formData.is_active };
 
       if (type === 'sectors' || type === 'knowledge-sectors') {
         if (activeTab === 'sectors') {
@@ -196,7 +196,7 @@ const InsightTaxonomyModal: React.FC<InsightTaxonomyModalProps> = ({
       setLoading(true);
       const token = sessionStorage.getItem('adminToken') || '';
       let endpoint = '';
-      let payload: any = { name: formData.name.trim(), is_active: formData.is_active };
+      const payload: any = { name: formData.name.trim(), is_active: formData.is_active };
 
       if (type === 'sectors' || type === 'knowledge-sectors') {
         if (activeTab === 'sectors') {
