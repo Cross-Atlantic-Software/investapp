@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, Filter, Edit, Trash2, Eye, Calendar, Tag, Building, Users, Building2, Clock, DollarSign, Palette, FileText, Upload, X } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, Tag, Building2, Palette, Upload, X } from "lucide-react";
 import ManageDropdown from "@/components/admin/ManageDropdown";
 import InsightTaxonomyModal from "@/components/admin/InsightTaxonomyModal";
 import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
@@ -15,8 +15,10 @@ interface MarketInsight {
   blog_image: string;
   teaser: string;
   summary: string;
-  first_part: string;
-  second_part: string;
+  content_type: 'TEXT' | 'VIDEO';
+  first_part?: string;
+  second_part?: string;
+  video_file?: string;
   insight_sector_id?: number;
   insight_subsector_ids?: string; // JSON string of array
   insight_topic_id?: number;
@@ -31,6 +33,14 @@ interface MarketInsight {
 }
 
 interface ImageUploadState {
+  file: File | null;
+  preview: string | null;
+  uploading: boolean;
+  progress: number;
+  error: string | null;
+}
+
+interface VideoUploadState {
   file: File | null;
   preview: string | null;
   uploading: boolean;
@@ -101,8 +111,10 @@ export default function MarketInsightsPage() {
     blog_image: "",
     teaser: "",
     summary: "",
+    content_type: "TEXT" as 'TEXT' | 'VIDEO',
     first_part: "",
     second_part: "",
+    video_file: "",
     insight_sector_id: "",
     insight_subsector_ids: [] as number[],
     insight_topic_id: "",
@@ -119,8 +131,36 @@ export default function MarketInsightsPage() {
     error: null,
   });
 
+  const [videoUpload, setVideoUpload] = useState<VideoUploadState>({
+    file: null,
+    preview: null,
+    uploading: false,
+    progress: 0,
+    error: null,
+  });
+
   const [companySearchTerm, setCompanySearchTerm] = useState("");
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+
+  // Load initial data
+  useEffect(() => {
+    const loadInitialData = async () => {
+      setLoading(true);
+      try {
+        await Promise.all([
+          fetchMarketInsights(),
+          fetchTaxonomies(),
+          fetchProducts()
+        ]);
+      } catch (error) {
+        console.error('Error loading initial data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -216,8 +256,14 @@ export default function MarketInsightsPage() {
       formDataToSend.append('title', formData.title);
       formDataToSend.append('teaser', formData.teaser);
       formDataToSend.append('summary', formData.summary);
-      formDataToSend.append('first_part', formData.first_part);
-      formDataToSend.append('second_part', formData.second_part);
+      formDataToSend.append('content_type', formData.content_type);
+      
+      // Add content-specific fields
+      if (formData.content_type === 'TEXT') {
+        formDataToSend.append('first_part', formData.first_part);
+        formDataToSend.append('second_part', formData.second_part);
+      }
+      
       formDataToSend.append('insight_sector_id', formData.insight_sector_id);
       formDataToSend.append('insight_subsector_ids', JSON.stringify(formData.insight_subsector_ids));
       formDataToSend.append('insight_topic_id', formData.insight_topic_id);
@@ -225,9 +271,12 @@ export default function MarketInsightsPage() {
       formDataToSend.append('insight_theme_id', formData.insight_theme_id);
       formDataToSend.append('company_ids', JSON.stringify(formData.company_ids));
       
-      // Add blog image file if selected
+      // Add file uploads
       if (imageUpload.file) {
         formDataToSend.append('blog_image', imageUpload.file);
+      }
+      if (formData.content_type === 'VIDEO' && videoUpload.file) {
+        formDataToSend.append('video_file', videoUpload.file);
       }
 
       const response = await fetch('/api/admin/market-insights', {
@@ -276,8 +325,14 @@ export default function MarketInsightsPage() {
       formDataToSend.append('title', formData.title);
       formDataToSend.append('teaser', formData.teaser);
       formDataToSend.append('summary', formData.summary);
-      formDataToSend.append('first_part', formData.first_part);
-      formDataToSend.append('second_part', formData.second_part);
+      formDataToSend.append('content_type', formData.content_type);
+      
+      // Add content-specific fields
+      if (formData.content_type === 'TEXT') {
+        formDataToSend.append('first_part', formData.first_part);
+        formDataToSend.append('second_part', formData.second_part);
+      }
+      
       formDataToSend.append('insight_sector_id', formData.insight_sector_id);
       formDataToSend.append('insight_subsector_ids', JSON.stringify(formData.insight_subsector_ids));
       formDataToSend.append('insight_topic_id', formData.insight_topic_id);
@@ -285,9 +340,12 @@ export default function MarketInsightsPage() {
       formDataToSend.append('insight_theme_id', formData.insight_theme_id);
       formDataToSend.append('company_ids', JSON.stringify(formData.company_ids));
       
-      // Add blog image file if selected
+      // Add file uploads
       if (imageUpload.file) {
         formDataToSend.append('blog_image', imageUpload.file);
+      }
+      if (formData.content_type === 'VIDEO' && videoUpload.file) {
+        formDataToSend.append('video_file', videoUpload.file);
       }
 
       const response = await fetch(`/api/admin/market-insights/${editingInsight.id}`, {
@@ -365,8 +423,10 @@ export default function MarketInsightsPage() {
       blog_image: "",
       teaser: "",
       summary: "",
+      content_type: "TEXT" as 'TEXT' | 'VIDEO',
       first_part: "",
       second_part: "",
+      video_file: "",
       insight_sector_id: "",
       insight_subsector_ids: [],
       insight_topic_id: "",
@@ -447,6 +507,75 @@ export default function MarketInsightsPage() {
     });
   };
 
+  // Video upload handlers
+  const handleVideoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (file.type !== 'video/mp4') {
+        setVideoUpload(prev => ({
+          ...prev,
+          error: 'Please select an MP4 video file'
+        }));
+        return;
+      }
+
+      // Validate file size (100MB limit)
+      if (file.size > 100 * 1024 * 1024) {
+        setVideoUpload(prev => ({
+          ...prev,
+          error: 'File size must be less than 100MB'
+        }));
+        return;
+      }
+
+      const preview = URL.createObjectURL(file);
+      setVideoUpload({
+        file,
+        preview,
+        uploading: false,
+        progress: 0,
+        error: null,
+      });
+    }
+  };
+
+  const handleVideoDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleVideoDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleVideoDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleVideoDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      const inputEvent = {
+        target: { files: [file] }
+      } as unknown as React.ChangeEvent<HTMLInputElement>;
+      handleVideoFileChange(inputEvent);
+    }
+  };
+
+  const removeVideo = () => {
+    if (videoUpload.preview) {
+      URL.revokeObjectURL(videoUpload.preview);
+    }
+    setVideoUpload({
+      file: null,
+      preview: null,
+      uploading: false,
+      progress: 0,
+      error: null,
+    });
+  };
+
   const handleView = (insight: MarketInsight) => {
     setEditingInsight(insight);
     setIsViewMode(true);
@@ -457,8 +586,10 @@ export default function MarketInsightsPage() {
       blog_image: insight.blog_image,
       teaser: insight.teaser,
       summary: insight.summary,
-      first_part: insight.first_part,
-      second_part: insight.second_part,
+      content_type: insight.content_type,
+      first_part: insight.first_part || "",
+      second_part: insight.second_part || "",
+      video_file: insight.video_file || "",
       insight_sector_id: insight.insight_sector_id?.toString() || "",
       insight_subsector_ids: insight.insight_subsector_ids ? JSON.parse(insight.insight_subsector_ids) : [],
       insight_topic_id: insight.insight_topic_id?.toString() || "",
@@ -479,8 +610,10 @@ export default function MarketInsightsPage() {
       blog_image: insight.blog_image,
       teaser: insight.teaser,
       summary: insight.summary,
-      first_part: insight.first_part,
-      second_part: insight.second_part,
+      content_type: insight.content_type,
+      first_part: insight.first_part || "",
+      second_part: insight.second_part || "",
+      video_file: insight.video_file || "",
       insight_sector_id: insight.insight_sector_id?.toString() || "",
       insight_subsector_ids: insight.insight_subsector_ids ? JSON.parse(insight.insight_subsector_ids) : [],
       insight_topic_id: insight.insight_topic_id?.toString() || "",
@@ -505,6 +638,17 @@ export default function MarketInsightsPage() {
       day: 'numeric'
     });
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-themeTeal mx-auto mb-4"></div>
+          <p className="text-themeTealLighter">Loading market insights...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -560,6 +704,7 @@ export default function MarketInsightsPage() {
             <thead className="bg-themeTealWhite">
               <tr>
                 <th className="px-4 py-3 text-left text-sm font-medium text-themeTeal">Title</th>
+                <th className="px-4 py-3 text-left text-sm font-medium text-themeTeal">Content Type</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-themeTeal">Sector</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-themeTeal">Topic</th>
                 <th className="px-4 py-3 text-left text-sm font-medium text-themeTeal">Theme</th>
@@ -576,6 +721,15 @@ export default function MarketInsightsPage() {
                       <p className="text-sm font-medium text-themeTeal truncate">{insight.title}</p>
                       <p className="text-xs text-themeTealLighter truncate">{insight.teaser}</p>
                     </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-themeTeal">
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      insight.content_type === 'TEXT' 
+                        ? 'bg-blue-100 text-blue-800' 
+                        : 'bg-purple-100 text-purple-800'
+                    }`}>
+                      {insight.content_type}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-sm text-themeTeal">
                     {insight.InsightSector?.name || '-'}
@@ -684,6 +838,36 @@ export default function MarketInsightsPage() {
               </div>
               
               <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-themeTeal mb-2">Content Type *</label>
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="content_type"
+                      value="TEXT"
+                      checked={formData.content_type === 'TEXT'}
+                      onChange={(e) => setFormData({...formData, content_type: e.target.value as 'TEXT' | 'VIDEO'})}
+                      className="text-themeTeal"
+                      disabled={isViewMode}
+                    />
+                    <span className="text-sm text-themeTeal">Text Content</span>
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="content_type"
+                      value="VIDEO"
+                      checked={formData.content_type === 'VIDEO'}
+                      onChange={(e) => setFormData({...formData, content_type: e.target.value as 'TEXT' | 'VIDEO'})}
+                      className="text-themeTeal"
+                      disabled={isViewMode}
+                    />
+                    <span className="text-sm text-themeTeal">Video Content</span>
+                  </label>
+                </div>
+              </div>
+              
+              <div className="md:col-span-2">
                 <label className="block text-sm font-medium text-themeTeal mb-1">Title *</label>
                 <input
                   type="text"
@@ -702,8 +886,8 @@ export default function MarketInsightsPage() {
                 </label>
                 
                 {isViewMode ? (
-                  /* View Mode - Show existing image */
-                  formData.blog_image ? (
+                  /* View Mode - Show existing blog image */
+                  formData.blog_image && formData.blog_image.trim() !== '' ? (
                     <div className="mt-1">
                       <Image
                         src={formData.blog_image}
@@ -825,31 +1009,142 @@ export default function MarketInsightsPage() {
                 />
               </div>
               
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-themeTeal mb-1">First Part *</label>
-                <textarea
-                  value={formData.first_part}
-                  onChange={(e) => setFormData({...formData, first_part: e.target.value})}
-                  className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                  disabled={isViewMode}
-                  rows={4}
-                  placeholder="First part of the content"
-                  readOnly={isViewMode}
-                />
-              </div>
-              
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-themeTeal mb-1">Second Part *</label>
-                <textarea
-                  value={formData.second_part}
-                  onChange={(e) => setFormData({...formData, second_part: e.target.value})}
-                  className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                  disabled={isViewMode}
-                  rows={4}
-                  placeholder="Second part of the content"
-                  readOnly={isViewMode}
-                />
-              </div>
+              {/* Text Content Fields - Only show when content_type is TEXT */}
+              {formData.content_type === 'TEXT' && (
+                <>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-themeTeal mb-1">First Part *</label>
+                    <textarea
+                      value={formData.first_part}
+                      onChange={(e) => setFormData({...formData, first_part: e.target.value})}
+                      className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
+                      disabled={isViewMode}
+                      rows={4}
+                      placeholder="First part of the content"
+                      readOnly={isViewMode}
+                    />
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-themeTeal mb-1">Second Part *</label>
+                    <textarea
+                      value={formData.second_part}
+                      onChange={(e) => setFormData({...formData, second_part: e.target.value})}
+                      className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
+                      disabled={isViewMode}
+                      rows={4}
+                      placeholder="Second part of the content"
+                      readOnly={isViewMode}
+                    />
+                  </div>
+                </>
+              )}
+
+              {/* Video Content Field - Only show when content_type is VIDEO */}
+              {formData.content_type === 'VIDEO' && (
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-themeTeal mb-1">
+                    Video File <span className="text-red-500">*</span>
+                  </label>
+                  
+                  {isViewMode ? (
+                    /* View Mode - Show existing video */
+                    formData.video_file ? (
+                      <div className="mt-1">
+                        <video
+                          src={formData.video_file}
+                          controls
+                          className="w-full max-w-md rounded-lg border border-gray-200"
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    ) : (
+                      <div className="mt-1 text-themeTealLighter text-sm">No video uploaded</div>
+                    )
+                  ) : (
+                    /* Edit Mode - Show upload interface */
+                    <>
+                      {/* Error Message */}
+                      {videoUpload.error && (
+                        <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                          <p className="text-xs text-red-600">{videoUpload.error}</p>
+                        </div>
+                      )}
+                      
+                      {/* Upload Area */}
+                      <label 
+                        htmlFor="video-upload"
+                        className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-themeTealLighter rounded transition-colors duration-200 cursor-pointer ${
+                          videoUpload.error 
+                            ? 'border-red-300 bg-red-50' 
+                            : videoUpload.preview 
+                              ? 'border-green-300 bg-green-50' 
+                              : 'border-gray-300 hover:border-themeTealLighter hover:bg-themeTealWhite'
+                        }`}
+                        onDragOver={handleVideoDragOver}
+                        onDragEnter={handleVideoDragEnter}
+                        onDragLeave={handleVideoDragLeave}
+                        onDrop={handleVideoDrop}
+                      >
+                        {videoUpload.preview ? (
+                          /* Video Preview */
+                          <div className="space-y-3 text-center">
+                            <div className="relative inline-block">
+                              <video
+                                src={videoUpload.preview}
+                                controls
+                                className="w-64 h-36 rounded-lg border border-gray-200 object-cover"
+                              >
+                                Your browser does not support the video tag.
+                              </video>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  removeVideo();
+                                }}
+                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                            <div>
+                              <p className="text-green-600 font-medium text-sm">✓ Video uploaded successfully</p>
+                              <p className="text-gray-500 text-xs">
+                                {videoUpload.file?.name}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          /* Upload Prompt */
+                          <div className="space-y-3 text-center">
+                            <div className="mx-auto w-12 h-12 text-themeTealLighter">
+                              <Upload className="w-full h-full" />
+                            </div>
+                            <div>
+                              <p className="text-sm text-themeTeal">
+                                <span className="font-medium">Click to upload</span> or drag and drop
+                              </p>
+                              <p className="text-xs text-themeTealLighter">
+                                MP4 video files up to 100MB
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </label>
+                      
+                      <input
+                        id="video-upload"
+                        type="file"
+                        accept="video/mp4"
+                        onChange={handleVideoFileChange}
+                        className="hidden"
+                      />
+                    </>
+                  )}
+                </div>
+              )}
               
               <div>
                 <label className="block text-sm font-medium text-themeTeal mb-1">Sector</label>

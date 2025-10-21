@@ -46,23 +46,28 @@ export const uploadBlogImage = multer({
     s3,
     bucket: process.env.S3_BUCKET!,
     contentType: (req, file, cb) => {
+      console.log('📁 File upload:', file.originalname, 'MIME:', file.mimetype);
       cb(null, file.mimetype);
     },
     key: (_req: Request, file: any, cb: (error: any, key?: string) => void) => {
-      const uniqueName = `blog-images/${Date.now()}-${file.originalname}`;
+      // Check if it's a video or image based on mimetype
+      const isVideo = file.mimetype === 'video/mp4';
+      const folder = isVideo ? 'insight-videos' : 'blog-images';
+      const uniqueName = `${folder}/${Date.now()}-${file.originalname}`;
+      console.log('🔑 S3 Key:', uniqueName);
       cb(null, uniqueName);
     },
   }),
   fileFilter: (req, file, cb) => {
-    // Only accept image files for blog images
-    if (file.mimetype.startsWith('image/')) {
+    // Accept both image files and MP4 videos for market insights
+    if (file.mimetype.startsWith('image/') || file.mimetype === 'video/mp4') {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed for blog images'));
+      cb(new Error('Only image and MP4 video files are allowed'));
     }
   },
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit for blog images
+    fileSize: 100 * 1024 * 1024, // 100MB limit to accommodate videos
   }
 });
 
@@ -113,6 +118,31 @@ export const uploadBanner = multer({
   },
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit for banners
+  }
+});
+
+export const uploadInsightVideo = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.S3_BUCKET!,
+    contentType: (req, file, cb) => {
+      cb(null, file.mimetype);
+    },
+    key: (_req: Request, file: any, cb: (error: any, key?: string) => void) => {
+      const uniqueName = `insight-videos/${Date.now()}-${file.originalname}`;
+      cb(null, uniqueName);
+    },
+  }),
+  fileFilter: (req, file, cb) => {
+    // Only accept MP4 video files
+    if (file.mimetype === 'video/mp4') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only MP4 video files are allowed for insight videos'));
+    }
+  },
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit for videos
   }
 });
 

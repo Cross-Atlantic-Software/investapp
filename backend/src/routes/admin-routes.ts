@@ -1,6 +1,6 @@
 import express from "express";
 import adminMiddleware from "../utils/middlewares/admin-middleware";
-import { uploadIcon, uploadBanner, uploadBlogImage } from "../utils/middlewares/s3Upload";
+import { uploadIcon, uploadBanner, uploadBlogImage, uploadInsightVideo } from "../utils/middlewares/s3Upload";
 import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
@@ -466,13 +466,19 @@ router.post("/insight-themes", InsightThemeController.createInsightTheme);
 router.put("/insight-themes/:id", InsightThemeController.updateInsightTheme);
 router.delete("/insight-themes/:id", InsightThemeController.deleteInsightTheme);
 
-// Market Insights
+// Market Insights - handle both blog_image and video_file
 router.get("/market-insights", MarketInsightController.getAllMarketInsights);
 router.get("/market-insights/featured", MarketInsightController.getFeaturedMarketInsights);
 router.get("/market-insights/slug/:slug", MarketInsightController.getMarketInsightBySlug);
 router.get("/market-insights/:id", MarketInsightController.getMarketInsightById);
-router.post("/market-insights", uploadBlogImage.single('blog_image'), MarketInsightController.createMarketInsight);
-router.put("/market-insights/:id", uploadBlogImage.single('blog_image'), MarketInsightController.updateMarketInsight);
+router.post("/market-insights", uploadBlogImage.fields([
+  { name: 'blog_image', maxCount: 1 },
+  { name: 'video_file', maxCount: 1 }
+]), MarketInsightController.createMarketInsight);
+router.put("/market-insights/:id", uploadBlogImage.fields([
+  { name: 'blog_image', maxCount: 1 },
+  { name: 'video_file', maxCount: 1 }
+]), MarketInsightController.updateMarketInsight);
 router.delete("/market-insights/:id", MarketInsightController.deleteMarketInsight);
 
 export default router;

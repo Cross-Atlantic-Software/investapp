@@ -1757,4 +1757,54 @@ router.post("/add-company-ids-to-market-insights", async (req, res) => {
   }
 });
 
+// Add content type and video file fields to market insights
+router.post("/add-content-type-to-market-insights", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: add-content-type-to-market-insights");
+    
+    // Add content_type column with default value TEXT
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      ADD COLUMN content_type ENUM('TEXT', 'VIDEO') NOT NULL DEFAULT 'TEXT'
+    `);
+    
+    // Add video_file column
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      ADD COLUMN video_file VARCHAR(500) NULL COMMENT 'S3 URL for uploaded video file'
+    `);
+    
+    // Modify first_part and second_part to allow NULL
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      MODIFY COLUMN first_part TEXT NULL
+    `);
+    
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      MODIFY COLUMN second_part TEXT NULL
+    `);
+    
+    // Add index for content_type
+    await db.sequelize.query(`
+      ALTER TABLE market_insights 
+      ADD INDEX idx_market_insights_content_type (content_type)
+    `);
+    
+    console.log("✅ Added content_type and video_file fields to market_insights table successfully");
+    
+    res.json({
+      success: true,
+      message: "Content type and video file fields added to market_insights table successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
 export default router;

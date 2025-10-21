@@ -222,12 +222,21 @@ export class MarketInsightController {
   // Create new market insight
   static async createMarketInsight(req: Request, res: Response) {
     try {
+      // Debug multer errors
+      if ((req as any).fileError) {
+        console.error('❌ Multer error:', (req as any).fileError);
+        return res.status(400).json({
+          success: false,
+          message: "File upload error: " + (req as any).fileError.message
+        });
+      }
       const {
         slug,
         is_featured = false,
         title,
         teaser,
         summary,
+        content_type = 'TEXT',
         first_part,
         second_part,
         insight_sector_id,
@@ -291,11 +300,58 @@ export class MarketInsightController {
       }
 
 
-      // Get blog image URL from uploaded file
-      const blog_image = (req as any).file?.location || '';
+      // Get file URLs from uploaded files
+      const files = (req as any).files as { [fieldname: string]: Express.Multer.File[] } || {};
+      const blogImageFile = files.blog_image?.[0];
+      const videoFile = files.video_file?.[0];
+      
+      const blog_image = (blogImageFile as any)?.location || '';
+      const video_file = (videoFile as any)?.location || undefined;
+      
+      // Debug logging
+      console.log('🔍 File upload debug:', {
+        hasBlogImage: !!blogImageFile,
+        hasVideoFile: !!videoFile,
+        blogImageLocation: (blogImageFile as any)?.location,
+        videoFileLocation: (videoFile as any)?.location,
+        content_type
+      });
 
-      // Validation
-      if (!slug || !title || !teaser || !summary || !first_part || !second_part) {
+      // Validate content_type
+      if (!['TEXT', 'VIDEO'].includes(content_type)) {
+        return res.status(400).json({
+          success: false,
+          message: "Content type must be either 'TEXT' or 'VIDEO'"
+        });
+      }
+
+      // Content-specific validation
+      if (content_type === 'TEXT') {
+        if (!first_part || !second_part) {
+          return res.status(400).json({
+            success: false,
+            message: "First part and second part are required for TEXT content type"
+          });
+        }
+      }
+      
+      // File upload validation based on content type
+      if (content_type === 'TEXT' && !blog_image) {
+        return res.status(400).json({
+          success: false,
+          message: "Blog image is required for TEXT content type"
+        });
+      }
+      
+      if (content_type === 'VIDEO' && !video_file) {
+        return res.status(400).json({
+          success: false,
+          message: "Video file is required for VIDEO content type"
+        });
+      }
+
+      // Basic validation
+      if (!slug || !title || !teaser || !summary) {
         return res.status(400).json({
           success: false,
           message: "All required fields must be provided"
@@ -381,8 +437,10 @@ export class MarketInsightController {
         blog_image: blog_image, // S3 URL, no need to trim
         teaser: teaser.trim(),
         summary: summary.trim(),
-        first_part: first_part.trim(),
-        second_part: second_part.trim(),
+        content_type: content_type,
+        first_part: content_type === 'TEXT' ? first_part.trim() : undefined,
+        second_part: content_type === 'TEXT' ? second_part.trim() : undefined,
+        video_file: content_type === 'VIDEO' ? video_file : undefined,
         insight_sector_id: insight_sector_id || null,
         insight_subsector_ids: parsedSubsectorIds.length > 0 ? JSON.stringify(parsedSubsectorIds) : undefined,
         insight_topic_id: insight_topic_id || null,
@@ -416,6 +474,7 @@ export class MarketInsightController {
         title,
         teaser,
         summary,
+        content_type,
         first_part,
         second_part,
         insight_sector_id,
@@ -479,8 +538,13 @@ export class MarketInsightController {
       }
 
 
-      // Get blog image URL from uploaded file (if new file uploaded)
-      const blog_image = (req as any).file?.location;
+      // Get file URLs from uploaded files (if new files uploaded)
+      const files = (req as any).files as { [fieldname: string]: Express.Multer.File[] } || {};
+      const blogImageFile = files.blog_image?.[0];
+      const videoFile = files.video_file?.[0];
+      
+      const blog_image = (blogImageFile as any)?.location;
+      const video_file = (videoFile as any)?.location;
 
       const marketInsight = await db.MarketInsight.findByPk(id);
       if (!marketInsight) {
@@ -488,6 +552,32 @@ export class MarketInsightController {
           success: false,
           message: "Market insight not found"
         });
+      }
+
+      // Validate content_type if provided
+      if (content_type && !['TEXT', 'VIDEO'].includes(content_type)) {
+        return res.status(400).json({
+          success: false,
+          message: "Content type must be either 'TEXT' or 'VIDEO'"
+        });
+      }
+
+      // Content-specific validation
+      const finalContentType = content_type || marketInsight.content_type;
+      if (finalContentType === 'TEXT') {
+        if (first_part === undefined || second_part === undefined) {
+          return res.status(400).json({
+            success: false,
+            message: "First part and second part are required for TEXT content type"
+          });
+        }
+      } else if (finalContentType === 'VIDEO') {
+        if (!video_file && !marketInsight.video_file) {
+          return res.status(400).json({
+            success: false,
+            message: "Video file is required for VIDEO content type"
+          });
+        }
       }
 
       // Check if slug is being updated and if it conflicts
@@ -571,8 +661,10 @@ export class MarketInsightController {
         ...(blog_image && { blog_image: blog_image }), // S3 URL, no need to trim
         ...(teaser && { teaser: teaser.trim() }),
         ...(summary && { summary: summary.trim() }),
-        ...(first_part && { first_part: first_part.trim() }),
-        ...(second_part && { second_part: second_part.trim() }),
+        ...(content_type && { content_type: content_type }),
+        ...(first_part !== undefined && { first_part: finalContentType === 'TEXT' ? first_part.trim() : undefined }),
+        ...(second_part !== undefined && { second_part: finalContentType === 'TEXT' ? second_part.trim() : undefined }),
+        ...(video_file && { video_file: finalContentType === 'VIDEO' ? video_file : undefined }),
         ...(insight_sector_id !== undefined && { insight_sector_id: insight_sector_id || null }),
         ...(insight_subsector_ids !== undefined && { insight_subsector_ids: parsedSubsectorIds.length > 0 ? JSON.stringify(parsedSubsectorIds) : undefined }),
         ...(insight_topic_id !== undefined && { insight_topic_id: insight_topic_id || null }),

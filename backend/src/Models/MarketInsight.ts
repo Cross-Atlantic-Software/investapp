@@ -8,8 +8,10 @@ interface MarketInsightAttributes {
   blog_image: string;
   teaser: string;
   summary: string;
-  first_part: string;
-  second_part: string;
+  content_type: 'TEXT' | 'VIDEO';
+  first_part?: string; // Required when content_type is TEXT
+  second_part?: string; // Required when content_type is TEXT
+  video_file?: string; // Required when content_type is VIDEO, S3 URL
   insight_sector_id?: number;
   insight_subsector_ids?: string; // JSON string of array
   insight_topic_id?: number;
@@ -30,8 +32,10 @@ export class MarketInsight extends Model<MarketInsightAttributes, MarketInsightC
   public blog_image!: string;
   public teaser!: string;
   public summary!: string;
-  public first_part!: string;
-  public second_part!: string;
+  public content_type!: 'TEXT' | 'VIDEO';
+  public first_part?: string;
+  public second_part?: string;
+  public video_file?: string;
   public insight_sector_id?: number;
   public insight_subsector_ids?: string;
   public insight_topic_id?: number;
@@ -77,13 +81,23 @@ export function initializeMarketInsightModel(sequelize: Sequelize) {
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      content_type: {
+        type: DataTypes.ENUM('TEXT', 'VIDEO'),
+        allowNull: false,
+        defaultValue: 'TEXT',
+      },
       first_part: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true, // Required when content_type is TEXT
       },
       second_part: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true, // Required when content_type is TEXT
+      },
+      video_file: {
+        type: DataTypes.STRING(500),
+        allowNull: true, // Required when content_type is VIDEO
+        comment: 'S3 URL for uploaded video file'
       },
       insight_sector_id: {
         type: DataTypes.INTEGER,
@@ -152,6 +166,10 @@ export function initializeMarketInsightModel(sequelize: Sequelize) {
         {
           fields: ['is_featured'],
           name: 'idx_market_insights_is_featured'
+        },
+        {
+          fields: ['content_type'],
+          name: 'idx_market_insights_content_type'
         },
         {
           fields: ['insight_sector_id'],
