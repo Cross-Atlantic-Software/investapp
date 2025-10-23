@@ -300,6 +300,48 @@ export default function SiteUsersPage() {
     }
   };
 
+  const handleDeleteAllRelatedRecords = async (userId: number) => {
+    if (!confirm('Are you sure you want to delete ALL related records for this user? This includes wishlist items, buy requests, portfolio records, and KYC applications. This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/site-users/${userId}/related-records`, {
+        method: 'DELETE',
+        headers: {
+          'token': token,
+        },
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        addNotification({
+          type: 'success',
+          title: 'Success',
+          message: data.message,
+          duration: 5000
+        });
+        fetchUsers(pagination.currentPage);
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Error',
+          message: data.message || 'Failed to delete related records',
+          duration: 5000
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting related records:', error);
+      addNotification({
+        type: 'error',
+        title: 'Error',
+        message: 'Failed to delete related records',
+        duration: 5000
+      });
+    }
+  };
+
   const getStatusBadge = (status: number) => {
     return status === 1 ? (
       <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
@@ -470,6 +512,16 @@ export default function SiteUsersPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-1">
+                            <button
+                              onClick={() => handleDeleteAllRelatedRecords(user.id)}
+                              className="p-2 bg-orange-600 text-white hover:text-orange-600 hover:bg-white rounded transition duration-300 cursor-pointer flex gap-1"
+                              title="Delete All Related Records"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                              <span className="text-xs font-medium">Clear Records</span>
+                            </button>
                             <button
                               onClick={() => handleDeleteUser(user.id)}
                               className="p-2 bg-red-700 text-themeTealWhite hover:text-red-700 hover:bg-white rounded transition duration-300 cursor-pointer flex gap-1"

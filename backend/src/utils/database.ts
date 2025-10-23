@@ -46,6 +46,8 @@ import { KnowledgeTopic, initializeKnowledgeTopicModel } from "../Models/Knowled
 import { KnowledgeSubtopic, initializeKnowledgeSubtopicModel } from "../Models/KnowledgeSubtopic";
 import { KnowledgeTheme, initializeKnowledgeThemeModel } from "../Models/KnowledgeTheme";
 import { KnowledgeCenter, initializeKnowledgeCenterModel } from "../Models/KnowledgeCenter";
+import StockPerformanceScore, { initializeStockPerformanceScoreModel } from "../Models/StockPerformanceScore";
+import UserPortfolio, { initializeUserPortfolioModel } from "../Models/UserPortfolio";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -190,6 +192,12 @@ async function initializeSequelize() {
   initializeKnowledgeSubtopicModel(sequelize);
   initializeKnowledgeThemeModel(sequelize);
   initializeKnowledgeCenterModel(sequelize);
+  
+  // Initialize Stock Performance Score model
+  initializeStockPerformanceScoreModel(sequelize);
+  
+  // Initialize User Portfolio model
+  initializeUserPortfolioModel(sequelize);
   
   // Set up Sector and Subsector associations
   Sector.hasMany(Subsector, {
@@ -371,6 +379,38 @@ async function initializeSequelize() {
   StockFaq.belongsTo(Product, {
     foreignKey: 'stock_id',
     as: 'stock'
+  });
+
+  // Stock Performance Score associations
+  StockPerformanceScore.belongsTo(Product, {
+    foreignKey: 'stock_id',
+    as: 'stock'
+  });
+
+  Product.hasMany(StockPerformanceScore, {
+    foreignKey: 'stock_id',
+    as: 'performanceScores'
+  });
+
+  Product.belongsTo(StockPerformanceScore, {
+    foreignKey: 'stock_performance_score_id',
+    as: 'performanceScore'
+  });
+
+  StockPerformanceScore.hasMany(Product, {
+    foreignKey: 'stock_performance_score_id',
+    as: 'products'
+  });
+
+  // User Portfolio associations
+  UserPortfolio.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user'
+  });
+
+  User.hasOne(UserPortfolio, {
+    foreignKey: 'user_id',
+    as: 'portfolio'
   });
   
   // No associations needed since only admins handle stocks
@@ -689,6 +729,20 @@ export const db = {
       throw new Error('KnowledgeCenter model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return KnowledgeCenter;
+  },
+
+  get StockPerformanceScore() {
+    if (!StockPerformanceScore) {
+      throw new Error('StockPerformanceScore model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return StockPerformanceScore;
+  },
+
+  get UserPortfolio() {
+    if (!UserPortfolio) {
+      throw new Error('UserPortfolio model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return UserPortfolio;
   },
 };
 

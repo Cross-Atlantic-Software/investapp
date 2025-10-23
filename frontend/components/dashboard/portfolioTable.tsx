@@ -62,7 +62,7 @@ export default function PortfolioTable({ rows, pageSize = 8 }: Props) {
               <th className="px-4 py-3">Price per share</th>
               <th className="px-4 py-3">Value</th>
               <th className="px-4 py-3">Change</th>
-              <th className="px-4 py-3 text-center">Risk Level</th>
+              {/* <th className="px-4 py-3 text-center">Risk Level</th> */}
               <th className="px-4 py-3 text-center">Transact</th>
             </tr>
           </thead>
@@ -94,7 +94,7 @@ export default function PortfolioTable({ rows, pageSize = 8 }: Props) {
                       {clean}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-center">
+                  {/* <td className="px-4 py-3 text-center">
                     <span
                       className={[
                         "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold",
@@ -107,7 +107,7 @@ export default function PortfolioTable({ rows, pageSize = 8 }: Props) {
                     >
                       {r.risk}
                     </span>
-                  </td>
+                  </td> */}
                   <td className="px-4 py-3 text-center">
                     <button
                       className={[

@@ -50,6 +50,11 @@ export interface ExistingStockData extends Omit<StockData, 'icon'> {
     id: number;
     valuation_name: string;
   };
+  stock_performance_score_id?: number | null;
+  performanceScore?: {
+    id: number;
+    score: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

@@ -33,6 +33,7 @@ export function initializeWishlistModel(sequelize: Sequelize) {
           model: 'users',
           key: 'id',
         },
+        onDelete: 'CASCADE',
       },
       stock_id: {
         type: DataTypes.INTEGER,

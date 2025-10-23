@@ -1329,6 +1329,19 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     )}
                   </div>
                 </th>
+                <th 
+                  className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider cursor-pointer"
+                  onClick={() => onSort?.('stock_performance_score_id')}
+                >
+                  <div className="flex items-center">
+                    Performance Score
+                    {sortBy === 'stock_performance_score_id' ? (
+                      <ChevronDown className={`ml-1 h-4 w-4 transition duration-300 ${sortOrder === 'asc' ? 'rotate-180' : ''}`}/>
+                    ) : (
+                      <ChevronDown className="ml-1 h-4 w-4 opacity-50"/>
+                    )}
+                  </div>
+                </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider w-32">
                   Actions
                 </th>
@@ -1393,6 +1406,50 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   {/* Founded Column */}
                   <td className="px-4 py-3 text-left">
                     <div className="text-sm text-themeTeal">{stock.founded || 'N/A'}</div>
+                  </td>
+
+                  {/* Performance Score Column */}
+                  <td className="px-4 py-3 text-left">
+                    <div className="text-sm text-themeTeal">
+                      {stock.performanceScore ? (
+                        (() => {
+                          const score = parseInt(stock.performanceScore.score);
+                          let label = '';
+                          let bgColor = '';
+                          let textColor = '';
+                          
+                          if (score < 40) {
+                            label = 'Below Average';
+                            bgColor = 'bg-red-100';
+                            textColor = 'text-red-800';
+                          } else if (score >= 40 && score < 60) {
+                            label = 'Average';
+                            bgColor = 'bg-yellow-100';
+                            textColor = 'text-yellow-800';
+                          } else if (score >= 60 && score < 80) {
+                            label = 'Good';
+                            bgColor = 'bg-blue-100';
+                            textColor = 'text-blue-800';
+                          } else if (score >= 80 && score < 90) {
+                            label = 'Excellent';
+                            bgColor = 'bg-green-100';
+                            textColor = 'text-green-800';
+                          } else if (score >= 90 && score <= 100) {
+                            label = 'Outstanding';
+                            bgColor = 'bg-purple-100';
+                            textColor = 'text-purple-800';
+                          }
+                          
+                          return (
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${bgColor} ${textColor}`}>
+                              {label}
+                            </span>
+                          );
+                        })()
+                      ) : (
+                        <span className="text-themeTealLighter">No Score</span>
+                      )}
+                    </div>
                   </td>
 
                   {/* Actions Column */}

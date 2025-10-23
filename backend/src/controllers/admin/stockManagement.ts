@@ -30,7 +30,7 @@ export const getAllStocks = async (req: Request, res: Response) => {
     }
 
     // Validate sort fields to prevent SQL injection
-    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation_id', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 'price_change_period_id', 'createdAt', 'updatedAt'];
+    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation_id', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 'price_change_period_id', 'stock_performance_score_id', 'createdAt', 'updatedAt'];
     const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
     const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
 
@@ -45,7 +45,15 @@ export const getAllStocks = async (req: Request, res: Response) => {
         'bannerDisplay', 'valuation_id', 'price_per_share', 
         'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 
         'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
-        'price_change_period_id', 'createdAt', 'updatedAt'
+        'price_change_period_id', 'stock_performance_score_id', 'createdAt', 'updatedAt'
+      ],
+      include: [
+        {
+          model: db.StockPerformanceScore,
+          as: 'performanceScore',
+          attributes: ['id', 'score'],
+          required: false
+        }
       ]
     });
 

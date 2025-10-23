@@ -8,6 +8,7 @@ import subscriberRoutes from "./subscriber-routes";
 import publicRoutes from "./public-routes";
 import migrationRoutes from "./migration-routes";
 import wishlistRoutes from "./wishlist-routes";
+import { UserPortfolioController } from "../controllers/admin/userPortfolioController";
 import express from "express";
 
 const router = express.Router();
@@ -26,6 +27,9 @@ router.use('/trading', tradingRoutes);
 
 // Wishlist routes (protected - requires authentication)
 router.use('/wishlist', wishlistRoutes);
+
+// User Portfolio routes (protected - requires authentication)
+router.get('/user-portfolio', UserPortfolioController.getCurrentUserPortfolio);
 
 // Admin CMS routes (for admin users)
 router.use('/admin', adminRoutes);
