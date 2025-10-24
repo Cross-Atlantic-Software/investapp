@@ -55,6 +55,7 @@ import { KnowledgeSubtopicController } from "../controllers/admin/knowledgeSubto
 import { KnowledgeThemeController } from "../controllers/admin/knowledgeThemeController";
 import { StockPerformanceScoreController } from "../controllers/admin/stockPerformanceScoreController";
 import { UserPortfolioController } from "../controllers/admin/userPortfolioController";
+import { UserReportController, upload as uploadReport } from "../controllers/admin/userReportController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
@@ -167,6 +168,11 @@ router.post("/stocks", uploadIcon.any(), createStock);
 router.put("/stocks/:id", uploadIcon.any(), updateStock);
 router.delete("/stocks/:id", deleteStock);
 router.delete("/stocks/bulk", bulkDeleteStocks);
+
+// User Report Routes
+router.get("/users/:userId/report", UserReportController.getUserReport);
+router.post("/users/:userId/report", uploadReport.single('report'), UserReportController.uploadReport);
+router.delete("/users/:userId/report", UserReportController.deleteUserReport);
 
 // Site User Management Routes
 router.get("/site-users", siteUserController.getAllSiteUsers);

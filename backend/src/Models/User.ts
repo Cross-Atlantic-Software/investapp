@@ -17,13 +17,14 @@ interface UserAttributes {
   auth_provider: string;
   email_verified?: number;
   phone_verified?: number;
+  report_file?: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
 type UserCreationAttributes = Optional<
   UserAttributes,
-  "id" | "status" | "role" | "email_verified" | "phone_verified" | "auth_provider"
+  "id" | "status" | "role" | "email_verified" | "phone_verified" | "auth_provider" | "report_file"
 >;
 
 class User
@@ -44,6 +45,7 @@ class User
   public phone_verified_code?: number;
   public email_verified_code?: number;
   public auth_provider!: string;
+  public report_file?: string;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 
@@ -100,6 +102,7 @@ export function initializeUserModel(sequelize: Sequelize) {
       country_code: { type: DataTypes.STRING },
       email_verified: { type: DataTypes.INTEGER, defaultValue: 0 },
       phone_verified: { type: DataTypes.INTEGER, defaultValue: 0 },
+      report_file: { type: DataTypes.STRING, allowNull: true },
     },
     {
       sequelize,

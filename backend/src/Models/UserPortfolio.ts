@@ -7,7 +7,7 @@ interface UserPortfolioAttributes {
   holding_number: number;
   price_change: number;
   percentage_change: number;
-  portfolio_performance_score: number;
+  portfolio_performance_score?: number;
   created_at: Date;
   updated_at: Date;
 }
@@ -18,7 +18,7 @@ interface UserPortfolioCreationAttributes {
   holding_number: number;
   price_change: number;
   percentage_change: number;
-  portfolio_performance_score: number;
+  portfolio_performance_score?: number;
 }
 
 export class UserPortfolio extends Model<UserPortfolioAttributes, UserPortfolioCreationAttributes> implements UserPortfolioAttributes {
@@ -28,7 +28,7 @@ export class UserPortfolio extends Model<UserPortfolioAttributes, UserPortfolioC
   public holding_number!: number;
   public price_change!: number;
   public percentage_change!: number;
-  public portfolio_performance_score!: number;
+  public portfolio_performance_score?: number;
 
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -73,8 +73,8 @@ export function initializeUserPortfolioModel(sequelize: Sequelize) {
       },
       portfolio_performance_score: {
         type: DataTypes.DECIMAL(5, 2),
-        allowNull: false,
-        defaultValue: 0
+        allowNull: true,
+        defaultValue: null
       },
       created_at: {
         type: DataTypes.DATE,

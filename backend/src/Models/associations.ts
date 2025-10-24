@@ -18,6 +18,7 @@ import { KnowledgeTopic, initializeKnowledgeTopicModel } from './KnowledgeTopic'
 import { KnowledgeSubtopic, initializeKnowledgeSubtopicModel } from './KnowledgeSubtopic';
 import { KnowledgeTheme, initializeKnowledgeThemeModel } from './KnowledgeTheme';
 import { KnowledgeCenter, initializeKnowledgeCenterModel } from './KnowledgeCenter';
+import CmsUser, { initializeCmsUserModel } from './CmsUser';
 
 export function initializeFinancialDataModels(sequelize: any) {
   // Initialize models first
@@ -25,6 +26,7 @@ export function initializeFinancialDataModels(sequelize: any) {
   initializeStockFinancialDataModel(sequelize);
   initializeSectorModel(sequelize);
   initializeSubsectorModel(sequelize);
+  initializeCmsUserModel(sequelize);
 
   // Then define associations
   StockFinancialData.belongsTo(FinancialKpi, {
@@ -74,6 +76,8 @@ export function initializeWishlistModels(sequelize: any) {
     foreignKey: 'user_id',
     as: 'userWishlist'
   });
+
+  // User Report associations removed - using simple approach like logo field
 
   Product.hasMany(Wishlist, {
     foreignKey: 'stock_id',

@@ -9,6 +9,10 @@ import publicRoutes from "./public-routes";
 import migrationRoutes from "./migration-routes";
 import wishlistRoutes from "./wishlist-routes";
 import { UserPortfolioController } from "../controllers/admin/userPortfolioController";
+import { UserHoldingsController } from "../controllers/userHoldingsController";
+import { UserReportController } from "../controllers/admin/userReportController";
+import { UserProfileController } from "../controllers/userProfileController";
+import jwtAuthMiddleware from "../utils/middleware";
 import express from "express";
 
 const router = express.Router();
@@ -30,6 +34,16 @@ router.use('/wishlist', wishlistRoutes);
 
 // User Portfolio routes (protected - requires authentication)
 router.get('/user-portfolio', UserPortfolioController.getCurrentUserPortfolio);
+
+// User Holdings routes (protected - requires authentication)
+router.get('/user-holdings', UserHoldingsController.getUserHoldings);
+
+// User Report routes (protected - requires authentication)
+router.get('/user-report', jwtAuthMiddleware, UserReportController.getCurrentUserReport);
+
+// User Profile routes (protected - requires authentication)
+router.get('/user-profile', jwtAuthMiddleware, UserProfileController.getCurrentUserProfile);
+router.put('/user-profile', jwtAuthMiddleware, UserProfileController.updateCurrentUserProfile);
 
 // Admin CMS routes (for admin users)
 router.use('/admin', adminRoutes);

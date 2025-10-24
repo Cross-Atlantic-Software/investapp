@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Loader, NotificationContainer, NotificationData, ConfirmationModal, SortableHeader, createSortHandler } from '@/components/admin/shared';
-import { Search, Trash2, X } from 'lucide-react';
+import { Search, Trash2, X, FileText } from 'lucide-react';
+import UserReportModal from '@/components/admin/users/UserReportModal';
 
 interface SiteUser {
   id: number;
@@ -18,6 +19,7 @@ interface SiteUser {
   phone_verified: number;
   country_code: string;
   buy_request?: string; // JSON string of buy requests
+  report_file?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -77,6 +79,10 @@ export default function SiteUsersPage() {
     userName: '',
     wishlistItems: [],
     loading: false,
+  });
+  const [reportModal, setReportModal] = useState<{ isOpen: boolean; user: SiteUser | null }>({
+    isOpen: false,
+    user: null
   });
 
 
@@ -457,6 +463,9 @@ export default function SiteUsersPage() {
                         Date Added
                       </SortableHeader>
                       <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
+                        Report
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider w-32">
                         Actions
                       </th>
                     </tr>
@@ -509,6 +518,15 @@ export default function SiteUsersPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-themeTeal">
                           {formatDate(user.createdAt)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <button
+                            onClick={() => setReportModal({ isOpen: true, user })}
+                            className="flex items-center space-x-1 px-2 py-1 bg-blue-500 rounded text-white hover:bg-blue-600 transition duration-300 cursor-pointer"
+                          >
+                            <FileText width={16} height={16}/>
+                            <span className="text-sm">Report</span>
+                          </button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center space-x-1">
@@ -717,6 +735,16 @@ export default function SiteUsersPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* User Report Modal */}
+      {reportModal.user && (
+        <UserReportModal
+          isOpen={reportModal.isOpen}
+          onClose={() => setReportModal({ isOpen: false, user: null })}
+          userId={reportModal.user.id}
+          userName={`${reportModal.user.first_name} ${reportModal.user.last_name}`}
+        />
       )}
 
     </div>

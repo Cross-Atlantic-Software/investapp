@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { ConfirmationModal, Loader, SortableHeader } from '@/components/admin/shared';
-import { ChevronDown, LucideSquarePen, Trash2, X } from 'lucide-react';
+import { ChevronDown, LucideSquarePen, Trash2, X, FileText } from 'lucide-react';
+import UserReportModal from './UserReportModal';
 
 interface User {
   id: number;
@@ -16,6 +17,7 @@ interface User {
   email_verified: number;
   phone_verified: number;
   last_active: string | null;
+  report_file?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -38,6 +40,10 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
     user: null
   });
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [reportModal, setReportModal] = useState<{ isOpen: boolean; user: User | null }>({
+    isOpen: false,
+    user: null
+  });
 
   // Get current user's role to determine permissions
   const getCurrentUserRole = () => {
@@ -190,6 +196,9 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                 <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
                   Actions
                 </th>
+                <th className="w-1/6 px-4 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
+                  Report
+                </th>
               </tr>
             </thead>
 
@@ -292,6 +301,17 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
                     ) : (
                       <span className="text-themeTealLighter text-xs">View Only</span>
                     )}
+                  </td>
+
+                  {/* Report Column */}
+                  <td className="px-4 py-3 text-sm font-medium">
+                    <button
+                      onClick={() => setReportModal({ isOpen: true, user })}
+                      className="flex items-center space-x-1 px-2 py-1 bg-blue-500 rounded text-white hover:bg-blue-600 transition duration-300 cursor-pointer"
+                    >
+                      <FileText width={16} height={16}/>
+                      <span className="text-sm">Report</span>
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -414,6 +434,16 @@ const UserTable: React.FC<UserTableProps> = ({ users, onRefresh, onSort, sortBy,
         type="danger"
         loading={deleteLoading}
       />
+
+      {/* User Report Modal */}
+      {reportModal.user && (
+        <UserReportModal
+          isOpen={reportModal.isOpen}
+          onClose={() => setReportModal({ isOpen: false, user: null })}
+          userId={reportModal.user.id}
+          userName={`${reportModal.user.first_name} ${reportModal.user.last_name}`}
+        />
+      )}
     </div>
   );
 };

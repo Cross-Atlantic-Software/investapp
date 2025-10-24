@@ -36,6 +36,7 @@ export class UserPortfolioController {
           total_investment: portfolio.total_investment,
           price_change: portfolio.price_change,
           percentage_change: portfolio.percentage_change,
+          portfolio_performance_score: portfolio.portfolio_performance_score,
           updated_at: portfolio.updated_at
         }
         
@@ -178,12 +179,19 @@ export class UserPortfolioController {
       await db.sequelizePromise;
       
       console.log('Starting portfolio refresh...');
-      // Note: Portfolio refresh functionality needs to be reimplemented
-      // For now, just return success message
+      
+      // Get all users
+      const users = await db.User.findAll({
+        attributes: ['id']
+      });
+
+      for (const user of users) {
+        await UserPortfolioController.refreshSingleUserPortfolio(user.id);
+      }
       
       res.json({
         success: true,
-        message: 'Portfolio refresh functionality is being updated'
+        message: 'All portfolios refreshed successfully'
       });
     } catch (error) {
       console.error('Error refreshing portfolios:', error);
@@ -201,12 +209,11 @@ export class UserPortfolioController {
       
       const { userId } = req.params;
       
-      // Note: Individual portfolio refresh functionality needs to be reimplemented
-      // For now, just return success message
+      await UserPortfolioController.refreshSingleUserPortfolio(parseInt(userId));
       
       res.json({
         success: true,
-        message: `Portfolio refresh functionality is being updated for user ${userId}`
+        message: `Portfolio refreshed successfully for user ${userId}`
       });
     } catch (error) {
       console.error('Error refreshing user portfolio:', error);
@@ -214,6 +221,86 @@ export class UserPortfolioController {
         success: false,
         message: 'Failed to refresh user portfolio'
       });
+    }
+  }
+
+  // Private method to refresh a single user's portfolio
+  private static async refreshSingleUserPortfolio(userId: number) {
+    try {
+      console.log(`Refreshing portfolio for user ${userId}...`);
+
+      // Get user's buy requests
+      const buyRequests = await db.BuyRequest.findAll({
+        where: { user_id: userId },
+        include: [
+          {
+            model: db.Product,
+            as: 'stock',
+            attributes: ['id', 'company_name']
+          }
+        ]
+      });
+
+      if (buyRequests.length === 0) {
+        // User has no holdings - create/update portfolio with zero values
+        await db.UserPortfolio.upsert({
+          user_id: userId,
+          total_investment: 0,
+          holding_number: 0,
+          price_change: 0,
+          percentage_change: 0,
+          portfolio_performance_score: undefined
+        });
+        console.log(`Portfolio updated for user ${userId} (no holdings)`);
+        return;
+      }
+
+      // Calculate portfolio metrics
+      const totalInvestment = buyRequests.reduce((sum, req) => sum + parseFloat(req.total_amount.toString()), 0);
+      const holdingNumber = buyRequests.length;
+
+      // Calculate price change (sum of price differences per share)
+      let priceChange = 0;
+      for (const buyRequest of buyRequests) {
+        const currentPrice = parseFloat(buyRequest.price.toString());
+        const purchasePrice = parseFloat(buyRequest.price.toString());
+        priceChange += (currentPrice - purchasePrice);
+      }
+
+      // Calculate percentage change
+      const percentageChange = totalInvestment > 0 ? (priceChange / totalInvestment) * 100 : 0;
+
+      // Calculate average performance score
+      let avgPerformanceScore: number | undefined = undefined;
+      if (buyRequests.length > 0) {
+        const stockIds = buyRequests.map(req => req.stock_id);
+        const performanceScores = await db.StockPerformanceScore.findAll({
+          where: {
+            stock_id: { [Op.in]: stockIds }
+          },
+          attributes: ['score']
+        });
+
+        if (performanceScores.length > 0) {
+          const totalScore = performanceScores.reduce((sum, score) => sum + parseInt(score.score), 0);
+          avgPerformanceScore = totalScore / performanceScores.length;
+        }
+      }
+
+      // Upsert portfolio data
+      await db.UserPortfolio.upsert({
+        user_id: userId,
+        total_investment: totalInvestment,
+        holding_number: holdingNumber,
+        price_change: priceChange,
+        percentage_change: percentageChange,
+        portfolio_performance_score: avgPerformanceScore
+      });
+
+      console.log(`Portfolio updated for user ${userId}: Investment: ₹${totalInvestment.toFixed(2)}, Holdings: ${holdingNumber}, Change: ${percentageChange.toFixed(2)}%`);
+    } catch (error) {
+      console.error(`Error refreshing portfolio for user ${userId}:`, error);
+      throw error;
     }
   }
 

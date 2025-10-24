@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Inter, Merriweather } from "next/font/google";
 import { AuthProvider } from "@/lib/contexts/AuthContext";
+import "@/utils/imageErrorHandler"; // Import global image error handler
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const merri = Merriweather({ subsets: ["latin"], weight: ["300","400","700","900"], variable: "--font-merriweather", display: "swap" });

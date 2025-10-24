@@ -761,7 +761,9 @@ async function initialize() {
     
     // Only sync in development, skip in production
     if (process.env.NODE_ENV !== 'production') {
-      await sequelizeInstance.sync();
+      // Temporarily disable sync due to too many indexes on users table
+      // await sequelizeInstance.sync();
+      console.log('⚠️ Database sync disabled due to index limit');
     } else {
       console.log('⚠️ Skipping database sync in production');
     }
