@@ -23,6 +23,7 @@ export interface MarketInsight {
   first_part?: string;
   second_part?: string;
   video_file?: string;
+  video_url?: string;
   insight_sector_id?: number;
   insight_subsector_ids?: string;
   insight_topic_id?: number;
@@ -62,6 +63,29 @@ function fmt(iso: string) {
     return DATE_FMT.format(date);
   } catch {
     return iso;
+  }
+}
+
+// Convert YouTube URL to embed URL
+function getYouTubeEmbedUrl(url: string): string {
+  try {
+    // Handle different YouTube URL formats
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return `https://www.youtube.com/embed/${match[1]}`;
+      }
+    }
+    
+    // If no pattern matches, return the original URL
+    return url;
+  } catch {
+    return url;
   }
 }
 
@@ -328,8 +352,9 @@ export default function MarketInsightDetailPage() {
                   )}
                 </>
               ) : (
-                marketInsight.video_file && (
-                  <div className="mb-4">
+                <div className="mb-4">
+                  {marketInsight.video_file ? (
+                    /* S3 Video File */
                     <video 
                       src={marketInsight.video_file} 
                       controls 
@@ -338,8 +363,24 @@ export default function MarketInsightDetailPage() {
                     >
                       Your browser does not support the video tag.
                     </video>
-                  </div>
-                )
+                  ) : marketInsight.video_url ? (
+                    /* YouTube Video URL */
+                    <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                      <iframe
+                        src={getYouTubeEmbedUrl(marketInsight.video_url)}
+                        title={marketInsight.title}
+                        className="absolute top-0 left-0 w-full h-full rounded"
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : (
+                    <div className="p-8 text-center text-gray-500 bg-gray-100 rounded">
+                      No video content available
+                    </div>
+                  )}
+                </div>
               )}
             </div>
 

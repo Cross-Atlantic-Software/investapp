@@ -239,6 +239,7 @@ export class MarketInsightController {
         content_type = 'TEXT',
         first_part,
         second_part,
+        video_url,
         insight_sector_id,
         insight_subsector_ids = [],
         insight_topic_id,
@@ -343,11 +344,22 @@ export class MarketInsightController {
         });
       }
       
-      if (content_type === 'VIDEO' && !video_file) {
+      if (content_type === 'VIDEO' && !video_file && !video_url) {
         return res.status(400).json({
           success: false,
-          message: "Video file is required for VIDEO content type"
+          message: "Either video file or video URL is required for VIDEO content type"
         });
+      }
+
+      // Validate video_url if provided
+      if (video_url) {
+        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[\w-]+/;
+        if (!youtubeRegex.test(video_url)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid YouTube URL format"
+          });
+        }
       }
 
       // Basic validation
@@ -441,6 +453,7 @@ export class MarketInsightController {
         first_part: content_type === 'TEXT' ? first_part.trim() : undefined,
         second_part: content_type === 'TEXT' ? second_part.trim() : undefined,
         video_file: content_type === 'VIDEO' ? video_file : undefined,
+        video_url: video_url ? video_url.trim() : undefined,
         insight_sector_id: insight_sector_id || null,
         insight_subsector_ids: parsedSubsectorIds.length > 0 ? JSON.stringify(parsedSubsectorIds) : undefined,
         insight_topic_id: insight_topic_id || null,
@@ -477,6 +490,7 @@ export class MarketInsightController {
         content_type,
         first_part,
         second_part,
+        video_url,
         insight_sector_id,
         insight_subsector_ids = [],
         insight_topic_id,
@@ -572,10 +586,21 @@ export class MarketInsightController {
           });
         }
       } else if (finalContentType === 'VIDEO') {
-        if (!video_file && !marketInsight.video_file) {
+        if (!video_file && !marketInsight.video_file && !video_url && !marketInsight.video_url) {
           return res.status(400).json({
             success: false,
-            message: "Video file is required for VIDEO content type"
+            message: "Either video file or video URL is required for VIDEO content type"
+          });
+        }
+      }
+
+      // Validate video_url if provided
+      if (video_url) {
+        const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)[\w-]+/;
+        if (!youtubeRegex.test(video_url)) {
+          return res.status(400).json({
+            success: false,
+            message: "Invalid YouTube URL format"
           });
         }
       }
@@ -665,6 +690,7 @@ export class MarketInsightController {
         ...(first_part !== undefined && { first_part: finalContentType === 'TEXT' ? first_part.trim() : undefined }),
         ...(second_part !== undefined && { second_part: finalContentType === 'TEXT' ? second_part.trim() : undefined }),
         ...(video_file && { video_file: finalContentType === 'VIDEO' ? video_file : undefined }),
+        ...(video_url !== undefined && { video_url: video_url ? video_url.trim() : undefined }),
         ...(insight_sector_id !== undefined && { insight_sector_id: insight_sector_id || null }),
         ...(insight_subsector_ids !== undefined && { insight_subsector_ids: parsedSubsectorIds.length > 0 ? JSON.stringify(parsedSubsectorIds) : undefined }),
         ...(insight_topic_id !== undefined && { insight_topic_id: insight_topic_id || null }),
