@@ -31,6 +31,7 @@ interface FilterSidebarProps {
 
 export interface FilterState {
   valuation: string[];
+  filingStatusAttractiveness: string[];
   sectors: string[];
   subsectors: string[];
   themes: string[];
@@ -133,6 +134,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
   // State for filter selections
   const [selectedFilters, setSelectedFilters] = useState<FilterState>({
     valuation: [],
+    filingStatusAttractiveness: [],
     sectors: [],
     subsectors: [],
     themes: [],
@@ -143,6 +145,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
   const [subsectors, setSubsectors] = useState<FilterOption[]>([]);
   const [themes, setThemes] = useState<FilterOption[]>([]);
   const [valuationRanges, setValuationRanges] = useState<FilterOption[]>([]);
+  const [filingStatusAttractivenessOptions, setFilingStatusAttractivenessOptions] = useState<FilterOption[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Fetch sectors and subsectors
@@ -151,8 +154,19 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
       try {
         setLoading(true);
 
+        // Get admin token for authentication
+        const token = sessionStorage.getItem('adminToken') || '';
+        console.log('🔑 Admin Token:', token ? 'Found' : 'Not Found');
+        
+        const headers = {
+          'Content-Type': 'application/json',
+          ...(token && { 'token': token })
+        };
+        
+        console.log('📤 Request Headers:', headers);
+
         // Fetch sectors
-        const sectorsResponse = await fetch('/api/admin/sectors/select');
+        const sectorsResponse = await fetch('/api/admin/sectors/select', { headers });
         const sectorsData = await sectorsResponse.json();
         
         if (sectorsData.success && sectorsData.data?.sectors) {
@@ -165,7 +179,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
         }
 
         // Fetch subsectors
-        const subsectorsResponse = await fetch('/api/admin/subsectors');
+        const subsectorsResponse = await fetch('/api/admin/subsectors', { headers });
         const subsectorsData = await subsectorsResponse.json();
         
         if (subsectorsData.success && subsectorsData.data?.subsectors) {
@@ -178,7 +192,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
         }
 
         // Fetch themes
-        const themesResponse = await fetch('/api/themes/select');
+        const themesResponse = await fetch('/api/themes/select', { headers });
         const themesData = await themesResponse.json();
         
         if (themesData.success && themesData.data?.themes) {
@@ -191,7 +205,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
         }
 
         // Fetch valuation ranges
-        const valuationRangesResponse = await fetch('/api/admin/valuation-ranges/filters');
+        const valuationRangesResponse = await fetch('/api/admin/valuation-ranges/filters', { headers });
         const valuationRangesData = await valuationRangesResponse.json();
         
         if (valuationRangesData.success && valuationRangesData.data?.valuationRanges) {
@@ -201,6 +215,37 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
             value: range.value
           }));
           setValuationRanges(valuationRangeOptions);
+        }
+
+        // Fetch stock tags from stock masters table (public API - no auth required)
+        console.log('🔍 Fetching stock tags from public API...');
+        const stockTagsResponse = await fetch('/api/stock-tags');
+        console.log('📡 API Response Status:', stockTagsResponse.status);
+        
+        const stockTagsData = await stockTagsResponse.json();
+        console.log('📊 API Response Data:', stockTagsData);
+        
+        if (stockTagsData.success && stockTagsData.data?.stockTags) {
+          const stockTags = stockTagsData.data.stockTags;
+          console.log('✅ Stock Tags from API:', stockTags);
+          
+          // Use all stock master names for Filing Status & Attractiveness
+          const stockMasterOptions = stockTags.map((tag: any) => ({
+            id: tag.id,
+            name: tag.name,
+            value: tag.id.toString() // Use the actual ID as the value for filtering
+          }));
+          
+          console.log('🎯 Setting dynamic options:', stockMasterOptions);
+          setFilingStatusAttractivenessOptions(stockMasterOptions);
+        } else {
+          console.log('❌ API failed or returned empty data');
+          console.log('API Success:', stockTagsData.success);
+          console.log('API Data:', stockTagsData.data);
+          console.log('Stock Tags:', stockTagsData.data?.stockTags);
+          
+          // Set empty array if API fails - no fake data
+          setFilingStatusAttractivenessOptions([]);
         }
       } catch (error) {
         console.error('Error fetching filter data:', error);
@@ -296,6 +341,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
   const handleClearFilters = () => {
     setSelectedFilters({
       valuation: [],
+      filingStatusAttractiveness: [],
       sectors: [],
       subsectors: [],
       themes: [],
@@ -362,9 +408,18 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
               />
             )}
 
+            {/* Filing Status & Attractiveness Filter */}
+            <FilterItem
+              title="Filing Status & Attractiveness"
+              options={filingStatusAttractivenessOptions}
+              selectedValues={selectedFilters.filingStatusAttractiveness}
+              onSelectionChange={(values) => handleSelectionChange('filingStatusAttractiveness', values)}
+              isRadio={true}
+            />
+
             {filteredSectors.length > 0 && (
               <FilterItem
-                title="PrimaryIndustry"
+                title="Primary Industry"
                 options={filteredSectors}
                 selectedValues={selectedFilters.sectors}
                 onSelectionChange={(values) => handleSelectionChange('sectors', values)}

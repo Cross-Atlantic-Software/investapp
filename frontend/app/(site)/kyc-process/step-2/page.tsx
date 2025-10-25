@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CheckCircle2, Landmark, CreditCard,
-  FileText, MapPin, UserRoundCheck, PenLine,
+  FileText, MapPin, UserRoundCheck, PenLine, UploadCloud,
 } from "lucide-react";
 import Link from "next/link";
 import { useKYC } from "@/contexts/KYCContext";
@@ -35,6 +35,8 @@ export default function KYCStep2PanProfile() {
   const [dob, setDob] = useState(formData.dob);
   const [father, setFather] = useState(formData.father_name);
   const [residency, setResidency] = useState<'Indian' | 'NRI'>(formData.residency_status);
+  const [panFile, setPanFile] = useState<File | null>(formData.pan_file);
+  const [fileError, setFileError] = useState<string>("");
 
   // Update context when form data changes
   useEffect(() => {
@@ -44,17 +46,45 @@ export default function KYCStep2PanProfile() {
       dob: dob,
       father_name: father,
       residency_status: residency,
+      pan_file: panFile,
     });
-  }, [pan, fullName, dob, father, residency, updateFormData]);
+  }, [pan, fullName, dob, father, residency, panFile, updateFormData]);
 
   const m = pathname.match(/step-(\d+)/);
   const curr = m ? Number(m[1]) : 1;
   const onBack = () => router.push(`/kyc-process/step-${Math.max(1, curr - 1)}`);
 
+  // ---- file upload handler
+  const handleFileUpload = (file: File | null) => {
+    setFileError("");
+    if (!file) {
+      setPanFile(null);
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      setFileError("Only PDF, JPG, and PNG files are allowed.");
+      setPanFile(null);
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("File size must be less than 5MB.");
+      setPanFile(null);
+      return;
+    }
+
+    setPanFile(file);
+  };
+
   // ---- validation
   const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/; // PAN format
   const isPanValid = panRegex.test(pan.toUpperCase());
-  const formValid = isPanValid && fullName.trim() && dob && father.trim();
+  const fileValid = !!panFile && panFile.size <= 5 * 1024 * 1024;
+  const formValid = isPanValid && fullName.trim() && dob && father.trim() && fileValid;
 
   const handleContinue = () => {
     if (formValid) {
@@ -245,6 +275,74 @@ export default function KYCStep2PanProfile() {
                         })}
                     </div>
                 </fieldset>
+
+              {/* PAN File Upload */}
+              <div className="space-y-3">
+                <label className="text-sm text-themeTeal">
+                  Upload PAN Document<span className="text-red-600">*</span>
+                </label>
+                
+                <div
+                  className="border-2 border-dashed border-themeTealLighter bg-white p-6 text-center rounded cursor-pointer hover:border-themeTeal transition-colors"
+                  onClick={() => document.getElementById('panFileInput')?.click()}
+                >
+                  <input
+                    id="panFileInput"
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                    className="hidden"
+                    onChange={(e) => handleFileUpload(e.target.files?.[0] ?? null)}
+                  />
+                  
+                  {panFile ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex items-center gap-2 text-themeTeal">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                        <span className="text-sm font-medium">{panFile.name}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPanFile(null);
+                        }}
+                        className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                      >
+                        Remove file
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-themeTealWhite text-themeTeal">
+                        <UploadCloud className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-themeTeal font-medium">Upload your PAN document</p>
+                        <p className="text-xs text-themeTealLighter mt-1">
+                          Supported formats: PDF, JPG, PNG (Max 5MB)
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        className="mt-3 inline-flex items-center rounded border border-themeTealLighter px-4 py-2 text-sm text-themeTeal hover:bg-themeTealWhite"
+                      >
+                        Choose File
+                      </button>
+                    </div>
+                  )}
+                  
+                  {fileError && (
+                    <p className="mt-2 text-xs text-red-600">{fileError}</p>
+                  )}
+                </div>
+
+                {panFile && (
+                  <p className="text-xs text-emerald-700 flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" />
+                    PAN document uploaded successfully.
+                  </p>
+                )}
+              </div>
 
               {/* Validation state */}
               {isPanValid ? (

@@ -17,6 +17,7 @@ export default function Invest() {
   const [error, setError] = useState<string | null>(null);
   const [, setActiveFilters] = useState<FilterState>({
     valuation: [],
+    filingStatusAttractiveness: [],
     sectors: [],
     subsectors: [],
     themes: [],
@@ -62,9 +63,10 @@ export default function Invest() {
     sector_ids?: string;
     subsector_ids?: string;
     theme_ids?: string;
+    stock_master_ids?: string;
     createdAt?: Date;
     updatedAt?: Date;
-  }): ProductItem & { valuation_id?: number; sector_ids?: string; subsector_ids?: string; theme_ids?: string; price_change_period_id?: number | undefined } => {
+  }): ProductItem & { valuation_id?: number; sector_ids?: string; subsector_ids?: string; theme_ids?: string; stock_master_ids?: string; price_change_period_id?: number | undefined } => {
     return {
       id: stock.id.toString(),
       company_name: stock.company_name,
@@ -81,13 +83,14 @@ export default function Invest() {
       sector_ids: stock.sector_ids,
       subsector_ids: stock.subsector_ids,
       theme_ids: stock.theme_ids,
+      stock_master_ids: stock.stock_master_ids,
       createdAt: stock.createdAt?.toString(),
       updatedAt: stock.updatedAt?.toString()
     };
   }, []);
 
   // Fetch stocks from API
-  const fetchStocks = useCallback(async (searchQuery = '') => {
+  const fetchStocks = useCallback(async (searchQuery = '', filters: FilterState | null = null) => {
     try {
       setLoading(true);
       setError(null);
@@ -103,11 +106,33 @@ export default function Invest() {
         params.append('search', searchQuery);
       }
       
+      // Add filter parameters
+      if (filters) {
+        if (filters.valuation.length > 0) {
+          params.append('valuation', filters.valuation.join(','));
+        }
+        if (filters.sectors.length > 0) {
+          params.append('sectors', filters.sectors.join(','));
+        }
+        if (filters.subsectors.length > 0) {
+          params.append('subsectors', filters.subsectors.join(','));
+        }
+        if (filters.themes.length > 0) {
+          params.append('themes', filters.themes.join(','));
+        }
+        if (filters.filingStatusAttractiveness.length > 0) {
+          params.append('stock_master_ids', filters.filingStatusAttractiveness.join(','));
+        }
+      }
+      
+      console.log('🔍 API DEBUG - Fetching stocks with params:', params.toString());
+      
       const response = await fetch(`/api/stocks?${params.toString()}`);
       const data = await response.json();
       
       if (data.success && data.data?.stocks) {
         const mappedStocks = data.data.stocks.map(mapStockToProduct);
+        console.log('🔍 API DEBUG - Received stocks:', mappedStocks.length);
         setAllStocks(mappedStocks);
         setStocks(mappedStocks);
       } else {
@@ -123,107 +148,27 @@ export default function Invest() {
 
   // Apply filters
   const applyFilters = useCallback((filters: FilterState) => {
+    console.log('🔍 FILTER DEBUG - Applying filters:', filters);
     setActiveFilters(filters);
     
-    let filteredStocks = [...allStocks];
-
-    // Filter by valuation ranges
-    if (filters.valuation.length > 0) {
-      console.log('🔍 Filtering by valuation:', filters.valuation);
-      console.log('📊 Current valuationMapping:', valuationMapping);
-      
-      filteredStocks = filteredStocks.filter((stock: ProductItem & { valuation_id?: number }) => {
-        return filters.valuation.some(val => {
-          // Find the mapping for this valuation range
-          const mapping = valuationMapping.find(m => m.range.value === val);
-          
-          console.log(`🎯 Looking for range "${val}", found mapping:`, mapping);
-          
-          if (mapping && mapping.matchingValuationIds.length > 0) {
-            // Check if stock's valuation_id matches any of the mapped valuation IDs
-            const matches = stock.valuation_id && mapping.matchingValuationIds.includes(stock.valuation_id);
-            console.log(`✅ Stock ${stock.company_name} (valuation_id: ${stock.valuation_id}) matches range "${val}":`, matches);
-            return matches;
-          }
-          
-          console.log(`⚠️ No dynamic mapping found for "${val}", using fallback`);
-          
-          // Fallback to old hardcoded mapping if no dynamic mapping available
-          switch (val) {
-            case 'below-1000':
-              return stock.valuation_id && stock.valuation_id <= 2;
-            case '1000-2500':
-              return stock.valuation_id && stock.valuation_id === 3;
-            case '2500-5000':
-              return stock.valuation_id && stock.valuation_id === 4;
-            case '5000-plus':
-              return stock.valuation_id && stock.valuation_id >= 5;
-            default:
-              return false;
-          }
-        });
-      });
-    }
-
-    // Filter by sectors (Industry Groups)
-    if (filters.sectors.length > 0) {
-      filteredStocks = filteredStocks.filter((stock: ProductItem & { sector_ids?: string }) => {
-        if (!stock.sector_ids) return false;
-        try {
-          const stockSectors = JSON.parse(stock.sector_ids);
-          return filters.sectors.some(sectorId => 
-            stockSectors.includes(parseInt(sectorId))
-          );
-        } catch {
-          return false;
-        }
-      });
-    }
-
-    // Filter by subsectors (Industries)
-    if (filters.subsectors.length > 0) {
-      filteredStocks = filteredStocks.filter((stock: ProductItem & { subsector_ids?: string }) => {
-        if (!stock.subsector_ids) return false;
-        try {
-          const stockSubsectors = JSON.parse(stock.subsector_ids);
-          return filters.subsectors.some(subsectorId => 
-            stockSubsectors.includes(parseInt(subsectorId))
-          );
-        } catch {
-          return false;
-        }
-      });
-    }
-
-    // Filter by themes
-    if (filters.themes.length > 0) {
-      filteredStocks = filteredStocks.filter((stock: ProductItem & { theme_ids?: string }) => {
-        if (!stock.theme_ids) return false;
-        try {
-          const stockThemes = JSON.parse(stock.theme_ids);
-          return filters.themes.some(themeId => 
-            stockThemes.includes(parseInt(themeId))
-          );
-        } catch {
-          return false;
-        }
-      });
-    }
-
-    setStocks(filteredStocks);
+    // Call API with filters instead of client-side filtering
+    fetchStocks(searchTerm, filters);
     setShowFilters(false); // Close mobile filter drawer
-  }, [allStocks]);
+  }, [fetchStocks, searchTerm]);
 
   // Clear filters
   const clearFilters = useCallback(() => {
-    setActiveFilters({
+    const emptyFilters = {
       valuation: [],
+      filingStatusAttractiveness: [],
       sectors: [],
       subsectors: [],
       themes: [],
-    });
-    setStocks(allStocks);
-  }, [allStocks]);
+    };
+    setActiveFilters(emptyFilters);
+    // Call API without filters
+    fetchStocks(searchTerm, emptyFilters);
+  }, [fetchStocks, searchTerm]);
 
   useEffect(() => {
     if (!showFilters) return;
@@ -241,22 +186,24 @@ export default function Invest() {
   // Handle search with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      fetchStocks(searchTerm);
+      // Get current active filters
+      const currentFilters = {
+        valuation: [],
+        filingStatusAttractiveness: [],
+        sectors: [],
+        subsectors: [],
+        themes: [],
+      };
+      fetchStocks(searchTerm, currentFilters);
     }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm, fetchStocks]);
 
   const filtered = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
-    if (!q) return stocks;
-    return stocks.filter(
-      x =>
-        x.company_name.toLowerCase().includes(q) ||
-        x.teaser.toLowerCase().includes(q) ||
-        x.short_description.toLowerCase().includes(q)
-    );
-  }, [stocks, searchTerm]);
+    // Since we're filtering on the backend, just return the stocks as-is
+    return stocks;
+  }, [stocks]);
 
   return (
     <>

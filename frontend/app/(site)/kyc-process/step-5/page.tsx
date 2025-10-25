@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  FileText, CreditCard, MapPin, Landmark, UserRoundCheck, PenLine,
+  FileText, CreditCard, MapPin, Landmark, UserRoundCheck, PenLine, UploadCloud, CheckCircle2,
 } from "lucide-react";
 import { useKYC } from "@/contexts/KYCContext";
 
@@ -22,6 +22,8 @@ export default function KYCStep5Demat() {
   const [rows, setRows] = useState<Demat[]>([
     { type: formData.demat_type as Demat["type"] || "", id: formData.demat_account_id }
   ]);
+  const [dematFile, setDematFile] = useState<File | null>(formData.demat_file);
+  const [fileError, setFileError] = useState<string>("");
   const MAX_ROWS = 5;
 
   // Update context when form data changes
@@ -30,13 +32,41 @@ export default function KYCStep5Demat() {
       updateFormData({
         demat_type: rows[0].type,
         demat_account_id: rows[0].id,
+        demat_file: dematFile,
       });
     }
-  }, [rows, updateFormData]);
+  }, [rows, dematFile, updateFormData]);
 
   const idOk = (v: string) => /^[A-Za-z0-9]{8,16}$/.test(v.trim());
   const rowValid = (r: Demat) => !!r.type && idOk(r.id);
-  const allValid = rows.length > 0 && rows.every(rowValid);
+  const fileValid = !!dematFile && dematFile.size <= 5 * 1024 * 1024;
+  const allValid = rows.length > 0 && rows.every(rowValid) && fileValid;
+
+  // File upload handler
+  const handleFileUpload = (file: File | null) => {
+    setFileError("");
+    if (!file) {
+      setDematFile(null);
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      setFileError("Only PDF, JPG, and PNG files are allowed.");
+      setDematFile(null);
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("File size must be less than 5MB.");
+      setDematFile(null);
+      return;
+    }
+
+    setDematFile(file);
+  };
 
   const addRow = () => setRows((r) => (r.length >= MAX_ROWS ? r : [...r, { type: "", id: "" }]));
   const removeRow = (i: number) => setRows((r) => r.filter((_, idx) => idx !== i));
@@ -190,6 +220,74 @@ export default function KYCStep5Demat() {
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Demat File Upload */}
+            <div className="space-y-3">
+              <label className="text-sm text-themeTeal">
+                Upload Demat Document<span className="text-red-600">*</span>
+              </label>
+              
+              <div
+                className="border-2 border-dashed border-themeTealLighter bg-white p-6 text-center rounded cursor-pointer hover:border-themeTeal transition-colors"
+                onClick={() => document.getElementById('dematFileInput')?.click()}
+              >
+                <input
+                  id="dematFileInput"
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                  className="hidden"
+                  onChange={(e) => handleFileUpload(e.target.files?.[0] ?? null)}
+                />
+                
+                {dematFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-2 text-themeTeal">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                      <span className="text-sm font-medium">{dematFile.name}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDematFile(null);
+                      }}
+                      className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                    >
+                      Remove file
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-themeTealWhite text-themeTeal">
+                      <UploadCloud className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-themeTeal font-medium">Upload your Demat document</p>
+                      <p className="text-xs text-themeTealLighter mt-1">
+                        Supported formats: PDF, JPG, PNG (Max 5MB)
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="mt-3 inline-flex items-center rounded border border-themeTealLighter px-4 py-2 text-sm text-themeTeal hover:bg-themeTealWhite"
+                    >
+                      Choose File
+                    </button>
+                  </div>
+                )}
+                
+                {fileError && (
+                  <p className="mt-2 text-xs text-red-600">{fileError}</p>
+                )}
+              </div>
+
+              {dematFile && (
+                <p className="text-xs text-emerald-700 flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  Demat document uploaded successfully.
+                </p>
+              )}
             </div>
 
             {/* <div className="mt-4">

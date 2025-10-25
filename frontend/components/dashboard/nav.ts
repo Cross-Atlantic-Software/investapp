@@ -13,8 +13,8 @@ export const GROUPS: NavGroup[] = [
     title: "Overview",
     items: [
       { id:"dashboard", label:"Dashboard", href:"/dashboard", icon:LayoutDashboard },
-      { id:"portfolio", label:"Portfolio", href:"/dashboard/portfolio", icon:Briefcase },
-      { id:"analytics", label:"Analytics", href:"/dashboard/analytics", icon:BarChart3 },
+      { id:"portfolio", label:"Actionable Signals", href:"/dashboard/portfolio", icon:Briefcase },
+      // { id:"analytics", label:"Analytics", href:"/dashboard/analytics", icon:BarChart3 },
     ],
   },
   {
@@ -29,7 +29,7 @@ export const GROUPS: NavGroup[] = [
   {
     title: "Account",
     items: [
-      { id:"funds", label:"Funds", href:"/dashboard/funds", icon:Wallet },
+      // { id:"funds", label:"Funds", href:"/dashboard/funds", icon:Wallet },
       { id:"reports", label:"Reports", href:"/dashboard/reports", icon:Download },
       { id:"settings", label:"Settings", href:"/dashboard/settings", icon:Settings },
     ],

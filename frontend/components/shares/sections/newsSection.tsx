@@ -13,17 +13,17 @@ export type NewsItem = {
   imgAlt?: string;
 };
 
-type NewsSectionData = {
+type MarketInsightData = {
   id: number;
   title: string;
-  url: string;
-  banner: string;
-  created_at: string;
+  blog_image: string;
+  updated_at: string;
+  slug: string;
 };
 
 export default function NewsSection({
   stockId,
-  heading = "Latest News",
+  heading = "Related Market Insights",
   info,
   viewAllHref,
   items,
@@ -45,29 +45,44 @@ export default function NewsSection({
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/stocks/${stockId}/news-sections`);
+      // Fetch market insights and filter by company_ids containing this stockId
+      const response = await fetch('/api/market-insights');
       const result = await response.json();
       
-      if (result.success && result.data?.newsSections) {
-        const formattedItems: NewsItem[] = result.data.newsSections.map((item: NewsSectionData) => ({
+      if (result.success && result.data) {
+        // Filter insights where company_ids contains the current stockId
+        const filteredInsights = result.data.filter((insight: any) => {
+          if (!insight.company_ids) return false;
+          
+          try {
+            const companyIds = JSON.parse(insight.company_ids);
+            return Array.isArray(companyIds) && companyIds.includes(stockId);
+          } catch (error) {
+            console.error('Error parsing company_ids:', error);
+            return false;
+          }
+        });
+        
+        const formattedItems: NewsItem[] = filteredInsights.map((item: MarketInsightData) => ({
           id: item.id,
           title: item.title,
-          date: new Date(item.created_at).toLocaleDateString('en-US', {
+          date: new Date(item.updated_at).toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
           }),
-          href: item.url,
-          imgSrc: item.banner || '/images/default-news.webp',
+          href: `/market-insights/${item.slug}`,
+          imgSrc: item.blog_image || '/images/default-news.webp',
           imgAlt: item.title
         }));
+        
         setNewsItems(formattedItems);
       } else {
         setNewsItems([]);
       }
     } catch (err) {
-      console.error('Error loading news items:', err);
-      setError('Failed to load news items');
+      console.error('Error loading market insights:', err);
+      setError('Failed to load market insights');
       setNewsItems([]);
     } finally {
       setLoading(false);
@@ -87,7 +102,7 @@ export default function NewsSection({
       <section className="space-y-4">
         <div className="text-center py-8">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-600">Loading news...</p>
+          <p className="mt-2 text-sm text-gray-600">Loading market insights...</p>
         </div>
       </section>
     );
@@ -109,7 +124,7 @@ export default function NewsSection({
     return (
       <section className="space-y-4">
         <div className="text-center py-8 text-gray-500">
-          <p className="text-sm">No news articles available at the moment.</p>
+          <p className="text-sm">No market insights available for this company.</p>
         </div>
       </section>
     );

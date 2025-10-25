@@ -19,6 +19,7 @@ interface MarketInsight {
   first_part?: string;
   second_part?: string;
   video_file?: string;
+  video_url?: string;
   insight_sector_id?: number;
   insight_subsector_ids?: string; // JSON string of array
   insight_topic_id?: number;
@@ -85,6 +86,29 @@ interface Product {
   company_name: string;
 }
 
+// Convert YouTube URL to embed URL
+function getYouTubeEmbedUrl(url: string): string {
+  try {
+    // Handle different YouTube URL formats
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+      /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+    ];
+    
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1]) {
+        return `https://www.youtube.com/embed/${match[1]}`;
+      }
+    }
+    
+    // If no pattern matches, return the original URL
+    return url;
+  } catch {
+    return url;
+  }
+}
+
 export default function MarketInsightsPage() {
   const [marketInsights, setMarketInsights] = useState<MarketInsight[]>([]);
   const [insightSectors, setInsightSectors] = useState<InsightSector[]>([]);
@@ -115,6 +139,7 @@ export default function MarketInsightsPage() {
     first_part: "",
     second_part: "",
     video_file: "",
+    video_url: "",
     insight_sector_id: "",
     insight_subsector_ids: [] as number[],
     insight_topic_id: "",
@@ -264,6 +289,11 @@ export default function MarketInsightsPage() {
         formDataToSend.append('second_part', formData.second_part);
       }
       
+      // Add video URL for VIDEO content type
+      if (formData.content_type === 'VIDEO' && formData.video_url) {
+        formDataToSend.append('video_url', formData.video_url);
+      }
+      
       formDataToSend.append('insight_sector_id', formData.insight_sector_id);
       formDataToSend.append('insight_subsector_ids', JSON.stringify(formData.insight_subsector_ids));
       formDataToSend.append('insight_topic_id', formData.insight_topic_id);
@@ -331,6 +361,11 @@ export default function MarketInsightsPage() {
       if (formData.content_type === 'TEXT') {
         formDataToSend.append('first_part', formData.first_part);
         formDataToSend.append('second_part', formData.second_part);
+      }
+      
+      // Add video URL for VIDEO content type
+      if (formData.content_type === 'VIDEO' && formData.video_url) {
+        formDataToSend.append('video_url', formData.video_url);
       }
       
       formDataToSend.append('insight_sector_id', formData.insight_sector_id);
@@ -427,6 +462,7 @@ export default function MarketInsightsPage() {
       first_part: "",
       second_part: "",
       video_file: "",
+      video_url: "",
       insight_sector_id: "",
       insight_subsector_ids: [],
       insight_topic_id: "",
@@ -614,6 +650,7 @@ export default function MarketInsightsPage() {
       first_part: insight.first_part || "",
       second_part: insight.second_part || "",
       video_file: insight.video_file || "",
+      video_url: insight.video_url || "",
       insight_sector_id: insight.insight_sector_id?.toString() || "",
       insight_subsector_ids: insight.insight_subsector_ids ? JSON.parse(insight.insight_subsector_ids) : [],
       insight_topic_id: insight.insight_topic_id?.toString() || "",
@@ -891,13 +928,13 @@ export default function MarketInsightsPage() {
                   /* View Mode - Show existing blog image */
                   formData.blog_image && formData.blog_image.trim() !== '' ? (
                     <div className="mt-1">
-                      <Image
-                        src={formData.blog_image}
-                        alt="Blog Image"
-                        width={200}
-                        height={200}
-                        className="rounded-lg border border-gray-200 object-cover"
-                      />
+                        <Image
+                          src={formData.blog_image}
+                          alt="Blog Image"
+                          width={200}
+                          height={200}
+                          className="rounded-lg border border-gray-200 object-cover"
+                        />
                     </div>
                   ) : (
                     <div className="mt-1 text-themeTealLighter text-sm">No image uploaded</div>
@@ -1045,106 +1082,164 @@ export default function MarketInsightsPage() {
               {/* Video Content Field - Only show when content_type is VIDEO */}
               {formData.content_type === 'VIDEO' && (
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-themeTeal mb-1">
-                    Video File <span className="text-red-500">*</span>
-                  </label>
-                  
-                  {isViewMode ? (
-                    /* View Mode - Show existing video */
-                    formData.video_file ? (
-                      <div className="mt-1">
-                        <video
-                          src={formData.video_file}
-                          controls
-                          className="w-full max-w-md rounded-lg border border-gray-200"
-                        >
-                          Your browser does not support the video tag.
-                        </video>
-                      </div>
-                    ) : (
-                      <div className="mt-1 text-themeTealLighter text-sm">No video uploaded</div>
-                    )
-                  ) : (
-                    /* Edit Mode - Show upload interface */
-                    <>
-                      {/* Error Message */}
-                      {videoUpload.error && (
-                        <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
-                          <p className="text-xs text-red-600">{videoUpload.error}</p>
-                        </div>
-                      )}
-                      
-                      {/* Upload Area */}
-                      <label 
-                        htmlFor="video-upload"
-                        className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-themeTealLighter rounded transition-colors duration-200 cursor-pointer ${
-                          videoUpload.error 
-                            ? 'border-red-300 bg-red-50' 
-                            : videoUpload.preview 
-                              ? 'border-green-300 bg-green-50' 
-                              : 'border-gray-300 hover:border-themeTealLighter hover:bg-themeTealWhite'
-                        }`}
-                        onDragOver={handleVideoDragOver}
-                        onDragEnter={handleVideoDragEnter}
-                        onDragLeave={handleVideoDragLeave}
-                        onDrop={handleVideoDrop}
-                      >
-                        {videoUpload.preview ? (
-                          /* Video Preview */
-                          <div className="space-y-3 text-center">
-                            <div className="relative inline-block">
-                              <video
-                                src={videoUpload.preview}
-                                controls
-                                className="w-64 h-36 rounded-lg border border-gray-200 object-cover"
-                              >
-                                Your browser does not support the video tag.
-                              </video>
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  removeVideo();
-                                }}
-                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </div>
-                            <div>
-                              <p className="text-green-600 font-medium text-sm">✓ Video uploaded successfully</p>
-                              <p className="text-gray-500 text-xs">
-                                {videoUpload.file?.name}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          /* Upload Prompt */
-                          <div className="space-y-3 text-center">
-                            <div className="mx-auto w-12 h-12 text-themeTealLighter">
-                              <Upload className="w-full h-full" />
-                            </div>
-                            <div>
-                              <p className="text-sm text-themeTeal">
-                                <span className="font-medium">Click to upload</span> or drag and drop
-                              </p>
-                              <p className="text-xs text-themeTealLighter">
-                                MP4 video files up to 100MB
-                              </p>
-                            </div>
-                          </div>
-                        )}
+                  <div className="space-y-4">
+                    {/* Video File Upload */}
+                    <div>
+                      <label className="block text-sm font-medium text-themeTeal mb-1">
+                        Video File Upload
                       </label>
                       
-                      <input
-                        id="video-upload"
-                        type="file"
-                        accept="video/mp4"
-                        onChange={handleVideoFileChange}
-                        className="hidden"
-                      />
-                    </>
-                  )}
+                      {isViewMode ? (
+                        /* View Mode - Show existing video */
+                        <div className="mt-1">
+                          {formData.video_file ? (
+                            /* S3 Video File */
+                            <video
+                              src={formData.video_file}
+                              controls
+                              className="w-full max-w-md rounded-lg border border-gray-200"
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          ) : formData.video_url ? (
+                            /* YouTube Video URL - Show URL only */
+                            <div className="p-2 bg-gray-50 rounded border text-sm text-gray-700 break-all">
+                              {formData.video_url}
+                            </div>
+                          ) : (
+                            <div className="text-themeTealLighter text-sm">No video uploaded</div>
+                          )}
+                        </div>
+                      ) : (
+                        /* Edit Mode - Show upload interface */
+                        <>
+                          {/* Error Message */}
+                          {videoUpload.error && (
+                            <div className="mb-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                              <p className="text-xs text-red-600">{videoUpload.error}</p>
+                            </div>
+                          )}
+                          
+                          {/* Upload Area */}
+                          <label 
+                            htmlFor="video-upload"
+                            className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed border-themeTealLighter rounded transition-colors duration-200 cursor-pointer ${
+                              videoUpload.error 
+                                ? 'border-red-300 bg-red-50' 
+                                : videoUpload.preview 
+                                  ? 'border-green-300 bg-green-50' 
+                                  : 'border-gray-300 hover:border-themeTealLighter hover:bg-themeTealWhite'
+                            }`}
+                            onDragOver={handleVideoDragOver}
+                            onDragEnter={handleVideoDragEnter}
+                            onDragLeave={handleVideoDragLeave}
+                            onDrop={handleVideoDrop}
+                          >
+                            {videoUpload.preview ? (
+                              /* Video Preview */
+                              <div className="space-y-3 text-center">
+                                <div className="relative inline-block">
+                                  <video
+                                    src={videoUpload.preview}
+                                    controls
+                                    className="w-64 h-36 rounded-lg border border-gray-200 object-cover"
+                                  >
+                                    Your browser does not support the video tag.
+                                  </video>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      removeVideo();
+                                    }}
+                                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <div>
+                                  <p className="text-green-600 font-medium text-sm">✓ Video uploaded successfully</p>
+                                  <p className="text-gray-500 text-xs">
+                                    {videoUpload.file?.name}
+                                  </p>
+                                </div>
+                              </div>
+                            ) : (
+                              /* Upload Prompt */
+                              <div className="space-y-3 text-center">
+                                <div className="mx-auto w-12 h-12 text-themeTealLighter">
+                                  <Upload className="w-full h-full" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-themeTeal">
+                                    <span className="font-medium">Click to upload</span> or drag and drop
+                                  </p>
+                                  <p className="text-xs text-themeTealLighter">
+                                    MP4 video files up to 100MB
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </label>
+                          
+                          <input
+                            id="video-upload"
+                            type="file"
+                            accept="video/mp4"
+                            onChange={handleVideoFileChange}
+                            className="hidden"
+                          />
+                        </>
+                      )}
+                    </div>
+
+                    {/* Video URL Input */}
+                    <div>
+                      <label className="block text-sm font-medium text-themeTeal mb-1">
+                        YouTube Video URL
+                      </label>
+                      {isViewMode ? (
+                        /* View Mode - Show video URL */
+                        <div className="mt-1">
+                          {formData.video_url ? (
+                            <div className="space-y-2">
+                              <div className="p-2 bg-gray-50 rounded border text-sm text-gray-700 break-all">
+                                {formData.video_url}
+                              </div>
+                              <div className="text-xs text-themeTealLighter">
+                                YouTube URL from database
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="text-themeTealLighter text-sm">No YouTube URL provided</div>
+                          )}
+                        </div>
+                      ) : (
+                        /* Edit Mode - Input field */
+                        <>
+                          <input
+                            type="url"
+                            value={formData.video_url}
+                            onChange={(e) => setFormData({...formData, video_url: e.target.value})}
+                            className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
+                            disabled={isViewMode}
+                            placeholder="https://www.youtube.com/watch?v=..."
+                            readOnly={isViewMode}
+                          />
+                          <p className="text-xs text-themeTealLighter mt-1">
+                            Enter YouTube video URL (either video file OR video URL is required)
+                          </p>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Validation Message */}
+                    {!isViewMode && formData.content_type === 'VIDEO' && !videoUpload.file && !formData.video_url && (
+                      <div className="text-red-500 text-sm">
+                        Either video file upload or YouTube URL is required for video content
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
               

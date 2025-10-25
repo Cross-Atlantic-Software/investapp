@@ -53,6 +53,9 @@ import { KnowledgeSubsectorController } from "../controllers/admin/knowledgeSubs
 import { KnowledgeTopicController } from "../controllers/admin/knowledgeTopicController";
 import { KnowledgeSubtopicController } from "../controllers/admin/knowledgeSubtopicController";
 import { KnowledgeThemeController } from "../controllers/admin/knowledgeThemeController";
+import { StockPerformanceScoreController } from "../controllers/admin/stockPerformanceScoreController";
+import { UserPortfolioController } from "../controllers/admin/userPortfolioController";
+import { UserReportController, upload as uploadReport } from "../controllers/admin/userReportController";
 import { StockScorecardManagementController } from "../controllers/admin/stockScorecardManagement";
 import { StockInvestmentRationaleManagementController } from "../controllers/admin/stockInvestmentRationaleManagement";
 import { StockPerformancePdfManagementController, uploadMiddleware } from "../controllers/admin/stockPerformancePdfManagement";
@@ -166,12 +169,19 @@ router.put("/stocks/:id", uploadIcon.any(), updateStock);
 router.delete("/stocks/:id", deleteStock);
 router.delete("/stocks/bulk", bulkDeleteStocks);
 
+// User Report Routes
+router.get("/users/:userId/report", UserReportController.getUserReport);
+router.post("/users/:userId/report", uploadReport.single('report'), UserReportController.uploadReport);
+router.delete("/users/:userId/report", UserReportController.deleteUserReport);
+
 // Site User Management Routes
 router.get("/site-users", siteUserController.getAllSiteUsers);
 router.get("/site-users/stats", siteUserController.getSiteUserStats);
 router.get("/site-users/:id", siteUserController.getSiteUserById);
 router.put("/site-users/:id", siteUserController.updateSiteUser);
 router.delete("/site-users/:id", siteUserController.deleteSiteUser);
+router.delete("/site-users/:id/related-records", siteUserController.deleteAllRelatedRecords);
+router.delete("/site-users/:id/force", siteUserController.forceDeleteSiteUser);
 
 // Email Template Management Routes
 router.get("/email-templates", emailTemplateController.getAllEmailTemplates);
@@ -536,5 +546,23 @@ router.get("/knowledge-themes/:id", KnowledgeThemeController.getKnowledgeThemeBy
 router.post("/knowledge-themes", KnowledgeThemeController.createKnowledgeTheme);
 router.put("/knowledge-themes/:id", KnowledgeThemeController.updateKnowledgeTheme);
 router.delete("/knowledge-themes/:id", KnowledgeThemeController.deleteKnowledgeTheme);
+
+// Stock Performance Score Routes
+router.get("/stock-performance-scores", StockPerformanceScoreController.getAllStockPerformanceScores);
+router.get("/stock-performance-scores/:id", StockPerformanceScoreController.getStockPerformanceScoreById);
+router.post("/stock-performance-scores", StockPerformanceScoreController.createStockPerformanceScore);
+router.put("/stock-performance-scores/:id", StockPerformanceScoreController.updateStockPerformanceScore);
+router.delete("/stock-performance-scores/:id", StockPerformanceScoreController.deleteStockPerformanceScore);
+router.get("/products", StockPerformanceScoreController.getAllProducts);
+router.get("/products/stock-tags", stockMasterController.getStockTags);
+
+// User Portfolio Routes
+router.get("/user-portfolios", UserPortfolioController.getAllUserPortfolios);
+router.get("/user-portfolios/:userId", UserPortfolioController.getUserPortfolioById);
+router.get("/user-portfolios-stats", UserPortfolioController.getPortfolioStatistics);
+router.post("/user-portfolios/refresh-all", UserPortfolioController.refreshAllPortfolios);
+router.post("/user-portfolios/:userId/refresh", UserPortfolioController.refreshUserPortfolioById);
+router.get("/user-portfolios-top-performing", UserPortfolioController.getTopPerformingPortfolios);
+router.get("/user-portfolios-by-performance", UserPortfolioController.getPortfoliosByPerformanceRange);
 
 export default router;

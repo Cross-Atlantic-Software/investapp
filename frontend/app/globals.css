@@ -1,18 +1,13 @@
-@import "tailwindcss";
 @import "react-quill-new/dist/quill.snow.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
-  --font-serif: var(--font-merriweather);
-
-  /* brand */
+  
+  /* Brand colors */
   --color-themeTeal: #0B4B62;
   --color-themeSkyBlue: #0097D1;
   --color-themeTealLight: #558191;
@@ -33,15 +28,15 @@ body {
   font-family: var(--font-inter);
 }
 
-@utility bg-brandGradient {
+.bg-brandGradient {
   background-image: linear-gradient(to bottom, #CFE9F2 0%, #F1F7FB 100%);
 }
 
-@utility bg-brandGradientGreen {
+.bg-brandGradientGreen {
   background-image: linear-gradient(to bottom, #CBFFDA 0%, #ffffff 100%);
 }
 
-@utility appContainer {
+.appContainer {
   width: 100%;
   margin-inline: auto;
 

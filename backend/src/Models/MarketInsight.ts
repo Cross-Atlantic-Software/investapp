@@ -12,6 +12,7 @@ interface MarketInsightAttributes {
   first_part?: string; // Required when content_type is TEXT
   second_part?: string; // Required when content_type is TEXT
   video_file?: string; // Required when content_type is VIDEO, S3 URL
+  video_url?: string; // YouTube video URL
   insight_sector_id?: number;
   insight_subsector_ids?: string; // JSON string of array
   insight_topic_id?: number;
@@ -36,6 +37,7 @@ export class MarketInsight extends Model<MarketInsightAttributes, MarketInsightC
   public first_part?: string;
   public second_part?: string;
   public video_file?: string;
+  public video_url?: string;
   public insight_sector_id?: number;
   public insight_subsector_ids?: string;
   public insight_topic_id?: number;
@@ -98,6 +100,11 @@ export function initializeMarketInsightModel(sequelize: Sequelize) {
         type: DataTypes.STRING(500),
         allowNull: true, // Required when content_type is VIDEO
         comment: 'S3 URL for uploaded video file'
+      },
+      video_url: {
+        type: DataTypes.STRING(500),
+        allowNull: true,
+        comment: 'YouTube video URL'
       },
       insight_sector_id: {
         type: DataTypes.INTEGER,

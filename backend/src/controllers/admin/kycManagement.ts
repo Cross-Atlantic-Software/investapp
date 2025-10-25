@@ -187,6 +187,9 @@ export class KYCManagementController {
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       let bank_proof = '';
       let sign = '';
+      let pan = '';
+      let aadhar = '';
+      let demat = '';
 
       if (files) {
         // Get bank proof file
@@ -198,13 +201,28 @@ export class KYCManagementController {
         if (files.sign && files.sign[0]) {
           sign = (files.sign[0] as any).location; // S3 file URL
         }
+
+        // Get PAN file
+        if (files.pan && files.pan[0]) {
+          pan = (files.pan[0] as any).location; // S3 file URL
+        }
+
+        // Get Aadhar file
+        if (files.aadhar && files.aadhar[0]) {
+          aadhar = (files.aadhar[0] as any).location; // S3 file URL
+        }
+
+        // Get Demat file
+        if (files.demat && files.demat[0]) {
+          demat = (files.demat[0] as any).location; // S3 file URL
+        }
       }
 
-      // Validate that both files are uploaded
-      if (!bank_proof || !sign) {
+      // Validate that all required files are uploaded
+      if (!bank_proof || !sign || !pan || !aadhar || !demat) {
         res.status(HttpStatusCode.BAD_REQUEST).json({
           success: false,
-          message: 'Both bank proof and signature documents are required'
+          message: 'All document files are required: bank proof, signature, PAN, Aadhar, and Demat'
         });
         return;
       }
@@ -224,6 +242,9 @@ export class KYCManagementController {
         demat_type,
         demat_account_id,
         sign,
+        pan,
+        aadhar,
+        demat,
         status: 'pending'
       });
 

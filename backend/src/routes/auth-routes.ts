@@ -33,7 +33,10 @@ authRouter.post('/google/verify', GoogleAuthCtrl.googleTokenVerify);
 // KYC routes for authenticated site users
 authRouter.post('/kyc', jwtAuthMiddleware, uploadKYCDocuments.fields([
   { name: 'bank_proof', maxCount: 1 },
-  { name: 'sign', maxCount: 1 }
+  { name: 'sign', maxCount: 1 },
+  { name: 'pan', maxCount: 1 },
+  { name: 'aadhar', maxCount: 1 },
+  { name: 'demat', maxCount: 1 }
 ]), kycController.createKYCApplication);
 authRouter.get('/kyc/my', jwtAuthMiddleware, kycController.getMyKYCApplication);
 authRouter.get('/kyc/status', jwtAuthMiddleware, kycController.getKYCStatus);

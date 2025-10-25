@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Eye, CheckCircle, XCircle, Trash2, Download, User, FileText, Calendar, Globe, CreditCard, Building, X } from 'lucide-react';
+import { Search, Eye, CheckCircle, XCircle, Download, User, FileText, Calendar, Globe, CreditCard, Building, X } from 'lucide-react';
 import { NotificationContainer, NotificationData } from '@/components/admin/shared/Notification';
 import Loader from '@/components/admin/shared/Loader';
 import ConfirmationModal from '@/components/admin/shared/ConfirmationModal';
@@ -21,6 +21,9 @@ interface KYCApplication {
   demat_type: string;
   demat_account_id: string;
   sign: string;
+  pan: string;
+  aadhar: string;
+  demat: string;
   status: 'pending' | 'verified' | 'rejected';
   createdAt: string;
   updatedAt: string;
@@ -50,19 +53,6 @@ export default function KYCPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [selectedKYC, setSelectedKYC] = useState<KYCApplication | null>(null);
-  const [confirmationModal, setConfirmationModal] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
-    type?: 'danger' | 'warning' | 'info';
-  }>({
-    isOpen: false,
-    title: '',
-    message: '',
-    onConfirm: () => {},
-    type: 'danger'
-  });
   const [statusConfirmationModal, setStatusConfirmationModal] = useState<{
     isOpen: boolean;
     title: string;
@@ -237,65 +227,6 @@ export default function KYCPage() {
         message: 'Failed to update KYC status'
       });
     }
-  };
-
-  // Delete KYC application
-  const deleteKYCApplication = (id: number) => {
-    setConfirmationModal({
-      isOpen: true,
-      title: 'Delete KYC Application',
-      message: 'Are you sure you want to delete this KYC application? This action cannot be undone.',
-      type: 'danger',
-      onConfirm: () => performDeleteKYC(id)
-    });
-  };
-
-  const performDeleteKYC = async (id: number) => {
-
-    try {
-      const token = sessionStorage.getItem('adminToken') || '';
-      
-      const response = await fetch(`/api/admin/kyc/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'token': token,
-        },
-      });
-
-      const data = await response.json();
-      if (data.success) {
-        addNotification({
-          type: 'success',
-          title: 'Success',
-          message: 'KYC application deleted successfully'
-        });
-        fetchKYCApplications(currentPage, false);
-        fetchKYCStats();
-      } else {
-        addNotification({
-          type: 'error',
-          title: 'Error',
-          message: data.message || 'Failed to delete KYC application'
-        });
-      }
-    } catch (error) {
-      console.error('Error deleting KYC application:', error);
-      addNotification({
-        type: 'error',
-        title: 'Error',
-        message: 'Failed to delete KYC application'
-      });
-    }
-  };
-
-  const closeConfirmationModal = () => {
-    setConfirmationModal({
-      isOpen: false,
-      title: '',
-      message: '',
-      onConfirm: () => {},
-      type: 'danger'
-    });
   };
 
   const closeStatusConfirmationModal = () => {
@@ -662,13 +593,6 @@ export default function KYCPage() {
                               </button>
                             </>
                           )}
-                          <button
-                            onClick={() => deleteKYCApplication(kyc.id)}
-                            className="p-2 text-red-600 bg-red-50 rounded transition duration-300 hover:bg-red-100 cursor-pointer"
-                            title="Delete"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -937,6 +861,75 @@ export default function KYCPage() {
                       </button>
                     </div>
                   </div>
+                  <div className="bg-themeTealWhite border border-themeTealLighter rounded-lg p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="flex-shrink-0">
+                        <FileText className='text-themeTeal'/>
+                      </div>
+                      <h5 className="font-medium text-themeTeal">PAN Document</h5>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => window.open(selectedKYC.pan, '_blank')}
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200"
+                      >
+                        View Document
+                      </button>
+                      <button
+                        onClick={() => downloadFile(selectedKYC.pan, 'PAN Document')}
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200 flex items-center"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-themeTealWhite border border-themeTealLighter rounded-lg p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="flex-shrink-0">
+                        <FileText className='text-themeTeal'/>
+                      </div>
+                      <h5 className="font-medium text-themeTeal">Aadhar Document</h5>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => window.open(selectedKYC.aadhar, '_blank')}
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200"
+                      >
+                        View Document
+                      </button>
+                      <button
+                        onClick={() => downloadFile(selectedKYC.aadhar, 'Aadhar Document')}
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200 flex items-center"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                  <div className="bg-themeTealWhite border border-themeTealLighter rounded-lg p-6">
+                    <div className="flex items-center space-x-3 mb-4">
+                      <div className="flex-shrink-0">
+                        <FileText className='text-themeTeal'/>
+                      </div>
+                      <h5 className="font-medium text-themeTeal">Demat Document</h5>
+                    </div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => window.open(selectedKYC.demat, '_blank')}
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200"
+                      >
+                        View Document
+                      </button>
+                      <button
+                        onClick={() => downloadFile(selectedKYC.demat, 'Demat Document')}
+                        className="text-themeTeal hover:text-themeTealLight text-sm font-medium transition-colors duration-200 flex items-center"
+                      >
+                        <Download className="w-4 h-4 mr-1" />
+                        Download
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -977,21 +970,6 @@ export default function KYCPage() {
         onRemove={removeNotification}
       />
       
-      {/* Confirmation Modal */}
-      <ConfirmationModal
-        isOpen={confirmationModal.isOpen}
-        onClose={closeConfirmationModal}
-        onConfirm={() => {
-          confirmationModal.onConfirm();
-          closeConfirmationModal();
-        }}
-        title={confirmationModal.title}
-        message={confirmationModal.message}
-        type={confirmationModal.type}
-        confirmText="Delete"
-        cancelText="Cancel"
-      />
-
       {/* Status Confirmation Modal */}
       <ConfirmationModal
         isOpen={statusConfirmationModal.isOpen}

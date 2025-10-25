@@ -8,6 +8,12 @@ import subscriberRoutes from "./subscriber-routes";
 import publicRoutes from "./public-routes";
 import migrationRoutes from "./migration-routes";
 import wishlistRoutes from "./wishlist-routes";
+import { UserPortfolioController } from "../controllers/admin/userPortfolioController";
+import { UserHoldingsController } from "../controllers/userHoldingsController";
+import { UserReportController } from "../controllers/admin/userReportController";
+import { UserProfileController } from "../controllers/userProfileController";
+import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
+import jwtAuthMiddleware from "../utils/middleware";
 import express from "express";
 
 const router = express.Router();
@@ -27,6 +33,19 @@ router.use('/trading', tradingRoutes);
 // Wishlist routes (protected - requires authentication)
 router.use('/wishlist', wishlistRoutes);
 
+// User Portfolio routes (protected - requires authentication)
+router.get('/user-portfolio', UserPortfolioController.getCurrentUserPortfolio);
+
+// User Holdings routes (protected - requires authentication)
+router.get('/user-holdings', UserHoldingsController.getUserHoldings);
+
+// User Report routes (protected - requires authentication)
+router.get('/user-report', jwtAuthMiddleware, UserReportController.getCurrentUserReport);
+
+// User Profile routes (protected - requires authentication)
+router.get('/user-profile', jwtAuthMiddleware, UserProfileController.getCurrentUserProfile);
+router.put('/user-profile', jwtAuthMiddleware, UserProfileController.updateCurrentUserProfile);
+
 // Admin CMS routes (for admin users)
 router.use('/admin', adminRoutes);
 
@@ -41,5 +60,9 @@ router.use('/migrations', migrationRoutes);
 
 // Public routes for frontend display (private market news, notable activities)
 router.use('/', publicRoutes);
+
+// Public stock tags route (no authentication required)
+const stockMasterController = new StockMasterManagementController();
+router.get('/stock-tags', stockMasterController.getStockTags);
 
 export default router;

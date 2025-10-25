@@ -23,6 +23,7 @@ interface ProductAttributes {
   lot_size: number;
   stock_master_ids?: string;
   price_change_period_id?: number;
+  stock_performance_score_id?: number | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -58,6 +59,7 @@ class Product
   public lot_size!: number;
   public stock_master_ids?: string;
   public price_change_period_id?: number;
+  public stock_performance_score_id?: number | null;
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
 }
@@ -160,6 +162,14 @@ export function initializeProductModel(sequelize: Sequelize) {
       price_change_period_id: {
         type: DataTypes.INTEGER,
         allowNull: true
+      },
+      stock_performance_score_id: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
+        references: {
+          model: 'stock_performance_scores',
+          key: 'id'
+        }
       }
     }, {
       sequelize,
