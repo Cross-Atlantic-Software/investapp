@@ -52,7 +52,7 @@ export interface InsightSubtopic {
    ========================= */
 const DATE_FMT = new Intl.DateTimeFormat("en-US", {
   month: "short",
-  day: "numeric", 
+  day: "numeric",
   year: "numeric",
   timeZone: "UTC",
 });
@@ -84,7 +84,7 @@ function GridCard({ item }: { item: MarketInsight }) {
       </div>
       <div className="p-4">
         <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
-          <BookOpenText className="h-3.5 w-3.5" />
+            <BookOpenText className="h-3.5 w-3.5" />
           <span>{item.InsightSector?.name || 'General'}</span>
         </div>
         <h3 className="mt-2 text-base font-semibold text-themeTeal group-hover:text-themeSkyBlue transition">
@@ -178,7 +178,7 @@ export default function MarketInsightsPage() {
 
     // Filter by search
     if (q.trim()) {
-      const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    const words = q.trim().toLowerCase().split(/\s+/).filter(Boolean);
       filtered = filtered.filter(insight =>
         words.every(word => 
           insight.title.toLowerCase().includes(word) ||
@@ -301,7 +301,7 @@ export default function MarketInsightsPage() {
                       All Subtopics
                     </button>
                     {availableSubtopics.map((subtopic) => (
-                      <button
+              <button
                         key={subtopic.id}
                         onClick={() => {
                           setSelectedSubtopic(subtopic.id);
@@ -310,8 +310,8 @@ export default function MarketInsightsPage() {
                         className="w-full px-3 py-2 text-left text-sm hover:bg-themeTealWhite"
                       >
                         {subtopic.name}
-                      </button>
-                    ))}
+              </button>
+            ))}
                   </div>
                 )}
               </div>
@@ -369,9 +369,9 @@ export default function MarketInsightsPage() {
                   <div key={item.id} className="flex-1">
                     <GridCard item={item} />
                   </div>
-                ))}
-              </div>
-              
+              ))}
+            </div>
+
               {/* Second Column: Third insight single - 50% width, equal height to first column */}
               <div className="lg:col-span-2 flex">
                 {featuredInsights.length >= 3 && (
@@ -379,8 +379,8 @@ export default function MarketInsightsPage() {
                     <GridCard item={featuredInsights[2]} />
                   </div>
                 )}
-              </div>
-              
+            </div>
+
               {/* Third Column: Rest of insights without images - 25% width */}
               <div className="lg:col-span-1 rounded px-6">
                 <ul className="space-y-4 divide-y divide-themeTealLighter">
@@ -393,15 +393,15 @@ export default function MarketInsightsPage() {
                         </div>
                         <div className="text-md my-2 font-medium">{item.title}</div>
                         <div className="mt-2 flex items-center gap-2 text-xs text-themeTealLighter">
-                          <CalendarDays className="h-3 w-3" />
+                    <CalendarDays className="h-3 w-3" />
                          <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
-                       </div>
-                      </a>
+                  </div>
+                </a>
                     </li>
-                  ))}
+              ))}
                 </ul>
-              </div>
             </div>
+          </div>
           )}
         </section>
 

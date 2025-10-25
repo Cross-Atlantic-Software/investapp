@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   CheckCircle2, Landmark, CreditCard,
-  FileText, MapPin, UserRoundCheck, PenLine,
+  FileText, MapPin, UserRoundCheck, PenLine, UploadCloud,
 } from "lucide-react";
 import { useKYC } from "@/contexts/KYCContext";
 
@@ -16,14 +16,17 @@ export default function KYCStep3Address() {
 
   // ----- Aadhaar state (initialize from context)
   const [aadhaarDigits, setAadhaarDigits] = useState(formData.aadhar_number);
+  const [aadharFile, setAadharFile] = useState<File | null>(formData.aadhar_file);
+  const [fileError, setFileError] = useState<string>("");
   const isAadhaarValid = /^\d{12}$/.test(aadhaarDigits);
 
   // Update context when aadhaar changes
   useEffect(() => {
     updateFormData({
       aadhar_number: aadhaarDigits,
+      aadhar_file: aadharFile,
     });
-  }, [aadhaarDigits, updateFormData]);
+  }, [aadhaarDigits, aadharFile, updateFormData]);
 
   const formatted = aadhaarDigits.replace(/(\d{4})(?=\d)/g, "$1 ").trim();
 
@@ -32,8 +35,37 @@ export default function KYCStep3Address() {
     setAadhaarDigits(digits);
   }
 
+  // File upload handler
+  const handleFileUpload = (file: File | null) => {
+    setFileError("");
+    if (!file) {
+      setAadharFile(null);
+      return;
+    }
+
+    // Validate file type
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    if (!allowedTypes.includes(file.type)) {
+      setFileError("Only PDF, JPG, and PNG files are allowed.");
+      setAadharFile(null);
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("File size must be less than 5MB.");
+      setAadharFile(null);
+      return;
+    }
+
+    setAadharFile(file);
+  };
+
+  const fileValid = !!aadharFile && aadharFile.size <= 5 * 1024 * 1024;
+  const allValid = isAadhaarValid && fileValid;
+
   const handleContinue = () => {
-    if (isAadhaarValid) {
+    if (allValid) {
       markStepCompleted(3);
       router.push('/kyc-process/step-4');
     }
@@ -144,7 +176,7 @@ export default function KYCStep3Address() {
             {isAadhaarValid ? (
               <p className="mt-2 text-sm text-emerald-700 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" />
-                Aadhaar number format is valid. You can continue to the next step.
+                Aadhaar number format is valid.
               </p>
             ) : aadhaarDigits.length > 0 ? (
               <p className="mt-2 text-sm text-red-600">
@@ -153,6 +185,74 @@ export default function KYCStep3Address() {
             ) : (
               <p className="mt-2 text-sm text-themeTealLighter">
                 Enter your 12-digit Aadhaar number to continue.
+              </p>
+            )}
+          </div>
+
+          {/* Aadhar File Upload */}
+          <div className="space-y-3">
+            <label className="text-sm text-themeTeal">
+              Upload Aadhar Document<span className="text-red-600">*</span>
+            </label>
+            
+            <div
+              className="border-2 border-dashed border-themeTealLighter bg-white p-6 text-center rounded cursor-pointer hover:border-themeTeal transition-colors"
+              onClick={() => document.getElementById('aadharFileInput')?.click()}
+            >
+              <input
+                id="aadharFileInput"
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
+                className="hidden"
+                onChange={(e) => handleFileUpload(e.target.files?.[0] ?? null)}
+              />
+              
+              {aadharFile ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2 text-themeTeal">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                    <span className="text-sm font-medium">{aadharFile.name}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setAadharFile(null);
+                    }}
+                    className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                  >
+                    Remove file
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3">
+                  <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-themeTealWhite text-themeTeal">
+                    <UploadCloud className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-themeTeal font-medium">Upload your Aadhar document</p>
+                    <p className="text-xs text-themeTealLighter mt-1">
+                      Supported formats: PDF, JPG, PNG (Max 5MB)
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    className="mt-3 inline-flex items-center rounded border border-themeTealLighter px-4 py-2 text-sm text-themeTeal hover:bg-themeTealWhite"
+                  >
+                    Choose File
+                  </button>
+                </div>
+              )}
+              
+              {fileError && (
+                <p className="mt-2 text-xs text-red-600">{fileError}</p>
+              )}
+            </div>
+
+            {aadharFile && (
+              <p className="text-xs text-emerald-700 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" />
+                Aadhar document uploaded successfully.
               </p>
             )}
           </div>
@@ -170,10 +270,10 @@ export default function KYCStep3Address() {
           <button
             type="button"
             onClick={handleContinue}
-            disabled={!isAadhaarValid}
+            disabled={!allValid}
             className={[
               "w-full sm:w-auto px-6 py-3 rounded font-medium",
-              isAadhaarValid
+              allValid
                 ? "bg-themeSkyBlue text-themeTealWhite cursor-pointer"
                 : "bg-themeTealLighter text-white cursor-not-allowed",
             ].join(" ")}

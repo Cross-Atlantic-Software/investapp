@@ -1,6 +1,6 @@
 "use client";
 
-import { Info } from "lucide-react";
+import { Info, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
@@ -46,6 +46,9 @@ export default function TradeTabs({
   
   // Notification state
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  
+  // KYC popup state
+  const [showKYCPopup, setShowKYCPopup] = useState<boolean>(false);
 
   // Check if user's KYC is verified
   const checkKYCStatus = async () => {
@@ -89,6 +92,16 @@ export default function TradeTabs({
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
+  // KYC popup handlers
+  const handleCompleteKYC = () => {
+    setShowKYCPopup(false);
+    router.push('/kyc-process/step-1');
+  };
+
+  const handleCloseKYCPopup = () => {
+    setShowKYCPopup(false);
+  };
+
   // Validation for quantity based on minUnits and lotSize
   const validateQuantity = (quantity: number) => {
     if (quantity <= 0) return false;
@@ -127,17 +140,12 @@ export default function TradeTabs({
     console.log('KYC verification result:', isKYCVerified);
     
     if (!isKYCVerified) {
-      console.log('KYC not verified, redirecting to KYC process');
-      addNotification({
-        type: 'error',
-        title: 'KYC verification required to invest',
-        duration: 6000
-      });
+      console.log('KYC not verified, showing popup');
       // Store the current page URL to return after KYC completion
       const currentUrl = window.location.pathname + window.location.search;
       sessionStorage.setItem('returnAfterKYC', currentUrl);
       sessionStorage.setItem('kycFlow', 'stock-buy');
-      router.push('/kyc-process/step-1');
+      setShowKYCPopup(true);
       return;
     }
     
@@ -404,6 +412,44 @@ export default function TradeTabs({
         notifications={notifications}
         onRemove={removeNotification}
       />
+      
+      {/* KYC Popup Modal */}
+      {showKYCPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-themeTeal">KYC Required</h3>
+              <button
+                onClick={handleCloseKYCPopup}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-700">
+                Your KYC is pending. Please complete your KYC to proceed with the investment.
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={handleCloseKYCPopup}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCompleteKYC}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-themeTeal rounded-md hover:bg-themeSkyBlue transition-colors"
+              >
+                Complete KYC
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

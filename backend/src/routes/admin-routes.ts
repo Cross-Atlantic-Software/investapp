@@ -554,6 +554,7 @@ router.post("/stock-performance-scores", StockPerformanceScoreController.createS
 router.put("/stock-performance-scores/:id", StockPerformanceScoreController.updateStockPerformanceScore);
 router.delete("/stock-performance-scores/:id", StockPerformanceScoreController.deleteStockPerformanceScore);
 router.get("/products", StockPerformanceScoreController.getAllProducts);
+router.get("/products/stock-tags", stockMasterController.getStockTags);
 
 // User Portfolio Routes
 router.get("/user-portfolios", UserPortfolioController.getAllUserPortfolios);

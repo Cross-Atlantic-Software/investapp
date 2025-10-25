@@ -64,7 +64,7 @@ const Step4: React.FC<StepProps> = ({ formData, onInputChange, onFormDataChange,
       {/* Stock Tags */}
       <div>
         <label className="block text-xs font-medium text-gray-700 mb-1">
-          Stock Tags <span className="text-red-500">*</span>
+          Filing Status & Attractiveness<span className="text-red-500">*</span>
         </label>
         <GenericSearchableMultiSelect
           options={stockMasters.map(master => ({ value: master.id, label: master.name }))}

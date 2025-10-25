@@ -891,13 +891,13 @@ export default function MarketInsightsPage() {
                   /* View Mode - Show existing blog image */
                   formData.blog_image && formData.blog_image.trim() !== '' ? (
                     <div className="mt-1">
-                      <Image
-                        src={formData.blog_image}
-                        alt="Blog Image"
-                        width={200}
-                        height={200}
-                        className="rounded-lg border border-gray-200 object-cover"
-                      />
+                        <Image
+                          src={formData.blog_image}
+                          alt="Blog Image"
+                          width={200}
+                          height={200}
+                          className="rounded-lg border border-gray-200 object-cover"
+                        />
                     </div>
                   ) : (
                     <div className="mt-1 text-themeTealLighter text-sm">No image uploaded</div>

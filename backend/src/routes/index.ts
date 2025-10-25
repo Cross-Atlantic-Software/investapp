@@ -12,6 +12,7 @@ import { UserPortfolioController } from "../controllers/admin/userPortfolioContr
 import { UserHoldingsController } from "../controllers/userHoldingsController";
 import { UserReportController } from "../controllers/admin/userReportController";
 import { UserProfileController } from "../controllers/userProfileController";
+import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 import jwtAuthMiddleware from "../utils/middleware";
 import express from "express";
 
@@ -59,5 +60,9 @@ router.use('/migrations', migrationRoutes);
 
 // Public routes for frontend display (private market news, notable activities)
 router.use('/', publicRoutes);
+
+// Public stock tags route (no authentication required)
+const stockMasterController = new StockMasterManagementController();
+router.get('/stock-tags', stockMasterController.getStockTags);
 
 export default router;

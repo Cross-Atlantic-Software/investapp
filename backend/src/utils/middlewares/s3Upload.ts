@@ -197,6 +197,12 @@ export const uploadKYCDocuments = multer({
         fileType = 'bank_proof';
       } else if (file.fieldname === 'sign') {
         fileType = 'signature';
+      } else if (file.fieldname === 'pan') {
+        fileType = 'pan';
+      } else if (file.fieldname === 'aadhar') {
+        fileType = 'aadhar';
+      } else if (file.fieldname === 'demat') {
+        fileType = 'demat';
       }
       
       const uniqueName = `kyc/${user_id}/${fileType}_${timestamp}.${fileExtension}`;

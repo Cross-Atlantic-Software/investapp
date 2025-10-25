@@ -15,6 +15,9 @@ interface KYCApplicationAttributes {
   demat_type: 'Individual' | 'Joint' | 'NRI(repatriable)' | 'Non-repatriable NRI' | 'Corporate' | 'Minor' | 'HUF' | 'Trust/Society/Partnership';
   demat_account_id: string;
   sign: string;
+  pan: string;
+  aadhar: string;
+  demat: string;
   status: 'pending' | 'verified' | 'rejected';
   createdAt: Date;
   updatedAt: Date;
@@ -37,6 +40,9 @@ class KYCApplication extends Model<KYCApplicationAttributes, KYCApplicationCreat
   public demat_type!: 'Individual' | 'Joint' | 'NRI(repatriable)' | 'Non-repatriable NRI' | 'Corporate' | 'Minor' | 'HUF' | 'Trust/Society/Partnership';
   public demat_account_id!: string;
   public sign!: string;
+  public pan!: string;
+  public aadhar!: string;
+  public demat!: string;
   public status!: 'pending' | 'verified' | 'rejected';
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
@@ -101,6 +107,18 @@ export function initializeKYCApplicationModel(sequelize: Sequelize) {
         allowNull: false,
       },
       sign: {
+        type: DataTypes.STRING(500),
+        allowNull: false,
+      },
+      pan: {
+        type: DataTypes.STRING(500),
+        allowNull: false,
+      },
+      aadhar: {
+        type: DataTypes.STRING(500),
+        allowNull: false,
+      },
+      demat: {
         type: DataTypes.STRING(500),
         allowNull: false,
       },

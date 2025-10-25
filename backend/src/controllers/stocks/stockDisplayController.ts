@@ -19,26 +19,120 @@ export class StockDisplayController {
       const sortBy = req.query.sort_by as string || 'createdAt';
       const sortOrder = req.query.sort_order as string || 'DESC';
       
+      // Filter parameters
+      const stockMasterIds = req.query.stock_master_ids as string;
+      const sectors = req.query.sectors as string;
+      const subsectors = req.query.subsectors as string;
+      const themes = req.query.themes as string;
+      const valuation = req.query.valuation as string;
+      
+      console.log('🔍 BACKEND DEBUG - All query params:', req.query);
+      console.log('🔍 BACKEND DEBUG - stock_master_ids param:', stockMasterIds);
+      console.log('🔍 BACKEND DEBUG - stock_master_ids type:', typeof stockMasterIds);
+      
       const offset = (page - 1) * limit;
       
       // Build where clause
       let whereClause: any = {};
+      
+      // Search filter
       if (search) {
-        whereClause = {
-          [Op.or]: [
-            { company_name: { [Op.like]: `%${search}%` } },
-            { teaser: { [Op.like]: `%${search}%` } },
-            { short_description: { [Op.like]: `%${search}%` } }
-          ]
+        whereClause[Op.or] = [
+          { company_name: { [Op.like]: `%${search}%` } },
+          { teaser: { [Op.like]: `%${search}%` } },
+          { short_description: { [Op.like]: `%${search}%` } }
+        ];
+      }
+      
+      // Note: We'll handle stock_master_ids filtering after fetching stocks
+      // because JSON array filtering is complex in SQL
+      
+      // Sectors filter
+      if (sectors) {
+        const sectorArray = sectors.split(',').map(id => parseInt(id.trim()));
+        whereClause.sector_ids = {
+          [Op.and]: sectorArray.map(id => ({
+            [Op.like]: `%${id}%`
+          }))
         };
       }
       
-      const stocks = await db.Product.findAll({
+      // Subsectors filter
+      if (subsectors) {
+        const subsectorArray = subsectors.split(',').map(id => parseInt(id.trim()));
+        whereClause.subsector_ids = {
+          [Op.and]: subsectorArray.map(id => ({
+            [Op.like]: `%${id}%`
+          }))
+        };
+      }
+      
+      // Themes filter
+      if (themes) {
+        const themeArray = themes.split(',').map(id => parseInt(id.trim()));
+        whereClause.theme_ids = {
+          [Op.and]: themeArray.map(id => ({
+            [Op.like]: `%${id}%`
+          }))
+        };
+      }
+      
+      // Valuation filter
+      if (valuation) {
+        whereClause.valuation_id = parseInt(valuation);
+      }
+      
+      console.log('🔍 Backend whereClause:', JSON.stringify(whereClause, null, 2));
+      
+      let stocks = await db.Product.findAll({
         where: whereClause,
         order: [[sortBy, sortOrder.toUpperCase()]],
         limit: limit,
         offset: offset
       });
+      
+      console.log('🔍 BACKEND DEBUG - Fetched stocks count:', stocks.length);
+      console.log('🔍 BACKEND DEBUG - All stocks:', stocks.map(s => ({ 
+        id: s.id, 
+        company_name: s.company_name, 
+        stock_master_ids: s.stock_master_ids 
+      })));
+      
+      // Apply stock_master_ids filtering after fetching (for JSON array filtering)
+      if (stockMasterIds) {
+        const stockMasterIdArray = stockMasterIds.split(',').map(id => parseInt(id.trim()));
+        console.log('🔍 BACKEND DEBUG - Filtering by stock_master_ids:', stockMasterIdArray);
+        
+        const originalCount = stocks.length;
+        stocks = stocks.filter((stock: any) => {
+          console.log(`🔍 BACKEND DEBUG - Checking stock: ${stock.company_name} (ID: ${stock.id})`);
+          console.log(`🔍 BACKEND DEBUG - stock_master_ids raw:`, stock.stock_master_ids);
+          
+          if (!stock.stock_master_ids) {
+            console.log(`🔍 BACKEND DEBUG - Stock ${stock.company_name} has no stock_master_ids - EXCLUDED`);
+            return false;
+          }
+          
+          try {
+            const stockMasterIdsArray = JSON.parse(stock.stock_master_ids);
+            console.log(`🔍 BACKEND DEBUG - Stock ${stock.company_name} parsed stock_master_ids:`, stockMasterIdsArray);
+            
+            const hasMatch = stockMasterIdArray.some(filterId => 
+              stockMasterIdsArray.includes(filterId)
+            );
+            
+            console.log(`🔍 BACKEND DEBUG - Stock ${stock.company_name} matches filter ${stockMasterIdArray}:`, hasMatch);
+            return hasMatch;
+          } catch (error) {
+            console.log(`🔍 BACKEND DEBUG - Error parsing stock_master_ids for ${stock.company_name}:`, error);
+            return false;
+          }
+        });
+        
+        console.log(`🔍 BACKEND DEBUG - Filtering complete: ${originalCount} -> ${stocks.length} stocks`);
+      } else {
+        console.log('🔍 BACKEND DEBUG - No stock_master_ids filter applied');
+      }
       
       const totalStocks = await db.Product.count({ where: whereClause });
       
@@ -88,6 +182,7 @@ export class StockDisplayController {
             sector_ids: stock.sector_ids,
             subsector_ids: stock.subsector_ids,
             theme_ids: stock.theme_ids,
+            stock_master_ids: stock.stock_master_ids,
             createdAt: stock.createdAt,
             updatedAt: stock.updatedAt
           };

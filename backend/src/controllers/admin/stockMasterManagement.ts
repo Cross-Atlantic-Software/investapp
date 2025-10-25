@@ -204,4 +204,40 @@ export class StockMasterManagementController {
       return (res as any).error(error.message || 'Internal server error', HttpStatusCode.INTERNAL_SERVER_ERROR);
     }
   };
+
+  // Get stock tags for filters (used by filters sidebar)
+  getStockTags = async (req: Request, res: Response): Promise<void> => {
+    try {
+      await this.ensureDbReady();
+      
+      console.log('🔍 [Backend] Fetching stock masters for filters...');
+      
+      // Fetch all stock masters
+      const stockMasters = await this.stockMasterModel.findAll({
+        attributes: ['id', 'name'],
+        order: [['name', 'ASC']]
+      });
+
+      console.log('📊 [Backend] Stock Masters from DB:', stockMasters);
+      console.log('📊 [Backend] Stock Masters count:', stockMasters.length);
+
+      // Convert to filter options format
+      const stockTags = stockMasters.map(stockMaster => ({
+        id: stockMaster.id,
+        name: stockMaster.name,
+        value: stockMaster.name.toLowerCase().replace(/\s+/g, '_')
+      }));
+
+      console.log('🎯 [Backend] Stock Tags formatted:', stockTags);
+
+      res.status(200).json({
+        success: true,
+        data: { stockTags },
+        message: "Stock tags retrieved successfully"
+      });
+    } catch (error: any) {
+      console.error("❌ [Backend] Get stock tags error:", error);
+      return (res as any).error(error.message || 'Internal server error', HttpStatusCode.INTERNAL_SERVER_ERROR);
+    }
+  };
 }

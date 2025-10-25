@@ -174,7 +174,7 @@ export default function KYCStep1Documents() {
               acknowledged ? "bg-themeSkyBlue text-themeTealWhite cursor-pointer" : "bg-themeTealLighter text-white cursor-not-allowed",
             ].join(" ")}
           >
-            I Have All Documents – Continue
+            Ready with Documents – Continue
           </button>
         </div>
       </div>

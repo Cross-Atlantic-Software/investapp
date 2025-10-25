@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { db } from "../../utils/database";
-import { Sequelize } from "sequelize";
+import { Sequelize, Op } from "sequelize";
 
 export class StockPerformanceScoreController {
   // Get all stock performance scores with product information

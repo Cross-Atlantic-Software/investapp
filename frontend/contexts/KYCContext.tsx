@@ -9,9 +9,11 @@ interface KYCFormData {
   dob: string;
   father_name: string;
   residency_status: 'Indian' | 'NRI';
+  pan_file: File | null;
   
   // Step 3: Address Verification
   aadhar_number: string;
+  aadhar_file: File | null;
   
   // Step 4: Bank Proof
   account_number: string;
@@ -21,6 +23,7 @@ interface KYCFormData {
   // Step 5: Demat Account
   demat_type: string;
   demat_account_id: string;
+  demat_file: File | null;
   
   // Step 6: Video KYC (completed flag)
   video_kyc_completed: boolean;
@@ -47,12 +50,15 @@ const initialFormData: KYCFormData = {
   dob: '',
   father_name: '',
   residency_status: 'Indian',
+  pan_file: null,
   aadhar_number: '',
+  aadhar_file: null,
   account_number: '',
   ifsc_code: '',
   bank_proof_file: null,
   demat_type: '',
   demat_account_id: '',
+  demat_file: null,
   video_kyc_completed: false,
   signature_file: null,
   esign_completed: false,
@@ -112,13 +118,16 @@ export const KYCProvider: React.FC<KYCProviderProps> = ({ children }) => {
       }
 
       // Validate files
-      if (!formData.bank_proof_file || !formData.signature_file) {
+      if (!formData.pan_file || !formData.aadhar_file || !formData.bank_proof_file || !formData.demat_file || !formData.signature_file) {
         console.log('KYC Context: Validation failed - missing files');
+        console.log('PAN file:', !!formData.pan_file);
+        console.log('Aadhar file:', !!formData.aadhar_file);
         console.log('Bank proof file:', !!formData.bank_proof_file);
+        console.log('Demat file:', !!formData.demat_file);
         console.log('Signature file:', !!formData.signature_file);
         return {
           success: false,
-          message: 'Both bank proof and signature documents are required'
+          message: 'All document files are required: PAN, Aadhar, Bank Proof, Demat, and Signature'
         };
       }
 
@@ -146,10 +155,11 @@ export const KYCProvider: React.FC<KYCProviderProps> = ({ children }) => {
       submitFormData.append('demat_type', formData.demat_type);
       submitFormData.append('demat_account_id', formData.demat_account_id);
       
-      // Add bank proof file
+      // Add all files
+      submitFormData.append('pan', formData.pan_file);
+      submitFormData.append('aadhar', formData.aadhar_file);
       submitFormData.append('bank_proof', formData.bank_proof_file);
-      
-      // Add signature file
+      submitFormData.append('demat', formData.demat_file);
       submitFormData.append('sign', formData.signature_file);
 
       // Submit to API
