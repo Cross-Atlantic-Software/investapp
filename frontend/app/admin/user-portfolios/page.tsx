@@ -454,7 +454,7 @@ export default function UserPortfoliosPage() {
                       {portfolio.holding_number === 0 ? (
                         <span className="text-gray-500 italic">No Change</span>
                       ) : (
-                        <span className={`font-medium ${portfolio.percentage_change >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                        <span className={`font-medium ${Number(portfolio.percentage_change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                           {formatPercentage(portfolio.percentage_change)}
                         </span>
                       )}

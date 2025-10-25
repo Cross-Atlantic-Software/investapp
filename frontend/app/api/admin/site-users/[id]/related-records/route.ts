@@ -4,7 +4,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const token = request.headers.get('token');
@@ -13,7 +13,8 @@ export async function DELETE(
       return NextResponse.json({ success: false, message: 'Token required' }, { status: 401 });
     }
 
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/site-users/${params.id}/related-records`, {
+    const { id } = await params;
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/site-users/${id}/related-records`, {
       method: 'DELETE',
       headers: {
         'token': token,

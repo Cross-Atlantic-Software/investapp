@@ -626,6 +626,7 @@ export default function MarketInsightsPage() {
       first_part: insight.first_part || "",
       second_part: insight.second_part || "",
       video_file: insight.video_file || "",
+      video_url: insight.video_url || "",
       insight_sector_id: insight.insight_sector_id?.toString() || "",
       insight_subsector_ids: insight.insight_subsector_ids ? JSON.parse(insight.insight_subsector_ids) : [],
       insight_topic_id: insight.insight_topic_id?.toString() || "",
