@@ -3,10 +3,9 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, Lock, Search } from "lucide-react";
 import Breadcrumbs, { type Crumb } from "@/components/subcomponents/breadcrumbs";
 import { Button, Heading } from "@/components/ui";
-import Image from "next/image";
 import RelatedCarousel from "@/components/subcomponents/relatedCarousel";
 import HighDemandStocks from "@/components/subcomponents/highDemandStocks";
 
@@ -67,6 +66,38 @@ function fmt(iso: string) {
 }
 
 // ---------- Components ----------
+function LoginPrompt() {
+  return (
+    <div className="mt-6 p-6 bg-themeTealWhite rounded-lg border border-themeTealLighter">
+      <div className="flex items-center gap-3 mb-4">
+        <Lock className="h-5 w-5 text-themeTeal" />
+        <h4 className="text-lg font-semibold text-themeTeal">Login to see more</h4>
+      </div>
+      <p className="text-themeTealLight mb-4">
+        Get access to exclusive content and detailed insights by logging into your account.
+      </p>
+      <div className="flex gap-3">
+        <Button 
+          text="Login" 
+          color="themeTeal" 
+          variant="solid" 
+          size="md" 
+          href="/login"
+          className="rounded"
+        />
+        <Button 
+          text="Register" 
+          color="skyblue" 
+          variant="solid" 
+          size="md" 
+          href="/register"
+          className="rounded"
+        />
+      </div>
+    </div>
+  );
+}
+
 function MetaRow({ item }: { item: MarketInsight }) {
   return (
     <div className="flex items-center gap-3 text-xs text-themeTealLighter">
@@ -74,7 +105,7 @@ function MetaRow({ item }: { item: MarketInsight }) {
         <CalendarDays className="h-3 w-3" /> {fmt(item.created_at)}
       </time>
       <span>•</span>
-      <span className="uppercase tracking-wide text-themeTealLighter">{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
+      <span className="uppercase tracking-wide text-themeTealLighter">{item.InsightSector?.name || 'General'}</span>
       {item.InsightTopic && (
         <>
           <span>•</span>
@@ -101,7 +132,7 @@ function RightSidebar({ highDemandStocks, relatedInsights }: { highDemandStocks:
           {relatedInsights.slice(0, 3).map((r) => (
             <li key={r.id} className="py-4">
                 <Link href={`/market-insights/${r.slug}`} className="block text-themeTeal hover:text-themeSkyBlue transition">
-                <span className="uppercase text-sm text-themeTealLighter">{r.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
+                <span className="uppercase text-sm text-themeTealLighter">{r.InsightSector?.name || 'General'}</span>
                     <div className="text-md my-2 font-medium">{r.title}</div>
                 <div className="text-sm text-themeTealLight">{fmt(r.created_at)}</div>
                 </Link>
@@ -129,6 +160,19 @@ export default function MarketInsightDetailPage() {
   const [highDemandStocks, setHighDemandStocks] = useState<HighDemandStock[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      setIsAuthenticated(!!token);
+    };
+    
+    checkAuth();
+    // Listen for storage changes (login/logout in other tabs)
+    window.addEventListener('storage', checkAuth);
+    return () => window.removeEventListener('storage', checkAuth);
+  }, []);
 
   // Fetch data from API
   useEffect(() => {
@@ -240,10 +284,24 @@ export default function MarketInsightDetailPage() {
         <Breadcrumbs items={crumbs} />
       </div>
 
+      {/* Search Box */}
+      <div className="px-6 py-4 bg-themeTealWhite">
+        <div className="appContainer">
+          <div className="relative max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-themeTealLight" />
+            <input
+              type="text"
+              placeholder="Search market insights..."
+              className="w-full rounded text-themeTeal pl-10 pr-3 py-2.5 outline-none ring-1 ring-themeTealLighter focus:ring-themeTeal transition duration-500"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Hero */}
-      <section className="py-8 bg-themeTealWhite flex justify-center">
+      {/* <section className="py-8 bg-themeTealWhite flex justify-center">
         <Image src={marketInsight.blog_image} alt={marketInsight.title} width={800} height={400} className="object-cover rounded" />
-      </section>
+      </section> */}
 
       {/* Body + Sidebar */}
       <section className="appContainer py-16">
@@ -260,7 +318,13 @@ export default function MarketInsightDetailPage() {
                     <p className="mb-4">{marketInsight.first_part}</p>
                   )}
                   {marketInsight.second_part && (
-                    <p className="mb-4">{marketInsight.second_part}</p>
+                    <>
+                      {isAuthenticated ? (
+                        <p className="mb-4">{marketInsight.second_part}</p>
+                      ) : (
+                        <LoginPrompt />
+                      )}
+                    </>
                   )}
                 </>
               ) : (

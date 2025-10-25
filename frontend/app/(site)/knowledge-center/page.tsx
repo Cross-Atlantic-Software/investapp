@@ -82,7 +82,7 @@ function Card({ item }: { item: KnowledgeCenter }) {
       <div className="py-4">
         <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
           <BookOpenText className="h-3.5 w-3.5" />
-          <span>{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
+          <span>{item.KnowledgeSector?.name || 'General'}</span>
         </div>
         <h3 className="mt-2 text-xl font-semibold text-themeTeal group-hover:text-themeSkyBlue transition duration-500">
           {item.title}
@@ -348,7 +348,7 @@ export default function KnowledgeCenterPage() {
             </div>
         </section>
 
-        {/* Featured band */}
+        {/* Featured Knowledge Center - Three horizontal columns */}
         <section className="mb-10">
           <Heading as="h4" className="mb-4 font-semibold">
             Featured Knowledge Center
@@ -359,10 +359,45 @@ export default function KnowledgeCenterPage() {
           ) : featuredCenters.length === 0 ? (
             <div className="text-center py-8 text-themeTealLighter">No featured content available</div>
           ) : (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredCenters.map((item) => (
-                <Card key={item.id} item={item} />
-              ))}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* First Column: First 2 centers vertically - 25% width, equal height to second column */}
+              <div className="lg:col-span-1 flex flex-col space-y-6">
+                {featuredCenters.slice(0, 2).map((item) => (
+                  <div key={item.id} className="flex-1">
+                    <Card item={item} />
+                  </div>
+                ))}
+              </div>
+              
+              {/* Second Column: Third center single - 50% width, equal height to first column */}
+              <div className="lg:col-span-2 flex">
+                {featuredCenters.length >= 3 && (
+                  <div className="w-full">
+                    <Card item={featuredCenters[2]} />
+                  </div>
+                )}
+              </div>
+              
+              {/* Third Column: Rest of centers without images - 25% width */}
+              <div className="lg:col-span-1 rounded px-6">
+                <ul className="space-y-4 divide-y divide-themeTealLighter">
+                  {featuredCenters.slice(3).map((item) => (
+                    <li key={item.id} className="py-4">
+                      <a href={`/knowledge-center/${item.slug}`} className="block text-themeTeal hover:text-themeSkyBlue transition">
+                        <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
+                          <BookOpenText className="h-3.5 w-3.5" />
+                          <span>{item.KnowledgeSector?.name || 'General'}</span>
+                        </div>
+                        <div className="text-md my-2 font-medium">{item.title}</div>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-themeTealLighter">
+                          <CalendarDays className="h-3 w-3" />
+                         <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
+                       </div>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
         </section>

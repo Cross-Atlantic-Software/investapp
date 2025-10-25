@@ -85,7 +85,7 @@ function GridCard({ item }: { item: MarketInsight }) {
       <div className="p-4">
         <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
           <BookOpenText className="h-3.5 w-3.5" />
-          <span>{item.content_type === 'TEXT' ? 'Article' : 'Guide'}</span>
+          <span>{item.InsightSector?.name || 'General'}</span>
         </div>
         <h3 className="mt-2 text-base font-semibold text-themeTeal group-hover:text-themeSkyBlue transition">
           {item.title}
@@ -351,7 +351,7 @@ export default function MarketInsightsPage() {
           </div>
         </section>
 
-        {/* Featured band */}
+        {/* Featured Insights - Three horizontal columns */}
         <section className="mb-10">
           <Heading as="h4" className="mb-4 font-semibold">
             Featured Insights
@@ -362,10 +362,45 @@ export default function MarketInsightsPage() {
           ) : featuredInsights.length === 0 ? (
             <div className="text-center py-8 text-themeTealLighter">No featured insights available</div>
           ) : (
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredInsights.map((item) => (
-                <GridCard key={item.id} item={item} />
-              ))}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* First Column: First 2 insights vertically - 25% width, equal height to second column */}
+              <div className="lg:col-span-1 flex flex-col space-y-6">
+                {featuredInsights.slice(0, 2).map((item) => (
+                  <div key={item.id} className="flex-1">
+                    <GridCard item={item} />
+                  </div>
+                ))}
+              </div>
+              
+              {/* Second Column: Third insight single - 50% width, equal height to first column */}
+              <div className="lg:col-span-2 flex">
+                {featuredInsights.length >= 3 && (
+                  <div className="w-full">
+                    <GridCard item={featuredInsights[2]} />
+                  </div>
+                )}
+              </div>
+              
+              {/* Third Column: Rest of insights without images - 25% width */}
+              <div className="lg:col-span-1 rounded px-6">
+                <ul className="space-y-4 divide-y divide-themeTealLighter">
+                  {featuredInsights.slice(3).map((item) => (
+                    <li key={item.id} className="py-4">
+                      <a href={`/market-insights/${item.slug}`} className="block text-themeTeal hover:text-themeSkyBlue transition">
+                        <div className="text-xs uppercase tracking-wide text-themeTealLighter flex items-center gap-2">
+                          <BookOpenText className="h-3.5 w-3.5" />
+                          <span>{item.InsightSector?.name || 'General'}</span>
+                        </div>
+                        <div className="text-md my-2 font-medium">{item.title}</div>
+                        <div className="mt-2 flex items-center gap-2 text-xs text-themeTealLighter">
+                          <CalendarDays className="h-3 w-3" />
+                         <time dateTime={item.created_at}>{formatDate(item.created_at)}</time>
+                       </div>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
         </section>
