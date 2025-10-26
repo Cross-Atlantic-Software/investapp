@@ -4,6 +4,8 @@ export interface ValuationRangeAttributes {
   id: number;
   name: string;
   value: string;
+  min_value?: number;
+  max_value?: number;
   sort_order: number;
   created_at: Date;
   updated_at: Date;
@@ -12,6 +14,8 @@ export interface ValuationRangeAttributes {
 export interface ValuationRangeCreationAttributes {
   name: string;
   value: string;
+  min_value?: number;
+  max_value?: number;
   sort_order?: number;
 }
 
@@ -19,6 +23,8 @@ export class ValuationRange extends Model<ValuationRangeAttributes, ValuationRan
   public id!: number;
   public name!: string;
   public value!: string;
+  public min_value?: number;
+  public max_value?: number;
   public sort_order!: number;
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -40,6 +46,14 @@ export function initializeValuationRangeModel(sequelize: Sequelize) {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
+      },
+      min_value: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: true,
+      },
+      max_value: {
+        type: DataTypes.DECIMAL(15, 2),
+        allowNull: true,
       },
       sort_order: {
         type: DataTypes.INTEGER,
