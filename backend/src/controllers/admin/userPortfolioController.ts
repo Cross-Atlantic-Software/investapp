@@ -224,8 +224,8 @@ export class UserPortfolioController {
     }
   }
 
-  // Private method to refresh a single user's portfolio
-  private static async refreshSingleUserPortfolio(userId: number) {
+  // Method to refresh a single user's portfolio
+  static async refreshSingleUserPortfolio(userId: number) {
     try {
       console.log(`Refreshing portfolio for user ${userId}...`);
 
@@ -235,7 +235,7 @@ export class UserPortfolioController {
         include: [
           {
             model: db.Product,
-            as: 'stock',
+            as: 'Product',
             attributes: ['id', 'company_name']
           }
         ]
@@ -248,8 +248,7 @@ export class UserPortfolioController {
           total_investment: 0,
           holding_number: 0,
           price_change: 0,
-          percentage_change: 0,
-          portfolio_performance_score: undefined
+          percentage_change: 0
         });
         console.log(`Portfolio updated for user ${userId} (no holdings)`);
         return;
@@ -259,12 +258,18 @@ export class UserPortfolioController {
       const totalInvestment = buyRequests.reduce((sum, req) => sum + parseFloat(req.total_amount.toString()), 0);
       const holdingNumber = buyRequests.length;
 
-      // Calculate price change (sum of price differences per share)
+      // Calculate price change (difference between current price and purchase price)
       let priceChange = 0;
       for (const buyRequest of buyRequests) {
-        const currentPrice = parseFloat(buyRequest.price.toString());
-        const purchasePrice = parseFloat(buyRequest.price.toString());
-        priceChange += (currentPrice - purchasePrice);
+        // Get current price from Product
+        const product = await db.Product.findByPk(buyRequest.stock_id);
+        if (product && product.price_per_share) {
+          const currentPrice = parseFloat(product.price_per_share.toString());
+          const purchasePrice = parseFloat(buyRequest.price.toString());
+          
+          // Calculate price change: (current_price - purchase_price)
+          priceChange += (currentPrice - purchasePrice);
+        }
       }
 
       // Calculate percentage change
@@ -276,26 +281,34 @@ export class UserPortfolioController {
         const stockIds = buyRequests.map(req => req.stock_id);
         const performanceScores = await db.StockPerformanceScore.findAll({
           where: {
-            stock_id: { [Op.in]: stockIds }
+            stock_id: {
+              [Op.in]: stockIds
+            }
           },
           attributes: ['score']
         });
 
         if (performanceScores.length > 0) {
-          const totalScore = performanceScores.reduce((sum, score) => sum + parseInt(score.score), 0);
+          const totalScore = performanceScores.reduce((sum, score) => sum + (parseInt(score.score) || 0), 0);
           avgPerformanceScore = totalScore / performanceScores.length;
         }
       }
 
       // Upsert portfolio data
-      await db.UserPortfolio.upsert({
+      const portfolioData: any = {
         user_id: userId,
         total_investment: totalInvestment,
         holding_number: holdingNumber,
         price_change: priceChange,
-        percentage_change: percentageChange,
-        portfolio_performance_score: avgPerformanceScore
-      });
+        percentage_change: percentageChange
+      };
+      
+      // Only include portfolio_performance_score if it has a value
+      if (avgPerformanceScore !== undefined) {
+        portfolioData.portfolio_performance_score = avgPerformanceScore;
+      }
+      
+      await db.UserPortfolio.upsert(portfolioData);
 
       console.log(`Portfolio updated for user ${userId}: Investment: ₹${totalInvestment.toFixed(2)}, Holdings: ${holdingNumber}, Change: ${percentageChange.toFixed(2)}%`);
     } catch (error) {

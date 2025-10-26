@@ -1807,4 +1807,30 @@ router.post("/add-content-type-to-market-insights", async (req, res) => {
   }
 });
 
+// Fix portfolio_performance_score to be nullable
+router.post("/fix-portfolio-performance-nullable", async (req, res) => {
+  try {
+    await sequelizePromise;
+    console.log("🔄 Running migration: fix-portfolio-performance-nullable");
+    
+    await db.sequelize.query(`
+      ALTER TABLE user_portfolio MODIFY COLUMN portfolio_performance_score DECIMAL(5,2) NULL;
+    `);
+    
+    console.log("✅ Fixed portfolio_performance_score column");
+    
+    res.json({
+      success: true,
+      message: "portfolio_performance_score column is now nullable"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+});
+
 export default router;
