@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { db } from "../utils/database";
+import { db } from "../../utils/database";
 
 export class UserProfileController {
   static async getCurrentUserProfile(req: Request, res: Response) {

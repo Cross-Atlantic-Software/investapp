@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { db } from "../utils/database";
+import { db } from "../../utils/database";
 import { QueryTypes } from "sequelize";
 
 export class UserHoldingsController {
