@@ -79,7 +79,56 @@ export class StockDisplayController {
       
       // Valuation filter
       if (valuation) {
-        whereClause.valuation_id = parseInt(valuation);
+        // Valuation is the value from ValuationRange (e.g., "2500-5000")
+        // Parse the range from the value string directly
+        console.log('🔍 Valuation filter - Looking for range:', valuation);
+        
+        // Parse min and max values from the string (e.g., "2500-5000" -> min: 2500, max: 5000)
+        const rangeMatch = valuation.match(/^(\d+)-(\d+)$/);
+        let minValue = 0;
+        let maxValue = Infinity;
+        
+        if (rangeMatch) {
+          minValue = parseInt(rangeMatch[1]);
+          maxValue = parseInt(rangeMatch[2]);
+        } else {
+          // Handle special cases like "below-1000" or "5000-plus"
+          if (valuation === 'below-1000') {
+            minValue = 0;
+            maxValue = 1000;
+          } else if (valuation === '5000-plus' || valuation === '5000+') {
+            minValue = 5000;
+            maxValue = Infinity;
+          }
+        }
+        
+        console.log('🔍 Valuation filter - Parsed range:', { min: minValue, max: maxValue });
+        
+        // Get all valuations and filter them based on the numeric value
+        const allValuations = await db.Valuation.findAll({
+          attributes: ['id', 'valuation_name']
+        });
+        
+        const matchingValuationIds: number[] = [];
+        
+        for (const val of allValuations) {
+          // Extract numeric value from valuation_name (e.g., "2500" from "2500Cr")
+          const numericMatch = val.valuation_name.match(/[\d,]+/);
+          if (numericMatch) {
+            const numericValue = parseFloat(numericMatch[0].replace(/,/g, ''));
+            if (numericValue >= minValue && numericValue <= maxValue) {
+              matchingValuationIds.push(val.id);
+              console.log('🔍 Valuation matches:', val.valuation_name, 'Numeric:', numericValue);
+            }
+          }
+        }
+        
+        if (matchingValuationIds.length > 0) {
+          whereClause.valuation_id = { [Op.in]: matchingValuationIds };
+          console.log('🔍 Valuation filter - Using IDs:', matchingValuationIds);
+        } else {
+          console.log('🔍 Valuation filter - No matching valuations found');
+        }
       }
       
       console.log('🔍 Backend whereClause:', JSON.stringify(whereClause, null, 2));

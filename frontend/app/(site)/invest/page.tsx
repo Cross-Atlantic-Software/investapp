@@ -15,7 +15,7 @@ export default function Invest() {
   const [allStocks, setAllStocks] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [, setActiveFilters] = useState<FilterState>({
+  const [activeFilters, setActiveFilters] = useState<FilterState>({
     valuation: [],
     filingStatusAttractiveness: [],
     sectors: [],
@@ -186,19 +186,12 @@ export default function Invest() {
   // Handle search with debouncing
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      // Get current active filters
-      const currentFilters = {
-        valuation: [],
-        filingStatusAttractiveness: [],
-        sectors: [],
-        subsectors: [],
-        themes: [],
-      };
-      fetchStocks(searchTerm, currentFilters);
+      // Use current active filters when searching
+      fetchStocks(searchTerm, activeFilters);
     }, 300);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, fetchStocks]);
+  }, [searchTerm, activeFilters, fetchStocks]);
 
   const filtered = useMemo(() => {
     // Since we're filtering on the backend, just return the stocks as-is
