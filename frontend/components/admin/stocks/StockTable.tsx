@@ -1391,7 +1391,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   {/* Valuation Column */}
                   <td className="px-4 py-3 text-left">
                     <div className="text-xs font-medium text-themeTeal">
-                      {typeof stock.valuation === 'string' ? stock.valuation : stock.valuation?.valuation_name || 'N/A'}
+                      {stock.valuation ? `₹ ${stock.valuation} Cr` : 'N/A'}
                     </div>
                   </td>
 

@@ -33,6 +33,9 @@ router.get("/stocks/home-display", StockDisplayController.getHomeDisplayStocks);
 // Public Stocks Route (for invest page)
 router.get("/stocks", StockDisplayController.getPublicStocks);
 
+// Available Filter Options Route
+router.get("/filter-options", StockDisplayController.getAvailableFilterOptions);
+
 // Private Market News Routes
 router.get("/private-market-news", privateMarketNewsController.getAllPrivateMarketNews);
 

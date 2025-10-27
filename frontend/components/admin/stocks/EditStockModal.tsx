@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { X } from 'lucide-react';
 import { StockData, ExistingStockData, ImageUploadState } from './types';
 import { useStepNavigation } from './hooks';
@@ -60,7 +60,7 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
     demand: stock.demand || 'High Demand',
     homeDisplay: stock.homeDisplay || 'no',
     bannerDisplay: stock.bannerDisplay || 'no',
-    valuation_id: stock.valuation_id || 2,
+    valuation: stock.valuation || '',
     price_per_share: stock.price_per_share || 0,
     percentage_change: stock.percentage_change || 0,
     founded: stock.founded || new Date().getFullYear(),
@@ -101,11 +101,11 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
     // Convert numeric fields to numbers
     const numericFields = [
       'price_change', 'price_per_share', 'percentage_change', 'founded', 
-      'min_units', 'lot_size', 'price_change_period_id', 'valuation_id'
+      'min_units', 'lot_size', 'price_change_period_id'
     ];
     
     const processedValue = numericFields.includes(name) ? 
-      (name === 'price_change_period_id' || name === 'valuation_id' ? parseInt(value, 10) : parseFloat(value)) : 
+      (name === 'price_change_period_id' ? parseInt(value, 10) : parseFloat(value)) : 
       value;
     
     setFormData(prev => ({

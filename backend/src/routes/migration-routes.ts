@@ -1833,4 +1833,52 @@ router.post("/fix-portfolio-performance-nullable", async (req, res) => {
   }
 });
 
+// Update valuation_ranges with min_value and max_value
+router.post("/update-valuation-ranges-with-values", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: update-valuation-ranges-with-values");
+    await sequelizePromise;
+    
+    // Add columns if they don't exist
+    await db.sequelize.query(`
+      ALTER TABLE valuation_ranges
+      ADD COLUMN IF NOT EXISTS min_value DECIMAL(15,2) NULL AFTER value,
+      ADD COLUMN IF NOT EXISTS max_value DECIMAL(15,2) NULL AFTER min_value
+    `).catch(err => {
+      console.log("Columns may already exist:", err);
+    });
+    
+    // Update existing rows with min/max values
+    await db.sequelize.query(`
+      UPDATE valuation_ranges SET min_value = 0, max_value = 1000 WHERE value = 'below-1000'
+    `);
+    
+    await db.sequelize.query(`
+      UPDATE valuation_ranges SET min_value = 1000, max_value = 2500 WHERE value = '1000-2500'
+    `);
+    
+    await db.sequelize.query(`
+      UPDATE valuation_ranges SET min_value = 2500, max_value = 5000 WHERE value = '2500-5000'
+    `);
+    
+    await db.sequelize.query(`
+      UPDATE valuation_ranges SET min_value = 5000, max_value = 999999999 WHERE value = '5000-plus'
+    `);
+    
+    console.log("✅ Updated valuation_ranges with min_value and max_value");
+    
+    res.json({
+      success: true,
+      message: "Valuation ranges updated successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;

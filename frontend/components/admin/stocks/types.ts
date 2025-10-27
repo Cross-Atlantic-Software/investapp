@@ -8,7 +8,8 @@ export interface StockData {
   demand: 'High Demand' | 'Low Demand';
   homeDisplay: 'yes' | 'no';
   bannerDisplay: 'yes' | 'no';
-  valuation_id: number;
+  valuation_id?: number;
+  valuation?: string;
   price_per_share: number;
   percentage_change: number;
   founded: number;
@@ -46,10 +47,7 @@ export interface ExistingStockData extends Omit<StockData, 'icon'> {
     id: number;
     period: string;
   };
-  valuation?: {
-    id: number;
-    valuation_name: string;
-  };
+  valuation?: string;
   stock_performance_score_id?: number | null;
   performanceScore?: {
     id: number;

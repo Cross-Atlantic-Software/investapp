@@ -7,6 +7,123 @@ export class StockDisplayController {
     await db.sequelizePromise;
   }
 
+  // Get available filter options based on existing stocks
+  static async getAvailableFilterOptions(req: Request, res: Response) {
+    try {
+      const controller = new StockDisplayController();
+      await controller.ensureDbReady();
+      
+      // Fetch all stocks to determine which filter options are available
+      const stocks = await db.Product.findAll({
+        attributes: ['id', 'valuation', 'sector_ids', 'subsector_ids', 'theme_ids', 'stock_master_ids']
+      });
+      
+      console.log('🔍 Fetching available filter options from', stocks.length, 'stocks');
+      
+      // Collect unique values for each filter
+      const usedValuations = new Set<string>();
+      const usedSectorIds = new Set<number>();
+      const usedSubsectorIds = new Set<number>();
+      const usedThemeIds = new Set<number>();
+      const usedStockMasterIds = new Set<number>();
+      
+      stocks.forEach((stock: any) => {
+        // Valuation
+        if (stock.valuation && stock.valuation.trim() !== '') {
+          // Extract numeric value and map to range
+          const numericMatch = stock.valuation.match(/[\d,]+/);
+          if (numericMatch) {
+            const numericValue = parseFloat(numericMatch[0].replace(/,/g, ''));
+            // Map to appropriate range
+            if (numericValue < 1000) {
+              usedValuations.add('below-1000');
+            } else if (numericValue < 2500) {
+              usedValuations.add('1000-2500');
+            } else if (numericValue < 5000) {
+              usedValuations.add('2500-5000');
+            } else {
+              usedValuations.add('5000-plus');
+            }
+          }
+        }
+        
+        // Sectors
+        if (stock.sector_ids) {
+          try {
+            const sectorIds = JSON.parse(stock.sector_ids);
+            if (Array.isArray(sectorIds)) {
+              sectorIds.forEach((id: number) => usedSectorIds.add(id));
+            }
+          } catch (error) {
+            console.error('Error parsing sector_ids:', error);
+          }
+        }
+        
+        // Subsectors
+        if (stock.subsector_ids) {
+          try {
+            const subsectorIds = JSON.parse(stock.subsector_ids);
+            if (Array.isArray(subsectorIds)) {
+              subsectorIds.forEach((id: number) => usedSubsectorIds.add(id));
+            }
+          } catch (error) {
+            console.error('Error parsing subsector_ids:', error);
+          }
+        }
+        
+        // Themes
+        if (stock.theme_ids) {
+          try {
+            const themeIds = JSON.parse(stock.theme_ids);
+            if (Array.isArray(themeIds)) {
+              themeIds.forEach((id: number) => usedThemeIds.add(id));
+            }
+          } catch (error) {
+            console.error('Error parsing theme_ids:', error);
+          }
+        }
+        
+        // Stock Masters
+        if (stock.stock_master_ids) {
+          try {
+            const stockMasterIds = JSON.parse(stock.stock_master_ids);
+            if (Array.isArray(stockMasterIds)) {
+              stockMasterIds.forEach((id: number) => usedStockMasterIds.add(id));
+            }
+          } catch (error) {
+            console.error('Error parsing stock_master_ids:', error);
+          }
+        }
+      });
+      
+      console.log('🔍 Available filter options:', {
+        valuations: Array.from(usedValuations),
+        sectors: Array.from(usedSectorIds),
+        subsectors: Array.from(usedSubsectorIds),
+        themes: Array.from(usedThemeIds),
+        stockMasters: Array.from(usedStockMasterIds)
+      });
+      
+      res.json({
+        success: true,
+        data: {
+          valuations: Array.from(usedValuations),
+          sectors: Array.from(usedSectorIds),
+          subsectors: Array.from(usedSubsectorIds),
+          themes: Array.from(usedThemeIds),
+          stockMasters: Array.from(usedStockMasterIds)
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching available filter options:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch available filter options',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  }
+
   // Get public stocks for invest page (with proper price change period resolution)
   static async getPublicStocks(req: Request, res: Response) {
     try {
@@ -77,58 +194,28 @@ export class StockDisplayController {
         };
       }
       
-      // Valuation filter
+      // Valuation filter - parse the value string to get min/max
+      let minValuation: number | null = null;
+      let maxValuation: number | null = null;
+      
       if (valuation) {
-        // Valuation is the value from ValuationRange (e.g., "2500-5000")
-        // Parse the range from the value string directly
         console.log('🔍 Valuation filter - Looking for range:', valuation);
         
-        // Parse min and max values from the string (e.g., "2500-5000" -> min: 2500, max: 5000)
+        // Parse from value string (e.g., "2500-5000", "below-1000", "5000-plus")
         const rangeMatch = valuation.match(/^(\d+)-(\d+)$/);
-        let minValue = 0;
-        let maxValue = Infinity;
         
         if (rangeMatch) {
-          minValue = parseInt(rangeMatch[1]);
-          maxValue = parseInt(rangeMatch[2]);
-        } else {
-          // Handle special cases like "below-1000" or "5000-plus"
-          if (valuation === 'below-1000') {
-            minValue = 0;
-            maxValue = 1000;
-          } else if (valuation === '5000-plus' || valuation === '5000+') {
-            minValue = 5000;
-            maxValue = Infinity;
-          }
+          minValuation = parseInt(rangeMatch[1]);
+          maxValuation = parseInt(rangeMatch[2]);
+        } else if (valuation === 'below-1000') {
+          minValuation = 0;
+          maxValuation = 1000;
+        } else if (valuation === '5000-plus' || valuation === '5000+') {
+          minValuation = 5000;
+          maxValuation = 999999999;
         }
         
-        console.log('🔍 Valuation filter - Parsed range:', { min: minValue, max: maxValue });
-        
-        // Get all valuations and filter them based on the numeric value
-        const allValuations = await db.Valuation.findAll({
-          attributes: ['id', 'valuation_name']
-        });
-        
-        const matchingValuationIds: number[] = [];
-        
-        for (const val of allValuations) {
-          // Extract numeric value from valuation_name (e.g., "2500" from "2500Cr")
-          const numericMatch = val.valuation_name.match(/[\d,]+/);
-          if (numericMatch) {
-            const numericValue = parseFloat(numericMatch[0].replace(/,/g, ''));
-            if (numericValue >= minValue && numericValue <= maxValue) {
-              matchingValuationIds.push(val.id);
-              console.log('🔍 Valuation matches:', val.valuation_name, 'Numeric:', numericValue);
-            }
-          }
-        }
-        
-        if (matchingValuationIds.length > 0) {
-          whereClause.valuation_id = { [Op.in]: matchingValuationIds };
-          console.log('🔍 Valuation filter - Using IDs:', matchingValuationIds);
-        } else {
-          console.log('🔍 Valuation filter - No matching valuations found');
-        }
+        console.log('🔍 Valuation filter - Parsed range:', { min: minValuation, max: maxValuation });
       }
       
       console.log('🔍 Backend whereClause:', JSON.stringify(whereClause, null, 2));
@@ -183,6 +270,34 @@ export class StockDisplayController {
         console.log('🔍 BACKEND DEBUG - No stock_master_ids filter applied');
       }
       
+      // Apply valuation filter based on text field
+      if (valuation && minValuation !== null && maxValuation !== null) {
+        console.log('🔍 Valuation filter - Applying range filter to fetched stocks');
+        const originalCount = stocks.length;
+        
+        stocks = stocks.filter((stock: any) => {
+          const stockValuation = stock.valuation || '';
+          
+          // Extract numeric value from valuation text (e.g., "3400" from "₹ 3400 Cr" or "2500" from "2500")
+          const numericMatch = stockValuation.match(/[\d,]+/);
+          
+          if (!numericMatch) {
+            console.log(`🔍 Stock ${stock.company_name} has no numeric valuation:`, stockValuation);
+            return false;
+          }
+          
+          const numericValue = parseFloat(numericMatch[0].replace(/,/g, ''));
+          console.log(`🔍 Stock ${stock.company_name}: valuation="${stockValuation}", numeric=${numericValue}, range=[${minValuation}, ${maxValuation}]`);
+          
+          const isInRange = numericValue >= minValuation! && numericValue <= maxValuation!;
+          console.log(`🔍 Stock ${stock.company_name} matches valuation range:`, isInRange);
+          
+          return isInRange;
+        });
+        
+        console.log(`🔍 Valuation filter complete: ${originalCount} -> ${stocks.length} stocks`);
+      }
+      
       const totalStocks = await db.Product.count({ where: whereClause });
       
       // Resolve price change periods and valuations
@@ -202,18 +317,8 @@ export class StockDisplayController {
             }
           }
           
-          // Resolve valuation
-          if (stock.valuation_id) {
-            try {
-              const valuation = await db.Valuation.findByPk(stock.valuation_id);
-              valuationName = valuation ? valuation.valuation_name : 'N/A';
-            } catch (error) {
-              console.log(`Error fetching valuation for ${stock.company_name}:`, error instanceof Error ? error.message : 'Unknown error');
-              valuationName = stock.valuation || 'N/A'; // Fallback to old field
-            }
-          } else {
-            valuationName = stock.valuation || 'N/A'; // Fallback to old field
-          }
+          // Use valuation text field from database (not valuation_id lookup)
+          valuationName = stock.valuation || 'N/A';
           
           return {
             id: stock.id,

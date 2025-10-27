@@ -12,7 +12,7 @@ export const useStockFormState = () => {
     demand: 'High Demand',
     homeDisplay: 'no',
     bannerDisplay: 'no',
-    valuation_id: 2, // Default to '₹100-500 Cr'
+    valuation: '',
     price_per_share: 0,
     percentage_change: 0,
     founded: new Date().getFullYear(),

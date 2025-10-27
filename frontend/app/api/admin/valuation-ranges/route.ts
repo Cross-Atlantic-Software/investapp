@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
       ...(search && { search })
     });
 
+    console.log('📤 Calling backend API for valuation ranges with params:', params.toString());
     const response = await fetch(`${API_BASE_URL}/backend/api/admin/valuation-ranges?${params}`, {
       method: 'GET',
       headers: {
@@ -30,6 +31,8 @@ export async function GET(request: NextRequest) {
     });
 
     const data = await response.json();
+    console.log('📥 Backend response status:', response.status);
+    console.log('📥 Backend response data:', JSON.stringify(data, null, 2));
 
     if (!response.ok) {
       return NextResponse.json({ 
