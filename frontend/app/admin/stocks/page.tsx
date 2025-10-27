@@ -289,7 +289,7 @@ export default function StocksPage() {
     demand: 'High Demand' | 'Low Demand';
     homeDisplay: 'yes' | 'no';
     bannerDisplay: 'yes' | 'no';
-    valuation_id: number;
+    valuation?: string;
     price_per_share: number;
     percentage_change: number;
     founded: number;
@@ -318,7 +318,9 @@ export default function StocksPage() {
       formData.append('demand', stockData.demand);
       formData.append('homeDisplay', stockData.homeDisplay);
       formData.append('bannerDisplay', stockData.bannerDisplay);
-      formData.append('valuation_id', stockData.valuation_id.toString());
+      if (stockData.valuation) {
+        formData.append('valuation', stockData.valuation);
+      }
       formData.append('percentage_change', stockData.percentage_change.toString());
       formData.append('founded', stockData.founded.toString());
       formData.append('sector_ids', JSON.stringify(stockData.sector_ids));
@@ -564,7 +566,7 @@ export default function StocksPage() {
               demand: stockData.demand,
               homeDisplay: stockData.homeDisplay,
               bannerDisplay: stockData.bannerDisplay,
-              valuation_id: stockData.valuation_id,
+              valuation: stockData.valuation,
               price_per_share: stockData.price_per_share,
               percentage_change: stockData.percentage_change,
               founded: stockData.founded,

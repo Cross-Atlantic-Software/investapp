@@ -50,6 +50,7 @@ const ValuationManagement: React.FC<ValuationManagementProps> = ({ onClose }) =>
     } else {
       fetchValuationRanges();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, searchTerm, activeTab]);
 
   const fetchValuations = async () => {
@@ -99,9 +100,13 @@ const ValuationManagement: React.FC<ValuationManagementProps> = ({ onClose }) =>
       const data = await response.json();
 
       if (data.success) {
-        setValuationRanges(data.data.valuationRanges);
-        setTotalPages(data.data.pagination.totalPages);
-        setTotalItems(data.data.pagination.totalItems);
+        console.log('✅ Valuation ranges data received:', data.data);
+        console.log('📊 Valuation ranges:', data.data.valuationRanges);
+        setValuationRanges(data.data.valuationRanges || []);
+        setTotalPages(data.data.pagination?.totalPages || 1);
+        setTotalItems(data.data.pagination?.totalItems || 0);
+      } else {
+        console.error('❌ Failed to fetch valuation ranges:', data.message);
       }
     } catch (error) {
       console.error('Error fetching valuation ranges:', error);

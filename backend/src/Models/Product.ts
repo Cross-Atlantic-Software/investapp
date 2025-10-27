@@ -12,6 +12,7 @@ interface ProductAttributes {
   homeDisplay: 'yes' | 'no';
   bannerDisplay: 'yes' | 'no';
   valuation_id?: number;
+  valuation?: string;
   price_per_share: number;
   percentage_change: number;
   founded: number;
@@ -48,6 +49,7 @@ class Product
   public homeDisplay!: 'yes' | 'no';
   public bannerDisplay!: 'yes' | 'no';
   public valuation_id?: number;
+  public valuation?: string;
   public price_per_share!: number;
   public percentage_change!: number;
   public founded!: number;
@@ -118,6 +120,10 @@ export function initializeProductModel(sequelize: Sequelize) {
           model: 'valuations',
           key: 'id'
         }
+      },
+      valuation: {
+        type: DataTypes.STRING(200),
+        allowNull: true
       },
       price_per_share: {
         type: DataTypes.DECIMAL(10, 2),

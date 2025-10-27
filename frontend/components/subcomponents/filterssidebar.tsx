@@ -154,6 +154,22 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
       try {
         setLoading(true);
 
+        // Fetch available filter options based on existing stocks
+        const availableOptionsResponse = await fetch('/api/filter-options');
+        const availableOptionsData = await availableOptionsResponse.json();
+        
+        const availableOptions = availableOptionsData.success && availableOptionsData.data 
+          ? availableOptionsData.data 
+          : {
+              valuations: [],
+              sectors: [],
+              subsectors: [],
+              themes: [],
+              stockMasters: []
+            };
+        
+        console.log('✅ Available filter options from stocks:', availableOptions);
+
         // Get admin token for authentication
         const token = sessionStorage.getItem('adminToken') || '';
         console.log('🔑 Admin Token:', token ? 'Found' : 'Not Found');
@@ -170,11 +186,16 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
         const sectorsData = await sectorsResponse.json();
         
         if (sectorsData.success && sectorsData.data?.sectors) {
-          const sectorOptions = sectorsData.data.sectors.map((sector: { id: number; name: string }) => ({
-            id: sector.id,
-            name: sector.name,
-            value: sector.id.toString()
-          }));
+          const sectorOptions = sectorsData.data.sectors
+            .filter((sector: { id: number; name: string }) => 
+              availableOptions.sectors.includes(sector.id)
+            )
+            .map((sector: { id: number; name: string }) => ({
+              id: sector.id,
+              name: sector.name,
+              value: sector.id.toString()
+            }));
+          console.log('✅ Filtered sectors:', sectorOptions);
           setSectors(sectorOptions);
         }
 
@@ -183,11 +204,16 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
         const subsectorsData = await subsectorsResponse.json();
         
         if (subsectorsData.success && subsectorsData.data?.subsectors) {
-          const subsectorOptions = subsectorsData.data.subsectors.map((subsector: { id: number; name: string }) => ({
-            id: subsector.id,
-            name: subsector.name,
-            value: subsector.id.toString()
-          }));
+          const subsectorOptions = subsectorsData.data.subsectors
+            .filter((subsector: { id: number; name: string }) => 
+              availableOptions.subsectors.includes(subsector.id)
+            )
+            .map((subsector: { id: number; name: string }) => ({
+              id: subsector.id,
+              name: subsector.name,
+              value: subsector.id.toString()
+            }));
+          console.log('✅ Filtered subsectors:', subsectorOptions);
           setSubsectors(subsectorOptions);
         }
 
@@ -196,11 +222,16 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
         const themesData = await themesResponse.json();
         
         if (themesData.success && themesData.data?.themes) {
-          const themeOptions = themesData.data.themes.map((theme: { id: number; name: string }) => ({
-            id: theme.id,
-            name: theme.name,
-            value: theme.id.toString()
-          }));
+          const themeOptions = themesData.data.themes
+            .filter((theme: { id: number; name: string }) => 
+              availableOptions.themes.includes(theme.id)
+            )
+            .map((theme: { id: number; name: string }) => ({
+              id: theme.id,
+              name: theme.name,
+              value: theme.id.toString()
+            }));
+          console.log('✅ Filtered themes:', themeOptions);
           setThemes(themeOptions);
         }
 
@@ -209,11 +240,16 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
         const valuationRangesData = await valuationRangesResponse.json();
         
         if (valuationRangesData.success && valuationRangesData.data?.valuationRanges) {
-          const valuationRangeOptions = valuationRangesData.data.valuationRanges.map((range: { id: string; name: string; value: string }) => ({
-            id: range.id,
-            name: range.name,
-            value: range.value
-          }));
+          const valuationRangeOptions = valuationRangesData.data.valuationRanges
+            .filter((range: { id: string; name: string; value: string }) => 
+              availableOptions.valuations.includes(range.value)
+            )
+            .map((range: { id: string; name: string; value: string }) => ({
+              id: range.id,
+              name: range.name,
+              value: range.value
+            }));
+          console.log('✅ Filtered valuation ranges:', valuationRangeOptions);
           setValuationRanges(valuationRangeOptions);
         }
 
@@ -229,14 +265,16 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
           const stockTags = stockTagsData.data.stockTags;
           console.log('✅ Stock Tags from API:', stockTags);
           
-          // Use all stock master names for Filing Status & Attractiveness
-          const stockMasterOptions = stockTags.map((tag: any) => ({
-            id: tag.id,
-            name: tag.name,
-            value: tag.id.toString() // Use the actual ID as the value for filtering
-          }));
+          // Filter to only include stock masters that are actually used by stocks
+          const stockMasterOptions = stockTags
+            .filter((tag: any) => availableOptions.stockMasters.includes(tag.id))
+            .map((tag: any) => ({
+              id: tag.id,
+              name: tag.name,
+              value: tag.id.toString() // Use the actual ID as the value for filtering
+            }));
           
-          console.log('🎯 Setting dynamic options:', stockMasterOptions);
+          console.log('🎯 Filtered stock masters:', stockMasterOptions);
           setFilingStatusAttractivenessOptions(stockMasterOptions);
         } else {
           console.log('❌ API failed or returned empty data');
@@ -257,70 +295,7 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
     fetchFilterData();
   }, []);
 
-  // Valuation options are now fetched from backend
-
-  // Filter sectors based on actual stock data
-  const filteredSectors = useMemo(() => {
-    if (!stockData.length) return sectors;
-    
-    const usedSectorIds = new Set<number>();
-    stockData.forEach((stock) => {
-      if (stock.sector_ids) {
-        try {
-          const sectorIds = JSON.parse(stock.sector_ids);
-          if (Array.isArray(sectorIds)) {
-            sectorIds.forEach((id: number) => usedSectorIds.add(id));
-          }
-        } catch (error) {
-          console.error('Error parsing sector_ids:', error);
-        }
-      }
-    });
-    
-    return sectors.filter(sector => usedSectorIds.has(parseInt(sector.value)));
-  }, [sectors, stockData]);
-
-  // Filter subsectors based on actual stock data
-  const filteredSubsectors = useMemo(() => {
-    if (!stockData.length) return subsectors;
-    
-    const usedSubsectorIds = new Set<number>();
-    stockData.forEach((stock) => {
-      if (stock.subsector_ids) {
-        try {
-          const subsectorIds = JSON.parse(stock.subsector_ids);
-          if (Array.isArray(subsectorIds)) {
-            subsectorIds.forEach((id: number) => usedSubsectorIds.add(id));
-          }
-        } catch (error) {
-          console.error('Error parsing subsector_ids:', error);
-        }
-      }
-    });
-    
-    return subsectors.filter(subsector => usedSubsectorIds.has(parseInt(subsector.value)));
-  }, [subsectors, stockData]);
-
-  // Filter themes based on actual stock data
-  const filteredThemes = useMemo(() => {
-    if (!stockData.length) return themes;
-    
-    const usedThemeIds = new Set<number>();
-    stockData.forEach((stock) => {
-      if (stock.theme_ids) {
-        try {
-          const themeIds = JSON.parse(stock.theme_ids);
-          if (Array.isArray(themeIds)) {
-            themeIds.forEach((id: number) => usedThemeIds.add(id));
-          }
-        } catch (error) {
-          console.error('Error parsing theme_ids:', error);
-        }
-      }
-    });
-    
-    return themes.filter(theme => usedThemeIds.has(parseInt(theme.value)));
-  }, [themes, stockData]);
+  // Filter options are now filtered at fetch time based on available stocks
 
   // Handle selection changes
   const handleSelectionChange = (filterKey: keyof FilterState, values: string[]) => {
@@ -417,28 +392,28 @@ export default function Filters({ onApplyFilters, onClearFilters, stockData = []
               isRadio={true}
             />
 
-            {filteredSectors.length > 0 && (
+            {sectors.length > 0 && (
               <FilterItem
                 title="Primary Industry"
-                options={filteredSectors}
+                options={sectors}
                 selectedValues={selectedFilters.sectors}
                 onSelectionChange={(values) => handleSelectionChange('sectors', values)}
               />
             )}
 
-            {filteredSubsectors.length > 0 && (
+            {subsectors.length > 0 && (
               <FilterItem
                 title="Sub-Sectors"
-                options={filteredSubsectors}
+                options={subsectors}
                 selectedValues={selectedFilters.subsectors}
                 onSelectionChange={(values) => handleSelectionChange('subsectors', values)}
               />
             )}
 
-            {filteredThemes.length > 0 && (
+            {themes.length > 0 && (
               <FilterItem
                 title="Themes"
-                options={filteredThemes}
+                options={themes}
                 selectedValues={selectedFilters.themes}
                 onSelectionChange={(values) => handleSelectionChange('themes', values)}
               />

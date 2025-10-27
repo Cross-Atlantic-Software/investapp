@@ -177,7 +177,7 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
               <div>
                 <label className="block text-xs font-medium text-themeTeal mb-1">Valuation (in Cr.)</label>
                 <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700">
-                  {typeof stock.valuation === 'string' ? stock.valuation : stock.valuation?.valuation_name || 'N/A'}
+                  {stock.valuation || 'N/A'}
                 </div>
               </div>
             </div>

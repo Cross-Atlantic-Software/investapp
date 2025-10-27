@@ -27,6 +27,7 @@ export class ValuationRangeController {
 
       const { count, rows: valuationRanges } = await db.ValuationRange.findAndCountAll({
         where: whereClause,
+        attributes: ['id', 'name', 'value', 'sort_order', 'created_at', 'updated_at'],
         order: [['sort_order', 'ASC'], ['name', 'ASC']],
         limit,
         offset
@@ -63,7 +64,9 @@ export class ValuationRangeController {
       await controller.ensureDbReady();
 
       const { id } = req.params;
-      const valuationRange = await db.ValuationRange.findByPk(id);
+      const valuationRange = await db.ValuationRange.findByPk(id, {
+        attributes: ['id', 'name', 'value', 'sort_order', 'created_at', 'updated_at']
+      });
 
       if (!valuationRange) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
