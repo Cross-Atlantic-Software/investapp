@@ -7,11 +7,6 @@ interface PriceChangePeriod {
   period: string;
 }
 
-interface Valuation {
-  id: number;
-  valuation_name: string;
-}
-
 const Step5: React.FC<StepProps & { 
   stockMasters?: Array<{ id: number; name: string; }>;
   sectors?: Array<{ id: number; name: string; }>;
@@ -27,7 +22,6 @@ const Step5: React.FC<StepProps & {
   imageUpload
 }) => {
   const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
-  const [valuations, setValuations] = useState<Valuation[]>([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -41,14 +35,6 @@ const Step5: React.FC<StepProps & {
           }
         }
 
-        // Fetch valuations
-        const valuationsResponse = await fetch('/api/admin/valuations/select');
-        if (valuationsResponse.ok) {
-          const valuationsData = await valuationsResponse.json();
-          if (valuationsData.success && valuationsData.data?.valuations) {
-            setValuations(valuationsData.data.valuations);
-          }
-        }
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -57,10 +43,8 @@ const Step5: React.FC<StepProps & {
     fetchData();
   }, []);
   const getValuationName = () => {
-    if (!formData.valuation_id) return '₹100-500 Cr';
-    
-    const valuation = valuations.find(v => v.id === formData.valuation_id);
-    return valuation ? valuation.valuation_name : '₹100-500 Cr';
+    // Use the text valuation field directly
+    return formData.valuation || 'Not provided';
   };
 
   const getStockMasterNames = () => {
