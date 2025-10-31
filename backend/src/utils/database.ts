@@ -40,6 +40,7 @@ import { InsightTopic, initializeInsightTopicModel } from "../Models/InsightTopi
 import { InsightSubtopic, initializeInsightSubtopicModel } from "../Models/InsightSubtopic";
 import { InsightTheme, initializeInsightThemeModel } from "../Models/InsightTheme";
 import { MarketInsight, initializeMarketInsightModel } from "../Models/MarketInsight";
+import { HomeInsight, initializeHomeInsightModel } from "../Models/HomeInsight";
 import { KnowledgeSector, initializeKnowledgeSectorModel } from "../Models/KnowledgeSector";
 import { KnowledgeSubsector, initializeKnowledgeSubsectorModel } from "../Models/KnowledgeSubsector";
 import { KnowledgeTopic, initializeKnowledgeTopicModel } from "../Models/KnowledgeTopic";
@@ -184,6 +185,9 @@ async function initializeSequelize() {
   initializeInsightSubtopicModel(sequelize);
   initializeInsightThemeModel(sequelize);
   initializeMarketInsightModel(sequelize);
+  
+  // Initialize Home Insight model
+  initializeHomeInsightModel(sequelize);
   
   // Initialize Knowledge Center models
   initializeKnowledgeSectorModel(sequelize);
@@ -687,6 +691,13 @@ export const db = {
       throw new Error('MarketInsight model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return MarketInsight;
+  },
+
+  get HomeInsight() {
+    if (!HomeInsight) {
+      throw new Error('HomeInsight model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return HomeInsight;
   },
 
   get KnowledgeSector() {

@@ -2004,4 +2004,55 @@ router.post("/update-valuation-ranges-with-values", async (req, res) => {
   }
 });
 
+// Run migration to create home_insights table
+router.post("/create-home-insights-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-home-insights-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'home_insights'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'home_insights' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'home_insights' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE home_insights (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        file VARCHAR(500) NOT NULL COMMENT 'S3 URL or file path',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        INDEX idx_created_at (created_at),
+        INDEX idx_updated_at (updated_at)
+      )
+    `);
+    
+    console.log("✅ Created home_insights table successfully");
+    
+    res.json({
+      success: true,
+      message: "Home insights table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;

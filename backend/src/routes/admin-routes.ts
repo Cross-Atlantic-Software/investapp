@@ -1,6 +1,6 @@
 import express from "express";
 import adminMiddleware from "../utils/middlewares/admin-middleware";
-import { uploadIcon, uploadBanner, uploadBlogImage, uploadInsightVideo, uploadKnowledgeCenterImage } from "../utils/middlewares/s3Upload";
+import { uploadIcon, uploadBanner, uploadBlogImage, uploadInsightVideo, uploadKnowledgeCenterImage, uploadHomeInsightFile } from "../utils/middlewares/s3Upload";
 import updateLastActive from "../utils/middlewares/updateLastActive";
 
 // User Management Controllers
@@ -73,6 +73,7 @@ import { ContactFaqController } from "../controllers/admin/contactFaqController"
 import { KYCManagementController } from "../controllers/admin/kycManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 import { getBuyRequestsCount, getBuyRequestsData } from "../controllers/admin/buyRequestsController";
+import { HomeInsightController } from "../controllers/admin/homeInsightController";
 
 // Stock Draft Controllers
 import {
@@ -124,6 +125,7 @@ const activityTypeController = new ActivityTypeManagementController();
 const bulkDealsController = new BulkDealsManagementController();
 const stockMasterController = new StockMasterManagementController();
 const methodologyNotesController = new MethodologyNotesManagementController();
+const homeInsightController = new HomeInsightController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -227,6 +229,13 @@ router.get("/notable-activities/:id", notableActivityController.getNotableActivi
 router.post("/notable-activities", uploadIcon.any(), notableActivityController.createNotableActivity);
 router.put("/notable-activities/:id", uploadIcon.any(), notableActivityController.updateNotableActivity);
 router.delete("/notable-activities/:id", notableActivityController.deleteNotableActivity);
+
+// Home Insight Management Routes
+router.get("/home-insights", homeInsightController.getAllHomeInsights);
+router.get("/home-insights/:id", homeInsightController.getHomeInsightById);
+router.post("/home-insights", uploadHomeInsightFile.single('file'), homeInsightController.createHomeInsight);
+router.put("/home-insights/:id", uploadHomeInsightFile.single('file'), homeInsightController.updateHomeInsight);
+router.delete("/home-insights/:id", homeInsightController.deleteHomeInsight);
 
 // Activity Type Management Routes
 router.get("/activity-types", activityTypeController.getAllActivityTypes);
