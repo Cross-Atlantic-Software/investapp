@@ -177,13 +177,12 @@ export default function Invest() {
     return () => window.removeEventListener('keydown', onKey);
   }, [showFilters]);
 
-  // Load stocks on component mount
+  // Load valuation mapping on component mount
   useEffect(() => {
-    fetchStocks();
     fetchValuationMapping();
-  }, [fetchStocks, fetchValuationMapping]);
+  }, [fetchValuationMapping]);
 
-  // Handle search with debouncing
+  // Handle search and filters with debouncing (includes initial load)
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       // Use current active filters when searching
