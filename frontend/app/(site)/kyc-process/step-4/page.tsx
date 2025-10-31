@@ -18,9 +18,15 @@ export default function KYCStep4BankProof() {
   const [acct, setAcct] = useState(formData.account_number);
   const [ifsc, setIfsc] = useState(formData.ifsc_code);
   const [file, setFile] = useState<File | null>(formData.bank_proof_file);
+  const [existingBankProofFile, setExistingBankProofFile] = useState<string | null>(formData.existing_bank_proof_file);
   const [err, setErr] = useState<string>("");
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Update existing file when formData changes
+  useEffect(() => {
+    setExistingBankProofFile(formData.existing_bank_proof_file);
+  }, [formData.existing_bank_proof_file]);
 
   // Update context when form data changes
   useEffect(() => {
@@ -34,7 +40,8 @@ export default function KYCStep4BankProof() {
   const acctDigits = acct.replace(/\D/g, "");
   const acctValid = /^\d{9,18}$/.test(acctDigits); // Indian accounts vary
   const ifscValid = /^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc.toUpperCase());
-  const fileValid = !!file && file.size <= 5 * 1024 * 1024; // <=5MB
+  // File is valid if either new file is uploaded OR existing file exists
+  const fileValid = (file && file.size <= 5 * 1024 * 1024) || !!existingBankProofFile;
   const allValid = acctValid && ifscValid && fileValid;
 
   function onPickFile(f: File | null) {
@@ -55,6 +62,11 @@ export default function KYCStep4BankProof() {
       return;
     }
     setFile(f);
+    // Clear existing file when new file is uploaded
+    if (existingBankProofFile) {
+      setExistingBankProofFile(null);
+      updateFormData({ existing_bank_proof_file: null });
+    }
   }
 
   const handleContinue = () => {
@@ -208,14 +220,49 @@ export default function KYCStep4BankProof() {
                 </div>
                 {file ? (
                   <div className="flex flex-col items-center gap-1">
-                    <p className="text-sm text-themeTeal">{file.name}</p>
+                    <div className="flex items-center gap-2 text-themeTeal">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                      <p className="text-sm font-medium">{file.name}</p>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setFile(null)}
-                      className="text-xs text-themeSkyBlue underline"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFile(null);
+                      }}
+                      className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
                     >
                       Remove file
                     </button>
+                  </div>
+                ) : existingBankProofFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-2 text-themeTeal">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                      <span className="text-sm font-medium">Previously uploaded file</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={existingBankProofFile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View existing file
+                      </a>
+                      <span className="text-xs text-themeTealLighter">or</span>
+                      <button
+                        type="button"
+                        className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fileInputRef.current?.click();
+                        }}
+                      >
+                        Upload new file
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <>
@@ -236,7 +283,7 @@ export default function KYCStep4BankProof() {
               {fileValid && (
                 <div className="mt-4 rounded border border-emerald-600 bg-emerald-50 p-3 text-emerald-700 text-sm flex items-center gap-2">
                   <CheckCircle2 className="h-4 w-4" />
-                  Bank proof attached.
+                  {file ? 'New bank proof attached.' : 'Existing bank proof found.'}
                 </div>
               )}
             </div>

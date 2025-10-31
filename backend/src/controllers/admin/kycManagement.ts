@@ -187,30 +187,52 @@ export class KYCManagementController {
         // Get bank proof file
         if (files.bank_proof && files.bank_proof[0]) {
           bank_proof = (files.bank_proof[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          bank_proof = existingKYC.bank_proof || '';
         }
 
         // Get signature file
         if (files.sign && files.sign[0]) {
           sign = (files.sign[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          sign = existingKYC.sign || '';
         }
 
         // Get PAN file
         if (files.pan && files.pan[0]) {
           pan = (files.pan[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          pan = existingKYC.pan || '';
         }
 
         // Get Aadhar file
         if (files.aadhar && files.aadhar[0]) {
           aadhar = (files.aadhar[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          aadhar = existingKYC.aadhar || '';
         }
 
         // Get Demat file
         if (files.demat && files.demat[0]) {
           demat = (files.demat[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          demat = existingKYC.demat || '';
         }
+      } else if (existingKYC) {
+        // If no new files uploaded, use all existing files
+        bank_proof = existingKYC.bank_proof || '';
+        sign = existingKYC.sign || '';
+        pan = existingKYC.pan || '';
+        aadhar = existingKYC.aadhar || '';
+        demat = existingKYC.demat || '';
       }
 
-      // Validate that all required files are uploaded
+      // Validate that all required files exist (either new uploads or existing files)
       if (!bank_proof || !sign || !pan || !aadhar || !demat) {
         res.status(HttpStatusCode.BAD_REQUEST).json({
           success: false,

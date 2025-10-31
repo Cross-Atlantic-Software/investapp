@@ -36,7 +36,13 @@ export default function KYCStep2PanProfile() {
   const [father, setFather] = useState(formData.father_name);
   const [residency, setResidency] = useState<'Indian' | 'NRI'>(formData.residency_status);
   const [panFile, setPanFile] = useState<File | null>(formData.pan_file);
+  const [existingPanFile, setExistingPanFile] = useState<string | null>(formData.existing_pan_file);
   const [fileError, setFileError] = useState<string>("");
+
+  // Update existing file when formData changes
+  useEffect(() => {
+    setExistingPanFile(formData.existing_pan_file);
+  }, [formData.existing_pan_file]);
 
   // Update context when form data changes
   useEffect(() => {
@@ -78,12 +84,18 @@ export default function KYCStep2PanProfile() {
     }
 
     setPanFile(file);
+    // Clear existing file when new file is uploaded
+    if (existingPanFile) {
+      setExistingPanFile(null);
+      updateFormData({ existing_pan_file: null });
+    }
   };
 
   // ---- validation
   const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]$/; // PAN format
   const isPanValid = panRegex.test(pan.toUpperCase());
-  const fileValid = !!panFile && panFile.size <= 5 * 1024 * 1024;
+  // File is valid if either new file is uploaded OR existing file exists
+  const fileValid = (panFile && panFile.size <= 5 * 1024 * 1024) || !!existingPanFile;
   const formValid = isPanValid && fullName.trim() && dob && father.trim() && fileValid;
 
   const handleContinue = () => {
@@ -311,6 +323,35 @@ export default function KYCStep2PanProfile() {
                         Remove file
                       </button>
                     </div>
+                  ) : existingPanFile ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="flex items-center gap-2 text-themeTeal">
+                        <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                        <span className="text-sm font-medium">Previously uploaded file</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <a
+                          href={existingPanFile}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          View existing file
+                        </a>
+                        <span className="text-xs text-themeTealLighter">or</span>
+                        <button
+                          type="button"
+                          className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            document.getElementById('panFileInput')?.click();
+                          }}
+                        >
+                          Upload new file
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <div className="flex flex-col items-center gap-3">
                       <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-themeTealWhite text-themeTeal">
@@ -336,10 +377,10 @@ export default function KYCStep2PanProfile() {
                   )}
                 </div>
 
-                {panFile && (
+                {(panFile || existingPanFile) && (
                   <p className="text-xs text-emerald-700 flex items-center gap-1">
                     <CheckCircle2 className="h-3 w-3" />
-                    PAN document uploaded successfully.
+                    {panFile ? 'New PAN document uploaded successfully.' : 'Existing PAN document found.'}
                   </p>
                 )}
               </div>

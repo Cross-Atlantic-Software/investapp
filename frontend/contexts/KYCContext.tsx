@@ -10,26 +10,31 @@ interface KYCFormData {
   father_name: string;
   residency_status: 'Indian' | 'NRI';
   pan_file: File | null;
+  existing_pan_file: string | null; // URL of existing file
   
   // Step 3: Address Verification
   aadhar_number: string;
   aadhar_file: File | null;
+  existing_aadhar_file: string | null; // URL of existing file
   
   // Step 4: Bank Proof
   account_number: string;
   ifsc_code: string;
   bank_proof_file: File | null;
+  existing_bank_proof_file: string | null; // URL of existing file
   
   // Step 5: Demat Account
   demat_type: string;
   demat_account_id: string;
   demat_file: File | null;
+  existing_demat_file: string | null; // URL of existing file
   
   // Step 6: Video KYC (completed flag)
   video_kyc_completed: boolean;
   
   // Step 7: eSign (signature file)
   signature_file: File | null;
+  existing_signature_file: string | null; // URL of existing file
   esign_completed: boolean;
 }
 
@@ -52,16 +57,21 @@ const initialFormData: KYCFormData = {
   father_name: '',
   residency_status: 'Indian',
   pan_file: null,
+  existing_pan_file: null,
   aadhar_number: '',
   aadhar_file: null,
+  existing_aadhar_file: null,
   account_number: '',
   ifsc_code: '',
   bank_proof_file: null,
+  existing_bank_proof_file: null,
   demat_type: '',
   demat_account_id: '',
   demat_file: null,
+  existing_demat_file: null,
   video_kyc_completed: false,
   signature_file: null,
+  existing_signature_file: null,
   esign_completed: false,
 };
 
@@ -120,17 +130,22 @@ export const KYCProvider: React.FC<KYCProviderProps> = ({ children }) => {
             dob: kyc.dob ? new Date(kyc.dob).toISOString().split('T')[0] : '',
             father_name: kyc.father_name || '',
             residency_status: kyc.residency_status || 'Indian',
-            pan_file: null, // Files need to be re-uploaded
+            pan_file: null, // New file upload (if user wants to replace)
+            existing_pan_file: kyc.pan || null, // Existing file URL
             aadhar_number: kyc.aadhar_number || '',
             aadhar_file: null,
+            existing_aadhar_file: kyc.aadhar || null,
             account_number: kyc.account_number || '',
             ifsc_code: kyc.ifsc_code || '',
             bank_proof_file: null,
+            existing_bank_proof_file: kyc.bank_proof || null,
             demat_type: kyc.demat_type || '',
             demat_account_id: kyc.demat_account_id || '',
             demat_file: null,
+            existing_demat_file: kyc.demat || null,
             video_kyc_completed: false,
             signature_file: null,
+            existing_signature_file: kyc.sign || null,
             esign_completed: false,
           });
           
@@ -168,14 +183,20 @@ export const KYCProvider: React.FC<KYCProviderProps> = ({ children }) => {
         };
       }
 
-      // Validate files
-      if (!formData.pan_file || !formData.aadhar_file || !formData.bank_proof_file || !formData.demat_file || !formData.signature_file) {
+      // Validate files - allow either new file upload OR existing file URL
+      const hasPanFile = formData.pan_file || formData.existing_pan_file;
+      const hasAadharFile = formData.aadhar_file || formData.existing_aadhar_file;
+      const hasBankProofFile = formData.bank_proof_file || formData.existing_bank_proof_file;
+      const hasDematFile = formData.demat_file || formData.existing_demat_file;
+      const hasSignatureFile = formData.signature_file || formData.existing_signature_file;
+      
+      if (!hasPanFile || !hasAadharFile || !hasBankProofFile || !hasDematFile || !hasSignatureFile) {
         console.log('KYC Context: Validation failed - missing files');
-        console.log('PAN file:', !!formData.pan_file);
-        console.log('Aadhar file:', !!formData.aadhar_file);
-        console.log('Bank proof file:', !!formData.bank_proof_file);
-        console.log('Demat file:', !!formData.demat_file);
-        console.log('Signature file:', !!formData.signature_file);
+        console.log('PAN file:', !!hasPanFile, 'new:', !!formData.pan_file, 'existing:', !!formData.existing_pan_file);
+        console.log('Aadhar file:', !!hasAadharFile, 'new:', !!formData.aadhar_file, 'existing:', !!formData.existing_aadhar_file);
+        console.log('Bank proof file:', !!hasBankProofFile, 'new:', !!formData.bank_proof_file, 'existing:', !!formData.existing_bank_proof_file);
+        console.log('Demat file:', !!hasDematFile, 'new:', !!formData.demat_file, 'existing:', !!formData.existing_demat_file);
+        console.log('Signature file:', !!hasSignatureFile, 'new:', !!formData.signature_file, 'existing:', !!formData.existing_signature_file);
         return {
           success: false,
           message: 'All document files are required: PAN, Aadhar, Bank Proof, Demat, and Signature'
@@ -206,12 +227,22 @@ export const KYCProvider: React.FC<KYCProviderProps> = ({ children }) => {
       submitFormData.append('demat_type', formData.demat_type);
       submitFormData.append('demat_account_id', formData.demat_account_id);
       
-      // Add all files
-      submitFormData.append('pan', formData.pan_file);
-      submitFormData.append('aadhar', formData.aadhar_file);
-      submitFormData.append('bank_proof', formData.bank_proof_file);
-      submitFormData.append('demat', formData.demat_file);
-      submitFormData.append('sign', formData.signature_file);
+      // Add files only if new files are uploaded (existing files will be kept by backend)
+      if (formData.pan_file) {
+        submitFormData.append('pan', formData.pan_file);
+      }
+      if (formData.aadhar_file) {
+        submitFormData.append('aadhar', formData.aadhar_file);
+      }
+      if (formData.bank_proof_file) {
+        submitFormData.append('bank_proof', formData.bank_proof_file);
+      }
+      if (formData.demat_file) {
+        submitFormData.append('demat', formData.demat_file);
+      }
+      if (formData.signature_file) {
+        submitFormData.append('sign', formData.signature_file);
+      }
 
       // Submit to API
       console.log('KYC Context: Submitting to API...');

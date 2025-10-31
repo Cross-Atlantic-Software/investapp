@@ -17,8 +17,14 @@ export default function KYCStep3Address() {
   // ----- Aadhaar state (initialize from context)
   const [aadhaarDigits, setAadhaarDigits] = useState(formData.aadhar_number);
   const [aadharFile, setAadharFile] = useState<File | null>(formData.aadhar_file);
+  const [existingAadharFile, setExistingAadharFile] = useState<string | null>(formData.existing_aadhar_file);
   const [fileError, setFileError] = useState<string>("");
   const isAadhaarValid = /^\d{12}$/.test(aadhaarDigits);
+
+  // Update existing file when formData changes
+  useEffect(() => {
+    setExistingAadharFile(formData.existing_aadhar_file);
+  }, [formData.existing_aadhar_file]);
 
   // Update context when aadhaar changes
   useEffect(() => {
@@ -59,9 +65,15 @@ export default function KYCStep3Address() {
     }
 
     setAadharFile(file);
+    // Clear existing file when new file is uploaded
+    if (existingAadharFile) {
+      setExistingAadharFile(null);
+      updateFormData({ existing_aadhar_file: null });
+    }
   };
 
-  const fileValid = !!aadharFile && aadharFile.size <= 5 * 1024 * 1024;
+  // File is valid if either new file is uploaded OR existing file exists
+  const fileValid = (aadharFile && aadharFile.size <= 5 * 1024 * 1024) || !!existingAadharFile;
   const allValid = isAadhaarValid && fileValid;
 
   const handleContinue = () => {
@@ -224,6 +236,35 @@ export default function KYCStep3Address() {
                     Remove file
                   </button>
                 </div>
+              ) : existingAadharFile ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex items-center gap-2 text-themeTeal">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                    <span className="text-sm font-medium">Previously uploaded file</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <a
+                      href={existingAadharFile}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      View existing file
+                    </a>
+                    <span className="text-xs text-themeTealLighter">or</span>
+                    <button
+                      type="button"
+                      className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        document.getElementById('aadharFileInput')?.click();
+                      }}
+                    >
+                      Upload new file
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <div className="flex flex-col items-center gap-3">
                   <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-themeTealWhite text-themeTeal">
@@ -249,10 +290,10 @@ export default function KYCStep3Address() {
               )}
             </div>
 
-            {aadharFile && (
+            {(aadharFile || existingAadharFile) && (
               <p className="text-xs text-emerald-700 flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
-                Aadhar document uploaded successfully.
+                {aadharFile ? 'New Aadhar document uploaded successfully.' : 'Existing Aadhar document found.'}
               </p>
             )}
           </div>
