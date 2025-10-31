@@ -6,6 +6,7 @@ import { OverviewCard, RiskCard, RecoCard, OpportunityCard, HoldingsTable } from
 import UpdatesListing, { type UpdateItem } from "@/components/dashboard/updatesListing";
 import { NotableActivity } from "@/components/subcomponents";
 import { Button, Heading } from "@/components/ui";
+import { usePdfDownload } from "@/hooks/usePdfDownload";
 
 interface MarketInsight {
   id: number;
@@ -23,11 +24,7 @@ interface WishlistItem {
 export default function DashboardPage() {
   const [watchlistInsights, setWatchlistInsights] = useState<UpdateItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<'fy2025-26' | 'date-range' | 'last-3-months'>('fy2025-26');
-  const [format, setFormat] = useState<'pdf' | 'xls' | 'csv'>('pdf');
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-  const [showDownloadOptions, setShowDownloadOptions] = useState(false);
+  const { downloadAsPdf } = usePdfDownload();
 
   useEffect(() => {
     const fetchWatchlistInsights = async () => {
@@ -129,40 +126,16 @@ export default function DashboardPage() {
     fetchWatchlistInsights();
   }, []);
 
-
-  const handleDownloadReport = async () => {
+  const handleDownloadSnapshot = async () => {
     try {
-      // Validate date range if selected
-      if (period === 'date-range' && (!startDate || !endDate)) {
-        alert('Please select both start and end dates');
-        return;
-      }
-
-      // TODO: Implement actual download logic based on period and format
-      console.log('Download Report:', { period, format, startDate, endDate });
-      
-      // For now, show alert
-      alert(`Downloading report: ${format.toUpperCase()} format for ${period === 'fy2025-26' ? 'FY 2025-26' : period === 'date-range' ? `${startDate} to ${endDate}` : 'Last 3 months'}`);
+      await downloadAsPdf('dashboard-content', {
+        filename: `portfolio-dashboard-${new Date().toISOString().split('T')[0]}.pdf`
+      });
     } catch (error) {
-      console.error('Failed to download report:', error);
-      alert('Failed to download report. Please try again.');
+      console.error('Failed to download PDF:', error);
+      alert('Failed to download snapshot. Please try again.');
     }
   };
-
-  // Calculate date range for "Last 3 months"
-  useEffect(() => {
-    if (period === 'last-3-months') {
-      const end = new Date();
-      const start = new Date();
-      start.setMonth(start.getMonth() - 3);
-      setStartDate(start.toISOString().split('T')[0]);
-      setEndDate(end.toISOString().split('T')[0]);
-    } else if (period === 'fy2025-26') {
-      // FY 2025-26: April 1, 2025 to March 31, 2026
-      setStartDate('2025-04-01');
-      setEndDate('2026-03-31');
-    }
-  }, [period]);
 
   return (
     <section id="dashboard-content">
@@ -177,130 +150,12 @@ export default function DashboardPage() {
             color="themeTeal"
             variant="outline"
             size="sm"
-            onClick={() => setShowDownloadOptions(!showDownloadOptions)}
+            onClick={handleDownloadSnapshot}
             icon={Download}
             iconPosition="left"
           />
         </div>
       </div>
-
-      {/* Download Options Modal/Dropdown */}
-      {showDownloadOptions && (
-        <div className="mb-4 rounded bg-white p-6 shadow-lg">
-          <div className="mb-4 flex items-center justify-between">
-            <Heading as="h6" className="font-semibold text-themeTeal">
-              Download Report
-            </Heading>
-            <button
-              onClick={() => setShowDownloadOptions(false)}
-              className="text-themeTealLighter hover:text-themeTeal"
-            >
-              ×
-            </button>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2">
-            {/* Period Selection */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-themeTeal">
-                Select Period
-              </label>
-              <select
-                value={period}
-                onChange={(e) => setPeriod(e.target.value as 'fy2025-26' | 'date-range' | 'last-3-months')}
-                className="w-full rounded-lg border border-themeTealLighter px-4 py-2 focus:border-themeTeal focus:outline-none focus:ring-2 focus:ring-themeTeal/20"
-              >
-                <option value="fy2025-26">FY 2025-26</option>
-                <option value="date-range">Date Range</option>
-                <option value="last-3-months">Last 3 months</option>
-              </select>
-
-              {/* Date Range Fields - Only show when Date Range is selected */}
-              {period === 'date-range' && (
-                <div className="mt-4 grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-themeTeal">
-                      Start Date
-                    </label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="w-full rounded-lg border border-themeTealLighter px-4 py-2 focus:border-themeTeal focus:outline-none focus:ring-2 focus:ring-themeTeal/20"
-                    />
-                  </div>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium text-themeTeal">
-                      End Date
-                    </label>
-                    <input
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="w-full rounded-lg border border-themeTealLighter px-4 py-2 focus:border-themeTeal focus:outline-none focus:ring-2 focus:ring-themeTeal/20"
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Format Selection */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-themeTeal">
-                Select Format
-              </label>
-              <div className="space-y-3">
-                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-themeTealLighter p-3 hover:bg-themeTealWhite">
-                  <input
-                    type="radio"
-                    name="format"
-                    value="pdf"
-                    checked={format === 'pdf'}
-                    onChange={(e) => setFormat(e.target.value as 'pdf')}
-                    className="h-4 w-4 text-themeTeal focus:ring-themeTeal"
-                  />
-                  <span className="text-sm font-medium text-themeTeal">PDF</span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-themeTealLighter p-3 hover:bg-themeTealWhite">
-                  <input
-                    type="radio"
-                    name="format"
-                    value="xls"
-                    checked={format === 'xls'}
-                    onChange={(e) => setFormat(e.target.value as 'xls')}
-                    className="h-4 w-4 text-themeTeal focus:ring-themeTeal"
-                  />
-                  <span className="text-sm font-medium text-themeTeal">XLS</span>
-                </label>
-                <label className="flex cursor-pointer items-center gap-3 rounded-lg border border-themeTealLighter p-3 hover:bg-themeTealWhite">
-                  <input
-                    type="radio"
-                    name="format"
-                    value="csv"
-                    checked={format === 'csv'}
-                    onChange={(e) => setFormat(e.target.value as 'csv')}
-                    className="h-4 w-4 text-themeTeal focus:ring-themeTeal"
-                  />
-                  <span className="text-sm font-medium text-themeTeal">CSV</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Download Button */}
-          <div className="mt-6 flex justify-end">
-            <Button
-              text={`Download ${format.toUpperCase()}`}
-              color="themeTeal"
-              variant="solid"
-              size="sm"
-              onClick={handleDownloadReport}
-              icon={Download}
-              iconPosition="left"
-            />
-          </div>
-        </div>
-      )}
 
       {/* top summary cards */}
       <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
