@@ -452,7 +452,7 @@ export default function SiteUsersPage() {
                         Auth Provider
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-themeTealWhite uppercase tracking-wider">
-                        Wishlist
+                        Watchlist
                       </th>
                       <SortableHeader
                         field="createdAt"
@@ -668,8 +668,8 @@ export default function SiteUsersPage() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-themeTealWhite">Wishlist</h3>
-                    <p className="text-sm text-themeTealLighter">View wishlist for {wishlistModal.userName}</p>
+                    <h3 className="text-lg font-semibold text-themeTealWhite">Watchlist</h3>
+                    <p className="text-sm text-themeTealLighter">View Watchlist for {wishlistModal.userName}</p>
                   </div>
                 </div>
                 <button

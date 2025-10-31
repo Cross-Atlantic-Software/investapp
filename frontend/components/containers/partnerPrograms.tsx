@@ -8,7 +8,7 @@ type Stat = { value: string; label: string };
 
 export default function PartnerProgram({
   badge = "Partner Programs",
-  title = "Grow Your Business with Invest App",
+  title = "Grow Your Business with AltStock",
   description = "Explore a dynamic range of top-performing unlisted stocks-from high-growth startups to established private giants. These are the companies shaping the future-now just a click away.",
   primary = { label: "Apply Now ", href: "/partners/apply" },
   secondary = { label: "Download Partner Kit", href: "/partners/kit" },

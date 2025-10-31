@@ -34,10 +34,11 @@ router.use('/trading', tradingRoutes);
 router.use('/wishlist', wishlistRoutes);
 
 // User Portfolio routes (protected - requires authentication)
-router.get('/user-portfolio', UserPortfolioController.getCurrentUserPortfolio);
+router.get('/user-portfolio', jwtAuthMiddleware, UserPortfolioController.getCurrentUserPortfolio);
 
 // User Holdings routes (protected - requires authentication)
-router.get('/user-holdings', UserHoldingsController.getUserHoldings);
+router.get('/user-holdings', jwtAuthMiddleware, UserHoldingsController.getUserHoldings);
+router.get('/user-buy-requests', jwtAuthMiddleware, UserHoldingsController.getUserBuyRequests);
 
 // User Report routes (protected - requires authentication)
 router.get('/user-report', jwtAuthMiddleware, UserReportController.getCurrentUserReport);

@@ -25,9 +25,9 @@ function OrderFailedInner() {
     <section className="bg-themeTealWhite py-8 sm:py-12 lg:py-16">
       <div className="appContainer">
         <div className="mx-auto max-w-4xl rounded bg-white p-6 sm:p-10">
-          <h1 className="text-center text-2xl font-semibold text-themeTeal">Invest APP Order Placement</h1>
+          <h1 className="text-center text-2xl font-semibold text-themeTeal">AltStock Order Placement</h1>
           <p className="mt-1 text-center text-themeTealLighter">
-            Place your order for Invest APP with transparent pricing and instant calculations
+            Place your order for AltStock with transparent pricing and instant calculations
           </p>
 
           <div className="mt-8 rounded bg-red-50 p-6 sm:p-10">

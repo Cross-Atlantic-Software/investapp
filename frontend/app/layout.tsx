@@ -6,7 +6,7 @@ import "@/utils/imageErrorHandler"; // Import global image error handler
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const merri = Merriweather({ subsets: ["latin"], weight: ["300","400","700","900"], variable: "--font-merriweather", display: "swap" });
 
-export const metadata = { title: "InvestAPP", description: "Trading of Unlisted Shares" };
+export const metadata = { title: "AltStock", description: "Trading of Unlisted Shares" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

@@ -18,9 +18,15 @@ export default function KYCStep7ESign() {
   const [c2, setC2] = useState(false);
   const [c3, setC3] = useState(false);
   const [signFile, setSignFile] = useState<File | null>(formData.signature_file);
+  const [existingSignatureFile, setExistingSignatureFile] = useState<string | null>(formData.existing_signature_file);
   const [fileError, setFileError] = useState<string>("");
   const [submitResult, setSubmitResult] = useState<{ success: boolean; message: string } | null>(null);
   const allConsented = c1 && c2 && c3;
+
+  // Update existing file when formData changes
+  useEffect(() => {
+    setExistingSignatureFile(formData.existing_signature_file);
+  }, [formData.existing_signature_file]);
 
   // Update context when signature file is uploaded
   useEffect(() => {
@@ -53,15 +59,24 @@ export default function KYCStep7ESign() {
     }
 
     setSignFile(file);
+    // Clear existing file when new file is uploaded
+    if (existingSignatureFile) {
+      setExistingSignatureFile(null);
+      updateFormData({ existing_signature_file: null });
+    }
   };
+
+  // File is valid if either new file is uploaded OR existing file exists
+  const fileValid = (signFile && signFile.size <= 5 * 1024 * 1024) || !!existingSignatureFile;
 
   const handleSubmit = async () => {
     console.log('KYC Submit clicked');
     console.log('All consented:', allConsented);
     console.log('Sign file:', signFile);
+    console.log('Existing signature file:', existingSignatureFile);
     console.log('Is submitting:', isSubmitting);
     
-    if (!allConsented || !signFile) {
+    if (!allConsented || !fileValid) {
       console.log('Validation failed - allConsented:', allConsented, 'signFile:', !!signFile);
       return;
     }
@@ -226,6 +241,35 @@ export default function KYCStep7ESign() {
                       Remove file
                     </button>
                   </div>
+                ) : existingSignatureFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-2 text-themeTeal">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                      <span className="text-sm font-medium">Previously uploaded file</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={existingSignatureFile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View existing file
+                      </a>
+                      <span className="text-xs text-themeTealLighter">or</span>
+                      <button
+                        type="button"
+                        className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          document.getElementById('signFileInput')?.click();
+                        }}
+                      >
+                        Upload new file
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3">
                     <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-themeTealWhite text-themeTeal">
@@ -251,10 +295,10 @@ export default function KYCStep7ESign() {
                 )}
               </div>
 
-              {signFile && (
+              {(signFile || existingSignatureFile) && (
                 <p className="text-xs text-emerald-700 flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" />
-                  Signature document uploaded successfully.
+                  {signFile ? 'New signature document uploaded successfully.' : 'Existing signature document found.'}
                 </p>
               )}
             </div>
@@ -283,10 +327,10 @@ export default function KYCStep7ESign() {
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={!allConsented || !signFile || isSubmitting}
+            disabled={!allConsented || !fileValid || isSubmitting}
             className={[
               "w-full sm:w-auto px-6 py-3 rounded font-medium",
-              allConsented && signFile && !isSubmitting
+              allConsented && fileValid && !isSubmitting
                 ? "bg-themeSkyBlue text-themeTealWhite cursor-pointer"
                 : "bg-themeTealLighter text-white cursor-not-allowed",
             ].join(" ")}

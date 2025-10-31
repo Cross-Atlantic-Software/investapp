@@ -275,4 +275,36 @@ export class EmailTemplateService {
       return null;
     }
   }
+
+  /**
+   * Get formatted KYC submission acknowledgement email
+   */
+  static async getKYCSubmissionEmail(
+    userEmail: string,
+    userName: string
+  ): Promise<{ subject: string; body: string } | null> {
+    try {
+      const template = await this.getTemplateByType('KYC_Submission');
+      if (!template) {
+        console.error('KYC submission template not found');
+        return null;
+      }
+
+      const variables = {
+        userEmail,
+        userName
+      };
+
+      const formattedBody = this.replaceTemplateVariables(template.body, variables);
+      const formattedSubject = this.replaceTemplateVariables(template.subject, variables);
+
+      return {
+        subject: formattedSubject,
+        body: formattedBody
+      };
+    } catch (error) {
+      console.error('Error generating KYC submission email:', error);
+      return null;
+    }
+  }
 }

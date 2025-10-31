@@ -96,7 +96,7 @@ export default function PartnerProgram() {
             <PartnerPrograms />
             <div className="py-16">
                 <div className="max-w-3xl mx-auto text-center mb-10">
-                <Heading as="h2" className="mb-3">Why Partner with Invest App?</Heading>
+                <Heading as="h2" className="mb-3">Why Partner with AltStock?</Heading>
                 <p className="text-themeTealLight">Explore a dynamic range of top-performing unlisted stocks-from high-growth startups to established private giants. These are the companies shaping the future-now just a click away.</p>
                 </div>
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
@@ -157,8 +157,8 @@ export default function PartnerProgram() {
                 <ContactInfoBox
                     icon={Mail}
                     title="Email"
-                    lines={["partner@investapp.com", "Response within 24 hours"]}
-                    cta={{ label: "Write to Us", href: "mailto:partner@investapp.com", variant: "outline" }}
+                    lines={["partner@altstock.com", "Response within 24 hours"]}
+                    cta={{ label: "Write to Us", href: "mailto:partner@altstock.com", variant: "outline" }}
                 />
 
                 <ContactInfoBox

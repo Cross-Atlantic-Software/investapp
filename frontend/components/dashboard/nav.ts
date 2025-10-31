@@ -20,8 +20,8 @@ export const GROUPS: NavGroup[] = [
   {
     title: "Trading",
     items: [
-      { id:"holdings", label:"Holdings", href:"/dashboard/holdings", icon:Building },
-      { id:"sell", label:"Sell Requests", href:"/dashboard/sell-requests", icon:TrendingDown },
+      // { id:"holdings", label:"Holdings", href:"/dashboard/holdings", icon:Building },
+      { id:"sell", label:"Buy / Sell Requests", href:"/dashboard/sell-requests", icon:TrendingDown },
       { id:"watchlist", label:"Watchlist", href:"/dashboard/watchlist", icon:TrendingUp },
       { id:"tx", label:"Transactions", href:"/dashboard/transactions", icon:Wallet },
     ],

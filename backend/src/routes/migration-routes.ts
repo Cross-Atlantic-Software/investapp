@@ -919,6 +919,102 @@ router.post("/create-kyc-applications-table", async (req, res) => {
     }
   });
 
+  // Add KYC submission acknowledgement email template
+  router.post("/add-kyc-submission-email-template", async (req, res) => {
+    try {
+      // Ensure database is ready
+      await sequelizePromise;
+      
+      // Check if template already exists
+      const [results] = await db.sequelize.query(`
+        SELECT id FROM email_templates WHERE type = 'KYC_Submission'
+      `);
+
+      if (results.length > 0) {
+        return res.status(200).json({
+          success: true,
+          message: "KYC submission email template already exists"
+        });
+      }
+
+      // Insert KYC submission email template
+      await db.sequelize.query(`
+        INSERT INTO email_templates (type, subject, body, created_by, updated_by, createdAt, updatedAt)
+        VALUES (
+          'KYC_Submission',
+          'KYC Application Submitted - InvestAPP',
+          '<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+            <div style="background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #2c5530; margin: 0; font-size: 28px;">✅ KYC Application Submitted</h1>
+              </div>
+              
+              <div style="margin-bottom: 25px;">
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                  Dear {{userName}},
+                </p>
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                  Thank you for submitting your KYC (Know Your Customer) application. We have successfully received your documents and information.
+                </p>
+              </div>
+              
+              <div style="background-color: #fff3cd; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #ffc107;">
+                <h3 style="color: #856404; margin: 0 0 10px 0; font-size: 18px;">📋 What happens next:</h3>
+                <ul style="color: #333; font-size: 14px; line-height: 1.6; margin: 0; padding-left: 20px;">
+                  <li>Your application is now under review by our verification team</li>
+                  <li>Review typically takes 24-48 hours</li>
+                  <li>You will receive an email notification once the review is complete</li>
+                  <li>If additional documents are required, we will contact you</li>
+                </ul>
+              </div>
+              
+              <div style="margin: 25px 0;">
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                  Please ensure all your submitted documents are valid and up-to-date. Once your KYC is verified, you will be able to start trading on our platform.
+                </p>
+                <p style="color: #333; font-size: 16px; line-height: 1.6; margin: 0 0 15px 0;">
+                  If you have any questions or need assistance, please don''t hesitate to contact our support team.
+                </p>
+              </div>
+              
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="https://investapp.com/dashboard" style="background-color: #2c5530; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                  View Dashboard
+                </a>
+              </div>
+              
+              <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 30px;">
+                <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0 0 10px 0;">
+                  Thank you for choosing InvestAPP for your investment journey.
+                </p>
+                <p style="color: #666; font-size: 14px; line-height: 1.6; margin: 0;">
+                  Best regards,<br>
+                  The InvestAPP Team
+                </p>
+              </div>
+            </div>
+          </div>',
+          1,
+          1,
+          NOW(),
+          NOW()
+        )
+      `);
+
+      res.status(200).json({
+        success: true,
+        message: "KYC submission email template created successfully"
+      });
+    } catch (error) {
+      console.error("Error creating KYC submission email template:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to create KYC submission email template",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Create contact_faq table
   router.post("/create-contact-faq-table", async (req, res) => {
     try {
@@ -1839,14 +1935,41 @@ router.post("/update-valuation-ranges-with-values", async (req, res) => {
     console.log("🔄 Running migration: update-valuation-ranges-with-values");
     await sequelizePromise;
     
-    // Add columns if they don't exist
-    await db.sequelize.query(`
-      ALTER TABLE valuation_ranges
-      ADD COLUMN IF NOT EXISTS min_value DECIMAL(15,2) NULL AFTER value,
-      ADD COLUMN IF NOT EXISTS max_value DECIMAL(15,2) NULL AFTER min_value
-    `).catch(err => {
-      console.log("Columns may already exist:", err);
-    });
+    // Ensure min_value column exists
+    const [minCol] = await db.sequelize.query(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'valuation_ranges' 
+        AND COLUMN_NAME = 'min_value'
+    `);
+    if ((minCol as any).length === 0) {
+      await db.sequelize.query(`
+        ALTER TABLE valuation_ranges
+        ADD COLUMN min_value DECIMAL(15,2) NULL AFTER value
+      `);
+      console.log("✅ Added min_value column to valuation_ranges");
+    } else {
+      console.log("ℹ️ min_value column already exists");
+    }
+
+    // Ensure max_value column exists
+    const [maxCol] = await db.sequelize.query(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = 'valuation_ranges' 
+        AND COLUMN_NAME = 'max_value'
+    `);
+    if ((maxCol as any).length === 0) {
+      await db.sequelize.query(`
+        ALTER TABLE valuation_ranges
+        ADD COLUMN max_value DECIMAL(15,2) NULL AFTER min_value
+      `);
+      console.log("✅ Added max_value column to valuation_ranges");
+    } else {
+      console.log("ℹ️ max_value column already exists");
+    }
     
     // Update existing rows with min/max values
     await db.sequelize.query(`

@@ -201,7 +201,7 @@ export default function Invest() {
   return (
     <>
       <PageTitle
-        heading="Explore Our Investment Opportunities"
+        heading="Explore Investment Opportunities"
         description="Find the best opportunities in the private market to diversify and grow your investments."
         {...(!isAuthenticated && {
           linkText: "Sign up to Learn More",

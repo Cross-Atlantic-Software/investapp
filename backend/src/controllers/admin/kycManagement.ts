@@ -175,14 +175,6 @@ export class KYCManagementController {
         where: { user_id }
       });
 
-      if (existingKYC) {
-        res.status(HttpStatusCode.CONFLICT).json({
-          success: false,
-          message: 'User already has a KYC application'
-        });
-        return;
-      }
-
       // Handle file uploads
       const files = req.files as { [fieldname: string]: Express.Multer.File[] };
       let bank_proof = '';
@@ -195,30 +187,52 @@ export class KYCManagementController {
         // Get bank proof file
         if (files.bank_proof && files.bank_proof[0]) {
           bank_proof = (files.bank_proof[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          bank_proof = existingKYC.bank_proof || '';
         }
 
         // Get signature file
         if (files.sign && files.sign[0]) {
           sign = (files.sign[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          sign = existingKYC.sign || '';
         }
 
         // Get PAN file
         if (files.pan && files.pan[0]) {
           pan = (files.pan[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          pan = existingKYC.pan || '';
         }
 
         // Get Aadhar file
         if (files.aadhar && files.aadhar[0]) {
           aadhar = (files.aadhar[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          aadhar = existingKYC.aadhar || '';
         }
 
         // Get Demat file
         if (files.demat && files.demat[0]) {
           demat = (files.demat[0] as any).location; // S3 file URL
+        } else if (existingKYC) {
+          // Use existing file if no new file uploaded
+          demat = existingKYC.demat || '';
         }
+      } else if (existingKYC) {
+        // If no new files uploaded, use all existing files
+        bank_proof = existingKYC.bank_proof || '';
+        sign = existingKYC.sign || '';
+        pan = existingKYC.pan || '';
+        aadhar = existingKYC.aadhar || '';
+        demat = existingKYC.demat || '';
       }
 
-      // Validate that all required files are uploaded
+      // Validate that all required files exist (either new uploads or existing files)
       if (!bank_proof || !sign || !pan || !aadhar || !demat) {
         res.status(HttpStatusCode.BAD_REQUEST).json({
           success: false,
@@ -227,32 +241,108 @@ export class KYCManagementController {
         return;
       }
 
-      // Create new KYC application
-      const kycApplication = await this.kycModel.create({
-        user_id,
-        pan_number: pan_number.toUpperCase(),
-        name_pan,
-        dob,
-        father_name,
-        residency_status,
-        aadhar_number,
-        account_number,
-        ifsc_code: ifsc_code.toUpperCase(),
-        bank_proof,
-        demat_type,
-        demat_account_id,
-        sign,
-        pan,
-        aadhar,
-        demat,
-        status: 'pending'
-      });
+      let kycApplication;
 
-      res.status(HttpStatusCode.CREATED).json({
-        success: true,
-        data: { kycApplication },
-        message: 'KYC application created successfully'
-      });
+      if (existingKYC) {
+        // Update existing KYC application and set status back to pending
+        await existingKYC.update({
+          pan_number: pan_number.toUpperCase(),
+          name_pan,
+          dob,
+          father_name,
+          residency_status,
+          aadhar_number,
+          account_number,
+          ifsc_code: ifsc_code.toUpperCase(),
+          bank_proof,
+          demat_type,
+          demat_account_id,
+          sign,
+          pan,
+          aadhar,
+          demat,
+          status: 'pending' // Set back to pending for admin review
+        });
+        await existingKYC.reload();
+        kycApplication = existingKYC;
+
+        // Send acknowledgement email
+        try {
+          const user = await this.userModel.findByPk(user_id);
+          if (user) {
+            const userName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0];
+            const emailTemplate = await EmailTemplateService.getKYCSubmissionEmail(
+              user.email,
+              userName
+            );
+            
+            if (emailTemplate) {
+              await sendMail(user.email, emailTemplate.subject, emailTemplate.body);
+              console.log(`✅ KYC submission acknowledgement email sent to: ${user.email}`);
+            } else {
+              console.error('❌ KYC submission email template not found');
+            }
+          }
+        } catch (emailError) {
+          console.error('❌ Failed to send KYC submission acknowledgement email:', emailError);
+          // Don't fail the update if email fails
+        }
+
+        res.status(HttpStatusCode.OK).json({
+          success: true,
+          data: { kycApplication },
+          message: 'KYC application updated successfully and is pending review'
+        });
+      } else {
+        // Create new KYC application
+        kycApplication = await this.kycModel.create({
+          user_id,
+          pan_number: pan_number.toUpperCase(),
+          name_pan,
+          dob,
+          father_name,
+          residency_status,
+          aadhar_number,
+          account_number,
+          ifsc_code: ifsc_code.toUpperCase(),
+          bank_proof,
+          demat_type,
+          demat_account_id,
+          sign,
+          pan,
+          aadhar,
+          demat,
+          status: 'pending'
+        });
+
+        // Send acknowledgement email
+        try {
+          const user = await this.userModel.findByPk(user_id);
+          if (user) {
+            const userName = `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email.split('@')[0];
+            const emailTemplate = await EmailTemplateService.getKYCSubmissionEmail(
+              user.email,
+              userName
+            );
+            
+            if (emailTemplate) {
+              await sendMail(user.email, emailTemplate.subject, emailTemplate.body);
+              console.log(`✅ KYC submission acknowledgement email sent to: ${user.email}`);
+            } else {
+              console.error('❌ KYC submission email template not found');
+            }
+          }
+        } catch (emailError) {
+          console.error('❌ Failed to send KYC submission acknowledgement email:', emailError);
+          // Don't fail the creation if email fails
+        }
+
+        res.status(HttpStatusCode.CREATED).json({
+          success: true,
+          data: { kycApplication },
+          message: 'KYC application created successfully'
+        });
+      }
     } catch (error) {
       console.error('Error creating KYC application:', error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({

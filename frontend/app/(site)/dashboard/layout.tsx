@@ -38,7 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <div className="md:flex md:gap-6">
           {/* sidebar (desktop) */}
-          <aside className="hidden shrink-0 md:block md:w-72 lg:w-80">
+          <aside className="hidden shrink-0 md:block md:w-60 lg:w-68">
             <DashboardSidebar />
           </aside>
 

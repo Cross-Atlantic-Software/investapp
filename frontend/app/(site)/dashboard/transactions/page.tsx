@@ -97,7 +97,7 @@ export default function Transactions() {
     <section className="space-y-4">
       <div className="text-center">
         <Heading as="h3" className="font-semibold mb-3">Your Financial Ledger: Precision at Your Fingertips</Heading>
-        <p className="text-themeTealLighter mb-10">Manage your Invest APP transactions with confidence</p>
+        <p className="text-themeTealLighter mb-10">Manage your AltStock transactions with confidence</p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4 mb-10">

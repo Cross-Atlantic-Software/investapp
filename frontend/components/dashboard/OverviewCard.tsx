@@ -26,7 +26,12 @@ export default function OverviewCard() {
   useEffect(() => {
     const fetchPortfolioData = async () => {
       try {
-        const response = await fetch('/api/user-portfolio');
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token') || '';
+        const response = await fetch('/api/user-portfolio', {
+          headers: {
+            'token': token,
+          },
+        });
 
         if (response.ok) {
           const data = await response.json();

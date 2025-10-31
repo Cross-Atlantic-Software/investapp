@@ -75,7 +75,7 @@ const AdminSidebar = () => {
         <div className="flex items-center justify-center h-16 px-4 bg-themeTeal">
           <Image
             src="/images/logo.svg"
-            alt="InvestApp Logo"
+            alt="AltStock Logo"
             width={120}
             height={35}
             className="filter brightness-0 invert"

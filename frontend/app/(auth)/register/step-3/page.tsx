@@ -145,7 +145,7 @@ function Step3Content() {
         {/* LEFT PANEL */}
         <aside className="hidden lg:flex lg:col-span-4 h-full flex-col bg-themeTeal text-themeTealWhite px-6 md:px-10 pt-6 md:pt-10">
           <div className="flex items-center gap-3">
-            <Image src="/images/logo-white.svg" alt="Invest App" width={197} height={36} />
+            <Image src="/images/logo-white.svg" alt="AltStock" width={197} height={36} />
           </div>
 
           <ul className="mt-10 md:mt-12 space-y-8 md:space-y-10">
@@ -177,7 +177,7 @@ function Step3Content() {
                     <Video className="h-5 w-5 text-themeTeal" />
                 </span>
                 <div>
-                    <p className="font-semibold">Welcome to Invest App</p>
+                    <p className="font-semibold">Welcome to AltStock</p>
                     <p className="text-sm">Watch intro video and create your profile</p>
                 </div>
               </Link>
@@ -218,7 +218,7 @@ function Step3Content() {
                       </svg>
                     </div>
                     <Heading as="h2" className="mb-2 text-3xl sm:text-4xl text-themeTeal">
-                      Welcome to InvestApp!
+                      Welcome to AltStock!
                     </Heading>
                     <p className="text-lg text-themeTealLighter mb-4">
                       Your profile has been completed successfully
@@ -305,7 +305,7 @@ function Step3Content() {
 
                 {/* Source select */}
                 <label className="block">
-                  <span className="mb-2 block text-sm font-medium text-themeTeal">How Did You Hear About InvestApp? <span className="text-red-500">*</span></span>
+                  <span className="mb-2 block text-sm font-medium text-themeTeal">How Did You Hear About AltStock? <span className="text-red-500">*</span></span>
                   <select
                     value={source}
                     onChange={(e) => setSource(e.target.value)}

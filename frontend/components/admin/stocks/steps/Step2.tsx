@@ -6,14 +6,8 @@ interface PriceChangePeriod {
   period: string;
 }
 
-interface Valuation {
-  id: number;
-  valuation_name: string;
-}
-
 const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
   const [priceChangePeriods, setPriceChangePeriods] = useState<PriceChangePeriod[]>([]);
-  const [valuations, setValuations] = useState<Valuation[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,14 +22,6 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
           }
         }
 
-        // Fetch valuations
-        const valuationsResponse = await fetch('/api/admin/valuations/select');
-        if (valuationsResponse.ok) {
-          const valuationsData = await valuationsResponse.json();
-          if (valuationsData.success && valuationsData.data?.valuations) {
-            setValuations(valuationsData.data.valuations);
-          }
-        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -56,21 +42,16 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
         <label className="block text-xs font-medium text-gray-700 mb-1">
           Valuation (in Cr.) <span className="text-red-500">*</span>
         </label>
-        <select
-          name="valuation_id"
-          value={formData.valuation_id}
+        <input
+          type="text"
+          name="valuation"
+          value={formData.valuation}
           onChange={onInputChange}
           required
-          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
-          disabled={loading}
-        >
-          <option value="">{loading ? 'Loading...' : 'Select valuation...'}</option>
-          {valuations.map((valuation) => (
-            <option key={valuation.id} value={valuation.id}>
-              {valuation.valuation_name}
-            </option>
-          ))}
-        </select>
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
+          placeholder="e.g., 3400"
+        />
+        <p className="text-xs text-gray-500 mt-1">Enter valuation as text (e.g., &quot;₹ 3400 Cr&quot;)</p>
       </div>
       
       {/* Price Change and Price Change Period - Side by Side */}
@@ -82,7 +63,7 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             name="price_change"
-            value={formData.price_change}
+            value={formData.price_change || ''}
             onChange={onInputChange}
             required
             className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200 text-gray-900"
@@ -125,7 +106,7 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
             <input
               type="number"
               name="percentage_change"
-              value={formData.percentage_change}
+              value={formData.percentage_change || ''}
               onChange={onInputChange}
               className="w-full pl-4 pr-8 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
               placeholder="0.00"
@@ -145,7 +126,7 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
             <input
               type="number"
               name="price_per_share"
-              value={formData.price_per_share}
+              value={formData.price_per_share || ''}
               onChange={onInputChange}
               required
               className="w-full pl-8 pr-4 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-themeTeal focus:border-transparent transition-all duration-200"
@@ -164,7 +145,7 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             name="min_units"
-            value={formData.min_units}
+            value={formData.min_units || ''}
             onChange={onInputChange}
             required
             min="1"
@@ -180,7 +161,7 @@ const Step2: React.FC<StepProps> = ({ formData, onInputChange }) => {
           <input
             type="number"
             name="lot_size"
-            value={formData.lot_size}
+            value={formData.lot_size || ''}
             onChange={onInputChange}
             required
             min="1"

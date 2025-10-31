@@ -17,7 +17,7 @@ export function createBuyConfirmationEmailTemplate(
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Order Acknowledgement - Invest App</title>
+      <title>Order Acknowledgement - AltStock</title>
       <style>
         body {
           margin: 0;
@@ -160,7 +160,7 @@ export function createBuyConfirmationEmailTemplate(
     <body>
       <div class="container">
         <div class="header">
-          <h1>Invest App</h1>
+          <h1>AltStock</h1>
         </div>
 
         <div class="content">
@@ -184,7 +184,7 @@ export function createBuyConfirmationEmailTemplate(
 
           <div class="support-section">
             <p class="support-text">
-              If you have any questions in the meantime, feel free to reach out to us at [support@investapp.com].
+              If you have any questions in the meantime, feel free to reach out to us at [support@altstock.com].
             </p>
           </div>
 
@@ -193,13 +193,13 @@ export function createBuyConfirmationEmailTemplate(
           <div class="signature">
             <div class="signature-line">[John Doe]</div>
             <div class="signature-line">[CEO]</div>
-            <div class="signature-line">[Invest App]</div>
+            <div class="signature-line">[AltStock]</div>
           </div>
 
           <div class="footer">
             <p>
-              Thank you for using Invest App!<br>
-              © 2025 InvestApp. All rights reserved.
+              Thank you for using AltStock!<br>
+              © 2025 AltStock. All rights reserved.
             </p>
           </div>
         </div>
@@ -224,7 +224,7 @@ export function createSellConfirmationEmailTemplate(
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Sell Confirmation - Invest App</title>
+        <title>Sell Confirmation - AltStock</title>
         <style>
             body {
                 margin: 0;
@@ -398,7 +398,7 @@ export function createSellConfirmationEmailTemplate(
     <body>
         <div class="container">
             <div class="header">
-                <h1>Invest App</h1>
+                <h1>AltStock</h1>
             </div>
             
             <div class="content">
@@ -443,8 +443,8 @@ export function createSellConfirmationEmailTemplate(
                 
                 <div class="footer">
                     <p>
-                        Thank you for using Invest App!<br>
-                        © 2025 InvestApp. All rights reserved.
+                        Thank you for using AltStock!<br>
+                        © 2025 AltStock. All rights reserved.
                     </p>
                 </div>
             </div>
@@ -594,14 +594,14 @@ export function createOTPEmailTemplate(email: string, otpCode: string): string {
     <body>
         <div class="container">
             <div class="header">
-                <h1>Invest App</h1>
+                <h1>AltStock</h1>
             </div>
             
             <div class="content">
                 <h1 class="main-heading">Verify your email address</h1>
                 
                 <p class="intro-text">
-                    Thanks for starting the new InvestApp account creation process. We want to make sure it's really you. Please enter the following verification code when prompted. If you don't want to create an account, you can ignore this message.
+                    Thanks for starting the new AltStock account creation process. We want to make sure it's really you. Please enter the following verification code when prompted. If you don't want to create an account, you can ignore this message.
                 </p>
                 
                 <div class="verification-section">
@@ -613,7 +613,7 @@ export function createOTPEmailTemplate(email: string, otpCode: string): string {
                 <div class="footer">
                     <p>
                         If you didn't request this verification, please ignore this email.<br>
-                        © 2025 InvestApp. All rights reserved.
+                        © 2025 AltStock. All rights reserved.
                     </p>
                 </div>
             </div>
@@ -638,7 +638,7 @@ export function createSuperAdminNotificationTemplate(
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>New Stock Purchase - Invest App</title>
+        <title>New Stock Purchase - AltStock</title>
         <style>
             body {
                 margin: 0;
@@ -806,7 +806,7 @@ export function createSuperAdminNotificationTemplate(
     <body>
         <div class="container">
             <div class="header">
-                <h1>Invest App</h1>
+                <h1>AltStock</h1>
             </div>
             
             <div class="content">
@@ -856,7 +856,7 @@ export function createSuperAdminNotificationTemplate(
                 
                 <div class="footer">
                     <p>
-                        This is an automated notification from Invest App.<br>
+                        This is an automated notification from AltStock.<br>
                         Please log into the admin panel to view more details and manage this transaction.
                     </p>
                 </div>

@@ -15,8 +15,8 @@ const validateAllSteps = (formData: StockData): boolean => {
     formData.headquarters.trim() !== '' &&
     // Note: icon validation removed for editing - existing stocks may not need new icon upload
     // Step 2: Financial Details
-    formData.valuation_id && 
-    formData.valuation_id > 0 &&
+    formData.valuation && 
+    formData.valuation.trim() !== '' &&
     formData.price_change !== null && 
     formData.price_change !== undefined &&
     formData.price_change_period_id &&
@@ -32,7 +32,6 @@ const validateAllSteps = (formData: StockData): boolean => {
     // Step 3: Content & Description
     formData.teaser && formData.teaser.trim() !== '' &&
     formData.short_description && formData.short_description.trim() !== '' &&
-    formData.analysis && formData.analysis.trim() !== '' &&
     // Step 4: Display Settings & Tags
     formData.demand && 
     formData.homeDisplay && 
@@ -55,8 +54,8 @@ export const validateStepForEdit = (step: number, formData: StockData): boolean 
       );
     case 2: // Financial Details
       return !!(
-        formData.valuation_id && 
-        formData.valuation_id > 0 &&
+        formData.valuation && 
+        formData.valuation.trim() !== '' &&
         formData.price_change !== null && 
         formData.price_change !== undefined &&
         formData.price_change_period_id &&
@@ -73,8 +72,7 @@ export const validateStepForEdit = (step: number, formData: StockData): boolean 
     case 3: // Content & Description
       return !!(
         formData.teaser && formData.teaser.trim() !== '' &&
-        formData.short_description && formData.short_description.trim() !== '' &&
-        formData.analysis && formData.analysis.trim() !== ''
+        formData.short_description && formData.short_description.trim() !== ''
       );
     case 4: // Display Settings & Tags
       return !!(
@@ -107,8 +105,8 @@ export const validateStep = (step: number, formData: StockData): boolean => {
       );
     case 2: // Financial Details
       return !!(
-        formData.valuation_id && 
-        formData.valuation_id > 0 &&
+        formData.valuation && 
+        formData.valuation.trim() !== '' &&
         formData.price_change !== null && 
         formData.price_change !== undefined &&
         formData.price_change_period_id &&
@@ -125,8 +123,7 @@ export const validateStep = (step: number, formData: StockData): boolean => {
     case 3: // Content & Description
       return !!(
         formData.teaser && formData.teaser.trim() !== '' &&
-        formData.short_description && formData.short_description.trim() !== '' &&
-        formData.analysis && formData.analysis.trim() !== ''
+        formData.short_description && formData.short_description.trim() !== ''
       );
     case 4: // Display Settings & Tags
       return !!(

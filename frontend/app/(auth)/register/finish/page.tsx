@@ -15,7 +15,7 @@ export default function Page() {
         {/* LEFT PANEL */}
         <aside className="hidden lg:flex lg:col-span-4 h-full flex-col bg-themeTeal text-themeTealWhite px-6 md:px-10 pt-6 md:pt-10">
           <div className="flex items-center gap-3">
-            <Image src="/images/logo-white.svg" alt="Invest App" width={197} height={36} />
+            <Image src="/images/logo-white.svg" alt="AltStock" width={197} height={36} />
           </div>
 
           <ul className="mt-10 md:mt-12 space-y-8 md:space-y-10">
@@ -47,7 +47,7 @@ export default function Page() {
                   <Video className="h-5 w-5 text-themeTeal" />
                 </span>
                 <div>
-                  <p className="font-semibold">Welcome to Invest App</p>
+                  <p className="font-semibold">Welcome to AltStock</p>
                   <p className="text-sm">Watch intro video and create your profile</p>
                 </div>
               </Link>
@@ -79,7 +79,7 @@ export default function Page() {
             </div>
             <div className="max-w-full sm:max-w-xl md:max-w-2xl mx-auto">
               <div className="text-center">
-                <Heading as="h2" className="mb-2 text-3xl sm:text-4xl">Welcome to Invest App</Heading>
+                <Heading as="h2" className="mb-2 text-3xl sm:text-4xl">Welcome to AltStock</Heading>
                 <p className="text-sm text-themeTealLighter">Watch the intro video and create your profile</p>
               </div>
 
@@ -87,7 +87,7 @@ export default function Page() {
               <div className="mt-5 sm:mt-8 rounded-lg sm:rounded-xl bg-neutral-100 border border-neutral-200 overflow-hidden">
                 <div className="aspect-video w-full grid place-items-center">
                   {/* Placeholder with logo. Replace with your real video/iframe below. */}
-                  <Image src="/images/logo.svg" alt="InvestApp" width={220} height={44} />
+                  <Image src="/images/logo.svg" alt="AltStock" width={220} height={44} />
                 </div>
               </div>
             </div>
@@ -111,7 +111,7 @@ export default function Page() {
                     <iframe
                       className="w-full h-full"
                       src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0"
-                      title="InvestApp Intro"
+                      title="AltStock Intro"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />

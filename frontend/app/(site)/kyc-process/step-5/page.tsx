@@ -23,8 +23,14 @@ export default function KYCStep5Demat() {
     { type: formData.demat_type as Demat["type"] || "", id: formData.demat_account_id }
   ]);
   const [dematFile, setDematFile] = useState<File | null>(formData.demat_file);
+  const [existingDematFile, setExistingDematFile] = useState<string | null>(formData.existing_demat_file);
   const [fileError, setFileError] = useState<string>("");
   const MAX_ROWS = 5;
+
+  // Update existing file when formData changes
+  useEffect(() => {
+    setExistingDematFile(formData.existing_demat_file);
+  }, [formData.existing_demat_file]);
 
   // Update context when form data changes
   useEffect(() => {
@@ -39,7 +45,8 @@ export default function KYCStep5Demat() {
 
   const idOk = (v: string) => /^[A-Za-z0-9]{8,16}$/.test(v.trim());
   const rowValid = (r: Demat) => !!r.type && idOk(r.id);
-  const fileValid = !!dematFile && dematFile.size <= 5 * 1024 * 1024;
+  // File is valid if either new file is uploaded OR existing file exists
+  const fileValid = (dematFile && dematFile.size <= 5 * 1024 * 1024) || !!existingDematFile;
   const allValid = rows.length > 0 && rows.every(rowValid) && fileValid;
 
   // File upload handler
@@ -66,6 +73,11 @@ export default function KYCStep5Demat() {
     }
 
     setDematFile(file);
+    // Clear existing file when new file is uploaded
+    if (existingDematFile) {
+      setExistingDematFile(null);
+      updateFormData({ existing_demat_file: null });
+    }
   };
 
   const addRow = () => setRows((r) => (r.length >= MAX_ROWS ? r : [...r, { type: "", id: "" }]));
@@ -257,6 +269,35 @@ export default function KYCStep5Demat() {
                       Remove file
                     </button>
                   </div>
+                ) : existingDematFile ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="flex items-center gap-2 text-themeTeal">
+                      <CheckCircle2 className="h-5 w-5 text-emerald-600" />
+                      <span className="text-sm font-medium">Previously uploaded file</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <a
+                        href={existingDematFile}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        View existing file
+                      </a>
+                      <span className="text-xs text-themeTealLighter">or</span>
+                      <button
+                        type="button"
+                        className="text-xs text-themeSkyBlue underline hover:text-themeTeal"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          document.getElementById('dematFileInput')?.click();
+                        }}
+                      >
+                        Upload new file
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <div className="flex flex-col items-center gap-3">
                     <div className="mx-auto mb-3 grid h-10 w-10 place-items-center rounded-full bg-themeTealWhite text-themeTeal">
@@ -282,10 +323,10 @@ export default function KYCStep5Demat() {
                 )}
               </div>
 
-              {dematFile && (
+              {(dematFile || existingDematFile) && (
                 <p className="text-xs text-emerald-700 flex items-center gap-1">
                   <CheckCircle2 className="h-3 w-3" />
-                  Demat document uploaded successfully.
+                  {dematFile ? 'New Demat document uploaded successfully.' : 'Existing Demat document found.'}
                 </p>
               )}
             </div>

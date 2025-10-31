@@ -209,7 +209,7 @@ const DEMO_ITEMS: NewsItem[] = [
   },
   {
     id: 3,
-    title: "Invest App Tracker: March 2025 update",
+    title: "AltStock Tracker: March 2025 update",
     date: "Mar 13, 2025",
     href: "#",
     imgSrc: "/images/news3.webp",

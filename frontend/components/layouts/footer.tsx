@@ -131,7 +131,7 @@ export default function Footer() {
         <div className="my-8 h-px w-full bg-white/20" />
 
         <div className="md:flex justify-between">
-          <p className="md:mb-6 text-sm">&copy; Copyright Invest App, 2025. All rights reserved.</p>
+          <p className="md:mb-6 text-sm">&copy; Copyright AltStock, 2025. All rights reserved.</p>
           <p className="mb-6 text-sm">Developed by <Link href='https://www.crossatlanticsoftware.com/' target="_blank" className="transition duration-500 hover:text-themeTealLighter">Cross Atlantic Software</Link></p>
         </div>
 
@@ -143,11 +143,11 @@ export default function Footer() {
             swaps or other investments.
           </p>
           <p className="text-xs">
-            This does not constitute an offer by Invest App to sell, or a solicitation of an offer to buy, any securities
+            This does not constitute an offer by AltStock to sell, or a solicitation of an offer to buy, any securities
             and may not be used or relied upon in connection with any offer or sale of securities. An offer or solicitation
             can be made only through the delivery of final offering document(s) and purchase agreement(s), and will be
             subject to the terms and conditions and risks delivered in such documents. Any securities offered are offered
-            through Invest App, member FINRA/SIPC.
+            through AltStock, member FINRA/SIPC.
           </p>
         </div>
       </div>

@@ -133,7 +133,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <Link href="/admin/dashboard" className="flex items-center">
               <Image
                 src="/images/logo.svg"
-                alt="InvestApp Logo"
+                alt="AltStock Logo"
                 width={110}
                 height={32}
                 priority
@@ -195,7 +195,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className="flex items-center justify-between h-16 px-4 bg-themeTeal">
               <Image
                 src="/images/logo-white.svg"
-                alt="InvestApp Logo"
+                alt="AltStock Logo"
                 width={120}
                 height={35}
                 priority
@@ -308,7 +308,7 @@ function Sidebar({
       <div className="hidden lg:flex items-center justify-center h-16 px-4 bg-themeTeal">
               <Image
                 src="/images/logo.svg"
-                alt="InvestApp Logo"
+                alt="AltStock Logo"
                 width={120}
                 height={35}
                 priority
