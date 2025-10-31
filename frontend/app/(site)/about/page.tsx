@@ -128,11 +128,11 @@ export default function About() {
 
         <div className="py-16 text-center">
             <div className="max-w-3xl mx-auto text-center mb-10">
-                <Heading as="h3" className="mb-3">Life at Invest App</Heading>
+                <Heading as="h3" className="mb-3">Life at AltStock</Heading>
                 <p className="text-themeTealLight">Explore a dynamic range of top-performing unlisted stocks-from high-growth startups to established private giants. These are the companies shaping the future-now just a click away.</p>
             </div>
             <GalleryCarousel images={IMAGES}/>
-            <Button text="See All Open Positions At Invest App" color="themeTeal" variant="solid" size="md" href='/' className="mt-10" />
+            <Button text="See All Open Positions At AltStock" color="themeTeal" variant="solid" size="md" href='/' className="mt-10" />
         </div>
       </section>
     </>

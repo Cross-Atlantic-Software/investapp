@@ -37,6 +37,7 @@ interface KYCContextType {
   formData: KYCFormData;
   updateFormData: (updates: Partial<KYCFormData>) => void;
   resetFormData: () => void;
+  loadExistingKYC: () => Promise<void>;
   submitKYC: () => Promise<{ success: boolean; message: string }>;
   isSubmitting: boolean;
   completedSteps: Set<number>;
@@ -90,6 +91,56 @@ export const KYCProvider: React.FC<KYCProviderProps> = ({ children }) => {
   const resetFormData = useCallback(() => {
     setFormData(initialFormData);
     setCompletedSteps(new Set());
+  }, []);
+
+  const loadExistingKYC = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      if (!token) {
+        console.log('KYC Context: No token found for loading existing KYC');
+        return;
+      }
+
+      const response = await fetch('/api/auth/kyc/my', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'token': token,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.data?.kycApplication) {
+          const kyc = data.data.kycApplication;
+          
+          // Populate form data from existing KYC
+          setFormData({
+            pan_number: kyc.pan_number || '',
+            name_pan: kyc.name_pan || '',
+            dob: kyc.dob ? new Date(kyc.dob).toISOString().split('T')[0] : '',
+            father_name: kyc.father_name || '',
+            residency_status: kyc.residency_status || 'Indian',
+            pan_file: null, // Files need to be re-uploaded
+            aadhar_number: kyc.aadhar_number || '',
+            aadhar_file: null,
+            account_number: kyc.account_number || '',
+            ifsc_code: kyc.ifsc_code || '',
+            bank_proof_file: null,
+            demat_type: kyc.demat_type || '',
+            demat_account_id: kyc.demat_account_id || '',
+            demat_file: null,
+            video_kyc_completed: false,
+            signature_file: null,
+            esign_completed: false,
+          });
+          
+          // Mark all steps as completed since we're editing
+          setCompletedSteps(new Set([1, 2, 3, 4, 5, 7]));
+        }
+      }
+    } catch (error) {
+      console.error('KYC Context: Error loading existing KYC:', error);
+    }
   }, []);
 
   const markStepCompleted = useCallback((step: number) => {
@@ -202,6 +253,7 @@ export const KYCProvider: React.FC<KYCProviderProps> = ({ children }) => {
     formData,
     updateFormData,
     resetFormData,
+    loadExistingKYC,
     submitKYC,
     isSubmitting,
     completedSteps,

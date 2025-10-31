@@ -1169,7 +1169,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       formData.append('demand', stockData.demand || '');
       formData.append('homeDisplay', stockData.homeDisplay || '');
       formData.append('bannerDisplay', stockData.bannerDisplay || '');
-      formData.append('valuation_id', stockData.valuation_id?.toString() || '');
+      // Send free-text valuation instead of valuation_id
+      if (stockData.valuation && stockData.valuation.trim() !== '') {
+        formData.append('valuation', stockData.valuation.trim());
+      } else {
+        // ensure valuation_id is not sent when using free-text valuation
+        formData.append('valuation_id', '');
+      }
       formData.append('price_per_share', stockData.price_per_share?.toString() || '');
       formData.append('price_change', stockData.price_change?.toString() || '');
       formData.append('price_change_period_id', stockData.price_change_period_id?.toString() || '');

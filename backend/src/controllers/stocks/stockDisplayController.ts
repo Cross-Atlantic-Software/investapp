@@ -27,22 +27,66 @@ export class StockDisplayController {
       const usedThemeIds = new Set<number>();
       const usedStockMasterIds = new Set<number>();
       
+      // Load valuation ranges to map numeric valuations to configured ranges
+      const ranges = await db.ValuationRange.findAll({
+        attributes: ['value', 'min_value', 'max_value']
+      });
+
       stocks.forEach((stock: any) => {
         // Valuation
-        if (stock.valuation && stock.valuation.trim() !== '') {
-          // Extract numeric value and map to range
-          const numericMatch = stock.valuation.match(/[\d,]+/);
+        if (stock.valuation !== undefined && stock.valuation !== null && String(stock.valuation).toString().trim() !== '') {
+          // Extract numeric value
+          const valStr = String(stock.valuation);
+          const numericMatch = valStr.match(/[\d,]+/);
           if (numericMatch) {
             const numericValue = parseFloat(numericMatch[0].replace(/,/g, ''));
-            // Map to appropriate range
-            if (numericValue < 1000) {
-              usedValuations.add('below-1000');
-            } else if (numericValue < 2500) {
-              usedValuations.add('1000-2500');
-            } else if (numericValue < 5000) {
-              usedValuations.add('2500-5000');
+            // Find matching configured range (prefer DB config over hardcoded buckets)
+            const candidateMatches: { value: string; min: number | null; max: number | null; width: number }[] = [];
+            for (const r of ranges as any[]) {
+              let min = r.min_value != null ? Number(r.min_value) : null;
+              let max = r.max_value != null ? Number(r.max_value) : null;
+              // If DB min/max missing, derive from value string
+              if (min == null && max == null && typeof r.value === 'string') {
+                const val = r.value.toLowerCase().replace(/₹/g, '').replace(/cr\.?/g, '').replace(/\s+/g, ' ').trim();
+                const rangeMatch = val.match(/^(\d+(?:\.\d+)?)\s*[-_]\s*(\d+(?:\.\d+)?)$/);
+                const belowMatch = val.match(/^below\s*[-_]?\s*(\d+(?:\.\d+)?)$/);
+                const plusMatch = val.match(/^(\d+(?:\.\d+)?)\s*(?:[-_]?\s*)?(?:plus|\+)$/);
+                if (rangeMatch) {
+                  min = parseFloat(rangeMatch[1]);
+                  max = parseFloat(rangeMatch[2]);
+                } else if (belowMatch) {
+                  min = 0;
+                  max = parseFloat(belowMatch[1]);
+                } else if (plusMatch) {
+                  min = parseFloat(plusMatch[1]);
+                  max = 999999999;
+                }
+              }
+              if (min == null && max == null) continue;
+              const inClosed = min != null && max != null && numericValue >= min && numericValue <= max;
+              const inBelowOnly = min == null && max != null && numericValue <= max;
+              const inPlusOnly = min != null && max == null && numericValue >= min;
+              if (inClosed || inBelowOnly || inPlusOnly) {
+                const width = (min != null && max != null) ? (max - min) : Number.POSITIVE_INFINITY;
+                candidateMatches.push({ value: r.value, min, max, width });
+              }
+            }
+            if (candidateMatches.length > 0) {
+              // Prefer the most specific closed interval (smallest width); tie-breaker by width then by value string
+              const best = candidateMatches
+                .sort((a, b) => {
+                  const aw = a.width;
+                  const bw = b.width;
+                  if (aw === bw) return a.value.localeCompare(b.value);
+                  return aw - bw;
+                })[0];
+              usedValuations.add(best.value);
             } else {
-              usedValuations.add('5000-plus');
+              // Fallback to legacy buckets if nothing matched
+              if (numericValue < 1000) usedValuations.add('below-1000');
+              else if (numericValue < 2500) usedValuations.add('1000-2500');
+              else if (numericValue < 5000) usedValuations.add('2500-5000');
+              else usedValuations.add('5000-plus');
             }
           }
         }

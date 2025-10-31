@@ -65,7 +65,7 @@ function Step4Content() {
         {/* LEFT PANEL */}
         <aside className="hidden lg:flex lg:col-span-4 h-full flex-col bg-themeTeal text-themeTealWhite px-6 md:px-10 pt-6 md:pt-10">
           <div className="flex items-center gap-3">
-            <Image src="/images/logo-white.svg" alt="Invest App" width={197} height={36} />
+            <Image src="/images/logo-white.svg" alt="AltStock" width={197} height={36} />
           </div>
 
           <ul className="mt-10 md:mt-12 space-y-8 md:space-y-10">

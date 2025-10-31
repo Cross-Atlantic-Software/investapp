@@ -65,7 +65,7 @@ export class ForgotPasswordService {
           // Fallback email
           await sendMail(
             user.email, 
-            "Password Reset Request - Invest App",
+            "Password Reset Request - AltStock",
             `Hello ${user.first_name || user.email.split('@')[0]},\n\nClick the link below to reset your password:\n${resetLink}\n\nThis link will expire in 30 minutes.\n\nIf you didn't request this password reset, please ignore this email.`
           );
           console.log(`Password reset email sent to: ${user.email} (fallback template)`);

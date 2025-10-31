@@ -88,7 +88,7 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
     isStepCompleted,
     nextStep,
     prevStep,
-    goToStep,
+    setCurrentStep,
   } = useStepNavigation(totalSteps);
 
   // Validation function with current formData
@@ -220,8 +220,9 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
 
   // Navigation handlers
   const handleGoToStep = useCallback((step: number) => {
-    goToStep(step, validateCurrentStep);
-  }, [goToStep, validateCurrentStep]);
+    // In edit mode, allow direct navigation to any step
+    if (step >= 1 && step <= totalSteps) setCurrentStep(step);
+  }, [setCurrentStep]);
 
   const handleNextStep = useCallback(() => {
     nextStep(validateCurrentStep);
@@ -315,6 +316,7 @@ const EditStockModal: React.FC<EditStockModalProps> = ({ stock, onClose, onSubmi
           isStepCompleted={isStepCompleted}
           validateStep={validateCurrentStep}
           goToStep={handleGoToStep}
+          isEditMode={true}
         />
 
         {/* Modal Body */}

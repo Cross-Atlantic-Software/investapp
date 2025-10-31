@@ -48,7 +48,13 @@ export default function ShareIntro(props: ShareIntroProps) {
           <div className="flex items-center justify-between mb-4">
             <header className="flex items-center gap-3">
               <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-md bg-white overflow-hidden grid place-items-center">
-                <Image src={logoUrl} alt={`${company} logo`} width={64} height={64} className="h-full w-full object-contain" />
+                {logoUrl && logoUrl.trim() !== '' ? (
+                  <Image src={logoUrl} alt={`${company} logo`} width={64} height={64} className="h-full w-full object-contain" />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center bg-gray-100 text-gray-400 text-lg font-semibold">
+                    {company.charAt(0).toUpperCase()}
+                  </div>
+                )}
               </div>
               <Heading as="h4" className="text-themeTeal font-semibold">{company}</Heading>
             </header>
@@ -85,7 +91,7 @@ export default function ShareIntro(props: ShareIntroProps) {
             {valuation && (
               <Kpi
                 label="Valuation (in Cr)"
-                value={valuation}
+                value={`₹ ${valuation} Cr`}
               />
             )}
             <Kpi

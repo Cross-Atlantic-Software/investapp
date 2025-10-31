@@ -49,7 +49,7 @@ export class RegisterService {
         console.log(`✅ Email verification sent to ${newUser.email} using database template`);
       } else {
         // Fallback if template not found
-        let mailSubject = "Verification - Invest App";
+        let mailSubject = "Verification - AltStock";
         await sendMail(newUser.email, mailSubject, `Your verification code is: ${emailToken}`);
         console.log(`⚠️ Email verification sent to ${newUser.email} using fallback template`);
       }

@@ -119,7 +119,7 @@ export default function PaymentModePage() {
           <div className="flex items-center justify-between p-4">
             <div>
               <div className="text-sm text-themeTeal mb-1"><span className="font-medium">Order ID:</span> {ORDER_ID}</div>
-              <div className="text-xs text-themeTealLighter">Invest APP Share Purchase</div>
+              <div className="text-xs text-themeTealLighter">AltStock Share Purchase</div>
             </div>
             <div className="text-emerald-700 font-semibold text-lg">
               {fmt.format(ORDER_VALUE)}

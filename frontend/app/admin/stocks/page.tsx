@@ -18,6 +18,7 @@ import PriceChangePeriodManagement from '@/components/admin/PriceChangePeriodMan
 import ValuationManagement from '@/components/admin/ValuationManagement';
 import ThemeManagement from '@/components/admin/ThemeManagement';
 import ManageDropdown from '@/components/admin/ManageDropdown';
+import DraftsModal from '@/components/admin/stocks/DraftsModal';
 
 export default function StocksPage() {
   const [stocks, setStocks] = useState([]);
@@ -34,6 +35,7 @@ export default function StocksPage() {
   const [showValuationModal, setShowValuationModal] = useState(false);
   const [showThemeModal, setShowThemeModal] = useState(false);
   const [showMethodologyModal, setShowMethodologyModal] = useState(false);
+  const [showDraftsModal, setShowDraftsModal] = useState(false);
   const [currentUserRole, setCurrentUserRole] = useState<number | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
@@ -511,11 +513,12 @@ export default function StocksPage() {
                 label="Manage Taxonomies & Tags"
                 options={[
                   { label: 'Filing Status & Attractiveness', onClick: () => setShowStockMasterModal(true), icon: Tag },
-                  { label: 'Valuations', onClick: () => setShowValuationModal(true), icon: DollarSign },
+                  { label: 'Valuation Ranges', onClick: () => setShowValuationModal(true), icon: DollarSign },
                   { label: 'Sectors', onClick: () => setShowSectorModal(true), icon: Building2 },
                   { label: 'Price Change Periods', onClick: () => setShowPriceChangePeriodModal(true), icon: Clock },
                   { label: 'Themes', onClick: () => setShowThemeModal(true), icon: Palette },
                   { label: 'Methodology Notes', onClick: () => setShowMethodologyModal(true), icon: FileText },
+                  { label: 'Drafts', onClick: () => setShowDraftsModal(true), icon: FileText },
                 ]}
               />
               {canCreateStocks && (
@@ -641,6 +644,18 @@ export default function StocksPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Drafts Modal */}
+      {showDraftsModal && (
+        <DraftsModal
+          isOpen={showDraftsModal}
+          onClose={() => setShowDraftsModal(false)}
+          onContinue={() => {
+            setShowDraftsModal(false);
+            setShowAddModal(true);
+          }}
+        />
       )}
 
       {/* Theme Management Modal */}

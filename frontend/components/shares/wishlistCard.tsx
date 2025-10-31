@@ -80,11 +80,11 @@ export default function WishlistCard({ stockId, stockName, stockPrice, variant =
           if (result.success) {
             setIsInWishlist(false);
           } else {
-            alert(result.message || 'Failed to remove from wishlist');
+            alert(result.message || 'Failed to remove from Watchlist');
           }
         } else {
           const result = await response.json();
-          alert(result.message || 'Failed to remove from wishlist');
+          alert(result.message || 'Failed to remove from Watchlist');
         }
       } else {
         // Add to wishlist
@@ -101,15 +101,15 @@ export default function WishlistCard({ stockId, stockName, stockPrice, variant =
           if (result.success) {
             setIsInWishlist(true);
           } else {
-            alert(result.message || 'Failed to add to wishlist');
+            alert(result.message || 'Failed to add to Watchlist');
           }
         } else {
           const result = await response.json();
-          alert(result.message || 'Failed to add to wishlist');
+          alert(result.message || 'Failed to add to Watchlist');
         }
       }
     } catch (error) {
-      console.error('Error toggling wishlist:', error);
+      console.error('Error toggling Watchlist:', error);
       alert('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
@@ -128,7 +128,7 @@ export default function WishlistCard({ stockId, stockName, stockPrice, variant =
       <div className={`bg-white rounded-lg border border-gray-200 ${variant === 'horizontal' ? 'p-4' : 'p-6'}`}>
         <div className={`flex items-center justify-center ${variant === 'horizontal' ? 'gap-2' : 'flex-col gap-2'}`}>
           <Loader2 className="w-5 h-5 animate-spin text-themeTeal" />
-          <span className="text-sm text-gray-600">Checking wishlist...</span>
+          <span className="text-sm text-gray-600">Checking Watchlist...</span>
         </div>
       </div>
     );
@@ -139,7 +139,7 @@ export default function WishlistCard({ stockId, stockName, stockPrice, variant =
       <div className="bg-white rounded-lg border border-gray-200 p-4">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <h3 className="text-sm font-semibold text-gray-900">Add to Wishlist</h3>
+            <h3 className="text-sm font-semibold text-gray-900">Add to Watchlist</h3>
             <div className="text-xs text-gray-600">{stockName}</div>
             <div className="text-sm font-semibold text-themeTeal">₹{formatPrice(stockPrice)}</div>
           </div>
@@ -176,7 +176,7 @@ export default function WishlistCard({ stockId, stockName, stockPrice, variant =
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <div className="text-center">
         <div className="mb-3">
-          <h3 className="text-sm font-semibold text-gray-900 mb-1">Add to Wishlist</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">Add to Watchlist</h3>
           <div className="text-xs text-gray-600 mb-1">{stockName}</div>
           <div className="text-sm font-semibold text-themeTeal">₹{formatPrice(stockPrice)}</div>
         </div>
@@ -200,8 +200,8 @@ export default function WishlistCard({ stockId, stockName, stockPrice, variant =
           {isLoading 
             ? 'Processing...' 
             : isInWishlist 
-              ? 'Remove from Wishlist' 
-              : 'Add to Wishlist'
+              ? 'Remove from Watchlist' 
+              : 'Add to Watchlist'
           }
         </button>
         

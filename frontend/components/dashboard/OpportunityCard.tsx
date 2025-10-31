@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, TrendingUp, ArrowUp } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const cardCls = "rounded bg-white p-4 sm:p-6";
 
@@ -11,6 +12,45 @@ function CardHeader({ title, right }: { title: string; right?: React.ReactNode }
     <div className="mb-5 flex items-center justify-between">
       <p className="text-[15px] font-semibold text-themeTeal">{title}</p>
       {right}
+    </div>
+  );
+}
+
+function Logo({ name, src }: { name: string; src: string }) {
+  const [err, setErr] = useState(false);
+  if (err || !src) {
+    return (
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-[10px] font-semibold text-gray-600">
+        {name.slice(0, 3).toUpperCase()}
+      </div>
+    );
+  }
+  
+  // Handle external URLs (like S3 URLs)
+  if (src.startsWith('http')) {
+    return (
+      <div className="h-10 w-10 flex items-center justify-center">
+        <img
+          src={src}
+          alt={`${name} logo`}
+          className="h-8 w-8 object-contain"
+          onError={() => setErr(true)}
+        />
+      </div>
+    );
+  }
+  
+  // Handle local paths
+  return (
+    <div>
+      <Image
+        src={src.startsWith("/") ? src : `/${src.replace(/^\/+/, "")}`}
+        alt={`${name} logo`}
+        width={40}
+        height={40}
+        className="object-contain"
+        onError={() => setErr(true)}
+      />
     </div>
   );
 }
@@ -132,54 +172,44 @@ export default function OpportunityCard() {
       {/* Slider Container */}
       <div className="relative">
         {/* Stock Card */}
-        <div 
-          className="bg-gray-50 rounded-lg p-3 mb-3 min-h-[120px] cursor-pointer hover:bg-gray-100 transition-colors"
+        <article 
+          className="rounded-md border border-themeTealLighter bg-brandGradientGreen p-5 mb-3 cursor-pointer hover:shadow-lg transition-all duration-300"
           onClick={handleStockClick}
         >
-          <div className="flex items-start space-x-3">
-            {/* Logo */}
-            <div className="flex-shrink-0">
-              <img 
-                src={currentStock.logo || '/images/placeholder-stock.webp'} 
-                alt={currentStock.company_name}
-                className="w-12 h-12 rounded-lg object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/images/placeholder-stock.webp';
-                }}
-              />
-            </div>
-            
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-themeTeal mb-1">
-                {currentStock.company_name}
-              </h4>
-              
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-themeTealLighter">Price:</span>
-                  <span className="text-xs font-medium text-themeTeal">
-                    {formatCurrency(currentStock.price_per_share)}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-themeTealLighter">Change:</span>
-                  <span className={`text-xs font-medium ${(typeof currentStock.percentage_change === 'string' ? parseFloat(currentStock.percentage_change) : currentStock.percentage_change) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatPercentage(currentStock.percentage_change)}
-                  </span>
-                </div>
-                
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-themeTealLighter">Demand:</span>
-                  <span className={`text-xs font-medium ${getDemandColor(currentStock.demand)}`}>
-                    {currentStock.demand}
-                  </span>
-                </div>
-              </div>
+          {/* Top */}
+          <div className="mb-5 flex items-center gap-3">
+            <Logo name={currentStock.company_name} src={currentStock.logo || ''} />
+            <div className="font-semibold text-themeTeal transition duration-500 hover:text-themeSkyBlue">
+              {currentStock.company_name}
             </div>
           </div>
-        </div>
+
+          {/* Metrics */}
+          <div className="grid grid-cols-2 gap-x-8 gap-y-3 text-left text-sm">
+            <div>
+              <p className="text-themeTealLighter">₹ Change</p>
+              <p className="flex items-center gap-1 font-semibold text-green-800">
+                {formatCurrency(currentStock.price_change)} <TrendingUp className="h-3.5 w-3.5" />
+              </p>
+            </div>
+            <div>
+              <p className="text-themeTealLighter">% Change</p>
+              <p className="font-semibold text-green-800 flex gap-1 items-center">
+                {formatPercentage(currentStock.percentage_change)} <ArrowUp size={16} />
+              </p>
+            </div>
+            <div>
+              <p className="text-themeTealLighter">Price Per Share</p>
+              <p className="font-semibold text-themeTeal">{formatCurrency(currentStock.price_per_share)}</p>
+            </div>
+            <div>
+              <p className="text-themeTealLighter">Demand</p>
+              <p className={`font-semibold ${getDemandColor(currentStock.demand)}`}>
+                {currentStock.demand}
+              </p>
+            </div>
+          </div>
+        </article>
 
         {/* Navigation Controls */}
         {stocks.length > 1 && (

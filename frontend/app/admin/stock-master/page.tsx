@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Plus, Search } from 'lucide-react';
-import { Loader, NotificationContainer, NotificationData, ConfirmationModal, createSortHandler } from '@/components/admin/shared';
+import { NotificationContainer, NotificationData, ConfirmationModal, createSortHandler } from '@/components/admin/shared';
 import { 
   StockMasterFormModal, 
   StockMasterTable,

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Phone, Edit3, Save, X } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { User, Mail, Phone, Edit3, Save, X, FileCheck } from 'lucide-react';
 
 interface UserData {
   id: number;
@@ -18,6 +19,7 @@ interface UserData {
 }
 
 export default function Settings() {
+  const router = useRouter();
   const [userData, setUserData] = useState<UserData | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
@@ -124,6 +126,11 @@ export default function Settings() {
     }));
   };
 
+  const handleKYC = () => {
+    // Navigate to KYC process - it will load existing data automatically
+    router.push('/kyc-process/step-1');
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 py-8">
@@ -178,13 +185,22 @@ export default function Settings() {
                 </div>
               </div>
               {!editing && (
-                <button
-                  onClick={handleEdit}
-                  className="flex items-center space-x-2 px-4 py-2 bg-themeTeal text-white rounded-lg hover:bg-themeTealDark transition-colors duration-200"
-                >
-                  <Edit3 className="h-4 w-4" />
-                  <span>Edit Profile</span>
-                </button>
+                <div className="flex items-center space-x-3">
+                  <button
+                    onClick={handleKYC}
+                    className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    <FileCheck className="h-4 w-4" />
+                    <span>KYC</span>
+                  </button>
+                  <button
+                    onClick={handleEdit}
+                    className="flex items-center space-x-2 px-4 py-2 bg-themeTeal text-white rounded-lg hover:bg-themeTealDark transition-colors duration-200"
+                  >
+                    <Edit3 className="h-4 w-4" />
+                    <span>Edit Profile</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>

@@ -8,10 +8,20 @@ export class UserPortfolioController {
     try {
       await db.sequelizePromise;
       
-      // Get the portfolio with the highest percentage change
+      // Get user ID from JWT token
+      const userId = (req as any).user?.user_id;
+      
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          message: 'User not authenticated'
+        });
+      }
+      
+      // Get the portfolio for the authenticated user
       const portfolio = await db.UserPortfolio.findOne({
         where: {
-          total_investment: { [Op.gt]: 0 } // Has investment
+          user_id: userId
         },
         include: [
           {
@@ -20,7 +30,7 @@ export class UserPortfolioController {
             attributes: ['id', 'first_name', 'last_name', 'email']
           }
         ],
-        order: [['percentage_change', 'DESC'], ['updated_at', 'DESC']]
+        order: [['updated_at', 'DESC']]
       });
 
       if (!portfolio) {

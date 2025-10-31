@@ -8,6 +8,39 @@ export class ValuationRangeController {
     await db.sequelizePromise;
   }
 
+  private static parseRange(valueRaw: string): { min: number | null; max: number | null } {
+    const value = (valueRaw || '').toString().trim().toLowerCase();
+    // normalize: remove currency text, keep hyphen/underscore, allow spaces around tokens
+    const cleaned = value
+      .replace(/₹/g, '')
+      .replace(/cr\.?/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // pattern: "below-1000"
+    const belowMatch = cleaned.match(/^below\s*[-_]?\s*(\d+(?:\.\d+)?)$/);
+    if (belowMatch) {
+      return { min: 0, max: parseFloat(belowMatch[1]) };
+    }
+
+    // pattern: "5000-plus" or "5000+"
+    const plusMatch = cleaned.match(/^(\d+(?:\.\d+)?)\s*(?:[-_]?\s*)?(?:plus|\+)$/);
+    if (plusMatch) {
+      return { min: parseFloat(plusMatch[1]), max: 999999999 }; // large cap for open-ended upper bound
+    }
+
+    // pattern: "1000-2500"
+    const rangeMatch = cleaned.match(/^(\d+(?:\.\d+)?)\s*[-_]\s*(\d+(?:\.\d+)?)$/);
+    if (rangeMatch) {
+      const min = parseFloat(rangeMatch[1]);
+      const max = parseFloat(rangeMatch[2]);
+      return { min, max };
+    }
+
+    // fallback: unable to parse
+    return { min: null, max: null };
+  }
+
   static async getAllValuationRanges(req: Request, res: Response) {
     try {
       const controller = new ValuationRangeController();
@@ -116,10 +149,24 @@ export class ValuationRangeController {
         });
       }
 
+      const { min, max } = ValuationRangeController.parseRange(value);
+
+      // determine sort order: default to last sort_order + 1 if not provided or <= 0
+      let resolvedSortOrder: number = 0;
+      const parsedSort = Number(sort_order);
+      if (Number.isFinite(parsedSort) && parsedSort > 0) {
+        resolvedSortOrder = parsedSort;
+      } else {
+        const maxSort = (await db.ValuationRange.max('sort_order')) as number | null;
+        resolvedSortOrder = (maxSort ?? 0) + 1;
+      }
+
       const valuationRange = await db.ValuationRange.create({
         name: name.trim(),
         value: value.trim(),
-        sort_order: sort_order || 0
+        min_value: min === null ? undefined : min,
+        max_value: max === null ? undefined : max,
+        sort_order: resolvedSortOrder
       });
 
       res.status(HttpStatusCode.CREATED).json({
@@ -127,8 +174,14 @@ export class ValuationRangeController {
         message: 'Valuation range created successfully',
         data: { valuationRange }
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating valuation range:', error);
+      if (error?.name === 'SequelizeUniqueConstraintError') {
+        return res.status(HttpStatusCode.CONFLICT).json({
+          success: false,
+          message: 'Valuation range with this value already exists'
+        });
+      }
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
         success: false,
         message: 'Failed to create valuation range',
@@ -176,9 +229,13 @@ export class ValuationRangeController {
         });
       }
 
+      const { min, max } = ValuationRangeController.parseRange(value);
+
       await valuationRange.update({
         name: name.trim(),
         value: value.trim(),
+        min_value: min === null ? undefined : min,
+        max_value: max === null ? undefined : max,
         sort_order: sort_order || 0
       });
 

@@ -162,7 +162,7 @@ function FaqItem({ q, a, defaultOpen = false }: QA) {
 /* demo content */
 const DEFAULT_QA: QA[] = [
   {
-    q: "How are Invest App prices calculated?",
+    q: "How are AltStock prices calculated?",
     a: "They reflect recent matched trades and indicative quotes from verified counterparties.",
   },
   {

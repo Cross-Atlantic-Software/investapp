@@ -521,7 +521,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       demand,
       homeDisplay,
       bannerDisplay,
-      valuation_id,
+      valuation,
       price_per_share,
       percentage_change,
       founded,
@@ -535,7 +535,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       price_change_period_id,
     } = req.body;
 
-    console.log("Update Stock - Valuation ID received:", valuation_id);
+    console.log("Update Stock - Valuation received:", valuation);
 
     const stock = await db.Product.findByPk(id);
     if (!stock) {
@@ -576,7 +576,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       demand: demand !== undefined ? demand : stock.demand,
       homeDisplay: homeDisplay !== undefined ? homeDisplay : stock.homeDisplay,
       bannerDisplay: bannerDisplay !== undefined ? bannerDisplay : stock.bannerDisplay,
-      valuation_id: valuation_id !== undefined ? valuation_id : stock.valuation_id,
+      valuation: valuation !== undefined ? valuation : stock.valuation,
       price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,
       percentage_change: percentage_change !== undefined ? percentage_change : stock.percentage_change,
       founded: founded !== undefined ? founded : stock.founded,

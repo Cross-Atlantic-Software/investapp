@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   CheckCircle2, Info, Landmark, CreditCard,
@@ -11,7 +11,12 @@ import { useKYC } from "@/contexts/KYCContext";
 export default function KYCStep1Documents() {
   const [acknowledged, setAcknowledged] = useState(false);
   const router = useRouter();
-  const { markStepCompleted } = useKYC();
+  const { markStepCompleted, loadExistingKYC } = useKYC();
+
+  // Load existing KYC data when component mounts
+  useEffect(() => {
+    loadExistingKYC();
+  }, [loadExistingKYC]);
 
   const handleContinue = () => {
     if (acknowledged) {

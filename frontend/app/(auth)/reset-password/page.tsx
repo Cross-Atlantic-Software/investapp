@@ -74,7 +74,7 @@ function ResetPasswordForm() {
           {/* LEFT PANEL (branding copy) */}
           <aside className="hidden lg:flex lg:col-span-4 h-full flex-col bg-themeTeal text-themeTealWhite px-10 py-10">
             <div className="flex items-center justify-start">
-              <Image src="/images/logo-white.svg" alt="InvestApp" width={180} height={34} />
+              <Image src="/images/logo-white.svg" alt="AltStock" width={180} height={34} />
             </div>
 
             <div className="mt-16 text-left max-w-md">
@@ -138,7 +138,7 @@ function ResetPasswordForm() {
         {/* LEFT PANEL (branding copy) */}
         <aside className="hidden lg:flex lg:col-span-4 h-full flex-col bg-themeTeal text-themeTealWhite px-10 py-10">
           <div className="flex items-center justify-start">
-            <Image src="/images/logo-white.svg" alt="InvestApp" width={180} height={34} />
+            <Image src="/images/logo-white.svg" alt="AltStock" width={180} height={34} />
           </div>
 
           <div className="mt-16 text-left max-w-md">

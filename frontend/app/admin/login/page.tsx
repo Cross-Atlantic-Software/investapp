@@ -67,7 +67,7 @@ export default function AdminLogin() {
           <div className="mx-auto h-16 w-64 bg-themeTeal rounded-lg flex items-center justify-center mb-6 shadow-lg px-4">
             <Image
               src="/images/logo.svg"
-              alt="InvestApp Logo"
+              alt="AltStock Logo"
               width={120}
               height={40}
               className="filter brightness-0 invert"
@@ -172,7 +172,7 @@ export default function AdminLogin() {
           </form>
         </div>
         <div className='text-center'>
-          <Button text='Go back to InvestApp website' color="skyblue" variant="link" size="nospace" className='text-sm gap-0' href='../../' icon={ArrowLeft} iconPosition='left' />
+          <Button text='Go back to AltStock website' color="skyblue" variant="link" size="nospace" className='text-sm gap-0' href='../../' icon={ArrowLeft} iconPosition='left' />
         </div>
       </div>
     </div>

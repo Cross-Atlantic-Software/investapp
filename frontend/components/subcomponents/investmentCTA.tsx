@@ -16,7 +16,7 @@ type Props = {
 
 export default function InvestmentCTA({
   title = "Ready to Access Exclusive Bulk Deals?",
-  description = "Join a growing network of institutional investors and HNIs who trust InvestApp for bulk allocations in high-growth private companies.",
+  description = "Join a growing network of institutional investors and HNIs who trust AltStock for bulk allocations in high-growth private companies.",
   primaryLabel = "Sell Shares",
   primaryHref = "/contact",
   secondaryLabel = "Invest Now",

@@ -38,7 +38,7 @@ export default function RegisterCard({
         </button>
       </form>
 
-      <p className="mt-3 text-sm text-themeTealLighter text-center">By registering, you agree to Invest App&apos;s <Button text='Terms of Use' color="skyblue" variant="link" size="nospacesm" href='/' /> Already registered?  <Button text='Log in' color="skyblue" variant="link" size="nospacesm" href='/' /></p>
+      <p className="mt-3 text-sm text-themeTealLighter text-center">By registering, you agree to AltStock&apos;s <Button text='Terms of Use' color="skyblue" variant="link" size="nospacesm" href='/' /> Already registered?  <Button text='Log in' color="skyblue" variant="link" size="nospacesm" href='/' /></p>
     </aside>
   );
 }

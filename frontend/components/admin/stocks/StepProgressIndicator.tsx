@@ -7,6 +7,7 @@ interface StepProgressIndicatorProps {
   isStepCompleted: (step: number) => boolean;
   validateStep: (step: number) => boolean;
   goToStep: (step: number) => void;
+  isEditMode?: boolean;
 }
 
 const stepTitles = [
@@ -23,6 +24,7 @@ const StepProgressIndicator: React.FC<StepProgressIndicatorProps> = ({
   isStepCompleted,
   validateStep,
   goToStep,
+  isEditMode = false,
 }) => {
   return (
     <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b">
@@ -34,7 +36,7 @@ const StepProgressIndicator: React.FC<StepProgressIndicatorProps> = ({
             const isCurrentStep = stepNumber === currentStep;
             const isCompletedStep = isStepCompleted(stepNumber);
             const isNextStep = stepNumber === currentStep + 1;
-            const isAccessible = isCompletedStep || isCurrentStep || (isNextStep && isStepCompleted(currentStep));
+            const isAccessible = isEditMode ? true : (isCompletedStep || isCurrentStep || (isNextStep && isStepCompleted(currentStep)));
             const isStepValid = validateStep(stepNumber);
             
             return (

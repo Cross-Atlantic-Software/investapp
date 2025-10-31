@@ -39,9 +39,9 @@ export default function Page() {
         sessionStorage.removeItem('authFlow');
         sessionStorage.removeItem('returnAfterAuth');
       } else {
-        // Default redirect to invest page
-        console.log('useEffect: Redirecting to invest page');
-        router.push("/invest");
+        // Default redirect to dashboard
+        console.log('useEffect: Redirecting to dashboard');
+        router.push("/dashboard");
       }
     }
   }, [isAuthenticated, isSubmitting, isGoogleLoading, hasLoggedIn, router]);
@@ -72,9 +72,9 @@ export default function Page() {
         sessionStorage.removeItem('authFlow');
         sessionStorage.removeItem('returnAfterAuth');
       } else {
-        // Default redirect to invest page
-        console.log('Redirecting to invest page');
-        router.push("/invest");
+        // Default redirect to dashboard
+        console.log('Redirecting to dashboard');
+        router.push("/dashboard");
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -248,13 +248,13 @@ export default function Page() {
         {/* RIGHT: teal welcome */}
         <aside className="hidden lg:flex lg:col-span-4 h-full flex-col bg-themeTeal text-themeTealWhite px-10 py-10">
           <div className="flex items-center justify-start">
-            <Image src="/images/logo-white.svg" alt="InvestApp" width={180} height={34} />
+            <Image src="/images/logo-white.svg" alt="AltStock" width={180} height={34} />
           </div>
 
           <div className="mt-16 text-center">
             <Heading as="h2" className="text-themeTealWhite">Welcome Back</Heading>
             <p className="mt-6 max-w-md mx-auto text-themeTealWhite">
-              Invest APP is a platform that provides Unlisted Share trading opportunities for informational purposes only.
+            AltStock is a platform that provides Unlisted Share trading opportunities for informational purposes only.
             </p>
           </div>
 

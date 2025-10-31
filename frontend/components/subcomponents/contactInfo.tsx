@@ -17,7 +17,7 @@ export type ContactInfoProps = {
 export default function ContactInfo({
   heading = "Get in Touch",
   blurb = "If you have any questions, or need help, feel free to reach out to us. We usually respond within 24–48 business hours.",
-  email = "support@investapp.com",
+  email = "support@altstock.com",
   phone = "(+91) 999 99 99999",
   location = "New Delhi, India",
   socials,

@@ -184,7 +184,7 @@ export default function EmailTemplatesPage() {
     const templates = {
       verification: {
         type: 'Email_Verification',
-        subject: 'Verify Your Email - Invest App',
+        subject: 'Verify Your Email - AltStock',
         body: `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -210,12 +210,12 @@ export default function EmailTemplatesPage() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>Invest App</h1>
+            <h1>AltStock</h1>
         </div>
         <div class="content">
             <h1 class="main-heading">Verify your email address</h1>
             <p class="intro-text">
-                Thanks for starting the new InvestApp account creation process. We want to make sure it's really you. Please enter the following verification code when prompted. If you don't want to create an account, you can ignore this message.
+                Thanks for starting the new AltStock account creation process. We want to make sure it's really you. Please enter the following verification code when prompted. If you don't want to create an account, you can ignore this message.
             </p>
             <div class="verification-section">
                 <div class="verification-label">Verification code</div>
@@ -223,7 +223,7 @@ export default function EmailTemplatesPage() {
                 <div class="validity-note">(This code is valid for 10 minutes)</div>
             </div>
             <div class="footer">
-                <p>If you didn't request this verification, please ignore this email.<br>© 2025 InvestApp. All rights reserved.</p>
+                <p>If you didn't request this verification, please ignore this email.<br>© 2025 AltStock. All rights reserved.</p>
             </div>
         </div>
     </div>
@@ -238,7 +238,7 @@ export default function EmailTemplatesPage() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buy Confirmation - Invest App</title>
+    <title>Buy Confirmation - AltStock</title>
     <style>
         body { margin: 0; padding: 0; font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff !important; line-height: 1.6; }
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff !important; min-height: 100vh; }
@@ -262,7 +262,7 @@ export default function EmailTemplatesPage() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>Invest App</h1>
+            <h1>AltStock</h1>
         </div>
         <div class="content">
             <h1 class="main-heading">Buy Order Confirmed</h1>
@@ -290,7 +290,7 @@ export default function EmailTemplatesPage() {
                 </div>
             </div>
             <div class="footer">
-                <p>Thank you for using Invest App!<br>© 2025 InvestApp. All rights reserved.</p>
+                <p>Thank you for using AltStock!<br>© 2025 AltStock. All rights reserved.</p>
             </div>
         </div>
     </div>
@@ -305,7 +305,7 @@ export default function EmailTemplatesPage() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sell Confirmation - Invest App</title>
+    <title>Sell Confirmation - AltStock</title>
     <style>
         body { margin: 0; padding: 0; font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff !important; line-height: 1.6; }
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff !important; min-height: 100vh; }
@@ -329,7 +329,7 @@ export default function EmailTemplatesPage() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>Invest App</h1>
+            <h1>AltStock</h1>
         </div>
         <div class="content">
             <h1 class="main-heading">Sell Order Confirmed</h1>
@@ -357,7 +357,7 @@ export default function EmailTemplatesPage() {
                 </div>
             </div>
             <div class="footer">
-                <p>Thank you for using Invest App!<br>© 2025 InvestApp. All rights reserved.</p>
+                <p>Thank you for using AltStock!<br>© 2025 AltStock. All rights reserved.</p>
             </div>
         </div>
     </div>
@@ -372,7 +372,7 @@ export default function EmailTemplatesPage() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Stock Purchase - Invest App</title>
+    <title>New Stock Purchase - AltStock</title>
     <style>
         body { margin: 0; padding: 0; font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; background-color: #ffffff !important; line-height: 1.6; }
         .container { max-width: 600px; margin: 0 auto; background-color: #ffffff !important; min-height: 100vh; }
@@ -398,7 +398,7 @@ export default function EmailTemplatesPage() {
 <body>
     <div class="container">
         <div class="header">
-            <h1>Invest App</h1>
+            <h1>AltStock</h1>
         </div>
         <div class="content">
             <h1 class="main-heading">New Stock Purchase Notification</h1>
@@ -437,7 +437,7 @@ export default function EmailTemplatesPage() {
                 </div>
             </div>
             <div class="footer">
-                <p>This is an automated notification from Invest App.<br>Please log into the admin panel to view more details and manage this transaction.</p>
+                <p>This is an automated notification from AltStock.<br>Please log into the admin panel to view more details and manage this transaction.</p>
             </div>
         </div>
     </div>

@@ -208,8 +208,8 @@ export default function KYCCompletePage() {
           <div className="mt-8 pt-6 border-t border-themeTealLighter">
             <p className="text-sm text-themeTealLighter">
               Need help? Contact our support team at{' '}
-              <a href="mailto:support@investapp.com" className="text-themeSkyBlue hover:underline">
-                support@investapp.com
+              <a href="mailto:support@altstock.com" className="text-themeSkyBlue hover:underline">
+                support@altstock.com
               </a>
             </p>
           </div>

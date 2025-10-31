@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { TrendingUp, TrendingDown, ChevronLeft, ChevronRight } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 
 /* ---------- types ---------- */
@@ -19,6 +19,8 @@ export type ProductItem = {
   sector_ids?: string; // Added for filtering
   subsector_ids?: string; // Added for filtering
   theme_ids?: string; // Added for filtering
+  sectors?: Array<{ id: number; name: string }>; // Optional sector names if provided by API
+  sector?: string; // Optional single sector name fallback
   teaser: string;
   short_description: string;
   analysis: string;
@@ -39,6 +41,25 @@ export function ProductList({
   initialPage?: number;
 }) {
   const [page, setPage] = useState(initialPage);
+  const [sectorsMap, setSectorsMap] = useState<Record<number, string>>({});
+
+  // Attempt to load sector names for mapping sector_ids -> names
+  useEffect(() => {
+    let cancelled = false;
+    const loadSectors = async () => {
+      try {
+        const res = await fetch('/api/admin/sectors/select');
+        if (!res.ok) return;
+        const data = await res.json();
+        const sectors = data?.data?.sectors || [];
+        const map: Record<number, string> = {};
+        sectors.forEach((s: { id: number; name: string }) => { map[s.id] = s.name; });
+        if (!cancelled) setSectorsMap(map);
+      } catch {}
+    };
+    loadSectors();
+    return () => { cancelled = true; };
+  }, []);
 
   const totalPages = Math.max(1, Math.ceil((items?.length || 0) / pageSize));
   const pageSafe = Math.min(Math.max(1, page), totalPages);
@@ -50,7 +71,7 @@ export function ProductList({
   return (
     <div className="space-y-3">
       {view.map((p) => (
-        <ProductRow key={p.id} item={p} onWishlist={onWishlist} />
+        <ProductRow key={p.id} item={p} sectorsMap={sectorsMap} onWishlist={onWishlist} />
       ))}
 
       <Pagination
@@ -143,7 +164,7 @@ function PageBtn({ n, active, onClick }: { n: number; active: boolean; onClick: 
 }
 
 /* ---------- row (unchanged from your mobile-friendly version) ---------- */
-function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => void }) {
+function ProductRow({ item, sectorsMap }: { item: ProductItem; sectorsMap: Record<number, string>; onWishlist?: (id: string) => void }) {
   const pos = item.price_change >= 0;
   const changeSign = pos ? "+" : "";
   const periodName = item.price_change_period || 'No period assigned';
@@ -152,7 +173,13 @@ function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => 
       <div className="flex flex-col gap-4 xl:flex-row md:items-center md:justify-between">
         <div className="flex gap-3 md:gap-4 items-center">
           <div className="h-14 w-14 md:h-20 md:w-20 shrink-0 rounded-lg bg-white grid place-items-center overflow-hidden">
-            <Image src={item.logo} alt={`${item.company_name} logo`} width={80} height={80} className="h-full w-full object-cover" />
+            {item.logo && item.logo.trim() !== '' ? (
+              <Image src={item.logo} alt={`${item.company_name} logo`} width={80} height={80} className="h-full w-full object-cover" />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center bg-gray-100 text-gray-400 text-xs font-semibold">
+                {item.company_name.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
 
           <div className="min-w-0 w-full">
@@ -161,6 +188,21 @@ function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => 
                 {item.company_name}
               </Link>
             </h3>
+            {(() => {
+              let sectorName = (item.sectors && item.sectors.length > 0) ? item.sectors[0].name : (item.sector || '');
+              if (!sectorName && item.sector_ids) {
+                try {
+                  const ids = JSON.parse(item.sector_ids);
+                  if (Array.isArray(ids) && ids.length > 0) {
+                    const name = sectorsMap[Number(ids[0])];
+                    if (name) sectorName = name;
+                  }
+                } catch {}
+              }
+              return sectorName ? (
+                <div className="mt-0.5 text-xs truncate text-themeTealLighter">{sectorName}</div>
+              ) : null;
+            })()}
             <p className="mt-1 text-sm text-themeTealLight line-clamp-3 md:line-clamp-1">{item.teaser}</p>
 
             {/* <div className="mt-2 flex justify-center md:hidden">
@@ -173,14 +215,14 @@ function ProductRow({ item }: { item: ProductItem; onWishlist?: (id: string) => 
           <WishBtn onClick={() => onWishlist?.(item.id)} />
         </div> */}
 
-        <div className="w-full md:w-auto md:min-w-[500px] lg:min-w-full xl:min-w-[600px]">
-          <div className="hidden md:grid grid-cols-3 bg-themeTeal px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-white">
+        <div className="w-full md:w-auto md:min-w-[380px] xl:min-w-[500px]">
+          <div className="hidden md:grid grid-cols-3 bg-themeTeal px-2 py-2 text-[10px] font-semibold uppercase tracking-wide text-white">
             <div>Price per share</div><div>Price Change Period</div><div>Valuation (in Cr.)</div>
           </div>
-          <div className="hidden md:grid grid-cols-3 items-center gap-2 bg-white px-3 py-2 text-sm font-semibold text-themeTeal">
+          <div className="hidden md:grid grid-cols-3 items-center gap-1 bg-white px-2 py-2 text-xs font-semibold text-themeTeal">
             <div className="whitespace-nowrap">₹ {formatINR(item.price_per_share)}</div>
             <div className={pos ? "text-green-700" : "text-rose-600"}>
-              {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-4 ml-1" /> : <TrendingDown className="inline h-4 w-4 ml-1" />} ({periodName})
+              {changeSign}₹{formatINR(Math.abs(item.price_change))}{pos ? <TrendingUp className="inline h-4 w-3.5 ml-1" /> : <TrendingDown className="inline h-3.5 w-3.5 ml-1" />} ({periodName})
             </div>
             <div className="whitespace-nowrap">₹ {item.valuation} Cr</div>
           </div>

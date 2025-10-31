@@ -15,7 +15,7 @@ type Props = {
 };
 
 export function InvestappPrice({
-  eyebrow = "INVESTAPP PRICE",
+  eyebrow = "ALTSTOCK PRICE",
   title = "Invest with Clarity. Exit with Confidence.",
   description = "Unlike traditional platforms, we’re built on transparency and execution certainty—helping you trade smarter, faster, and safer.",
   ctaLabel = "Learn more",

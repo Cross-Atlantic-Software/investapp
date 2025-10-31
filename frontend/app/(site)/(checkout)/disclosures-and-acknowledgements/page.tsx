@@ -15,16 +15,16 @@ type Disclosure = {
 const DISCLOSURES: Disclosure[] = [
   {
     id: "risk",
-    title: "Invest APP Risk",
+    title: "AltStock Risk",
     body:
-      "I understand that Invest APP are high-risk investments with limited liquidity, no regulatory oversight for pricing, and potential for significant capital loss. These securities are not traded on recognized exchanges and may be difficult to sell.",
+      "I understand that AltStock are high-risk investments with limited liquidity, no regulatory oversight for pricing, and potential for significant capital loss. These securities are not traded on recognized exchanges and may be difficult to sell.",
     mandatory: true,
   },
   {
     id: "price",
     title: "Price Discovery Limitations",
     body:
-      "I acknowledge that pricing for Invest APP is based on limited market data, private transactions, and may not reflect true market value. Price discovery is subjective and may vary significantly between transactions.",
+      "I acknowledge that pricing for AltStock is based on limited market data, private transactions, and may not reflect true market value. Price discovery is subjective and may vary significantly between transactions.",
     mandatory: true,
   },
   {
@@ -52,7 +52,7 @@ const DISCLOSURES: Disclosure[] = [
     id: "kyc",
     title: "KYC & Compliance",
     body:
-      "I confirm that my KYC documents are updated and I comply with all regulatory requirements for Invest APP trading. I understand that non-compliance may result in order cancellation.",
+      "I confirm that my KYC documents are updated and I comply with all regulatory requirements for AltStock trading. I understand that non-compliance may result in order cancellation.",
     mandatory: true,
   },
 ];
@@ -94,7 +94,7 @@ export default function DisclosuresPage({
             High Risk Investment
           </div>
           <p className="mt-1 text-sm">
-            Invest APP carry significant investment risks.
+            AltStock carry significant investment risks.
           </p>
         </div>
 

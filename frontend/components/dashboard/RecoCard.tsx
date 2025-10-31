@@ -21,6 +21,7 @@ interface MarketInsight {
   slug: string;
   blog_image: string;
   created_at: string;
+  teaser?: string;
   topic?: {
     name: string;
   };
@@ -64,13 +65,6 @@ export default function RecoCard() {
     return () => clearInterval(interval);
   }, [insights.length]);
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % insights.length);
@@ -114,34 +108,17 @@ export default function RecoCard() {
       <div className="relative">
         {/* Insight Card */}
         <div 
-          className="bg-gray-50 rounded-lg p-3 mb-3 min-h-[120px] cursor-pointer hover:bg-gray-100 transition-colors"
+          className="bg-gray-50 rounded-lg p-3 mb-3 cursor-pointer hover:bg-gray-100 transition-colors"
           onClick={handleInsightClick}
         >
-          <div className="flex items-start space-x-3">
-            {/* Image */}
-            <div className="flex-shrink-0">
-              <img 
-                src={currentInsight.blog_image || '/images/placeholder-insight.webp'} 
-                alt={currentInsight.title}
-                className="w-16 h-16 rounded-lg object-cover"
-                onError={(e) => {
-                  (e.target as HTMLImageElement).src = '/images/placeholder-insight.webp';
-                }}
-              />
-            </div>
-            
-            {/* Content */}
-            <div className="flex-1 min-w-0">
-              <h4 className="text-sm font-semibold text-themeTeal line-clamp-2 mb-1">
-                {currentInsight.title}
-              </h4>
-              <p className="text-xs text-themeTealLighter mb-2">
-                {currentInsight.topic?.name || 'Trend Analyzer'}
-              </p>
-              <p className="text-xs text-gray-500">
-                {formatDate(currentInsight.created_at)}
-              </p>
-            </div>
+          {/* Content */}
+          <div className="min-w-0">
+            <h4 className="text-sm font-semibold text-themeTeal line-clamp-2 mb-1">
+              {currentInsight.title}
+            </h4>
+            <p className="text-xs text-themeTealLighter truncate">
+              {currentInsight.teaser || 'No description available'}
+            </p>
           </div>
         </div>
 
