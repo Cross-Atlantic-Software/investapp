@@ -14,7 +14,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/home-insights/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/transactions/${id}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -25,9 +25,9 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error fetching home insight:', error);
+    console.error('Error fetching transaction:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch home insight' },
+      { success: false, message: 'Failed to fetch transaction' },
       { status: 500 }
     );
   }
@@ -45,53 +45,23 @@ export async function PUT(
     }
 
     const { id } = await params;
-    const formData = await request.formData();
+    const body = await request.json();
 
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/home-insights/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/backend/api/admin/transactions/${id}`, {
       method: 'PUT',
-      headers: {
-        'token': token,
-      },
-      body: formData,
-    });
-
-    const data = await response.json();
-    return NextResponse.json(data, { status: response.status });
-  } catch (error) {
-    console.error('Error updating home insight:', error);
-    return NextResponse.json(
-      { success: false, message: 'Failed to update home insight' },
-      { status: 500 }
-    );
-  }
-}
-
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  try {
-    const token = request.headers.get('token');
-    
-    if (!token) {
-      return NextResponse.json({ success: false, message: 'Authentication token missing' }, { status: 401 });
-    }
-
-    const { id } = await params;
-    const response = await fetch(`${API_BASE_URL}/backend/api/admin/home-insights/${id}`, {
-      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         'token': token,
       },
+      body: JSON.stringify(body),
     });
 
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error deleting home insight:', error);
+    console.error('Error updating transaction:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to delete home insight' },
+      { success: false, message: 'Failed to update transaction' },
       { status: 500 }
     );
   }

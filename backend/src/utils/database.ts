@@ -33,6 +33,7 @@ import { Sector, initializeSectorModel } from "../Models/Sector";
 import { Subsector, initializeSubsectorModel } from "../Models/Subsector";
 import KYCApplication, { initializeKYCApplicationModel } from "../Models/KYCApplication";
 import BuyRequest, { initializeBuyRequestModel } from "../Models/BuyRequest";
+import Transaction, { initializeTransactionModel } from "../Models/Transaction";
 import ValuationRange, { initializeValuationRangeModel } from "../Models/ValuationRange";
 import { InsightSector, initializeInsightSectorModel } from "../Models/InsightSector";
 import { InsightSubsector, initializeInsightSubsectorModel } from "../Models/InsightSubsector";
@@ -49,6 +50,7 @@ import { KnowledgeTheme, initializeKnowledgeThemeModel } from "../Models/Knowled
 import { KnowledgeCenter, initializeKnowledgeCenterModel } from "../Models/KnowledgeCenter";
 import StockPerformanceScore, { initializeStockPerformanceScoreModel } from "../Models/StockPerformanceScore";
 import UserPortfolio, { initializeUserPortfolioModel } from "../Models/UserPortfolio";
+import UserWallet, { initializeUserWalletModel } from "../Models/UserWallet";
 import { connectionManager } from "./pooling";
 import dotenv from "dotenv";
 import config from "./config.json";
@@ -175,6 +177,9 @@ async function initializeSequelize() {
   // Initialize BuyRequest model
   initializeBuyRequestModel(sequelize);
   
+  // Initialize Transaction model
+  initializeTransactionModel(sequelize);
+  
   // Initialize ValuationRange model
   initializeValuationRangeModel(sequelize);
   
@@ -202,6 +207,9 @@ async function initializeSequelize() {
   
   // Initialize User Portfolio model
   initializeUserPortfolioModel(sequelize);
+  
+  // Initialize User Wallet model
+  initializeUserWalletModel(sequelize);
   
   // Set up Sector and Subsector associations
   Sector.hasMany(Subsector, {
@@ -278,6 +286,53 @@ async function initializeSequelize() {
   Product.hasMany(BuyRequest, {
     foreignKey: 'stock_id',
     as: 'ProductBuyRequests'
+  });
+
+  // Set up Transaction associations
+  Transaction.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user'
+  });
+
+  Transaction.belongsTo(Product, {
+    foreignKey: 'stock_id',
+    as: 'stock'
+  });
+
+  Transaction.belongsTo(BuyRequest, {
+    foreignKey: 'buy_request_id',
+    as: 'buyRequest'
+  });
+
+  Transaction.belongsTo(CmsUser, {
+    foreignKey: 'admin_approved_by',
+    as: 'approvedBy'
+  });
+
+  User.hasMany(Transaction, {
+    foreignKey: 'user_id',
+    as: 'transactions'
+  });
+
+  Product.hasMany(Transaction, {
+    foreignKey: 'stock_id',
+    as: 'transactions'
+  });
+
+  BuyRequest.hasOne(Transaction, {
+    foreignKey: 'buy_request_id',
+    as: 'transaction'
+  });
+
+  // Set up User Wallet associations
+  UserWallet.belongsTo(User, {
+    foreignKey: 'user_id',
+    as: 'user'
+  });
+
+  User.hasOne(UserWallet, {
+    foreignKey: 'user_id',
+    as: 'wallet'
   });
 
   // Set up Market Insight associations
@@ -644,6 +699,13 @@ export const db = {
     return BuyRequest;
   },
 
+  get Transaction() {
+    if (!Transaction) {
+      throw new Error('Transaction model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return Transaction;
+  },
+
   get ValuationRange() {
     if (!ValuationRange) {
       throw new Error('ValuationRange model not initialized yet. Wait for sequelizePromise to resolve.');
@@ -754,6 +816,13 @@ export const db = {
       throw new Error('UserPortfolio model not initialized yet. Wait for sequelizePromise to resolve.');
     }
     return UserPortfolio;
+  },
+
+  get UserWallet() {
+    if (!UserWallet) {
+      throw new Error('UserWallet model not initialized yet. Wait for sequelizePromise to resolve.');
+    }
+    return UserWallet;
   },
 };
 

@@ -12,6 +12,7 @@ import { UserPortfolioController } from "../controllers/admin/userPortfolioContr
 import { UserHoldingsController } from "../controllers/user/userHoldingsController";
 import { UserReportController } from "../controllers/admin/userReportController";
 import { UserProfileController } from "../controllers/user/userProfileController";
+import { UserWalletController } from "../controllers/user/userWalletController";
 import { StockMasterManagementController } from "../controllers/admin/stockMasterManagement";
 import jwtAuthMiddleware from "../utils/middleware";
 import express from "express";
@@ -46,6 +47,14 @@ router.get('/user-report', jwtAuthMiddleware, UserReportController.getCurrentUse
 // User Profile routes (protected - requires authentication)
 router.get('/user-profile', jwtAuthMiddleware, UserProfileController.getCurrentUserProfile);
 router.put('/user-profile', jwtAuthMiddleware, UserProfileController.updateCurrentUserProfile);
+
+// User Wallet routes (protected - requires authentication)
+router.get('/user-wallet', jwtAuthMiddleware, UserWalletController.getUserWallet);
+router.post('/user-wallet/deposit', jwtAuthMiddleware, UserWalletController.depositToWallet);
+router.post('/user-wallet/withdraw', jwtAuthMiddleware, UserWalletController.withdrawFromWallet);
+
+// User Transactions routes (protected - requires authentication)
+router.get('/user-transactions', jwtAuthMiddleware, UserHoldingsController.getUserTransactions);
 
 // Admin CMS routes (for admin users)
 router.use('/admin', adminRoutes);

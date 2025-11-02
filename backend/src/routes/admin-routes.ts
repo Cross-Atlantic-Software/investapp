@@ -74,6 +74,7 @@ import { KYCManagementController } from "../controllers/admin/kycManagement";
 import { uploadPdf } from "../utils/middlewares/s3Upload";
 import { getBuyRequestsCount, getBuyRequestsData } from "../controllers/admin/buyRequestsController";
 import { HomeInsightController } from "../controllers/admin/homeInsightController";
+import { TransactionController } from "../controllers/admin/transactionController";
 
 // Stock Draft Controllers
 import {
@@ -126,6 +127,7 @@ const bulkDealsController = new BulkDealsManagementController();
 const stockMasterController = new StockMasterManagementController();
 const methodologyNotesController = new MethodologyNotesManagementController();
 const homeInsightController = new HomeInsightController();
+const transactionController = new TransactionController();
 
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
@@ -236,6 +238,13 @@ router.get("/home-insights/:id", homeInsightController.getHomeInsightById);
 router.post("/home-insights", uploadHomeInsightFile.single('file'), homeInsightController.createHomeInsight);
 router.put("/home-insights/:id", uploadHomeInsightFile.single('file'), homeInsightController.updateHomeInsight);
 router.delete("/home-insights/:id", homeInsightController.deleteHomeInsight);
+
+// Transaction Management Routes
+router.get("/transactions", transactionController.getAllTransactions);
+router.get("/transactions/:id", transactionController.getTransactionById);
+router.post("/transactions/:id/approve", transactionController.approveTransaction);
+router.post("/transactions/:id/reject", transactionController.rejectTransaction);
+router.put("/transactions/:id", transactionController.updateTransaction);
 
 // Activity Type Management Routes
 router.get("/activity-types", activityTypeController.getAllActivityTypes);
