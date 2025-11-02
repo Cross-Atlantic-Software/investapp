@@ -4,8 +4,11 @@ import { HttpStatusCode } from "../../utils/httpStatusCode";
 import sendMail from "../../utils";
 import { EmailTemplateService } from "../../utils/emailTemplateService";
 import { BuyRequest } from "../../Models/BuyRequest";
+import { Transaction } from "../../Models/Transaction";
+import { generateTransactionId } from "../../utils/transactionIdGenerator";
 import Product from "../../Models/Product";
 import { Op } from "sequelize";
+import { UserWalletController } from "../user/userWalletController";
 
 export class BuyStockService {
   private userModel = db.User;
@@ -54,6 +57,49 @@ export class BuyStockService {
       
       console.log('✅ User found:', user.email);
 
+      // Check wallet balance BEFORE creating buy request
+      try {
+        let wallet = await db.UserWallet.findOne({
+          where: { user_id: parseInt(userId) }
+        });
+
+        // Initialize wallet if it doesn't exist
+        if (!wallet) {
+          await UserWalletController.initializeWallet(parseInt(userId));
+          wallet = await db.UserWallet.findOne({
+            where: { user_id: parseInt(userId) }
+          });
+        }
+
+        if (!wallet) {
+          console.error('❌ Failed to initialize wallet for user:', userId);
+          return (res as any).error("Wallet initialization failed", HttpStatusCode.INTERNAL_SERVER_ERROR);
+        }
+
+        // Check if user has sufficient balance for the transaction
+        // We check the total_amount (without fees/taxes initially, as they're added by admin)
+        // But we should allow pending transactions and check balance only on approval
+        // However, for better UX, let's check if balance is at least equal to total_amount
+        const requiredAmount = parseFloat(totalAmount);
+        const availableBalance = parseFloat(wallet.available_balance.toString());
+
+        if (availableBalance < requiredAmount) {
+          console.error(`❌ Insufficient wallet balance. Available: ₹${availableBalance}, Required: ₹${requiredAmount}`);
+          return (res as any).error(
+            `Insufficient wallet balance. Available: ₹${availableBalance.toFixed(2)}, Required: ₹${requiredAmount.toFixed(2)}. Please deposit money to your wallet first.`,
+            HttpStatusCode.BAD_REQUEST
+          );
+        }
+
+        console.log(`✅ Wallet balance check passed. Available: ₹${availableBalance}, Required: ₹${requiredAmount}`);
+      } catch (walletError: any) {
+        console.error('❌ Error checking wallet balance:', walletError);
+        return (res as any).error(
+          walletError.message || "Failed to verify wallet balance",
+          HttpStatusCode.INTERNAL_SERVER_ERROR
+        );
+      }
+
       // Add buy request to the buy_requests table
       try {
         // Find the stock/product by company name
@@ -76,6 +122,8 @@ export class BuyStockService {
           }
         });
 
+        let buyRequestRecord: BuyRequest;
+        
         if (existingBuyRequest) {
           // Update existing buy request by adding new quantity
           const newQuantity = existingBuyRequest.quantity + quantity;
@@ -87,10 +135,11 @@ export class BuyStockService {
             price: price // Update to latest price
           });
           
+          buyRequestRecord = existingBuyRequest;
           console.log(`✅ Updated existing buy request: ${existingBuyRequest.quantity} -> ${newQuantity} shares`);
         } else {
           // Create new buy request record
-          await BuyRequest.create({
+          buyRequestRecord = await BuyRequest.create({
             user_id: parseInt(userId),
             stock_id: stock.id,
             stock_name: companyName,
@@ -103,6 +152,37 @@ export class BuyStockService {
         }
         
         console.log('✅ Buy request saved to buy_requests table');
+
+        // Create transaction record immediately (one-to-one with buy request)
+        try {
+          const transactionId = await generateTransactionId();
+          
+          const transaction = await Transaction.create({
+            user_id: parseInt(userId),
+            stock_id: stock.id,
+            buy_request_id: buyRequestRecord.id,
+            transaction_type: 'buy',
+            status: 'pending',
+            quantity: buyRequestRecord.quantity,
+            price_per_unit: buyRequestRecord.price,
+            total_amount: buyRequestRecord.total_amount,
+            transaction_id: transactionId,
+            order_date: buyRequestRecord.created_at,
+            execution_date: buyRequestRecord.created_at, // Set to buy request creation time
+            payment_method: 'manual',
+            payment_status: 'completed'
+          });
+
+          // Update buy_request with transaction_id
+          await buyRequestRecord.update({
+            transaction_id: transactionId
+          });
+
+          console.log(`✅ Transaction created with ID: ${transactionId}`);
+        } catch (transactionError) {
+          console.error('❌ Failed to create transaction:', transactionError);
+          // Don't fail the buy request if transaction creation fails
+        }
         
         // Refresh user's portfolio after buy order
         try {

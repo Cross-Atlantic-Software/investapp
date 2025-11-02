@@ -29,7 +29,7 @@ export const GROUPS: NavGroup[] = [
   {
     title: "Account",
     items: [
-      // { id:"funds", label:"Funds", href:"/dashboard/funds", icon:Wallet },
+      { id:"wallet", label:"Wallet", href:"/dashboard/wallet", icon:Wallet },
       { id:"reports", label:"Reports", href:"/dashboard/reports", icon:Download },
       { id:"settings", label:"Settings", href:"/dashboard/settings", icon:Settings },
     ],

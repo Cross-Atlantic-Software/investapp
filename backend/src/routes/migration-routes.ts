@@ -2004,4 +2004,239 @@ router.post("/update-valuation-ranges-with-values", async (req, res) => {
   }
 });
 
+// Run migration to create home_insights table
+router.post("/create-home-insights-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-home-insights-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'home_insights'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'home_insights' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'home_insights' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE home_insights (
+        id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        title VARCHAR(255) NOT NULL,
+        file VARCHAR(500) NOT NULL COMMENT 'S3 URL or file path',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        INDEX idx_created_at (created_at),
+        INDEX idx_updated_at (updated_at)
+      )
+    `);
+    
+    console.log("✅ Created home_insights table successfully");
+    
+    res.json({
+      success: true,
+      message: "Home insights table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Create transactions table
+router.post("/create-transactions-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-transactions-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'transactions'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'transactions' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'transactions' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE transactions (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id INT UNSIGNED NOT NULL,
+        stock_id INT NOT NULL,
+        buy_request_id INT NOT NULL,
+        transaction_type ENUM('buy', 'sell') NOT NULL,
+        status ENUM('pending', 'completed', 'rejected') NOT NULL DEFAULT 'pending',
+        quantity INT NOT NULL,
+        price_per_unit DECIMAL(10,2) NOT NULL,
+        total_amount DECIMAL(10,2) NOT NULL,
+        fees DECIMAL(10,2) NULL,
+        taxes DECIMAL(10,2) NULL,
+        net_amount DECIMAL(10,2) NULL,
+        transaction_id VARCHAR(50) NOT NULL UNIQUE,
+        order_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        execution_date TIMESTAMP NULL,
+        settlement_date TIMESTAMP NULL,
+        payment_method VARCHAR(50) DEFAULT 'manual',
+        payment_status ENUM('pending', 'completed', 'failed') DEFAULT 'completed',
+        admin_approved_by INT UNSIGNED NULL,
+        admin_approved_at TIMESTAMP NULL,
+        rejection_reason TEXT NULL,
+        notes TEXT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (stock_id) REFERENCES products(id) ON DELETE CASCADE,
+        FOREIGN KEY (buy_request_id) REFERENCES buy_requests(id) ON DELETE CASCADE,
+        FOREIGN KEY (admin_approved_by) REFERENCES cms_users(id) ON DELETE SET NULL,
+        
+        INDEX idx_user_id (user_id),
+        INDEX idx_stock_id (stock_id),
+        INDEX idx_buy_request_id (buy_request_id),
+        INDEX idx_transaction_id (transaction_id),
+        INDEX idx_status (status),
+        INDEX idx_order_date (order_date),
+        INDEX idx_created_at (created_at)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    
+    console.log("✅ Created transactions table successfully");
+    
+    res.json({
+      success: true,
+      message: "Transactions table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Add transaction_id to buy_requests table
+router.post("/add-transaction-id-to-buy-requests", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: add-transaction-id-to-buy-requests");
+    
+    await db.sequelizePromise;
+    
+    // Check if column already exists
+    const [columns] = await db.sequelize.query(`
+      SELECT COLUMN_NAME 
+      FROM INFORMATION_SCHEMA.COLUMNS 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'buy_requests'
+      AND COLUMN_NAME = 'transaction_id'
+    `);
+
+    if (columns.length > 0) {
+      console.log("✅ Column 'transaction_id' already exists in 'buy_requests'");
+      return res.json({
+        success: true,
+        message: "Column 'transaction_id' already exists in 'buy_requests'"
+      });
+    }
+
+    // Add the column
+    await db.sequelize.query(`
+      ALTER TABLE buy_requests 
+      ADD COLUMN transaction_id VARCHAR(50) NULL AFTER total_amount,
+      ADD INDEX idx_transaction_id (transaction_id)
+    `);
+    
+    console.log("✅ Added transaction_id column to buy_requests table successfully");
+    
+    res.json({
+      success: true,
+      message: "Transaction ID column added to buy_requests table successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
+// Create user_wallet table
+router.post("/create-user-wallet-table", async (req, res) => {
+  try {
+    console.log("🔄 Running migration: create-user-wallet-table");
+    
+    // Check if table already exists
+    const [results] = await db.sequelize.query(`
+      SELECT TABLE_NAME 
+      FROM INFORMATION_SCHEMA.TABLES 
+      WHERE TABLE_SCHEMA = 'investapp' 
+      AND TABLE_NAME = 'user_wallet'
+    `);
+
+    if (results.length > 0) {
+      console.log("✅ Table 'user_wallet' already exists");
+      return res.json({
+        success: true,
+        message: "Table 'user_wallet' already exists"
+      });
+    }
+
+    // Create the table
+    await db.sequelize.query(`
+      CREATE TABLE user_wallet (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id INT UNSIGNED NOT NULL UNIQUE,
+        available_balance DECIMAL(15,2) NOT NULL DEFAULT 0.00 COMMENT 'Available for trading',
+        pending_balance DECIMAL(15,2) NOT NULL DEFAULT 0.00 COMMENT 'Funds pending settlement',
+        total_deposited DECIMAL(15,2) NOT NULL DEFAULT 0.00 COMMENT 'Lifetime total deposits',
+        total_withdrawn DECIMAL(15,2) NOT NULL DEFAULT 0.00 COMMENT 'Lifetime total withdrawals',
+        last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+        
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+        
+        INDEX idx_user_id (user_id),
+        INDEX idx_last_updated (last_updated)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+    `);
+    
+    console.log("✅ Created user_wallet table successfully");
+    
+    res.json({
+      success: true,
+      message: "User wallet table created successfully"
+    });
+  } catch (error) {
+    console.error("❌ Migration failed:", error);
+    res.status(500).json({
+      success: false,
+      message: "Migration failed",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+  }
+});
+
 export default router;

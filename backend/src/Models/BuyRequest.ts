@@ -8,6 +8,7 @@ export interface BuyRequestAttributes {
   quantity: number;
   price: number;
   total_amount: number;
+  transaction_id: string | null;
   created_at: Date;
   updated_at: Date;
 }
@@ -19,6 +20,7 @@ export interface BuyRequestCreationAttributes {
   quantity: number;
   price: number;
   total_amount: number;
+  transaction_id?: string | null;
 }
 
 export class BuyRequest extends Model<BuyRequestAttributes, BuyRequestCreationAttributes> implements BuyRequestAttributes {
@@ -29,6 +31,7 @@ export class BuyRequest extends Model<BuyRequestAttributes, BuyRequestCreationAt
   public quantity!: number;
   public price!: number;
   public total_amount!: number;
+  public transaction_id!: string | null;
 
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -73,6 +76,10 @@ export function initializeBuyRequestModel(sequelize: Sequelize) {
       total_amount: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+      },
+      transaction_id: {
+        type: DataTypes.STRING(50),
+        allowNull: true,
       },
       created_at: {
         type: DataTypes.DATE,

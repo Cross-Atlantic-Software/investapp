@@ -11,4 +11,5 @@ export { default as MarketPortfolio } from './marketPortfolio';
 export { default as PageTitle } from './pageTitle';
 export { default as PartnerPrograms } from './partnerPrograms';
 export { default as PartnerCta } from './partnerCta';
-export {default as Faq} from './faq'
+export {default as Faq} from './faq';
+export {default as HomeInsights} from './homeInsights';

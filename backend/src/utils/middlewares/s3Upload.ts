@@ -177,6 +177,24 @@ export const uploadKnowledgeCenterImage = multer({
   }
 });
 
+// Home Insight File Upload Middleware
+export const uploadHomeInsightFile = multer({
+  storage: multerS3({
+    s3,
+    bucket: process.env.S3_BUCKET!,
+    contentType: (req, file, cb) => {
+      cb(null, file.mimetype);
+    },
+    key: (_req: Request, file: any, cb: (error: any, key?: string) => void) => {
+      const uniqueName = `home-insights/${Date.now()}-${file.originalname}`;
+      cb(null, uniqueName);
+    },
+  }),
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB limit for home insight files
+  }
+});
+
 // KYC Document Upload Middleware
 export const uploadKYCDocuments = multer({
   storage: multerS3({

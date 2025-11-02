@@ -17,6 +17,7 @@ import { InsightTopicController } from "../controllers/admin/insightTopicControl
 import { InsightSubtopicController } from "../controllers/admin/insightSubtopicController";
 import { KnowledgeTopicController } from "../controllers/admin/knowledgeTopicController";
 import { KnowledgeSubtopicController } from "../controllers/admin/knowledgeSubtopicController";
+import { HomeInsightController } from "../controllers/admin/homeInsightController";
 
 const router = express.Router();
 
@@ -93,5 +94,11 @@ router.get("/insight-subtopics", InsightSubtopicController.getAllInsightSubtopic
 // Public Knowledge Topics Routes (no authentication required)
 router.get("/knowledge-topics", KnowledgeTopicController.getAllKnowledgeTopics);
 router.get("/knowledge-subtopics", KnowledgeSubtopicController.getAllKnowledgeSubtopics);
+
+// Public Home Insights Routes (no authentication required)
+router.get("/home-insights", (req, res) => {
+  const controller = new HomeInsightController();
+  return controller.getAllPublicHomeInsights(req, res);
+});
 
 export default router;

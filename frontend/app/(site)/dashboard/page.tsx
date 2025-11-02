@@ -2,6 +2,7 @@
 
 import { Download } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { OverviewCard, RiskCard, RecoCard, OpportunityCard, HoldingsTable } from "@/components/dashboard";
 import UpdatesListing, { type UpdateItem } from "@/components/dashboard/updatesListing";
 import { NotableActivity } from "@/components/subcomponents";
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const [watchlistInsights, setWatchlistInsights] = useState<UpdateItem[]>([]);
   const [loading, setLoading] = useState(true);
   const { downloadAsPdf } = usePdfDownload();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchWatchlistInsights = async () => {
@@ -82,8 +84,8 @@ export default function DashboardPage() {
           return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
         });
 
-        // Convert to UpdateItem format and limit to 10 items
-        const formattedInsights: UpdateItem[] = filteredInsights.slice(0, 10).map((insight: MarketInsight) => {
+        // Convert to UpdateItem format and limit to 5 items
+        const formattedInsights: UpdateItem[] = filteredInsights.slice(0, 5).map((insight: MarketInsight) => {
           const updatedDate = new Date(insight.updated_at);
           const now = new Date();
           const diffMs = now.getTime() - updatedDate.getTime();
@@ -191,11 +193,29 @@ export default function DashboardPage() {
                 <div className="px-4 py-3 text-sm text-themeTealLighter">Loading...</div>
               </div>
             ) : watchlistInsights.length > 0 ? (
-              <UpdatesListing items={watchlistInsights} heading="Market Insights" className="p-2" />
+              <div className="rounded bg-white">
+                <UpdatesListing items={watchlistInsights} heading="Market Insights" className="p-2" />
+                <div className="px-4 pb-4 pt-2">
+                  <button
+                    onClick={() => router.push('/market-insights')}
+                    className="text-sm text-themeTeal hover:text-themeSkyBlue hover:underline font-medium transition-colors"
+                  >
+                    View More
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="rounded bg-white p-4">
                 <h3 className="px-4 pt-3 text-lg font-semibold text-themeTeal">Market Insights</h3>
                 <div className="px-4 py-3 text-sm text-themeTealLighter">No market insights available for your watchlist companies.</div>
+                <div className="px-4 pb-4 pt-2">
+                  <button
+                    onClick={() => router.push('/market-insights')}
+                    className="text-sm text-themeTeal hover:text-themeSkyBlue hover:underline font-medium transition-colors"
+                  >
+                    View More
+                  </button>
+                </div>
               </div>
             )}
           </div>
