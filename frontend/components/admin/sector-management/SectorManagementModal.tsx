@@ -55,7 +55,10 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
   // Fetch sectors
   const fetchSectors = async () => {
     try {
-      const response = await fetch('/api/admin/sectors');
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch('/api/admin/sectors', {
+        headers: { 'token': token }
+      });
       const data = await response.json();
       if (data.success) {
         setSectors(data.data.sectors);
@@ -68,7 +71,10 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
   // Fetch subsectors for selected sector
   const fetchSubsectors = async (sectorId: number) => {
     try {
-      const response = await fetch(`/api/admin/sectors/${sectorId}/subsectors`);
+      const token = sessionStorage.getItem('adminToken') || '';
+      const response = await fetch(`/api/admin/sectors/${sectorId}/subsectors`, {
+        headers: { 'token': token }
+      });
       const data = await response.json();
       if (data.success) {
         setSubsectors(data.data.subsectors);
@@ -107,10 +113,12 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
 
     setLoading(true);
     try {
+      const token = sessionStorage.getItem('adminToken') || '';
       const response = await fetch('/api/admin/sectors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'token': token
         },
         body: JSON.stringify(newSector),
       });
@@ -133,22 +141,30 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
 
   const handleCreateSubsector = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSubsector.name.trim() || !newSubsector.sector_id) return;
+    e.stopPropagation();
+    
+    if (!newSubsector.name.trim() || !newSubsector.sector_id) {
+      return;
+    }
 
     setLoading(true);
     try {
+      const token = sessionStorage.getItem('adminToken') || '';
       const response = await fetch('/api/admin/subsectors', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'token': token
         },
         body: JSON.stringify(newSubsector),
       });
 
       const data = await response.json();
       if (data.success) {
-        setNewSubsector({ sector_id: 0, name: '' });
-        setIsCreatingSubsector(false);
+        // Clear only the name, preserve the sector_id
+        setNewSubsector({ sector_id: selectedSectorId || 0, name: '' });
+        // Keep form open for creating more subsectors
+        // setIsCreatingSubsector(false); // Commented out to allow multiple creations
         if (selectedSectorId) {
           fetchSubsectors(selectedSectorId);
         }
@@ -161,6 +177,8 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
     } finally {
       setLoading(false);
     }
+    
+    return false;
   };
 
   const handleDeleteSector = async (id: number) => {
@@ -170,8 +188,10 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
 
     setLoading(true);
     try {
+      const token = sessionStorage.getItem('adminToken') || '';
       const response = await fetch(`/api/admin/sectors/${id}`, {
         method: 'DELETE',
+        headers: { 'token': token }
       });
 
       const data = await response.json();
@@ -199,8 +219,10 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
 
     setLoading(true);
     try {
+      const token = sessionStorage.getItem('adminToken') || '';
       const response = await fetch(`/api/admin/subsectors/${id}`, {
         method: 'DELETE',
+        headers: { 'token': token }
       });
 
       const data = await response.json();
@@ -225,10 +247,12 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
 
     setLoading(true);
     try {
+      const token = sessionStorage.getItem('adminToken') || '';
       const response = await fetch(`/api/admin/sectors/${editingSector.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'token': token
         },
         body: JSON.stringify({ name: editSectorName }),
       });
@@ -255,10 +279,12 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
 
     setLoading(true);
     try {
+      const token = sessionStorage.getItem('adminToken') || '';
       const response = await fetch(`/api/admin/subsectors/${editingSubsector.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'token': token
         },
         body: JSON.stringify({ name: editSubsectorName }),
       });
@@ -559,7 +585,16 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
               </div>
 
               {isCreatingSubsector && selectedSectorId && (
-                <form onSubmit={handleCreateSubsector} className="bg-themeTealWhite p-4 rounded-lg border border-themeTealLighter mb-4">
+                <form 
+                  onSubmit={handleCreateSubsector}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
+                      e.preventDefault();
+                      handleCreateSubsector(e);
+                    }
+                  }}
+                  className="bg-themeTealWhite p-4 rounded-lg border border-themeTealLighter mb-4"
+                >
                   <div className="mb-4">
                     <label className="block text-xs font-medium text-themeTeal mb-1">
                       Subsector Name <span className="text-red-500">*</span>
@@ -568,17 +603,26 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
                       type="text"
                       value={newSubsector.name}
                       onChange={(e) => setNewSubsector({ ...newSubsector, name: e.target.value })}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                        }
+                      }}
                       className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded focus:outline-none focus:border-themeTeal transition duration-300 text-themeTeal"
                       placeholder="Enter subsector name"
                       required
+                      autoFocus
                     />
                   </div>
                   <div className="flex justify-end space-x-2">
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         setIsCreatingSubsector(false);
-                        setNewSubsector({ sector_id: 0, name: '' });
+                        // Preserve the selected sector_id when canceling
+                        setNewSubsector({ sector_id: selectedSectorId || 0, name: '' });
                       }}
                       className="px-4 py-2 text-sm text-themeTeal bg-themeTealWhite border border-themeTealLighter rounded hover:bg-themeTealLighter transition duration-200"
                     >
@@ -587,6 +631,11 @@ const SectorManagementModal: React.FC<SectorManagementModalProps> = ({
                     <button
                       type="submit"
                       disabled={loading}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleCreateSubsector(e);
+                      }}
                       className="px-4 py-2 text-sm text-white bg-themeTeal rounded hover:bg-themeTealLight transition duration-200 disabled:opacity-50"
                     >
                       {loading ? 'Creating...' : 'Create'}

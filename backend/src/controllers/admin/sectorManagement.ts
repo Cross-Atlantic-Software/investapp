@@ -191,23 +191,49 @@ export class SectorManagementController {
   static async deleteSector(req: Request, res: Response) {
     try {
       const { id } = req.params;
+      const sectorIdToDelete = parseInt(id);
 
-      const sector = await db.Sector.findByPk(id);
+      const sector = await db.Sector.findByPk(sectorIdToDelete);
       if (!sector) {
         return (res as any).error('Sector not found', HttpStatusCode.NOT_FOUND);
       }
 
-      // Check if sector is being used by any products
+      // Find all products using this sector
       const productsUsingSector = await db.Product.findAll({
         where: {
           sector_ids: {
-            [Op.like]: `%${id}%`
+            [Op.like]: `%${sectorIdToDelete}%`
           }
         }
       });
 
+      // Remove this sector_id from all products' sector_ids JSON arrays
       if (productsUsingSector.length > 0) {
-        return (res as any).error(`Cannot delete sector. It is being used by ${productsUsingSector.length} product(s)`, HttpStatusCode.BAD_REQUEST);
+        for (const product of productsUsingSector) {
+          try {
+            // Parse the JSON array
+            let sectorIds: number[] = [];
+            if (product.sector_ids) {
+              try {
+                sectorIds = JSON.parse(product.sector_ids);
+              } catch (parseError) {
+                // If not JSON, try comma-separated
+                sectorIds = product.sector_ids.split(',').map((s: string) => parseInt(s.trim())).filter((n: number) => !isNaN(n));
+              }
+            }
+
+            // Remove the sector_id being deleted
+            sectorIds = sectorIds.filter((sid: number) => sid !== sectorIdToDelete);
+
+            // Update the product with the new sector_ids array
+            await product.update({
+              sector_ids: JSON.stringify(sectorIds)
+            });
+          } catch (updateError) {
+            console.error(`Error updating product ${product.id} when deleting sector:`, updateError);
+            // Continue with other products even if one fails
+          }
+        }
       }
 
       // Hard delete - permanently remove from database
@@ -215,12 +241,16 @@ export class SectorManagementController {
 
       // Also hard delete all subsectors
       await db.Subsector.destroy({
-        where: { sector_id: id }
+        where: { sector_id: sectorIdToDelete }
       });
+
+      const message = productsUsingSector.length > 0
+        ? `Sector deleted successfully. Removed from ${productsUsingSector.length} product(s).`
+        : 'Sector deleted successfully';
 
       res.status(200).json({
         success: true,
-        message: 'Sector deleted successfully'
+        message: message
       });
     } catch (error) {
       console.error('Error deleting sector:', error);
