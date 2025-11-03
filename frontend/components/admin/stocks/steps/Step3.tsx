@@ -1,8 +1,38 @@
-import React from 'react';
-import SimpleRichTextEditor from '../../SimpleRichTextEditor';
+'use client';
+
+import React, { useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { StepProps } from '../types';
 
+// Dynamically import ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
+
 const Step3: React.FC<StepProps> = ({ formData, onFormDataChange }) => {
+  // Configure Quill modules
+  const modules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link'],
+      ['clean']
+    ],
+  }), []);
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list',
+    'color', 'background',
+    'link'
+  ];
+
+  const handleShortDescriptionChange = (value: string) => {
+    onFormDataChange({ short_description: value });
+  };
+
   return (
     <div className="space-y-6">
       <div className="text-center mb-4">
@@ -30,12 +60,41 @@ const Step3: React.FC<StepProps> = ({ formData, onFormDataChange }) => {
         <label className="block text-xs font-medium text-themeTeal mb-1">
           Short Description <span className="text-red-500">*</span>
         </label>
-        <SimpleRichTextEditor
-          value={formData.short_description}
-          onChange={(value) => onFormDataChange({ short_description: value })}
-          placeholder="Enter short description"
-          height="120px"
-        />
+        <div className="border border-themeTealLighter rounded-md">
+          <ReactQuill
+            theme="snow"
+            value={formData.short_description || ''}
+            onChange={handleShortDescriptionChange}
+            modules={modules}
+            formats={formats}
+            placeholder="Enter short description"
+            style={{ height: '150px', marginBottom: '42px' }}
+            className="react-quill-custom"
+          />
+        </div>
+        <style jsx global>{`
+          .react-quill-custom .ql-container {
+            min-height: 150px;
+            font-size: 14px;
+            color: #4B5563;
+          }
+          .react-quill-custom .ql-editor {
+            min-height: 150px;
+          }
+          .react-quill-custom .ql-toolbar {
+            border-top: none;
+            border-left: none;
+            border-right: none;
+            border-bottom: 1px solid #E5E7EB;
+            background-color: #F9FAFB;
+          }
+          .react-quill-custom .ql-container {
+            border-bottom: none;
+            border-left: none;
+            border-right: none;
+            border-top: none;
+          }
+        `}</style>
       </div>
 
       {/* Analysis */}

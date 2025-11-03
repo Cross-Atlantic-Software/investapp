@@ -339,12 +339,18 @@ export default function MarketInsightDetailPage() {
               {marketInsight.content_type === 'TEXT' ? (
                 <>
                   {marketInsight.first_part && (
-                    <p className="mb-4">{marketInsight.first_part}</p>
+                    <div 
+                      className="mb-4 prose prose-sm max-w-none prose-headings:text-themeTeal prose-p:text-themeTealLight prose-strong:text-themeTeal prose-a:text-themeSkyBlue prose-ul:text-themeTealLight prose-ol:text-themeTealLight"
+                      dangerouslySetInnerHTML={{ __html: marketInsight.first_part }}
+                    />
                   )}
                   {marketInsight.second_part && (
                     <>
                       {isAuthenticated ? (
-                        <p className="mb-4">{marketInsight.second_part}</p>
+                        <div 
+                          className="mb-4 prose prose-sm max-w-none prose-headings:text-themeTeal prose-p:text-themeTealLight prose-strong:text-themeTeal prose-a:text-themeSkyBlue prose-ul:text-themeTealLight prose-ol:text-themeTealLight"
+                          dangerouslySetInnerHTML={{ __html: marketInsight.second_part }}
+                        />
                       ) : (
                         <LoginPrompt />
                       )}

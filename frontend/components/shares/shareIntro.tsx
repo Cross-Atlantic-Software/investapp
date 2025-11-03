@@ -134,9 +134,10 @@ export default function ShareIntro(props: ShareIntroProps) {
           </div>
 
           {/* About */}
-          <p className="my-6 text-themeTealLight leading-relaxed break-words">
-            {about}
-          </p>
+          <div 
+            className="my-6 text-themeTealLight leading-relaxed break-words prose prose-sm max-w-none prose-headings:text-themeTeal prose-p:text-themeTealLight prose-strong:text-themeTeal prose-a:text-themeSkyBlue"
+            dangerouslySetInnerHTML={{ __html: about || 'No description available' }}
+          />
 
           <Button
             text={website}

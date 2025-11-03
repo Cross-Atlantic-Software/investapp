@@ -235,9 +235,10 @@ const ViewStockModal: React.FC<ViewStockModalProps> = ({ stock, onClose, stockMa
 
             <div>
               <label className="block text-xs font-medium text-themeTeal mb-1">Short Description</label>
-              <div className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700 min-h-[80px]">
-                {stock.short_description || 'No short description available'}
-              </div>
+              <div 
+                className="w-full px-3 py-2 text-sm border border-themeTealLighter rounded-md bg-gray-50 text-gray-700 min-h-[80px] prose prose-sm max-w-none"
+                dangerouslySetInnerHTML={{ __html: stock.short_description || 'No short description available' }}
+              />
             </div>
 
             {/* <div>
