@@ -299,12 +299,18 @@ export default function KnowledgeCenterDetailPage() {
               {knowledgeCenter.content_type === 'TEXT' ? (
                 <>
                   {knowledgeCenter.first_part && (
-                    <p className="mb-4">{knowledgeCenter.first_part}</p>
+                    <div 
+                      className="mb-4 prose prose-sm max-w-none prose-headings:text-themeTeal prose-p:text-themeTealLight prose-strong:text-themeTeal prose-a:text-themeSkyBlue prose-ul:text-themeTealLight prose-ol:text-themeTealLight"
+                      dangerouslySetInnerHTML={{ __html: knowledgeCenter.first_part }}
+                    />
                   )}
                   {knowledgeCenter.second_part && (
                     <>
                       {isAuthenticated ? (
-                        <p className="mb-4">{knowledgeCenter.second_part}</p>
+                        <div 
+                          className="mb-4 prose prose-sm max-w-none prose-headings:text-themeTeal prose-p:text-themeTealLight prose-strong:text-themeTeal prose-a:text-themeSkyBlue prose-ul:text-themeTealLight prose-ol:text-themeTealLight"
+                          dangerouslySetInnerHTML={{ __html: knowledgeCenter.second_part }}
+                        />
                       ) : (
                         <LoginPrompt />
                       )}

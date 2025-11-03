@@ -1,11 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { Plus, Search, Edit, Trash2, Eye, Tag, Building2, Palette, Upload, X } from "lucide-react";
 import ManageDropdown from "@/components/admin/ManageDropdown";
 import InsightTaxonomyModal from "@/components/admin/InsightTaxonomyModal";
 import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
 import Image from "next/image";
+
+// Dynamically import ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
 
 interface KnowledgeCenter {
   id: number;
@@ -93,6 +98,26 @@ export default function KnowledgeCentersPage() {
   const [knowledgeSubtopics, setKnowledgeSubtopics] = useState<KnowledgeSubtopic[]>([]);
   const [knowledgeThemes, setKnowledgeThemes] = useState<KnowledgeTheme[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+
+  // Memoize Quill modules to prevent re-initialization
+  const quillModules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link'],
+      ['clean']
+    ],
+  }), []);
+
+  const quillFormats = useMemo(() => [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list',
+    'color', 'background',
+    'link'
+  ], []);
   
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -1016,28 +1041,94 @@ export default function KnowledgeCentersPage() {
                 <>
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-themeTeal mb-1">First Part *</label>
-                    <textarea
-                      value={formData.first_part}
-                      onChange={(e) => setFormData({...formData, first_part: e.target.value})}
-                      className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                      disabled={isViewMode}
-                      rows={4}
-                      placeholder="First part of the content"
-                      readOnly={isViewMode}
-                    />
+                    {isViewMode ? (
+                      <div 
+                        className="w-full px-3 py-2 border border-themeTealLighter rounded-lg bg-gray-50 min-h-[100px] prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: formData.first_part || 'No content available' }}
+                      />
+                    ) : (
+                      <div className="border border-themeTealLighter rounded-lg">
+                        <ReactQuill
+                          theme="snow"
+                          value={formData.first_part || ''}
+                          onChange={(value) => setFormData(prev => ({...prev, first_part: value}))}
+                          modules={quillModules}
+                          formats={quillFormats}
+                          placeholder="First part of the content"
+                          style={{ height: '200px', marginBottom: '42px' }}
+                          className="react-quill-custom"
+                        />
+                        <style jsx global>{`
+                          .react-quill-custom .ql-container {
+                            min-height: 200px;
+                            font-size: 14px;
+                            color: #4B5563;
+                          }
+                          .react-quill-custom .ql-editor {
+                            min-height: 200px;
+                          }
+                          .react-quill-custom .ql-toolbar {
+                            border-top: none;
+                            border-left: none;
+                            border-right: none;
+                            border-bottom: 1px solid #E5E7EB;
+                            background-color: #F9FAFB;
+                          }
+                          .react-quill-custom .ql-container {
+                            border-bottom: none;
+                            border-left: none;
+                            border-right: none;
+                            border-top: none;
+                          }
+                        `}</style>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-themeTeal mb-1">Second Part *</label>
-                    <textarea
-                      value={formData.second_part}
-                      onChange={(e) => setFormData({...formData, second_part: e.target.value})}
-                      className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                      disabled={isViewMode}
-                      rows={4}
-                      placeholder="Second part of the content"
-                      readOnly={isViewMode}
-                    />
+                    {isViewMode ? (
+                      <div 
+                        className="w-full px-3 py-2 border border-themeTealLighter rounded-lg bg-gray-50 min-h-[100px] prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: formData.second_part || 'No content available' }}
+                      />
+                    ) : (
+                      <div className="border border-themeTealLighter rounded-lg">
+                        <ReactQuill
+                          theme="snow"
+                          value={formData.second_part || ''}
+                          onChange={(value) => setFormData(prev => ({...prev, second_part: value}))}
+                          modules={quillModules}
+                          formats={quillFormats}
+                          placeholder="Second part of the content"
+                          style={{ height: '200px', marginBottom: '42px' }}
+                          className="react-quill-custom"
+                        />
+                        <style jsx global>{`
+                          .react-quill-custom .ql-container {
+                            min-height: 200px;
+                            font-size: 14px;
+                            color: #4B5563;
+                          }
+                          .react-quill-custom .ql-editor {
+                            min-height: 200px;
+                          }
+                          .react-quill-custom .ql-toolbar {
+                            border-top: none;
+                            border-left: none;
+                            border-right: none;
+                            border-bottom: 1px solid #E5E7EB;
+                            background-color: #F9FAFB;
+                          }
+                          .react-quill-custom .ql-container {
+                            border-bottom: none;
+                            border-left: none;
+                            border-right: none;
+                            border-top: none;
+                          }
+                        `}</style>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
