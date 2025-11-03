@@ -131,25 +131,25 @@ export default function HoldingsTable() {
   return (
     <>
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="w-full divide-y divide-gray-200 table-auto">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Company
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Shares
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Price
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Value
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Change
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Transact
               </th>
             </tr>
@@ -157,40 +157,41 @@ export default function HoldingsTable() {
           <tbody className="bg-white divide-y divide-gray-200">
             {holdings.map((holding) => (
               <tr key={holding.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-3 py-3 whitespace-nowrap">
                   <div 
-                    className="text-sm font-medium text-themeTeal cursor-pointer hover:text-themeTealDark transition-colors duration-200"
+                    className="text-xs font-medium text-themeTeal cursor-pointer hover:text-themeTealDark transition-colors duration-200 truncate max-w-[120px]"
                     onClick={() => handleCompanyClick(holding)}
+                    title={holding.company_name}
                   >
                     {holding.company_name}
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-2 py-3 whitespace-nowrap text-xs text-gray-900">
                   {holding.quantity}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-2 py-3 whitespace-nowrap text-xs text-gray-900">
                   {formatCurrency(holding.purchase_price)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td className="px-2 py-3 whitespace-nowrap text-xs text-gray-900">
                   {formatCurrency(holding.total_amount)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
+                <td className="px-2 py-3 whitespace-nowrap">
                   <div className="flex items-center space-x-1">
                     {getChangeIcon(holding.percentage_change)}
-                    <span className={`text-sm font-medium ${getChangeColor(holding.percentage_change)}`}>
+                    <span className={`text-xs font-medium ${getChangeColor(holding.percentage_change)}`}>
                       {formatPercentage(holding.percentage_change)}
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex items-center space-x-2">
+                <td className="px-2 py-3 whitespace-nowrap">
+                  <div className="flex items-center space-x-1">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         handleBuy(holding);
                       }}
-                      className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1 rounded-md transition-colors duration-200"
+                      className="bg-green-600 hover:bg-green-700 text-white text-xs px-2 py-1 rounded transition-colors duration-200"
                     >
                       Buy
                     </button>
@@ -200,7 +201,7 @@ export default function HoldingsTable() {
                         e.stopPropagation();
                         handleSell(holding);
                       }}
-                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-3 py-1 rounded-md transition-colors duration-200"
+                      className="bg-red-600 hover:bg-red-700 text-white text-xs px-2 py-1 rounded transition-colors duration-200"
                     >
                       Sell
                     </button>

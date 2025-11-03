@@ -3,7 +3,7 @@
 import { Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { OverviewCard, RiskCard, RecoCard, OpportunityCard, HoldingsTable } from "@/components/dashboard";
+import { OverviewCard, RiskCard, OpportunityCard, HoldingsTable } from "@/components/dashboard";
 import UpdatesListing, { type UpdateItem } from "@/components/dashboard/updatesListing";
 import { NotableActivity } from "@/components/subcomponents";
 import { Button, Heading } from "@/components/ui";
@@ -84,8 +84,8 @@ export default function DashboardPage() {
           return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
         });
 
-        // Convert to UpdateItem format and limit to 5 items
-        const formattedInsights: UpdateItem[] = filteredInsights.slice(0, 5).map((insight: MarketInsight) => {
+        // Convert to UpdateItem format and limit to 4 items
+        const formattedInsights: UpdateItem[] = filteredInsights.slice(0, 4).map((insight: MarketInsight) => {
           const updatedDate = new Date(insight.updated_at);
           const now = new Date();
           const diffMs = now.getTime() - updatedDate.getTime();
@@ -160,69 +160,69 @@ export default function DashboardPage() {
       </div>
 
       {/* top summary cards */}
-      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
         <OverviewCard />
         <RiskCard />
-        <RecoCard />
+        {/* <RecoCard /> */}
         <OpportunityCard />
       </div>
 
-      {/* holdings table - full width */}
-      <section className="rounded bg-white p-4">
-        <div className="mb-4">
-          <Heading as="h5" className="text-themeTeal">
-            Holdings
-          </Heading>
-        </div>
-
-        {/* table: responsive with proper overflow handling */}
-        <div className="overflow-x-auto">
-          <div className="min-w-full">
-            <HoldingsTable />
+      {/* holdings table and sidebar - side by side */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-4">
+        {/* Left: Holdings Table */}
+        <section className="rounded bg-white p-4">
+          <div className="mb-4">
+            <Heading as="h5" className="text-themeTeal">
+              Holdings
+            </Heading>
           </div>
-        </div>
-      </section>
 
-      {/* updates sidebar */}
-      <div className="mt-4">
-        <div className="flex flex-col gap-4 lg:flex-row">
-          <div className="w-full lg:w-1/2">
-            {loading ? (
-              <div className="rounded bg-white p-4">
-                <h3 className="px-4 pt-3 text-lg font-semibold text-themeTeal">Market Insights</h3>
-                <div className="px-4 py-3 text-sm text-themeTealLighter">Loading...</div>
-              </div>
-            ) : watchlistInsights.length > 0 ? (
-              <div className="rounded bg-white">
-                <UpdatesListing items={watchlistInsights} heading="Market Insights" className="p-2" />
-                <div className="px-4 pb-4 pt-2">
-                  <button
-                    onClick={() => router.push('/market-insights')}
-                    className="text-sm text-themeTeal hover:text-themeSkyBlue hover:underline font-medium transition-colors"
-                  >
-                    View More
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="rounded bg-white p-4">
-                <h3 className="px-4 pt-3 text-lg font-semibold text-themeTeal">Market Insights</h3>
-                <div className="px-4 py-3 text-sm text-themeTealLighter">No market insights available for your watchlist companies.</div>
-                <div className="px-4 pb-4 pt-2">
-                  <button
-                    onClick={() => router.push('/market-insights')}
-                    className="text-sm text-themeTeal hover:text-themeSkyBlue hover:underline font-medium transition-colors"
-                  >
-                    View More
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="w-full lg:w-1/2">
-            <div className="rounded bg-white p-2">
-              <NotableActivity />
+          {/* table: responsive with proper overflow handling */}
+          <div className="overflow-x-auto">
+            <div className="min-w-full">
+              <HoldingsTable />
             </div>
+          </div>
+        </section>
+
+        {/* Right: Market Insights and Notable Activities stacked */}
+        <div className="flex flex-col gap-4">
+          {/* Market Insights */}
+          {loading ? (
+            <div className="rounded bg-white p-4">
+              <h3 className="px-4 pt-3 text-lg font-semibold text-themeTeal">Market Insights</h3>
+              <div className="px-4 py-3 text-sm text-themeTealLighter">Loading...</div>
+            </div>
+          ) : watchlistInsights.length > 0 ? (
+            <div className="rounded bg-white flex flex-col flex-1">
+              <UpdatesListing items={watchlistInsights} heading="Market Insights" className="p-2" />
+              <div className="px-4 pb-4 pt-2">
+                <button
+                  onClick={() => router.push('/market-insights')}
+                  className="text-sm text-themeTeal hover:text-themeSkyBlue hover:underline font-medium transition-colors"
+                >
+                  View More
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded bg-white p-4 flex flex-col flex-1">
+              <h3 className="px-4 pt-3 text-lg font-semibold text-themeTeal">Market Insights</h3>
+              <div className="px-4 py-3 text-sm text-themeTealLighter">No market insights available for your watchlist companies.</div>
+              <div className="px-4 pb-4 pt-2">
+                <button
+                  onClick={() => router.push('/market-insights')}
+                  className="text-sm text-themeTeal hover:text-themeSkyBlue hover:underline font-medium transition-colors"
+                >
+                  View More
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Notable Activities */}
+          <div className="rounded bg-white p-2 flex flex-col flex-1">
+            <NotableActivity />
           </div>
         </div>
       </div>
