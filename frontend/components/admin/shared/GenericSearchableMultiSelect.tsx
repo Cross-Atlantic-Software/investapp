@@ -81,6 +81,14 @@ export default function GenericSearchableMultiSelect({
       return;
     }
     
+    // If forceAbove is explicitly false, always position below
+    if (forceAbove === false) {
+      setDropdownPosition('below');
+      // Use absolute positioning when below
+      setDropdownStyles({});
+      return;
+    }
+    
     const viewportHeight = window.innerHeight;
     const spaceBelow = viewportHeight - rect.bottom;
     const spaceAbove = rect.top;
