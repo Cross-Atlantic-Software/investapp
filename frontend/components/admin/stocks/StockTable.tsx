@@ -1,10 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 
 import Image from 'next/image';
 import { Loader } from '@/components/admin/shared';
 import { ChevronDown, Eye, IndianRupee, SquarePen, Trash2, X, Upload, BarChart3, Plus, Edit3, FileText, AlertTriangle, TrendingUp, MoreVertical } from 'lucide-react';
+
+// Dynamically import ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
 import CSVUploadModal from './CSVUploadModal';
 import ConfirmationModal from '@/components/admin/shared/ConfirmationModal';
 import EditStockModal from './EditStockModal';
@@ -110,6 +115,26 @@ interface StockTableProps {
 
 
 const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sortBy, sortOrder, onNotification, stockMasters = [], sectors = [], subsectors = [], themes = [] }) => {
+  // Configure Quill modules for rich text editor
+  const quillModules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link'],
+      ['clean']
+    ],
+  }), []);
+
+  const quillFormats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list',
+    'color', 'background',
+    'link'
+  ];
+
   const [editingStock, setEditingStock] = useState<Stock | null>(null);
   const [viewingStock, setViewingStock] = useState<Stock | null>(null);
   const [csvUploadModal, setCsvUploadModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
@@ -419,7 +444,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       
       const data = await response.json();
       if (data.success) {
-        await fetchScorecards(scorecardModal.stock!.id);
+        // Close the confirmation modal
+        setScorecardDeleteConfirmation({ isOpen: false, scorecardId: null });
+        // Refresh scorecards
+        if (scorecardModal.stock?.id) {
+          await fetchScorecards(scorecardModal.stock.id);
+        }
         onNotification?.('success', 'Success', 'Scorecard deleted successfully!');
       } else {
         onNotification?.('error', 'Error', data.message || 'Failed to delete scorecard');
@@ -602,11 +632,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       if (data.success) {
         setPdfs(data.data.pdfs || []);
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to fetch performance PDFs');
+        onNotification?.('error', 'Error', data.message || 'Failed to fetch Competitive Benchmarking PDF');
       }
     } catch (error) {
-      console.error('Error fetching performance PDFs:', error);
-      onNotification?.('error', 'Error', 'Failed to fetch performance PDFs');
+      console.error('Error fetching Competitive Benchmarking PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to fetch Competitive Benchmarking PDF');
     } finally {
       setPdfLoading(false);
     }
@@ -635,13 +665,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         await fetchPdfs(pdfModal.stock.id);
         setPdfFormData({});
         setPdfFile(null);
-        onNotification?.('success', 'Success', 'Performance PDF uploaded successfully!');
+        onNotification?.('success', 'Success', 'Competitive Benchmarking PDF uploaded successfully!');
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to upload performance PDF');
+        onNotification?.('error', 'Error', data.message || 'Failed to upload Competitive Benchmarking PDF');
       }
     } catch (error) {
-      console.error('Error uploading performance PDF:', error);
-      onNotification?.('error', 'Error', 'Failed to upload performance PDF');
+      console.error('Error uploading Competitive Benchmarking PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to upload Competitive Benchmarking PDF');
     }
   };
 
@@ -679,13 +709,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         await fetchPdfs(pdfModal.stock!.id);
         setEditingPdf(null);
         setPdfFormData({});
-        onNotification?.('success', 'Success', 'Performance PDF updated successfully!');
+        onNotification?.('success', 'Success', 'Competitive Benchmarking PDF updated successfully!');
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to update performance PDF');
+        onNotification?.('error', 'Error', data.message || 'Failed to update Competitive Benchmarking PDF');
       }
     } catch (error) {
-      console.error('Error updating performance PDF:', error);
-      onNotification?.('error', 'Error', 'Failed to update performance PDF');
+      console.error('Error updating Competitive Benchmarking PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to update Competitive Benchmarking PDF');
     }
   };
 
@@ -709,13 +739,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       const data = await response.json();
       if (data.success) {
         await fetchPdfs(pdfModal.stock!.id);
-        onNotification?.('success', 'Success', 'Performance PDF deleted successfully!');
+        onNotification?.('success', 'Success', 'Competitive Benchmarking PDF deleted successfully!');
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to delete performance PDF');
+        onNotification?.('error', 'Error', data.message || 'Failed to delete Competitive Benchmarking PDF');
       }
     } catch (error) {
-      console.error('Error deleting performance PDF:', error);
-      onNotification?.('error', 'Error', 'Failed to delete performance PDF');
+      console.error('Error deleting Competitive Benchmarking PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to delete Competitive Benchmarking PDF');
     }
   };
 
@@ -1673,13 +1703,41 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-sm text-themeTealLight mb-1">
                       Analysis <span className="text-red-500">*</span>
                     </label>
-                    <textarea
-                      rows={4}
-                      value={scorecardFormData.analysis || ''}
-                      onChange={(e) => setScorecardFormData({...scorecardFormData, analysis: e.target.value})}
-                      className="input-theme"
-                      placeholder="Detailed analysis of this category..."
-                    />
+                    <div className="border border-themeTealLighter rounded">
+                      <ReactQuill
+                        theme="snow"
+                        value={scorecardFormData.analysis || ''}
+                        onChange={(value) => setScorecardFormData(prev => ({ ...prev, analysis: value }))}
+                        modules={quillModules}
+                        formats={quillFormats}
+                        placeholder="Detailed analysis of this category..."
+                        style={{ height: '150px', marginBottom: '42px' }}
+                        className="react-quill-custom"
+                      />
+                    </div>
+                    <style jsx global>{`
+                      .react-quill-custom .ql-container {
+                        min-height: 150px;
+                        font-size: 14px;
+                        color: #4B5563;
+                      }
+                      .react-quill-custom .ql-editor {
+                        min-height: 150px;
+                      }
+                      .react-quill-custom .ql-toolbar {
+                        border-top: none;
+                        border-left: none;
+                        border-right: none;
+                        border-bottom: 1px solid #E5E7EB;
+                        background-color: #F9FAFB;
+                      }
+                      .react-quill-custom .ql-container {
+                        border-bottom: none;
+                        border-left: none;
+                        border-right: none;
+                        border-top: none;
+                      }
+                    `}</style>
                   </div>
                 </div>
                 
@@ -1697,7 +1755,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   )}
                   <button
                     onClick={editingScorecard ? handleUpdateScorecard : handleCreateScorecard}
-                    disabled={!scorecardFormData.category || !scorecardFormData.score_value || !scorecardFormData.score_tag || !scorecardFormData.analysis}
+                    disabled={!scorecardFormData.category || !scorecardFormData.score_value || !scorecardFormData.score_tag || !scorecardFormData.analysis || (typeof scorecardFormData.analysis === 'string' && scorecardFormData.analysis.replace(/<[^>]*>/g, '').trim() === '')}
                     className="buttonStyle"
                   >
                     {editingScorecard ? 'Update Scorecard' : 'Add Scorecard'}
@@ -1738,7 +1796,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                 {scorecard.score_value}/10
                               </span>
                             </div>
-                            <p className="text-sm text-themeTealLighter line-clamp-2">{scorecard.analysis}</p>
+                            <div 
+                              className="text-sm text-themeTealLighter line-clamp-2 prose prose-sm max-w-none"
+                              dangerouslySetInnerHTML={{ __html: scorecard.analysis }}
+                            />
                           </div>
                           <div className="flex items-center space-x-2 ml-4">
                             <button
@@ -1848,18 +1909,46 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-sm text-themeTealLight mb-1">
                       Description <span className="text-red-500">*</span>
                     </label>
-                    <textarea
-                      rows={4}
-                      value={rationaleFormData.description || ''}
-                      onChange={(e) => setRationaleFormData({...rationaleFormData, description: e.target.value})}
-                      className="input-theme"
-                      placeholder="Detailed description of this rationale..."
-                    />
+                    <div className="border border-themeTealLighter rounded">
+                      <ReactQuill
+                        theme="snow"
+                        value={rationaleFormData.description || ''}
+                        onChange={(value) => setRationaleFormData(prev => ({ ...prev, description: value }))}
+                        modules={quillModules}
+                        formats={quillFormats}
+                        placeholder="Detailed description of this rationale..."
+                        style={{ height: '150px', marginBottom: '42px' }}
+                        className="react-quill-custom"
+                      />
+                    </div>
+                    <style jsx global>{`
+                      .react-quill-custom .ql-container {
+                        min-height: 150px;
+                        font-size: 14px;
+                        color: #4B5563;
+                      }
+                      .react-quill-custom .ql-editor {
+                        min-height: 150px;
+                      }
+                      .react-quill-custom .ql-toolbar {
+                        border-top: none;
+                        border-left: none;
+                        border-right: none;
+                        border-bottom: 1px solid #E5E7EB;
+                        background-color: #F9FAFB;
+                      }
+                      .react-quill-custom .ql-container {
+                        border-bottom: none;
+                        border-left: none;
+                        border-right: none;
+                        border-top: none;
+                      }
+                    `}</style>
                   </div>
                   
                   <div className="md:col-span-2">
                     <label className="block text-sm text-themeTealLight mb-1">
-                      Icon
+                      Icon <span className="text-red-500">*</span>
                     </label>
                     <div className="flex items-center space-x-4">
                       <input
@@ -1886,7 +1975,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-themeTealLighter mt-1">Upload an icon for this rationale (optional)</p>
+                    <p className="text-xs text-themeTealLighter mt-1">Upload an icon for this rationale (required)</p>
                   </div>
                 </div>
                 
@@ -1904,7 +1993,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   )}
                   <button
                     onClick={editingRationale ? handleUpdateRationale : handleCreateRationale}
-                    disabled={!rationaleFormData.type || !rationaleFormData.title || !rationaleFormData.description}
+                    disabled={
+                      !rationaleFormData.type || 
+                      !rationaleFormData.title || 
+                      !rationaleFormData.description || 
+                      (typeof rationaleFormData.description === 'string' && rationaleFormData.description.replace(/<[^>]*>/g, '').trim() === '') ||
+                      (!editingRationale ? !rationaleIconFile : (!rationaleIconFile && !rationaleFormData.icon))
+                    }
                     className="buttonStyle"
                   >
                     {editingRationale ? 'Update Rationale' : 'Add Rationale'}
@@ -1958,7 +2053,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                       Order: {rationale.order_index}
                                     </span>
                                   </div>
-                                  <p className="text-sm text-themeTealLight line-clamp-2">{rationale.description}</p>
+                                  <div 
+                                    className="text-sm text-themeTealLight line-clamp-2 prose prose-sm max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: rationale.description }}
+                                  />
                                 </div>
                                 <div className="flex items-center space-x-2 ml-4">
                                   <button
@@ -2013,7 +2111,10 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                                       Order: {rationale.order_index}
                                     </span>
                                   </div>
-                                  <p className="text-sm text-themeTealLight line-clamp-2">{rationale.description}</p>
+                                  <div 
+                                    className="text-sm text-themeTealLight line-clamp-2 prose prose-sm max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: rationale.description }}
+                                  />
                                 </div>
                                 <div className="flex items-center space-x-2 ml-4">
                                   <button
@@ -2053,7 +2154,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Performance PDFs</h3>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Competitive Benchmarking PDF</h3>
                   <p className="text-themeTealLighter text-sm">{pdfModal.stock.company_name}</p>
                 </div>
                 <button
@@ -2077,7 +2178,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
               <div className="mb-6 p-4 border border-themeTealLighter rounded">
                 <h4 className="text-md font-medium text-themeTeal mb-4 flex items-center">
                   <Upload className="w-5 h-5 mr-2" />
-                  {editingPdf ? 'Edit Performance PDF' : 'Upload New Performance PDF'}
+                  {editingPdf ? 'Edit Competitive Benchmarking PDF' : 'Upload New Competitive Benchmarking PDF'}
                 </h4>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2176,7 +2277,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
               {/* Existing PDFs */}
               <div>
                 <div className="mb-4">
-                  <h4 className="text-md font-medium text-themeTeal">Existing Performance PDFs</h4>
+                  <h4 className="text-md font-medium text-themeTeal">Existing Competitive Benchmarking PDF</h4>
                   <p className="text-sm text-themeTealLighter mt-1">
                     All PDFs are shown below. Only one PDF can be active at a time. 
                     Click &quot;✓ Set Active&quot; to switch which PDF is displayed on the frontend.
@@ -2190,7 +2291,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 ) : pdfs.length === 0 ? (
                   <div className="text-center py-8 text-themeTealLighter">
                     <Upload className="w-12 h-12 mx-auto mb-3 text-themeTealLighter" />
-                    <p>No performance PDFs found for this stock.</p>
+                    <p>No Competitive Benchmarking PDF found for this stock.</p>
                     <p className="text-sm">Upload your first PDF above.</p>
                   </div>
                 ) : (
@@ -2376,13 +2477,41 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     <label className="block text-sm text-themeTealLight mb-2">
                       Sector Outlook Description
                     </label>
-                    <textarea
-                      value={sectorOutlookFormData.description}
-                      onChange={(e) => setSectorOutlookFormData(prev => ({ ...prev, description: e.target.value }))}
-                      rows={4}
-                      className="input-theme"
-                      placeholder="Enter sector outlook description..."
-                    />
+                    <div className="border border-themeTealLighter rounded">
+                      <ReactQuill
+                        theme="snow"
+                        value={sectorOutlookFormData.description}
+                        onChange={(value) => setSectorOutlookFormData(prev => ({ ...prev, description: value }))}
+                        modules={quillModules}
+                        formats={quillFormats}
+                        placeholder="Enter sector outlook description..."
+                        style={{ height: '150px', marginBottom: '42px' }}
+                        className="react-quill-custom"
+                      />
+                    </div>
+                    <style jsx global>{`
+                      .react-quill-custom .ql-container {
+                        min-height: 150px;
+                        font-size: 14px;
+                        color: #4B5563;
+                      }
+                      .react-quill-custom .ql-editor {
+                        min-height: 150px;
+                      }
+                      .react-quill-custom .ql-toolbar {
+                        border-top: none;
+                        border-left: none;
+                        border-right: none;
+                        border-bottom: 1px solid #E5E7EB;
+                        background-color: #F9FAFB;
+                      }
+                      .react-quill-custom .ql-container {
+                        border-bottom: none;
+                        border-left: none;
+                        border-right: none;
+                        border-top: none;
+                      }
+                    `}</style>
                   </div>
 
                   {/* Accordion Items */}
@@ -2427,13 +2556,41 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                             <label className="block text-sm text-themeTealLight mb-1">
                               Analysis
                             </label>
-                            <textarea
-                              value={item.analysis}
-                              onChange={(e) => updateAccordionItem(index, 'analysis', e.target.value)}
-                              rows={3}
-                              className="input-theme"
-                              placeholder="Enter analysis content..."
-                            />
+                            <div className="border border-themeTealLighter rounded">
+                              <ReactQuill
+                                theme="snow"
+                                value={item.analysis}
+                                onChange={(value) => updateAccordionItem(index, 'analysis', value)}
+                                modules={quillModules}
+                                formats={quillFormats}
+                                placeholder="Enter analysis content..."
+                                style={{ height: '150px', marginBottom: '42px' }}
+                                className="react-quill-custom"
+                              />
+                            </div>
+                            <style jsx global>{`
+                              .react-quill-custom .ql-container {
+                                min-height: 150px;
+                                font-size: 14px;
+                                color: #4B5563;
+                              }
+                              .react-quill-custom .ql-editor {
+                                min-height: 150px;
+                              }
+                              .react-quill-custom .ql-toolbar {
+                                border-top: none;
+                                border-left: none;
+                                border-right: none;
+                                border-bottom: 1px solid #E5E7EB;
+                                background-color: #F9FAFB;
+                              }
+                              .react-quill-custom .ql-container {
+                                border-bottom: none;
+                                border-left: none;
+                                border-right: none;
+                                border-top: none;
+                              }
+                            `}</style>
                           </div>
                         </div>
                       </div>
@@ -2799,8 +2956,8 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         isOpen={pdfDeleteConfirmation.isOpen}
         onClose={() => setPdfDeleteConfirmation({ isOpen: false, pdfId: null })}
         onConfirm={confirmDeletePdf}
-        title="Delete Performance PDF"
-        message="Are you sure you want to delete this performance PDF? This action cannot be undone."
+        title="Delete Competitive Benchmarking PDF"
+        message="Are you sure you want to delete this Competitive Benchmarking PDF? This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"

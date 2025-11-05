@@ -26,7 +26,6 @@ export default function PerformanceBenchmarkSection({ stockId }: PerformanceBenc
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState<number | null>(null);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
 
   useEffect(() => {
     const fetchActivePdf = async () => {
@@ -45,11 +44,11 @@ export default function PerformanceBenchmarkSection({ stockId }: PerformanceBenc
           const activePdf = data.data.pdfs.find((pdf: PerformancePdfData) => pdf.is_active);
           setActivePdf(activePdf || null);
         } else {
-          setError(data.message || 'Failed to fetch performance PDF');
+          setError(data.message || 'Failed to fetch Competitive Benchmarking PDF');
         }
       } catch (err) {
-        setError('Failed to fetch performance PDF');
-        console.error('Error fetching performance PDF:', err);
+        setError('Failed to fetch Competitive Benchmarking PDF');
+        console.error('Error fetching Competitive Benchmarking PDF:', err);
       } finally {
         setLoading(false);
       }
@@ -58,21 +57,6 @@ export default function PerformanceBenchmarkSection({ stockId }: PerformanceBenc
     fetchActivePdf();
   }, [stockId]);
 
-  // Auto-slideshow every 3 seconds
-  useEffect(() => {
-    if (!isAutoPlay || !activePdf || !numPages) return;
-
-    const interval = setInterval(() => {
-      setCurrentPage(prev => {
-        if (prev >= numPages) {
-          return 1; // Loop back to first page
-        }
-        return prev + 1;
-      });
-    }, 5000); // 5 seconds
-
-    return () => clearInterval(interval);
-  }, [isAutoPlay, activePdf, numPages]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -127,42 +111,45 @@ export default function PerformanceBenchmarkSection({ stockId }: PerformanceBenc
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
+    <div className="bg-white border border-gray-200 rounded-lg p-6 overflow-hidden">
       {/* PDF Viewer with Side Controls */}
-      <div className="flex justify-center items-center mb-6">
+      <div className="flex justify-center items-center mb-6 gap-4">
         {/* Previous Button */}
         <button
           onClick={goToPreviousPage}
           disabled={currentPage <= 1}
-          className="flex items-center justify-center w-12 h-12 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mr-4"
+          className="flex items-center justify-center w-12 h-12 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           title="Previous Page"
         >
           <ChevronLeft className="w-8 h-8 text-gray-400 hover:text-themeTeal" />
         </button>
 
-        {/* PDF Viewer */}
-        <div className="relative">
-          {activePdf ? (
-            <PDFViewer
-              pdfUrl={activePdf.pdf_url}
-              currentPage={currentPage}
-              onLoadSuccess={onDocumentLoadSuccess}
-              onLoadError={onDocumentLoadError}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-96 w-full bg-gray-100 rounded-lg">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4"></div>
-                <p className="text-gray-500">Loading PDF viewer...</p>
+        {/* PDF Viewer Container */}
+        <div className="relative flex-1 max-w-full overflow-hidden" data-pdf-container>
+          <div className="w-full max-w-full overflow-hidden border border-gray-200 rounded-lg bg-gray-50">
+            {activePdf ? (
+              <PDFViewer
+                pdfUrl={activePdf.pdf_url}
+                currentPage={currentPage}
+                onLoadSuccess={onDocumentLoadSuccess}
+                onLoadError={onDocumentLoadError}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-96 w-full bg-gray-100 rounded-lg min-w-[200px]">
+                <div className="text-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4"></div>
+                  <p className="text-gray-500">Loading PDF viewer...</p>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Next Button */}
         <button
           onClick={goToNextPage}
-          className="flex items-center justify-center w-12 h-12 transition-all duration-200 ml-4"
+          disabled={numPages ? currentPage >= numPages : false}
+          className="flex items-center justify-center w-12 h-12 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
           title="Next Page"
         >
           <ChevronRight className="w-8 h-8 text-gray-400 hover:text-themeTeal" />

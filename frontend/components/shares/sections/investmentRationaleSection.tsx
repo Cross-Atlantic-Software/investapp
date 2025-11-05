@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import {
   TriangleAlert,
-  AlertTriangle,
   Plus,
   Minus,
   TrendingUp,
@@ -110,14 +109,13 @@ export default function InvestmentRationaleSection({ stockId }: InvestmentRation
             label="Investment Rationale"
             tone="good"
           />
-          {rationales.pros.map((rationale, i) => (
+          {rationales.pros.map((rationale) => (
             <AccordionRow
               key={rationale.id}
-              icon={<TriangleAlert className="h-4 w-4 text-emerald-700" />}
               customIcon={rationale.icon}
               title={rationale.title}
               body={rationale.description}
-              defaultOpen={i === 0}
+              defaultOpen={false}
             />
           ))}
         </section>
@@ -131,14 +129,13 @@ export default function InvestmentRationaleSection({ stockId }: InvestmentRation
             label="Key Risks"
             tone="risk"
           />
-          {rationales.risks.map((rationale, i) => (
+          {rationales.risks.map((rationale) => (
             <AccordionRow
               key={rationale.id}
-              icon={<AlertTriangle className="h-4 w-4 text-rose-600" />}
               customIcon={rationale.icon}
               title={rationale.title}
               body={rationale.description}
-              defaultOpen={i === 0}
+              defaultOpen={false}
             />
           ))}
         </section>
@@ -176,13 +173,11 @@ function GroupHeader({
 }
 
 function AccordionRow({
-  icon,
   customIcon,
   title,
   body,
   defaultOpen = false,
 }: {
-  icon: React.ReactNode;
   customIcon?: string;
   title: string;
   body: string;
@@ -199,14 +194,12 @@ function AccordionRow({
         className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
       >
         <div className="flex items-center gap-3">
-          {customIcon ? (
+          {customIcon && (
             <img 
               src={customIcon} 
               alt={`${title} icon`}
               className="h-4 w-4 rounded object-cover"
             />
-          ) : (
-            icon
           )}
           <span className="text-sm font-semibold text-themeTeal">{title}</span>
         </div>
@@ -220,10 +213,13 @@ function AccordionRow({
       <div
         className={[
           "overflow-hidden transition-[max-height,opacity] duration-300",
-          open ? "max-h-96 opacity-100" : "max-h-0 opacity-0",
+          open ? "max-h-[2000px] opacity-100" : "max-h-0 opacity-0",
         ].join(" ")}
       >
-        <p className="px-5 pb-4 text-sm text-themeTealLight leading-relaxed">{body}</p>
+        <div 
+          className="px-5 pb-4 text-sm text-themeTealLight leading-relaxed prose prose-sm max-w-none prose-headings:text-themeTeal prose-p:text-themeTealLight prose-strong:text-themeTeal prose-a:text-blue-600 prose-ul:text-themeTealLight prose-ol:text-themeTealLight"
+          dangerouslySetInnerHTML={{ __html: body }}
+        />
       </div>
     </div>
   );

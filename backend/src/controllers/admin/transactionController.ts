@@ -516,5 +516,78 @@ export class TransactionController {
       });
     }
   };
+
+  // Get transaction statistics (buy/sell requests from last 7 days)
+  getTransactionStats = async (req: Request, res: Response): Promise<void> => {
+    try {
+      await this.ensureDbReady();
+      
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      // Count buy requests from last 7 days (these are the actual requests)
+      const buyRequestsLast7Days = await db.BuyRequest.count({
+        where: {
+          created_at: {
+            [Op.gte]: sevenDaysAgo
+          }
+        }
+      });
+
+      // Count sell transactions from last 7 days (sell requests come as transactions directly)
+      const sellTransactionsLast7Days = await this.transactionModel.count({
+        where: {
+          transaction_type: 'sell',
+          created_at: {
+            [Op.gte]: sevenDaysAgo
+          }
+        }
+      });
+
+      // Total buy/sell requests from last 7 days
+      const totalBuySellRequests = buyRequestsLast7Days + sellTransactionsLast7Days;
+
+      // Count buy requests from 7 days ago (for percentage calculation)
+      const buyRequests7DaysAgo = await db.BuyRequest.count({
+        where: {
+          created_at: {
+            [Op.lte]: sevenDaysAgo
+          }
+        }
+      });
+
+      const sellTransactions7DaysAgo = await this.transactionModel.count({
+        where: {
+          transaction_type: 'sell',
+          created_at: {
+            [Op.lte]: sevenDaysAgo
+          }
+        }
+      });
+
+      const totalBuySellRequests7DaysAgo = buyRequests7DaysAgo + sellTransactions7DaysAgo;
+
+      // Calculate percentage change (growth in last 7 days)
+      const totalBuySellRequestsChange = totalBuySellRequests7DaysAgo > 0 ? 
+        ((totalBuySellRequests - totalBuySellRequests7DaysAgo) / totalBuySellRequests7DaysAgo * 100) : 
+        (totalBuySellRequests > 0 ? 100 : 0);
+
+      res.status(HttpStatusCode.OK).json({
+        success: true,
+        data: {
+          totalBuySellRequests,
+          totalBuySellRequestsChange: Math.round(totalBuySellRequestsChange * 100) / 100,
+          buyRequestsLast7Days,
+          sellTransactionsLast7Days
+        }
+      });
+    } catch (error: any) {
+      console.error("Get transaction stats error:", error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Internal server error'
+      });
+    }
+  };
 }
 

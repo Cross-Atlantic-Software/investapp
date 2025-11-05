@@ -231,9 +231,9 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-start justify-center z-[60] p-4 m-0">
-      <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col">
+      <div className="bg-white rounded shadow w-full max-w-2xl mx-4 my-4 max-h-[95vh] flex flex-col overflow-visible">
         {/* Modal Header */}
-        <div className="bg-themeTeal px-6 py-4 rounded-t">
+        <div className="bg-themeTeal px-6 py-4 rounded-t relative z-10">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-base font-semibold text-white">Add New Stock</h3>
@@ -257,16 +257,18 @@ const AddStockModal: React.FC<AddStockModalProps> = ({ onClose, onSubmit, stockM
         </div>
 
         {/* Step Progress Indicator */}
-        <StepProgressIndicator
-          totalSteps={totalSteps}
-          currentStep={currentStep}
-          isStepCompleted={isStepCompleted}
-          validateStep={validateCurrentStep}
-          goToStep={handleGoToStep}
-        />
+        <div className="relative z-10">
+          <StepProgressIndicator
+            totalSteps={totalSteps}
+            currentStep={currentStep}
+            isStepCompleted={isStepCompleted}
+            validateStep={validateCurrentStep}
+            goToStep={handleGoToStep}
+          />
+        </div>
 
         {/* Modal Body */}
-        <div className="p-6 flex-1 overflow-y-auto">
+        <div className="p-6 flex-1 overflow-y-auto relative z-0 overflow-x-visible">
           {isLoading ? (
             <div className="flex items-center justify-center h-64">
               <Loader2 className="w-8 h-8 animate-spin text-themeTeal" />

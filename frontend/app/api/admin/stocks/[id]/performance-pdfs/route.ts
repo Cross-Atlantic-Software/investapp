@@ -29,9 +29,9 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching performance PDFs:', error);
+    console.error('Error fetching Competitive Benchmarking PDF:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch performance PDFs' },
+      { success: false, message: 'Failed to fetch Competitive Benchmarking PDF' },
       { status: 500 }
     );
   }
@@ -59,9 +59,9 @@ export async function POST(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error uploading performance PDF:', error);
+    console.error('Error uploading Competitive Benchmarking PDF:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to upload performance PDF' },
+      { success: false, message: 'Failed to upload Competitive Benchmarking PDF' },
       { status: 500 }
     );
   }

@@ -180,9 +180,9 @@ export class UserSearchService {
     try {
       const whereConditions = this.buildSearchConditions(filters);
 
-      // Calculate 30-day percentage changes
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Calculate weekly percentage changes (7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
       const [
         totalUsers,
@@ -190,9 +190,9 @@ export class UserSearchService {
         activeUsers,
         usersByRole,
         usersByProvider,
-        totalUsers30DaysAgo,
-        verifiedUsers30DaysAgo,
-        activeUsers30DaysAgo
+        totalUsers7DaysAgo,
+        verifiedUsers7DaysAgo,
+        activeUsers7DaysAgo
       ] = await Promise.all([
         db.CmsUser.count({ where: whereConditions }),
         db.CmsUser.count({ where: { ...whereConditions, email_verified: 1 } }),
@@ -218,36 +218,36 @@ export class UserSearchService {
         db.CmsUser.count({ 
           where: { 
             ...whereConditions,
-            createdAt: { [Op.lte]: thirtyDaysAgo }
+            createdAt: { [Op.lte]: sevenDaysAgo }
           } 
         }),
         db.CmsUser.count({ 
           where: { 
             ...whereConditions,
             email_verified: 1,
-            createdAt: { [Op.lte]: thirtyDaysAgo }
+            createdAt: { [Op.lte]: sevenDaysAgo }
           } 
         }),
         db.CmsUser.count({ 
           where: { 
             ...whereConditions,
             status: 1,
-            createdAt: { [Op.lte]: thirtyDaysAgo }
+            createdAt: { [Op.lte]: sevenDaysAgo }
           } 
         })
       ]);
 
-      // Calculate percentage changes (growth in last 30 days)
-      const totalUsersChange = totalUsers30DaysAgo > 0 ? 
-        ((totalUsers - totalUsers30DaysAgo) / totalUsers30DaysAgo * 100) : 
+      // Calculate percentage changes (growth in last 7 days)
+      const totalUsersChange = totalUsers7DaysAgo > 0 ? 
+        ((totalUsers - totalUsers7DaysAgo) / totalUsers7DaysAgo * 100) : 
         (totalUsers > 0 ? 100 : 0);
       
-      const verifiedUsersChange = verifiedUsers30DaysAgo > 0 ? 
-        ((verifiedUsers - verifiedUsers30DaysAgo) / verifiedUsers30DaysAgo * 100) : 
+      const verifiedUsersChange = verifiedUsers7DaysAgo > 0 ? 
+        ((verifiedUsers - verifiedUsers7DaysAgo) / verifiedUsers7DaysAgo * 100) : 
         (verifiedUsers > 0 ? 100 : 0);
       
-      const activeUsersChange = activeUsers30DaysAgo > 0 ? 
-        ((activeUsers - activeUsers30DaysAgo) / activeUsers30DaysAgo * 100) : 
+      const activeUsersChange = activeUsers7DaysAgo > 0 ? 
+        ((activeUsers - activeUsers7DaysAgo) / activeUsers7DaysAgo * 100) : 
         (activeUsers > 0 ? 100 : 0);
 
       return {

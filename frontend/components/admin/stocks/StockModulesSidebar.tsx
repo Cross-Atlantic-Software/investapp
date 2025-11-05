@@ -52,7 +52,7 @@ const modules = [
   },
   {
     id: 'performance-pdfs',
-    title: 'Manage Performance PDFs',
+    title: 'Manage Competitive Benchmarking PDF',
     description: 'Upload performance reports',
     icon: Upload,
     color: 'orange',

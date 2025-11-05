@@ -57,6 +57,12 @@ export default function WishlistCard({ stockId, stockName, stockPrice, variant =
 
   const handleWishlistToggle = async () => {
     if (!isAuthenticated) {
+      // Save current route to sessionStorage for redirect after login
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname + window.location.search;
+        sessionStorage.setItem('authFlow', 'wishlist');
+        sessionStorage.setItem('returnAfterAuth', currentPath);
+      }
       // Redirect to login page
       router.push('/login');
       return;

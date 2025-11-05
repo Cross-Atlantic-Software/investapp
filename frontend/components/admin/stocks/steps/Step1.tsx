@@ -155,7 +155,7 @@ const Step1: React.FC<Step1Props> = ({
       {/* Themes */}
       <div>
         <label className="block text-xs font-medium text-themeTeal mb-1">
-          Themes
+          Themes <span className="text-red-500">*</span>
         </label>
         <GenericSearchableMultiSelect
           options={themes.map(theme => ({ value: theme.id, label: theme.name }))}

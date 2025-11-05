@@ -571,13 +571,32 @@ export class KYCManagementController {
       const verifiedApplications = await this.kycModel.count({ where: { status: 'verified' } });
       const rejectedApplications = await this.kycModel.count({ where: { status: 'rejected' } });
 
+      // Calculate weekly percentage changes (7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const pendingApplications7DaysAgo = await this.kycModel.count({
+        where: {
+          status: 'pending',
+          createdAt: {
+            [Op.lte]: sevenDaysAgo
+          }
+        }
+      });
+
+      // Calculate percentage change (growth in last 7 days)
+      const pendingApplicationsChange = pendingApplications7DaysAgo > 0 ? 
+        ((pendingApplications - pendingApplications7DaysAgo) / pendingApplications7DaysAgo * 100) : 
+        (pendingApplications > 0 ? 100 : 0);
+
       res.status(HttpStatusCode.OK).json({
         success: true,
         data: {
           total: totalApplications,
           pending: pendingApplications,
           verified: verifiedApplications,
-          rejected: rejectedApplications
+          rejected: rejectedApplications,
+          pendingChange: Math.round(pendingApplicationsChange * 100) / 100
         }
       });
     } catch (error) {

@@ -25,15 +25,15 @@ export default function Page() {
     console.log('useEffect triggered:', { isAuthenticated, isSubmitting, isGoogleLoading, hasLoggedIn });
     
     if (isAuthenticated && !isSubmitting && !isGoogleLoading && !hasLoggedIn) {
-      // Check if this is a stock-buy flow
+      // Check if this is a stock-buy flow or wishlist flow
       const authFlow = sessionStorage.getItem('authFlow');
       const returnUrl = sessionStorage.getItem('returnAfterAuth');
       
       console.log('Already authenticated - checking return flow:', { authFlow, returnUrl });
       
-      if (authFlow === 'stock-buy' && returnUrl) {
+      if ((authFlow === 'stock-buy' || authFlow === 'wishlist') && returnUrl) {
         // Return to the stock page
-        console.log('useEffect: Redirecting to stock page:', returnUrl);
+        console.log('useEffect: Redirecting to saved page:', returnUrl);
         router.push(returnUrl);
         // Clean up after successful redirect
         sessionStorage.removeItem('authFlow');
@@ -58,14 +58,14 @@ export default function Page() {
       // Set flag to prevent useEffect from running
       setHasLoggedIn(true);
       
-      // Check if this is a stock-buy flow
+      // Check if this is a stock-buy flow or wishlist flow
       const authFlow = sessionStorage.getItem('authFlow');
       const returnUrl = sessionStorage.getItem('returnAfterAuth');
       
       console.log('Login successful - checking return flow:', { authFlow, returnUrl });
       
-      if (authFlow === 'stock-buy' && returnUrl) {
-        // Return to the stock page
+      if ((authFlow === 'stock-buy' || authFlow === 'wishlist') && returnUrl) {
+        // Return to the saved page
         console.log('Redirecting to stock page:', returnUrl);
         router.push(returnUrl);
         // Clean up after successful redirect

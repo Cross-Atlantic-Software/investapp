@@ -9,18 +9,20 @@ interface DashboardStats {
   totalStocks: number;
   totalRevenue: number;
   activeUsers: number;
-  totalSiteUsers: number;
   verifiedSiteUsers: number;
   totalEnquiries: number;
   totalSubscribers: number;
   newRegistrations24h: number;
+  pendingKYCRequests: number;
+  totalBuySellRequests: number;
   // Percentage changes
   totalUsersChange: number;
   totalStocksChange: number;
-  totalSiteUsersChange: number;
   verifiedSiteUsersChange: number;
   totalEnquiriesChange: number;
   totalSubscribersChange: number;
+  pendingKYCRequestsChange: number;
+  totalBuySellRequestsChange: number;
 }
 
 export default function AdminDashboard() {
@@ -29,18 +31,20 @@ export default function AdminDashboard() {
     totalStocks: 0,
     totalRevenue: 0,
     activeUsers: 0,
-    totalSiteUsers: 0,
     verifiedSiteUsers: 0,
     totalEnquiries: 0,
     totalSubscribers: 0,
     newRegistrations24h: 0,
+    pendingKYCRequests: 0,
+    totalBuySellRequests: 0,
     // Percentage changes
     totalUsersChange: 0,
     totalStocksChange: 0,
-    totalSiteUsersChange: 0,
     verifiedSiteUsersChange: 0,
     totalEnquiriesChange: 0,
     totalSubscribersChange: 0,
+    pendingKYCRequestsChange: 0,
+    totalBuySellRequestsChange: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -68,7 +72,7 @@ export default function AdminDashboard() {
       });
       const stocksData = await stocksResponse.json();
 
-      // Fetch site users stats
+      // Fetch site users stats for verified users
       const siteUsersResponse = await fetch('/api/admin/site-users/stats', {
         headers: {
           'token': token,
@@ -100,24 +104,42 @@ export default function AdminDashboard() {
       });
       const newRegistrationsData = await newRegistrationsResponse.json();
 
+      // Fetch KYC stats
+      const kycResponse = await fetch('/api/admin/kyc/stats', {
+        headers: {
+          'token': token,
+        },
+      });
+      const kycData = await kycResponse.json();
+
+      // Fetch transaction stats (buy/sell requests from last 7 days)
+      const transactionsResponse = await fetch('/api/admin/transactions/stats', {
+        headers: {
+          'token': token,
+        },
+      });
+      const transactionsData = await transactionsResponse.json();
+
       if (usersData.success && stocksData.success) {
         setStats({
           totalUsers: usersData.data.totalUsers || 0,
           totalStocks: stocksData.data.totalStocks || 0,
           totalRevenue: stocksData.data.totalValuation ? parseFloat(stocksData.data.totalValuation.replace('$', '').replace('T', '')) * 1000 : 0,
           activeUsers: usersData.data.activeUsers || 0,
-          totalSiteUsers: siteUsersData.success ? siteUsersData.data.totalUsers || 0 : 0,
           verifiedSiteUsers: siteUsersData.success ? siteUsersData.data.verifiedUsers || 0 : 0,
           totalEnquiries: enquiriesData.success ? enquiriesData.data.total || 0 : 0,
           totalSubscribers: subscribersData.success ? subscribersData.data.totalSubscribers || 0 : 0,
           newRegistrations24h: newRegistrationsData.success ? newRegistrationsData.data.newRegistrations24h || 0 : 0,
+          pendingKYCRequests: kycData.success ? kycData.data.pending || 0 : 0,
+          totalBuySellRequests: transactionsData.success ? transactionsData.data.totalBuySellRequests || 0 : 0,
           // Percentage changes
           totalUsersChange: usersData.data.totalUsersChange || 0,
           totalStocksChange: stocksData.data.totalStocksChange || 0,
-          totalSiteUsersChange: siteUsersData.success ? siteUsersData.data.totalUsersChange || 0 : 0,
           verifiedSiteUsersChange: siteUsersData.success ? siteUsersData.data.verifiedUsersChange || 0 : 0,
           totalEnquiriesChange: enquiriesData.success ? enquiriesData.data.totalChange || 0 : 0,
           totalSubscribersChange: subscribersData.success ? subscribersData.data.totalSubscribersChange || 0 : 0,
+          pendingKYCRequestsChange: kycData.success ? kycData.data.pendingChange || 0 : 0,
+          totalBuySellRequestsChange: transactionsData.success ? transactionsData.data.totalBuySellRequestsChange || 0 : 0,
         });
       }
     } catch (error) {

@@ -11,6 +11,8 @@ const validateAllSteps = (formData: StockData): boolean => {
     formData.sector_ids.length > 0 &&
     formData.subsector_ids && 
     formData.subsector_ids.length > 0 &&
+    formData.theme_ids && 
+    formData.theme_ids.length > 0 &&
     formData.headquarters &&
     formData.headquarters.trim() !== '' &&
     // Note: icon validation removed for editing - existing stocks may not need new icon upload
@@ -99,6 +101,8 @@ export const validateStep = (step: number, formData: StockData): boolean => {
         formData.sector_ids.length > 0 &&
         formData.subsector_ids && 
         formData.subsector_ids.length > 0 &&
+        formData.theme_ids && 
+        formData.theme_ids.length > 0 &&
         formData.headquarters &&
         formData.headquarters.trim() !== ''
         // Note: icon validation removed for editing - existing stocks may not need new icon upload

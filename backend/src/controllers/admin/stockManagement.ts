@@ -637,21 +637,21 @@ export const getStockStats = async (req: Request, res: Response) => {
   try {
     const totalStocks = await db.Product.count();
     
-    // Calculate 30-day percentage changes
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    // Calculate weekly percentage changes (7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const totalStocks30DaysAgo = await db.Product.count({
+    const totalStocks7DaysAgo = await db.Product.count({
       where: {
         createdAt: {
-          [Op.lte]: thirtyDaysAgo
+          [Op.lte]: sevenDaysAgo
         }
       }
     });
 
-    // Calculate percentage change (growth in last 30 days)
-    const totalStocksChange = totalStocks30DaysAgo > 0 ? 
-      ((totalStocks - totalStocks30DaysAgo) / totalStocks30DaysAgo * 100) : 
+    // Calculate percentage change (growth in last 7 days)
+    const totalStocksChange = totalStocks7DaysAgo > 0 ? 
+      ((totalStocks - totalStocks7DaysAgo) / totalStocks7DaysAgo * 100) : 
       (totalStocks > 0 ? 100 : 0);
     
     // Count stocks by company
