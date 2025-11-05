@@ -130,7 +130,7 @@ const Step1: React.FC<Step1Props> = ({
           selectedValues={formData.sector_ids}
           onChange={(values) => onFormDataChange({ sector_ids: values })}
           placeholder="Select sectors..."
-          forceAbove={true}
+          forceAbove={false}
         />
       </div>
 
@@ -144,7 +144,7 @@ const Step1: React.FC<Step1Props> = ({
           selectedValues={formData.subsector_ids}
           onChange={(values) => onFormDataChange({ subsector_ids: values })}
           placeholder={formData.sector_ids.length > 0 ? "Select subsectors..." : "Select sectors first..."}
-          forceAbove={true}
+          forceAbove={false}
           disabled={formData.sector_ids.length === 0}
         />
         {formData.sector_ids.length === 0 && (
@@ -162,7 +162,7 @@ const Step1: React.FC<Step1Props> = ({
           selectedValues={formData.theme_ids}
           onChange={(values) => onFormDataChange({ theme_ids: values })}
           placeholder="Select themes..."
-          forceAbove={true}
+          forceAbove={false}
         />
       </div>
       
