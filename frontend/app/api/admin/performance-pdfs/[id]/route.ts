@@ -20,9 +20,9 @@ export async function GET(
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error fetching performance PDF:', error);
+    console.error('Error fetching Competitive Benchmarking PDF:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to fetch performance PDF' },
+      { success: false, message: 'Failed to fetch Competitive Benchmarking PDF' },
       { status: 500 }
     );
   }
@@ -51,9 +51,9 @@ export async function PUT(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error updating performance PDF:', error);
+    console.error('Error updating Competitive Benchmarking PDF:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to update performance PDF' },
+      { success: false, message: 'Failed to update Competitive Benchmarking PDF' },
       { status: 500 }
     );
   }
@@ -78,9 +78,9 @@ export async function DELETE(
     const data = await response.json();
     return NextResponse.json(data, { status: response.status });
   } catch (error) {
-    console.error('Error deleting performance PDF:', error);
+    console.error('Error deleting Competitive Benchmarking PDF:', error);
     return NextResponse.json(
-      { success: false, message: 'Failed to delete performance PDF' },
+      { success: false, message: 'Failed to delete Competitive Benchmarking PDF' },
       { status: 500 }
     );
   }

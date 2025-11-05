@@ -1,7 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { X, Plus, Edit, Trash2, Save, Eye, EyeOff } from 'lucide-react';
+import dynamic from 'next/dynamic';
+
+// Dynamically import ReactQuill to avoid SSR issues
+const ReactQuill = dynamic(() => import('react-quill-new'), { ssr: false });
+import 'react-quill-new/dist/quill.snow.css';
 
 interface MethodologyNote {
   id: number;
@@ -33,6 +38,26 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({
     methodology_text: '',
     is_active: true
   });
+
+  // Configure Quill modules
+  const quillModules = useMemo(() => ({
+    toolbar: [
+      [{ 'header': [1, 2, 3, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link'],
+      ['clean']
+    ],
+  }), []);
+
+  const quillFormats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list',
+    'color', 'background',
+    'link'
+  ];
 
   const sectionOptions = [
     { key: 'price', name: 'Price Chart' },
@@ -70,7 +95,9 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newNote.section_key || !newNote.section_name || !newNote.methodology_text.trim()) {
+    // Strip HTML tags to check if content is empty
+    const textContent = newNote.methodology_text.replace(/<[^>]*>/g, '').trim();
+    if (!newNote.section_key || !newNote.section_name || !textContent) {
       return;
     }
 
@@ -100,7 +127,9 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({
   };
 
   const handleUpdate = async (id: number) => {
-    if (!editingText.trim()) return;
+    // Strip HTML tags to check if content is empty
+    const textContent = editingText.replace(/<[^>]*>/g, '').trim();
+    if (!textContent) return;
 
     try {
       const response = await fetch(`/api/admin/methodology-notes/${id}`, {
@@ -257,13 +286,41 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">Methodology Text</label>
-                      <textarea
-                        value={newNote.methodology_text}
-                        onChange={(e) => setNewNote({ ...newNote, methodology_text: e.target.value })}
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-themeTeal"
-                        rows={3}
-                        required
-                      />
+                      <div className="border border-gray-300 rounded">
+                        <ReactQuill
+                          theme="snow"
+                          value={newNote.methodology_text}
+                          onChange={(value) => setNewNote(prev => ({ ...prev, methodology_text: value }))}
+                          modules={quillModules}
+                          formats={quillFormats}
+                          placeholder="Enter methodology text..."
+                          style={{ height: '150px', marginBottom: '42px' }}
+                          className="react-quill-custom"
+                        />
+                      </div>
+                      <style jsx global>{`
+                        .react-quill-custom .ql-container {
+                          min-height: 150px;
+                          font-size: 14px;
+                          color: #4B5563;
+                        }
+                        .react-quill-custom .ql-editor {
+                          min-height: 150px;
+                        }
+                        .react-quill-custom .ql-toolbar {
+                          border-top: none;
+                          border-left: none;
+                          border-right: none;
+                          border-bottom: 1px solid #E5E7EB;
+                          background-color: #F9FAFB;
+                        }
+                        .react-quill-custom .ql-container {
+                          border-bottom: none;
+                          border-left: none;
+                          border-right: none;
+                          border-top: none;
+                        }
+                      `}</style>
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
@@ -358,12 +415,18 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({
                       
                       {editingId === note.id ? (
                         <div className="space-y-2">
-                          <textarea
-                            value={editingText}
-                            onChange={(e) => setEditingText(e.target.value)}
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:border-themeTeal"
-                            rows={3}
-                          />
+                          <div className="border border-gray-300 rounded">
+                            <ReactQuill
+                              theme="snow"
+                              value={editingText}
+                              onChange={(value) => setEditingText(value)}
+                              modules={quillModules}
+                              formats={quillFormats}
+                              placeholder="Enter methodology text..."
+                              style={{ height: '150px', marginBottom: '42px' }}
+                              className="react-quill-custom"
+                            />
+                          </div>
                           <div className="flex items-center space-x-2">
                             <button
                               onClick={() => handleUpdate(note.id)}
@@ -381,9 +444,10 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({
                           </div>
                         </div>
                       ) : (
-                        <div className="text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                          {note.methodology_text}
-                        </div>
+                        <div 
+                          className="text-sm text-gray-700 bg-gray-50 p-3 rounded prose prose-sm max-w-none"
+                          dangerouslySetInnerHTML={{ __html: note.methodology_text }}
+                        />
                       )}
                     </div>
                   ))

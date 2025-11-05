@@ -203,7 +203,10 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
           {/* Description */}
           {sectorOutlook.description && (
             <div className="mb-6">
-              <p className="text-gray-700 text-sm leading-relaxed">{sectorOutlook.description}</p>
+              <div 
+                className="text-gray-700 text-sm leading-relaxed prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-a:text-blue-600 prose-ul:text-gray-700 prose-ol:text-gray-700"
+                dangerouslySetInnerHTML={{ __html: sectorOutlook.description }}
+              />
             </div>
           )}
 
@@ -229,7 +232,10 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
                   {expandedAccordions.has(item.id) && (
                     <div className="px-4 pb-4">
                       <div className="pt-2 border-t border-gray-100">
-                        <p className="text-gray-700 text-sm leading-relaxed">{item.analysis}</p>
+                        <div 
+                          className="text-gray-700 text-sm leading-relaxed prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-a:text-blue-600 prose-ul:text-gray-700 prose-ol:text-gray-700"
+                          dangerouslySetInnerHTML={{ __html: item.analysis }}
+                        />
                       </div>
                     </div>
                   )}

@@ -6,6 +6,7 @@ import { Plus, Search, Edit, Trash2, Eye, Tag, Building2, Palette, Upload, X } f
 import ManageDropdown from "@/components/admin/ManageDropdown";
 import InsightTaxonomyModal from "@/components/admin/InsightTaxonomyModal";
 import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
+import GenericSearchableMultiSelect from "@/components/admin/shared/GenericSearchableMultiSelect";
 import Image from "next/image";
 
 // Dynamically import ReactQuill to avoid SSR issues
@@ -166,6 +167,7 @@ export default function MarketInsightsPage() {
     video_file: "",
     video_url: "",
     insight_sector_id: "",
+    insight_sector_ids: [] as number[], // For multi-select UI, but backend only accepts one
     insight_subsector_ids: [] as number[],
     insight_topic_id: "",
     insight_subtopic_ids: [] as number[],
@@ -191,6 +193,7 @@ export default function MarketInsightsPage() {
 
   const [companySearchTerm, setCompanySearchTerm] = useState("");
   const [showCompanyDropdown, setShowCompanyDropdown] = useState(false);
+  const [availableSubsectors, setAvailableSubsectors] = useState<InsightSubsector[]>([]);
 
   // Load initial data
   useEffect(() => {
@@ -225,6 +228,31 @@ export default function MarketInsightsPage() {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [showCompanyDropdown]);
+
+  // Update available subsectors when selected sectors change
+  useEffect(() => {
+    if (formData.insight_sector_ids.length > 0) {
+      const filteredSubsectors = insightSubsectors.filter(sub => 
+        formData.insight_sector_ids.includes(sub.insight_sector_id)
+      );
+      setAvailableSubsectors(filteredSubsectors);
+      
+      // Remove subsectors that are no longer valid for selected sectors
+      const validSubsectorIds = filteredSubsectors.map(sub => sub.id);
+      const updatedSubsectorIds = formData.insight_subsector_ids.filter(id => 
+        validSubsectorIds.includes(id)
+      );
+      
+      if (updatedSubsectorIds.length !== formData.insight_subsector_ids.length) {
+        setFormData(prev => ({ ...prev, insight_subsector_ids: updatedSubsectorIds }));
+      }
+    } else {
+      setAvailableSubsectors([]);
+      if (formData.insight_subsector_ids.length > 0) {
+        setFormData(prev => ({ ...prev, insight_subsector_ids: [] }));
+      }
+    }
+  }, [formData.insight_sector_ids, insightSubsectors]);
 
   // Notification helper functions
   const addNotification = (notification: Omit<NotificationData, 'id'>) => {
@@ -319,7 +347,9 @@ export default function MarketInsightsPage() {
         formDataToSend.append('video_url', formData.video_url);
       }
       
-      formDataToSend.append('insight_sector_id', formData.insight_sector_id);
+      // Convert insight_sector_ids array to single insight_sector_id (backend only accepts one)
+      const selectedSectorId = formData.insight_sector_ids.length > 0 ? formData.insight_sector_ids[0].toString() : "";
+      formDataToSend.append('insight_sector_id', selectedSectorId);
       formDataToSend.append('insight_subsector_ids', JSON.stringify(formData.insight_subsector_ids));
       formDataToSend.append('insight_topic_id', formData.insight_topic_id);
       formDataToSend.append('insight_subtopic_ids', JSON.stringify(formData.insight_subtopic_ids));
@@ -393,7 +423,9 @@ export default function MarketInsightsPage() {
         formDataToSend.append('video_url', formData.video_url);
       }
       
-      formDataToSend.append('insight_sector_id', formData.insight_sector_id);
+      // Convert insight_sector_ids array to single insight_sector_id (backend only accepts one)
+      const selectedSectorId = formData.insight_sector_ids.length > 0 ? formData.insight_sector_ids[0].toString() : "";
+      formDataToSend.append('insight_sector_id', selectedSectorId);
       formDataToSend.append('insight_subsector_ids', JSON.stringify(formData.insight_subsector_ids));
       formDataToSend.append('insight_topic_id', formData.insight_topic_id);
       formDataToSend.append('insight_subtopic_ids', JSON.stringify(formData.insight_subtopic_ids));
@@ -489,6 +521,7 @@ export default function MarketInsightsPage() {
       video_file: "",
       video_url: "",
       insight_sector_id: "",
+      insight_sector_ids: [],
       insight_subsector_ids: [],
       insight_topic_id: "",
       insight_subtopic_ids: [],
@@ -640,6 +673,7 @@ export default function MarketInsightsPage() {
   const handleView = (insight: MarketInsight) => {
     setEditingInsight(insight);
     setIsViewMode(true);
+    const sectorId = insight.insight_sector_id;
     setFormData({
       slug: insight.slug,
       is_featured: insight.is_featured,
@@ -652,7 +686,8 @@ export default function MarketInsightsPage() {
       second_part: insight.second_part || "",
       video_file: insight.video_file || "",
       video_url: insight.video_url || "",
-      insight_sector_id: insight.insight_sector_id?.toString() || "",
+      insight_sector_id: sectorId?.toString() || "",
+      insight_sector_ids: sectorId ? [sectorId] : [],
       insight_subsector_ids: insight.insight_subsector_ids ? JSON.parse(insight.insight_subsector_ids) : [],
       insight_topic_id: insight.insight_topic_id?.toString() || "",
       insight_subtopic_ids: insight.insight_subtopic_ids ? JSON.parse(insight.insight_subtopic_ids) : [],
@@ -665,6 +700,7 @@ export default function MarketInsightsPage() {
   const handleEdit = (insight: MarketInsight) => {
     setEditingInsight(insight);
     setIsViewMode(false);
+    const sectorId = insight.insight_sector_id;
     setFormData({
       slug: insight.slug,
       is_featured: insight.is_featured,
@@ -677,7 +713,8 @@ export default function MarketInsightsPage() {
       second_part: insight.second_part || "",
       video_file: insight.video_file || "",
       video_url: insight.video_url || "",
-      insight_sector_id: insight.insight_sector_id?.toString() || "",
+      insight_sector_id: sectorId?.toString() || "",
+      insight_sector_ids: sectorId ? [sectorId] : [],
       insight_subsector_ids: insight.insight_subsector_ids ? JSON.parse(insight.insight_subsector_ids) : [],
       insight_topic_id: insight.insight_topic_id?.toString() || "",
       insight_subtopic_ids: insight.insight_subtopic_ids ? JSON.parse(insight.insight_subtopic_ids) : [],
@@ -1337,63 +1374,69 @@ export default function MarketInsightsPage() {
               
               <div>
                 <label className="block text-sm font-medium text-themeTeal mb-1">Sector</label>
-                <select
-                  value={formData.insight_sector_id}
-                  onChange={(e) => setFormData({...formData, insight_sector_id: e.target.value, insight_subsector_ids: []})}
-                  className="w-full px-3 py-2 border border-themeTealLighter rounded-lg focus:outline-none focus:ring-2 focus:ring-themeTeal"
-                  disabled={isViewMode}
-                >
-                  <option value="">Select Sector</option>
-                  {insightSectors.map(sector => (
-                    <option key={sector.id} value={sector.id.toString()}>{sector.name}</option>
-                  ))}
-                </select>
+                {isViewMode ? (
+                  /* View Mode - Show selected sector */
+                  <div className="w-full px-3 py-2 border border-themeTealLighter rounded-lg bg-gray-50">
+                    {formData.insight_sector_ids.length > 0 ? (
+                      insightSectors
+                        .filter(sector => formData.insight_sector_ids.includes(sector.id))
+                        .map(sector => (
+                          <span key={sector.id} className="text-sm text-themeTeal">{sector.name}</span>
+                        ))
+                    ) : (
+                      <span className="text-sm text-themeTealLighter">No sector selected</span>
+                    )}
+                  </div>
+                ) : (
+                  <GenericSearchableMultiSelect
+                    options={insightSectors.map(sector => ({ value: sector.id, label: sector.name }))}
+                    selectedValues={formData.insight_sector_ids}
+                    onChange={(values) => {
+                      // Limit to single selection for backend compatibility
+                      const selectedValues = values.length > 0 ? [values[values.length - 1]] : [];
+                      setFormData(prev => ({
+                        ...prev,
+                        insight_sector_ids: selectedValues,
+                        insight_sector_id: selectedValues.length > 0 ? selectedValues[0].toString() : "",
+                        insight_subsector_ids: [] // Clear subsectors when sector changes
+                      }));
+                    }}
+                    placeholder="Select sector..."
+                    forceAbove={true}
+                  />
+                )}
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-themeTeal mb-1">Subsectors</label>
                 {isViewMode ? (
-                  /* View Mode - Show selected subsectors as read-only list */
-                  <div className="max-h-32 overflow-y-auto border border-themeTealLighter rounded-lg p-2">
+                  /* View Mode - Show selected subsectors as read-only */
+                  <div className="w-full px-3 py-2 border border-themeTealLighter rounded-lg bg-gray-50 min-h-[40px] flex flex-wrap gap-1">
                     {formData.insight_subsector_ids.length > 0 ? (
                       formData.insight_subsector_ids.map(subsectorId => {
                         const subsector = insightSubsectors.find(s => s.id === subsectorId);
                         return subsector ? (
-                          <div key={subsector.id} className="flex items-center gap-2 p-1 bg-themeTealWhite rounded">
-                            <span className="text-sm text-themeTeal">{subsector.name}</span>
-                          </div>
+                          <span key={subsector.id} className="inline-flex items-center px-2 py-1 bg-themeTeal text-white text-xs rounded">
+                            {subsector.name}
+                          </span>
                         ) : null;
                       })
                     ) : (
-                      <div className="text-sm text-themeTealLighter p-2">No subsectors selected</div>
+                      <span className="text-sm text-themeTealLighter">No subsectors selected</span>
                     )}
                   </div>
                 ) : (
-                  /* Edit Mode - Show checkboxes */
-                  <div className="max-h-32 overflow-y-auto border border-themeTealLighter rounded-lg p-2">
-                    {insightSubsectors
-                      .filter(sub => formData.insight_sector_id && sub.insight_sector_id.toString() === formData.insight_sector_id)
-                      .map(subsector => (
-                        <label key={subsector.id} className="flex items-center gap-2 p-1 hover:bg-themeTealWhite rounded">
-                          <input
-                            type="checkbox"
-                            checked={formData.insight_subsector_ids.includes(subsector.id)}
-                            onChange={(e) => {
-                              if (e.target.checked) {
-                                setFormData({...formData, insight_subsector_ids: [...formData.insight_subsector_ids, subsector.id]});
-                              } else {
-                                setFormData({...formData, insight_subsector_ids: formData.insight_subsector_ids.filter(id => id !== subsector.id)});
-                              }
-                            }}
-                            className="rounded border-themeTealLighter"
-                          />
-                          <span className="text-sm text-themeTeal">{subsector.name}</span>
-                        </label>
-                      ))}
-                    {formData.insight_sector_id && insightSubsectors.filter(sub => sub.insight_sector_id.toString() === formData.insight_sector_id).length === 0 && (
-                      <div className="text-sm text-themeTealLighter p-2">No subsectors available for selected sector</div>
-                    )}
-                  </div>
+                  <GenericSearchableMultiSelect
+                    options={availableSubsectors.map(subsector => ({ value: subsector.id, label: subsector.name }))}
+                    selectedValues={formData.insight_subsector_ids}
+                    onChange={(values) => setFormData(prev => ({ ...prev, insight_subsector_ids: values }))}
+                    placeholder={formData.insight_sector_ids.length > 0 ? "Select subsectors..." : "Select sector first..."}
+                    forceAbove={true}
+                    disabled={formData.insight_sector_ids.length === 0}
+                  />
+                )}
+                {formData.insight_sector_ids.length === 0 && !isViewMode && (
+                  <p className="text-xs text-gray-500 mt-1">Please select a sector first to choose subsectors</p>
                 )}
               </div>
               

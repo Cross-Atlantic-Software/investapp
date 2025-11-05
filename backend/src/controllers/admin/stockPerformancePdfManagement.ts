@@ -42,10 +42,10 @@ export class StockPerformancePdfManagementController {
         },
       });
     } catch (error) {
-      console.error('Error fetching performance PDFs:', error);
+      console.error('Error fetching Competitive Benchmarking PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch performance PDFs',
+        message: 'Failed to fetch Competitive Benchmarking PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -61,7 +61,7 @@ export class StockPerformancePdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Performance PDF not found',
+          message: 'Competitive Benchmarking PDF not found',
         });
       }
 
@@ -70,10 +70,10 @@ export class StockPerformancePdfManagementController {
         data: pdf,
       });
     } catch (error) {
-      console.error('Error fetching performance PDF:', error);
+      console.error('Error fetching Competitive Benchmarking PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch performance PDF',
+        message: 'Failed to fetch Competitive Benchmarking PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -152,14 +152,14 @@ export class StockPerformancePdfManagementController {
 
       res.status(201).json({
         success: true,
-        message: 'Performance PDF uploaded successfully',
+        message: 'Competitive Benchmarking PDF uploaded successfully',
         data: pdf,
       });
     } catch (error) {
-      console.error('Error creating performance PDF:', error);
+      console.error('Error creating Competitive Benchmarking PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to create performance PDF',
+        message: 'Failed to create Competitive Benchmarking PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -241,7 +241,7 @@ export class StockPerformancePdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Performance PDF not found',
+          message: 'Competitive Benchmarking PDF not found',
         });
       }
 
@@ -301,14 +301,14 @@ export class StockPerformancePdfManagementController {
 
       res.json({
         success: true,
-        message: 'Performance PDF updated successfully',
+        message: 'Competitive Benchmarking PDF updated successfully',
         data: pdf,
       });
     } catch (error) {
-      console.error('Error updating performance PDF:', error);
+      console.error('Error updating Competitive Benchmarking PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to update performance PDF',
+        message: 'Failed to update Competitive Benchmarking PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -324,7 +324,7 @@ export class StockPerformancePdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Performance PDF not found',
+          message: 'Competitive Benchmarking PDF not found',
         });
       }
 
@@ -342,13 +342,13 @@ export class StockPerformancePdfManagementController {
 
       res.json({
         success: true,
-        message: 'Performance PDF deleted successfully',
+        message: 'Competitive Benchmarking PDF deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting performance PDF:', error);
+      console.error('Error deleting Competitive Benchmarking PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to delete performance PDF',
+        message: 'Failed to delete Competitive Benchmarking PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -364,7 +364,7 @@ export class StockPerformancePdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Performance PDF not found',
+          message: 'Competitive Benchmarking PDF not found',
         });
       }
 
@@ -425,10 +425,10 @@ export class StockPerformancePdfManagementController {
         },
       });
     } catch (error) {
-      console.error('Error fetching performance PDF stats:', error);
+      console.error('Error fetching Competitive Benchmarking PDF stats:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch performance PDF statistics',
+        message: 'Failed to fetch Competitive Benchmarking PDF statistics',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }

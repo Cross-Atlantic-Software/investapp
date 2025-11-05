@@ -151,9 +151,10 @@ export default function ScorecardSection({ stockId }: ScorecardSectionProps) {
           {expandedCard === scorecard.id && (
             <div className="px-4 pb-4 border-t border-gray-100">
               <div className="pt-4">
-                <p className="text-gray-700 leading-relaxed text-sm">
-                  {scorecard.analysis}
-                </p>
+                <div 
+                  className="text-gray-700 leading-relaxed text-sm prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900 prose-a:text-blue-600 prose-ul:text-gray-700 prose-ol:text-gray-700"
+                  dangerouslySetInnerHTML={{ __html: scorecard.analysis }}
+                />
               </div>
             </div>
           )}

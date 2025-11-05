@@ -48,9 +48,10 @@ export default function Section({ id, title, children, info }: Props) {
           ].join(" ")}
           role="region"
         >
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-            {info}
-          </div>
+          <div 
+            className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 prose prose-sm max-w-none prose-headings:text-amber-900 prose-p:text-amber-800 prose-strong:text-amber-900 prose-a:text-amber-700 prose-ul:text-amber-800 prose-ol:text-amber-800"
+            dangerouslySetInnerHTML={{ __html: typeof info === 'string' ? info : String(info) }}
+          />
         </div>
       ) : null}
 

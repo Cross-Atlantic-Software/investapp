@@ -241,6 +241,7 @@ router.delete("/home-insights/:id", homeInsightController.deleteHomeInsight);
 
 // Transaction Management Routes
 router.get("/transactions", transactionController.getAllTransactions);
+router.get("/transactions/stats", transactionController.getTransactionStats);
 router.get("/transactions/:id", transactionController.getTransactionById);
 router.post("/transactions/:id/approve", transactionController.approveTransaction);
 router.post("/transactions/:id/reject", transactionController.rejectTransaction);

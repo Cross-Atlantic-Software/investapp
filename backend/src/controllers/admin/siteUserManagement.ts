@@ -340,47 +340,47 @@ export class SiteUserManagementController {
       const emailUsers = await this.userModel.count({ where: { auth_provider: 'Email' } });
       const activeUsers = await this.userModel.count({ where: { status: 1 } });
 
-      // Calculate 30-day percentage changes
-      const thirtyDaysAgo = new Date();
-      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      // Calculate weekly percentage changes (7 days)
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-      const totalUsers30DaysAgo = await this.userModel.count({
+      const totalUsers7DaysAgo = await this.userModel.count({
         where: {
           createdAt: {
-            [Op.lte]: thirtyDaysAgo
+            [Op.lte]: sevenDaysAgo
           }
         }
       });
 
-      const verifiedUsers30DaysAgo = await this.userModel.count({
+      const verifiedUsers7DaysAgo = await this.userModel.count({
         where: {
           email_verified: 1,
           createdAt: {
-            [Op.lte]: thirtyDaysAgo
+            [Op.lte]: sevenDaysAgo
           }
         }
       });
 
-      const activeUsers30DaysAgo = await this.userModel.count({
+      const activeUsers7DaysAgo = await this.userModel.count({
         where: {
           status: 1,
           createdAt: {
-            [Op.lte]: thirtyDaysAgo
+            [Op.lte]: sevenDaysAgo
           }
         }
       });
 
-      // Calculate percentage changes (growth in last 30 days)
-      const totalUsersChange = totalUsers30DaysAgo > 0 ? 
-        ((totalUsers - totalUsers30DaysAgo) / totalUsers30DaysAgo * 100) : 
+      // Calculate percentage changes (growth in last 7 days)
+      const totalUsersChange = totalUsers7DaysAgo > 0 ? 
+        ((totalUsers - totalUsers7DaysAgo) / totalUsers7DaysAgo * 100) : 
         (totalUsers > 0 ? 100 : 0);
       
-      const verifiedUsersChange = verifiedUsers30DaysAgo > 0 ? 
-        ((verifiedUsers - verifiedUsers30DaysAgo) / verifiedUsers30DaysAgo * 100) : 
+      const verifiedUsersChange = verifiedUsers7DaysAgo > 0 ? 
+        ((verifiedUsers - verifiedUsers7DaysAgo) / verifiedUsers7DaysAgo * 100) : 
         (verifiedUsers > 0 ? 100 : 0);
       
-      const activeUsersChange = activeUsers30DaysAgo > 0 ? 
-        ((activeUsers - activeUsers30DaysAgo) / activeUsers30DaysAgo * 100) : 
+      const activeUsersChange = activeUsers7DaysAgo > 0 ? 
+        ((activeUsers - activeUsers7DaysAgo) / activeUsers7DaysAgo * 100) : 
         (activeUsers > 0 ? 100 : 0);
 
       // Get users by role

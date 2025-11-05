@@ -1,6 +1,6 @@
 'use client';
 
-import { ChartColumnStacked, ShieldCheck, TrendingDown, TrendingUp, Users, UserStar } from 'lucide-react';
+import { ChartColumnStacked, ShieldCheck, TrendingDown, TrendingUp, Users, FileCheck, ArrowUpDown } from 'lucide-react';
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
@@ -10,18 +10,20 @@ interface AdminStatsProps {
     totalStocks: number;
     totalRevenue: number;
     activeUsers: number;
-    totalSiteUsers: number;
     verifiedSiteUsers: number;
     totalEnquiries: number;
     totalSubscribers: number;
     newRegistrations24h: number;
+    pendingKYCRequests: number;
+    totalBuySellRequests: number;
     // Percentage changes
     totalUsersChange: number;
     totalStocksChange: number;
-    totalSiteUsersChange: number;
     verifiedSiteUsersChange: number;
     totalEnquiriesChange: number;
     totalSubscribersChange: number;
+    pendingKYCRequestsChange: number;
+    totalBuySellRequestsChange: number;
   };
   loading?: boolean;
 }
@@ -32,18 +34,20 @@ const AdminStats: React.FC<AdminStatsProps> = ({
     totalStocks: 0,
     totalRevenue: 0,
     activeUsers: 0,
-    totalSiteUsers: 0,
     verifiedSiteUsers: 0,
     totalEnquiries: 0,
     totalSubscribers: 0,
     newRegistrations24h: 0,
+    pendingKYCRequests: 0,
+    totalBuySellRequests: 0,
     // Percentage changes
     totalUsersChange: 0,
     totalStocksChange: 0,
-    totalSiteUsersChange: 0,
     verifiedSiteUsersChange: 0,
     totalEnquiriesChange: 0,
     totalSubscribersChange: 0,
+    pendingKYCRequestsChange: 0,
+    totalBuySellRequestsChange: 0,
   },
   loading = false 
 }) => {
@@ -58,18 +62,6 @@ const AdminStats: React.FC<AdminStatsProps> = ({
       redirectPath: '/admin/users',
       icon: (
         <Users />
-      ),
-      gradient: 'from-themeTeal to-themeTeal',
-      bgColor: 'bg-themeTeal',
-    },
-    {
-      title: 'Total Site Users',
-      value: stats.totalSiteUsers,
-      change: `${stats.totalSiteUsersChange >= 0 ? '+' : ''}${stats.totalSiteUsersChange.toFixed(1)}%`,
-      changeType: stats.totalSiteUsersChange >= 0 ? 'increase' : 'decrease',
-      redirectPath: '/admin/site-users',
-      icon: (
-        <UserStar/>
       ),
       gradient: 'from-themeTeal to-themeTeal',
       bgColor: 'bg-themeTeal',
@@ -94,6 +86,30 @@ const AdminStats: React.FC<AdminStatsProps> = ({
       redirectPath: '/admin/site-users',
       icon: (
         <ShieldCheck/>
+      ),
+      gradient: 'from-themeTeal to-themeTeal',
+      bgColor: 'bg-themeTeal',
+    },
+    {
+      title: 'Pending KYC Requests',
+      value: stats.pendingKYCRequests,
+      change: `${stats.pendingKYCRequestsChange >= 0 ? '+' : ''}${stats.pendingKYCRequestsChange.toFixed(1)}%`,
+      changeType: stats.pendingKYCRequestsChange >= 0 ? 'increase' : 'decrease',
+      redirectPath: '/admin/kyc',
+      icon: (
+        <FileCheck/>
+      ),
+      gradient: 'from-themeTeal to-themeTeal',
+      bgColor: 'bg-themeTeal',
+    },
+    {
+      title: 'New Buy/Sell Requests',
+      value: stats.totalBuySellRequests,
+      change: `${stats.totalBuySellRequestsChange >= 0 ? '+' : ''}${stats.totalBuySellRequestsChange.toFixed(1)}%`,
+      changeType: stats.totalBuySellRequestsChange >= 0 ? 'increase' : 'decrease',
+      redirectPath: '/admin/transactions',
+      icon: (
+        <ArrowUpDown/>
       ),
       gradient: 'from-themeTeal to-themeTeal',
       bgColor: 'bg-themeTeal',
@@ -177,21 +193,23 @@ const AdminStats: React.FC<AdminStatsProps> = ({
             <div className="flex-1">
               <h3 className="text-sm font-medium text-themeTealLight mb-1">{stat.title}</h3>
               <div className="text-3xl font-bold text-themeTeal mb-2">{stat.value}</div>
-              <div className="flex items-center space-x-1">
-                <span className={`text-sm font-medium ${
-                  stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-                }`}>
-                  {stat.change}
-                </span>
-                <span className="text-xs text-themeTealLighter">
-                  {stat.changeType === 'increase' ? 'increased' : 'decreased'}
-                </span>
-                {stat.changeType === 'increase' ? (
-                  <TrendingUp width={20} height={20} className='text-green-600'/>
-                ) : (
-                  <TrendingDown width={20} height={20} className='text-red-600'/>
-                )}
-              </div>
+              {stat.change && (
+                <div className="flex items-center space-x-1">
+                  <span className={`text-sm font-medium ${
+                    stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {stat.change}
+                  </span>
+                  <span className="text-xs text-themeTealLighter">
+                    vs last week
+                  </span>
+                  {stat.changeType === 'increase' ? (
+                    <TrendingUp width={20} height={20} className='text-green-600'/>
+                  ) : (
+                    <TrendingDown width={20} height={20} className='text-red-600'/>
+                  )}
+                </div>
+              )}
             </div>
             <div className={`p-3 rounded bg-gradient-to-r ${stat.gradient} text-white shadow-lg shadow-themeTeal/10`}>
               {stat.icon}

@@ -31,7 +31,9 @@ export default function GenericSearchableMultiSelect({
   const [searchTerm, setSearchTerm] = useState('');
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [dropdownPosition, setDropdownPosition] = useState<'below' | 'above'>('below');
+  const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownMenuRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const previousOptionsLength = useRef(options.length);
 
@@ -39,13 +41,46 @@ export default function GenericSearchableMultiSelect({
   const calculateDropdownPosition = () => {
     if (!dropdownRef.current) return;
     
+    const rect = dropdownRef.current.getBoundingClientRect();
+    
     // If forceAbove is true, always position above
     if (forceAbove) {
       setDropdownPosition('above');
+      // Find the modal container to calculate available space
+      let modalContainer = dropdownRef.current.closest('[class*="max-h"]');
+      if (!modalContainer) {
+        modalContainer = document.querySelector('[class*="max-h"]');
+      }
+      
+      if (modalContainer) {
+        const modalRect = (modalContainer as HTMLElement).getBoundingClientRect();
+        // Calculate space from input to top of modal (accounting for header and step indicator)
+        const headerHeight = 80; // Approximate height of header + step indicator
+        const availableHeight = rect.top - modalRect.top - headerHeight;
+        const maxHeight = Math.max(200, Math.min(availableHeight - 10, 400)); // Min 200px, max 400px, leave 10px margin
+        
+        setDropdownStyles({
+          position: 'absolute',
+          width: `${rect.width}px`,
+          bottom: '100%',
+          marginBottom: '4px',
+          maxHeight: `${maxHeight}px`,
+          zIndex: 99999
+        });
+      } else {
+        // Fallback to fixed positioning if modal not found
+        setDropdownStyles({
+          position: 'fixed',
+          width: `${rect.width}px`,
+          bottom: `${window.innerHeight - rect.top + 4}px`,
+          left: `${rect.left}px`,
+          maxHeight: '400px',
+          zIndex: 99999
+        });
+      }
       return;
     }
     
-    const rect = dropdownRef.current.getBoundingClientRect();
     const viewportHeight = window.innerHeight;
     const spaceBelow = viewportHeight - rect.bottom;
     const spaceAbove = rect.top;
@@ -53,8 +88,41 @@ export default function GenericSearchableMultiSelect({
     // If there's not enough space below (less than 200px) and more space above, position above
     if (spaceBelow < 200 && spaceAbove > spaceBelow) {
       setDropdownPosition('above');
+      // Find the modal container to calculate available space
+      let modalContainer = dropdownRef.current.closest('[class*="max-h"]');
+      if (!modalContainer) {
+        modalContainer = document.querySelector('[class*="max-h"]');
+      }
+      
+      if (modalContainer) {
+        const modalRect = (modalContainer as HTMLElement).getBoundingClientRect();
+        // Calculate space from input to top of modal (accounting for header and step indicator)
+        const headerHeight = 80; // Approximate height of header + step indicator
+        const availableHeight = rect.top - modalRect.top - headerHeight;
+        const maxHeight = Math.max(200, Math.min(availableHeight - 10, 400)); // Min 200px, max 400px, leave 10px margin
+        
+        setDropdownStyles({
+          position: 'absolute',
+          width: `${rect.width}px`,
+          bottom: '100%',
+          marginBottom: '4px',
+          maxHeight: `${maxHeight}px`,
+          zIndex: 99999
+        });
+      } else {
+        setDropdownStyles({
+          position: 'fixed',
+          width: `${rect.width}px`,
+          bottom: `${window.innerHeight - rect.top + 4}px`,
+          left: `${rect.left}px`,
+          maxHeight: '400px',
+          zIndex: 99999
+        });
+      }
     } else {
       setDropdownPosition('below');
+      // Use absolute positioning when below
+      setDropdownStyles({});
     }
   };
 
@@ -138,8 +206,45 @@ export default function GenericSearchableMultiSelect({
   useEffect(() => {
     if (isOpen) {
       calculateDropdownPosition();
+      
+      // Update position on scroll or resize
+      const updatePosition = () => {
+        if (dropdownPosition === 'above' && dropdownRef.current) {
+          const rect = dropdownRef.current.getBoundingClientRect();
+          let modalContainer = dropdownRef.current.closest('[class*="max-h"]');
+          if (!modalContainer) {
+            modalContainer = document.querySelector('[class*="max-h"]');
+          }
+          
+          if (modalContainer) {
+            const modalRect = (modalContainer as HTMLElement).getBoundingClientRect();
+            const headerHeight = 80;
+            const availableHeight = rect.top - modalRect.top - headerHeight;
+            const maxHeight = Math.max(200, Math.min(availableHeight - 10, 400));
+            
+            setDropdownStyles({
+              position: 'absolute',
+              width: `${rect.width}px`,
+              bottom: '100%',
+              marginBottom: '4px',
+              maxHeight: `${maxHeight}px`,
+              zIndex: 99999
+            });
+          }
+        }
+      };
+      
+      window.addEventListener('scroll', updatePosition, true);
+      window.addEventListener('resize', updatePosition);
+      
+      return () => {
+        window.removeEventListener('scroll', updatePosition, true);
+        window.removeEventListener('resize', updatePosition);
+      };
+    } else {
+      setDropdownStyles({});
     }
-  }, [isOpen]);
+  }, [isOpen, dropdownPosition]);
 
   // Get selected option labels
   const selectedLabels = options
@@ -205,10 +310,14 @@ export default function GenericSearchableMultiSelect({
       </div>
 
       {isOpen && !disabled && (
-        <div className={`absolute z-[9999] w-full bg-white border border-gray-300 rounded shadow-lg ${
-          dropdownPosition === 'above' ? 'bottom-full mb-1' : 'top-full mt-1'
-        }`}>
-          <div className="p-2 border-b border-gray-200">
+        <div 
+          ref={dropdownMenuRef}
+          className={`bg-white border border-gray-300 rounded shadow-xl flex flex-col ${
+            dropdownPosition === 'above' ? 'absolute z-[99999] w-full' : 'absolute z-[99999] w-full top-full mt-1'
+          }`}
+          style={dropdownPosition === 'above' ? dropdownStyles : {}}
+        >
+          <div className="p-2 border-b border-gray-200 bg-white flex-shrink-0">
             <div className="relative">
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -223,7 +332,7 @@ export default function GenericSearchableMultiSelect({
             </div>
           </div>
           
-          <div className="max-h-60 overflow-y-auto">
+          <div className={`overflow-y-auto flex-1 ${dropdownPosition === 'above' ? '' : 'max-h-60'}`} style={dropdownPosition === 'above' ? { maxHeight: 'calc(100% - 50px)' } : {}}>
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option, index) => (
                 <div
