@@ -65,7 +65,7 @@ function StockCarouselCard({ stock }: StockCarouselCardProps) {
           <h3 className="text-sm font-semibold text-gray-900 truncate">
             {stock.company_name}
           </h3>
-          <p className="text-xs text-gray-500">{stock.valuation}</p>
+          <p className="text-xs text-gray-500">₹ {stock.valuation} Cr</p>
         </div>
       </div>
 

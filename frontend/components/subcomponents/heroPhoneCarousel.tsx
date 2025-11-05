@@ -265,7 +265,7 @@ function Card({ slide }: { slide: Slide }) {
             <StatRow label="₹ Price Change" value={`${slide.price_change} (${slide.price_change_period || 'N/A'})`} />
             <StatRow label="% Change" value={slide.changePct} />
             <StatRow label="PPS" value={slide.pps} />
-            <StatRow label="Valuation" value={slide.valuation} />
+            <StatRow label="Valuation" value={`₹ ${slide.valuation} Cr`} />
           </div>
         </div>
 

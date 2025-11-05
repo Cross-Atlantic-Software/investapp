@@ -138,7 +138,7 @@ export default function HighDemandStocks({
                     </div>
                     <div>
                       <p className="text-themeTealLighter">Valuation</p>
-                      <p className="font-semibold text-themeTeal">{s.valuation}</p>
+                      <p className="font-semibold text-themeTeal">₹ {s.valuation} Cr</p>
                     </div>
                   </div>
                   </article>
