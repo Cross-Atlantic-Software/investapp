@@ -425,38 +425,13 @@ export class StockDisplayController {
 
       console.log('Banner Display: Found', stocks.length, 'stocks');
       
-      // Fetch valuation names for all stocks
+      // Use valuation directly from products table
       const stocksWithValuations = await Promise.all(
         stocks.map(async (stock: any) => {
-          let valuationName = 'N/A';
+          console.log(`Processing stock: ${stock.company_name}, valuation: ${stock.valuation}`);
           
-          console.log(`Processing stock: ${stock.company_name}, valuation_id: ${stock.valuation_id}`);
-          
-          // Check if valuation_id exists (for backward compatibility)
-          if (stock.valuation_id) {
-            try {
-              console.log(`Looking up valuation for ID: ${stock.valuation_id}`);
-              const valuation = await db.Valuation.findByPk(stock.valuation_id);
-              console.log(`Found valuation:`, valuation);
-              valuationName = valuation ? valuation.valuation_name : 'N/A';
-              console.log(`Stock ${stock.company_name}: valuation_id=${stock.valuation_id}, valuation_name=${valuationName}`);
-            } catch (error) {
-              console.log(`Error fetching valuation for ${stock.company_name}:`, error instanceof Error ? error.message : 'Unknown error');
-              // Fallback to hardcoded mapping if database fails
-              const valuationMap: { [key: number]: string } = {
-                1: '100Cr',
-                2: '150Cr', 
-                3: '200Cr',
-                4: '250Cr',
-                6: '300Cr'
-              };
-              valuationName = valuationMap[stock.valuation_id] || stock.valuation || 'N/A';
-              console.log(`Using fallback valuation: ${valuationName}`);
-            }
-          } else {
-            console.log(`Stock ${stock.company_name}: No valuation_id found, using old valuation field: ${stock.valuation}`);
-            valuationName = stock.valuation || 'N/A'; // Fallback to old field
-          }
+          // Use valuation directly from products table
+          const valuationName = stock.valuation || 'N/A';
 
           return {
             id: stock.id,
@@ -524,7 +499,7 @@ export class StockDisplayController {
         limit: 20 // Limit to 20 stocks for home display
       });
 
-      // Fetch price change periods and valuation names for all stocks
+      // Fetch price change periods for all stocks
       const stocksWithPeriods = await Promise.all(
         stocks.map(async (stock: any) => {
           let priceChangePeriod = 'No period assigned';
@@ -533,22 +508,9 @@ export class StockDisplayController {
             priceChangePeriod = period ? period.period : 'Period not found';
           }
 
-          let valuationName = 'N/A';
-          
-          // Check if valuation_id exists (for backward compatibility)
-          if (stock.valuation_id) {
-            try {
-              const valuation = await db.Valuation.findByPk(stock.valuation_id);
-              valuationName = valuation ? valuation.valuation_name : 'N/A';
-              console.log(`Home Stock ${stock.company_name}: valuation_id=${stock.valuation_id}, valuation_name=${valuationName}`);
-            } catch (error) {
-              console.log(`Error fetching valuation for ${stock.company_name}:`, error instanceof Error ? error.message : 'Unknown error');
-              valuationName = stock.valuation || 'N/A'; // Fallback to old field
-            }
-          } else {
-            console.log(`Home Stock ${stock.company_name}: No valuation_id found, using old valuation field: ${stock.valuation}`);
-            valuationName = stock.valuation || 'N/A'; // Fallback to old field
-          }
+          // Use valuation directly from products table
+          const valuationName = stock.valuation || 'N/A';
+          console.log(`Home Stock ${stock.company_name}: valuation=${valuationName}`);
 
           return {
             id: stock.id,
@@ -564,6 +526,7 @@ export class StockDisplayController {
             demand: stock.demand,
             homeDisplay: stock.homeDisplay,
             bannerDisplay: stock.bannerDisplay,
+            valuation: valuationName,
             valuation_id: stock.valuation_id,
             price_per_share: stock.price_per_share,
             percentage_change: stock.percentage_change,
