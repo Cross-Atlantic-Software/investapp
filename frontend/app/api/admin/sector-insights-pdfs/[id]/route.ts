@@ -31,8 +31,8 @@ export async function GET(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error fetching sector insights PDF:', error);
-    return NextResponse.json({ success: false, message: 'Failed to fetch sector insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error fetching Sector & Comapany insights PDF:', error);
+    return NextResponse.json({ success: false, message: 'Failed to fetch Sector & Comapany insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
@@ -70,8 +70,8 @@ export async function PUT(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error updating sector insights PDF:', error);
-    return NextResponse.json({ success: false, message: 'Failed to update sector insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error updating Sector & Comapany insights PDF:', error);
+    return NextResponse.json({ success: false, message: 'Failed to update Sector & Comapany insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
@@ -106,7 +106,7 @@ export async function DELETE(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error deleting sector insights PDF:', error);
-    return NextResponse.json({ success: false, message: 'Failed to delete sector insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error deleting Sector & Comapany insights PDF:', error);
+    return NextResponse.json({ success: false, message: 'Failed to delete Sector & Comapany insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

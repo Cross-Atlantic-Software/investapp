@@ -31,8 +31,8 @@ export async function GET(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error fetching sector outlook:', error);
-    return NextResponse.json({ success: false, message: 'Failed to fetch sector outlook', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error fetching Sector & Comapany outlook:', error);
+    return NextResponse.json({ success: false, message: 'Failed to fetch Sector & Comapany outlook', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
@@ -70,8 +70,8 @@ export async function POST(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error creating/updating sector outlook:', error);
-    return NextResponse.json({ success: false, message: 'Failed to create/update sector outlook', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error creating/updating Sector & Comapany outlook:', error);
+    return NextResponse.json({ success: false, message: 'Failed to create/update Sector & Comapany outlook', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
@@ -106,7 +106,7 @@ export async function DELETE(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error deleting sector outlook:', error);
-    return NextResponse.json({ success: false, message: 'Failed to delete sector outlook', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error deleting Sector & Comapany outlook:', error);
+    return NextResponse.json({ success: false, message: 'Failed to delete Sector & Comapany outlook', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

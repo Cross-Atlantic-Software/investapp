@@ -27,7 +27,7 @@ export async function PUT(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error setting active sector insights PDF:', error);
-    return NextResponse.json({ success: false, message: 'Failed to set active sector insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error setting active Sector & Comapany insights PDF:', error);
+    return NextResponse.json({ success: false, message: 'Failed to set active Sector & Comapany insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

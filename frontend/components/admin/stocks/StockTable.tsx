@@ -178,7 +178,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [replacingPdf, setReplacingPdf] = useState<PerformancePdf | null>(null);
   
-  // Sector Outlook management state
+  // Sector & Comapany outlook management state
   const [sectorOutlookModal, setSectorOutlookModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
     isOpen: false,
     stock: null
@@ -190,7 +190,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     accordions: []
   });
   
-  // Sector Insights PDF management state
+  // Sector & Comapany insights PDF management state
   const [sectorInsightsPdfModal, setSectorInsightsPdfModal] = useState<{ isOpen: boolean; stock: Stock | null }>({
     isOpen: false,
     stock: null
@@ -821,7 +821,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }
   };
 
-  // Sector Outlook Management Functions
+  // Sector & Comapany outlook Management Functions
   const handleManageSectorOutlook = async (stock: Stock) => {
     setSectorOutlookModal({ isOpen: true, stock });
     await fetchSectorOutlook(stock.id);
@@ -854,11 +854,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
           });
         }
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to fetch sector outlook');
+        onNotification?.('error', 'Error', data.message || 'Failed to fetch Sector & Comapany outlook');
       }
     } catch (error) {
-      console.error('Error fetching sector outlook:', error);
-      onNotification?.('error', 'Error', 'Failed to fetch sector outlook');
+      console.error('Error fetching Sector & Comapany outlook:', error);
+      onNotification?.('error', 'Error', 'Failed to fetch Sector & Comapany outlook');
     } finally {
       setSectorOutlookLoading(false);
     }
@@ -886,13 +886,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       const data = await response.json();
       if (data.success) {
         await fetchSectorOutlook(sectorOutlookModal.stock.id);
-        onNotification?.('success', 'Success', 'Sector outlook saved successfully!');
+        onNotification?.('success', 'Success', 'Sector & Comapany outlook saved successfully!');
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to save sector outlook');
+        onNotification?.('error', 'Error', data.message || 'Failed to save Sector & Comapany outlook');
       }
     } catch (error) {
-      console.error('Error saving sector outlook:', error);
-      onNotification?.('error', 'Error', 'Failed to save sector outlook');
+      console.error('Error saving Sector & Comapany outlook:', error);
+      onNotification?.('error', 'Error', 'Failed to save Sector & Comapany outlook');
     }
   };
 
@@ -919,7 +919,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
     }));
   };
 
-  // Sector Insights PDF Management Functions
+  // Sector & Comapany insights PDF Management Functions
   const handleManageSectorInsightsPdfs = async (stock: Stock) => {
     setSectorInsightsPdfModal({ isOpen: true, stock });
     await fetchSectorInsightsPdfs(stock.id);
@@ -937,11 +937,11 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       if (data.success) {
         setSectorInsightsPdfs(data.data.pdfs || []);
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to fetch sector insights PDFs');
+        onNotification?.('error', 'Error', data.message || 'Failed to fetch sector & company insights PDFs');
       }
     } catch (error) {
-      console.error('Error fetching sector insights PDFs:', error);
-      onNotification?.('error', 'Error', 'Failed to fetch sector insights PDFs');
+      console.error('Error fetching sector & company insights PDFs:', error);
+      onNotification?.('error', 'Error', 'Failed to fetch sector & company insights PDFs');
     } finally {
       setSectorInsightsPdfLoading(false);
     }
@@ -956,7 +956,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       const formData = new FormData();
       formData.append('pdf', sectorInsightsPdfFile);
       formData.append('stock_id', sectorInsightsPdfModal.stock.id.toString());
-      formData.append('title', sectorInsightsPdfFormData.title || 'Sector Insights PDF');
+      formData.append('title', sectorInsightsPdfFormData.title || 'Sector & Comapany insights PDF');
       formData.append('description', sectorInsightsPdfFormData.description || '');
       
       const response = await fetch(`/api/admin/stocks/${sectorInsightsPdfModal.stock.id}/sector-insights-pdfs`, {
@@ -970,13 +970,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock.id);
         setSectorInsightsPdfFormData({});
         setSectorInsightsPdfFile(null);
-        onNotification?.('success', 'Success', 'Sector insights PDF uploaded successfully!');
+        onNotification?.('success', 'Success', 'Sector & Comapany insights PDF uploaded successfully!');
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to upload sector insights PDF');
+        onNotification?.('error', 'Error', data.message || 'Failed to upload Sector & Comapany insights PDF');
       }
     } catch (error) {
-      console.error('Error uploading sector insights PDF:', error);
-      onNotification?.('error', 'Error', 'Failed to upload sector insights PDF');
+      console.error('Error uploading Sector & Comapany insights PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to upload Sector & Comapany insights PDF');
     }
   };
 
@@ -1009,13 +1009,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock?.id || 0);
         setEditingSectorInsightsPdf(null);
         setSectorInsightsPdfFormData({});
-        onNotification?.('success', 'Success', 'Sector insights PDF updated successfully!');
+        onNotification?.('success', 'Success', 'Sector & Comapany insights PDF updated successfully!');
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to update sector insights PDF');
+        onNotification?.('error', 'Error', data.message || 'Failed to update Sector & Comapany insights PDF');
       }
     } catch (error) {
-      console.error('Error updating sector insights PDF:', error);
-      onNotification?.('error', 'Error', 'Failed to update sector insights PDF');
+      console.error('Error updating Sector & Comapany insights PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to update Sector & Comapany insights PDF');
     }
   };
 
@@ -1040,13 +1040,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       const data = await response.json();
       if (data.success) {
         await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock?.id || 0);
-        onNotification?.('success', 'Success', 'Sector insights PDF deleted successfully!');
+        onNotification?.('success', 'Success', 'Sector & Comapany insights PDF deleted successfully!');
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to delete sector insights PDF');
+        onNotification?.('error', 'Error', data.message || 'Failed to delete Sector & Comapany insights PDF');
       }
     } catch (error) {
-      console.error('Error deleting sector insights PDF:', error);
-      onNotification?.('error', 'Error', 'Failed to delete sector insights PDF');
+      console.error('Error deleting Sector & Comapany insights PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to delete Sector & Comapany insights PDF');
     }
   };
 
@@ -1062,12 +1062,12 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
       const data = await response.json();
       if (data.success) {
         await fetchSectorInsightsPdfs(sectorInsightsPdfModal.stock?.id || 0);
-        onNotification?.('success', 'Success', 'Sector insights PDF set as active!');
+        onNotification?.('success', 'Success', 'Sector & Comapany insights PDF set as active!');
       } else {
         onNotification?.('error', 'Error', data.message || 'Failed to set PDF as active');
       }
     } catch (error) {
-      console.error('Error setting sector insights PDF as active:', error);
+      console.error('Error setting Sector & Comapany insights PDF as active:', error);
       onNotification?.('error', 'Error', 'Failed to set PDF as active');
     }
   };
@@ -1094,13 +1094,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         }
         setReplacingSectorInsightsPdf(null);
         setSectorInsightsPdfFile(null);
-        onNotification?.('success', 'Success', 'Sector insights PDF replaced successfully!');
+        onNotification?.('success', 'Success', 'Sector & Comapany insights PDF replaced successfully!');
       } else {
-        onNotification?.('error', 'Error', data.message || 'Failed to replace sector insights PDF');
+        onNotification?.('error', 'Error', data.message || 'Failed to replace Sector & Comapany insights PDF');
       }
     } catch (error) {
-      console.error('Error replacing sector insights PDF:', error);
-      onNotification?.('error', 'Error', 'Failed to replace sector insights PDF');
+      console.error('Error replacing Sector & Comapany insights PDF:', error);
+      onNotification?.('error', 'Error', 'Failed to replace Sector & Comapany insights PDF');
     }
   };
 
@@ -2440,7 +2440,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         </div>
       )}
 
-      {/* Sector Outlook Management Modal */}
+      {/* Sector & Comapany outlook Management Modal */}
       {sectorOutlookModal.isOpen && sectorOutlookModal.stock && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
@@ -2448,7 +2448,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Sector Outlook</h3>
+                  <h3 className="text-base font-semibold text-themeTealWhite">Manage Sector & Company Outlook</h3>
                   <p className="text-themeTealWhite text-sm">{sectorOutlookModal.stock.company_name}</p>
                 </div>
                 <button
@@ -2475,7 +2475,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   {/* Description */}
                   <div>
                     <label className="block text-sm text-themeTealLight mb-2">
-                      Sector Outlook Description
+                      Sector & Comapany outlook Description
                     </label>
                     <div className="border border-themeTealLighter rounded">
                       <ReactQuill
@@ -2484,7 +2484,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                         onChange={(value) => setSectorOutlookFormData(prev => ({ ...prev, description: value }))}
                         modules={quillModules}
                         formats={quillFormats}
-                        placeholder="Enter sector outlook description..."
+                        placeholder="Enter Sector & Comapany outlook description..."
                         style={{ height: '150px', marginBottom: '42px' }}
                         className="react-quill-custom"
                       />
@@ -2609,7 +2609,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                       onClick={handleSaveSectorOutlook}
                       className="buttonStyle"
                     >
-                      Save Sector Outlook
+                      Save Sector & Comapany outlook
                     </button>
                   </div>
                 </div>
@@ -2619,7 +2619,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         </div>
       )}
 
-      {/* Sector Insights PDF Management Modal */}
+      {/* Sector & Comapany insights PDF Management Modal */}
       {sectorInsightsPdfModal.isOpen && sectorInsightsPdfModal.stock && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-4xl mx-4 my-4 max-h-[95vh] flex flex-col">
@@ -2627,7 +2627,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
             <div className="bg-themeTeal px-6 py-4 rounded-t">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="text-base font-semibold text-white">Manage Sector Insights PDFs</h3>
+                  <h3 className="text-base font-semibold text-white">Manage Sector & Company Insights PDFs</h3>
                   <p className="text-themeTealWhite text-sm">{sectorInsightsPdfModal.stock.company_name}</p>
                 </div>
                 <button
@@ -2657,7 +2657,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                 <div className="border border-themeTealLighter rounded p-4">
                   <h4 className="text-md font-medium text-themeTeal mb-4 flex items-center">
                     <Upload className="w-5 h-5 mr-2" />
-                    {editingSectorInsightsPdf ? 'Edit Sector Insights PDF' : 'Upload New Sector Insights PDF'}
+                    {editingSectorInsightsPdf ? 'Edit Sector & Comapany insights PDF' : 'Upload New Sector & Comapany insights PDF'}
                   </h4>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2670,7 +2670,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                           value={sectorInsightsPdfFormData.title || ''}
                           onChange={(e) => setSectorInsightsPdfFormData(prev => ({ ...prev, title: e.target.value }))}
                           className="input-theme"
-                          placeholder="e.g., Q3 2024 Sector Insights Report"
+                          placeholder="e.g., Q3 2024 Sector & Comapany insights Report"
                         />
                       </div>
                       
@@ -2755,7 +2755,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                   {/* Existing PDFs */}
                   <div>
                     <div className="mb-4">
-                      <h4 className="text-lg font-medium text-themeTeal">Existing Sector Insights PDFs</h4>
+                      <h4 className="text-lg font-medium text-themeTeal">Existing Sector & Company Insights PDFs</h4>
                       <p className="text-sm text-themeTealLighter mt-1">
                         All PDFs are shown below. Only one PDF can be active at a time. 
                         Click &quot;✓ Set Active&quot; to switch which PDF is displayed on the frontend.
@@ -2764,7 +2764,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
                     
                     {sectorInsightsPdfs.length === 0 ? (
                       <div className="text-center py-8 text-themeTealLighter">
-                        <p>No sector insights PDFs uploaded yet.</p>
+                        <p>No sector & company insights PDFs uploaded yet.</p>
                       </div>
                     ) : (
                       <div className="space-y-4">
@@ -2849,7 +2849,7 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         </div>
       )}
 
-      {/* Replace Sector Insights PDF Modal */}
+      {/* Replace Sector & Comapany insights PDF Modal */}
       {replacingSectorInsightsPdf && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-md flex items-center justify-center z-[100] p-4 m-0">
           <div className="bg-white rounded shadow w-full max-w-md mx-4 my-4">
@@ -2963,13 +2963,13 @@ const StockTable: React.FC<StockTableProps> = ({ stocks, onRefresh, onSort, sort
         type="danger"
       />
 
-      {/* Sector Insights PDF Delete Confirmation Modal */}
+      {/* Sector & Comapany insights PDF Delete Confirmation Modal */}
       <ConfirmationModal
         isOpen={sectorInsightsPdfDeleteConfirmation.isOpen}
         onClose={() => setSectorInsightsPdfDeleteConfirmation({ isOpen: false, pdfId: null })}
         onConfirm={confirmDeleteSectorInsightsPdf}
-        title="Delete Sector Insights PDF"
-        message="Are you sure you want to delete this sector insights PDF? This action cannot be undone."
+        title="Delete Sector & Comapany insights PDF"
+        message="Are you sure you want to delete this Sector & Comapany insights PDF? This action cannot be undone."
         confirmText="Delete"
         cancelText="Cancel"
         type="danger"

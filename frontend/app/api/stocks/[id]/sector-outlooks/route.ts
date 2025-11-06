@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error fetching sector outlook:', error);
-    return NextResponse.json({ success: false, message: 'Failed to fetch sector outlook', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error fetching Sector & Comapany outlook:', error);
+    return NextResponse.json({ success: false, message: 'Failed to fetch Sector & Comapany outlook', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

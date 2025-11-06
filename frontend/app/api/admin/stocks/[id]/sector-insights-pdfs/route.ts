@@ -33,8 +33,8 @@ export async function GET(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error fetching sector insights PDFs:', error);
-    return NextResponse.json({ success: false, message: 'Failed to fetch sector insights PDFs', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error fetching sector & company insights PDFs:', error);
+    return NextResponse.json({ success: false, message: 'Failed to fetch sector & company insights PDFs', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
@@ -71,7 +71,7 @@ export async function POST(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error creating sector insights PDF:', error);
-    return NextResponse.json({ success: false, message: 'Failed to create sector insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error creating Sector & Comapany insights PDF:', error);
+    return NextResponse.json({ success: false, message: 'Failed to create Sector & Comapany insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

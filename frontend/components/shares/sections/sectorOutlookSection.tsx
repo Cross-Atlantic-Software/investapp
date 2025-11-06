@@ -44,19 +44,19 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
   const [expandedAccordions, setExpandedAccordions] = useState<Set<number>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const [numPages, setNumPages] = useState<number | null>(null);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
+  const [isAutoPlay, setIsAutoPlay] = useState(false);
 
   useEffect(() => {
     console.log('SectorOutlookSection useEffect - stockId:', stockId);
     if (stockId) {
       const fetchData = async () => {
         try {
-          console.log('Starting to fetch sector outlook data...');
+          console.log('Starting to fetch Sector & Comapany outlook data...');
           await Promise.all([fetchSectorOutlook(), fetchActivePdf()]);
-          console.log('Finished fetching sector outlook data');
+          console.log('Finished fetching Sector & Comapany outlook data');
         } catch (error) {
-          console.error('Error fetching sector outlook data:', error);
-          setError('Failed to load sector outlook data');
+          console.error('Error fetching Sector & Comapany outlook data:', error);
+          setError('Failed to load Sector & Comapany outlook data');
         } finally {
           console.log('Setting loading to false');
           setLoading(false);
@@ -87,30 +87,30 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
 
   const fetchSectorOutlook = async () => {
     try {
-      console.log('Fetching sector outlook for stockId:', stockId);
+      console.log('Fetching Sector & Comapany outlook for stockId:', stockId);
       const response = await fetch(`/api/stocks/${stockId}/sector-outlooks`);
       const data = await response.json();
       
-      console.log('Sector outlook response:', data);
+      console.log('Sector & Comapany outlook response:', data);
       
       if (data.success && data.data) {
         setSectorOutlook(data.data);
       } else {
-        console.log('No sector outlook data found');
+        console.log('No Sector & Comapany outlook data found');
       }
     } catch (error) {
-      console.error('Error fetching sector outlook:', error);
-      setError('Failed to load sector outlook');
+      console.error('Error fetching Sector & Comapany outlook:', error);
+      setError('Failed to load Sector & Comapany outlook');
     }
   };
 
   const fetchActivePdf = async () => {
     try {
-      console.log('Fetching sector insights PDF for stockId:', stockId);
+      console.log('Fetching Sector & Comapany insights PDF for stockId:', stockId);
       const response = await fetch(`/api/stocks/${stockId}/sector-insights-pdfs`);
       const data = await response.json();
       
-      console.log('Sector insights PDF response:', data);
+      console.log('Sector & Comapany insights PDF response:', data);
       
       if (data.success && data.data.pdfs && data.data.pdfs.length > 0) {
         const activePdf = data.data.pdfs.find((pdf: SectorInsightsPdf) => pdf.is_active);
@@ -121,11 +121,11 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
           console.log('No active PDF found');
         }
       } else {
-        console.log('No sector insights PDFs found');
+        console.log('No sector & Company insights PDFs found');
       }
     } catch (error) {
-      console.error('Error fetching sector insights PDF:', error);
-      setError('Failed to load sector insights PDF');
+      console.error('Error fetching Sector & Comapany insights PDF:', error);
+      setError('Failed to load Sector & Comapany insights PDF');
     }
   };
 
@@ -150,17 +150,24 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
   };
 
   const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+    if (numPages) {
+      if (currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else {
+        // Loop back to last page
+        setCurrentPage(numPages);
+      }
     }
   };
 
   const goToNextPage = () => {
-    if (numPages && currentPage < numPages) {
-      setCurrentPage(currentPage + 1);
-    } else {
-      // Loop back to first page
-      setCurrentPage(1);
+    if (numPages) {
+      if (currentPage < numPages) {
+        setCurrentPage(currentPage + 1);
+      } else {
+        // Loop back to first page
+        setCurrentPage(1);
+      }
     }
   };
 
@@ -197,7 +204,7 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
 
   return (
     <div className="space-y-6">
-      {/* Sector Outlook Content */}
+      {/* Sector & Comapany outlook Content */}
       {sectorOutlook && (
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           {/* Description */}
@@ -246,33 +253,22 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
 
           {(!sectorOutlook.description && (!sectorOutlook.accordions || sectorOutlook.accordions.length === 0)) && (
             <div className="text-center text-gray-500 py-8">
-              <p>No sector outlook information available.</p>
+              <p>No Sector & Comapany outlook information available.</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Sector Insights PDF */}
+      {/* Sector & Comapany insights PDF */}
       {activePdf && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <div className="mb-4">
+        <div className="bg-white border border-gray-200 rounded-lg py-6">
+          {/* <div className="mb-4">
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Sector and Market Insights for sophisticated investors</h3>
-          </div>
+          </div> */}
 
-          {/* PDF Viewer with Side Controls */}
-          <div className="flex justify-center items-center mb-6">
-            {/* Previous Button */}
-            <button
-              onClick={goToPreviousPage}
-              disabled={currentPage <= 1}
-              className="flex items-center justify-center w-12 h-12 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 mr-4"
-              title="Previous Page"
-            >
-              <ChevronLeft className="w-8 h-8 text-gray-400 hover:text-themeTeal" />
-            </button>
-
-            {/* PDF Viewer */}
-            <div className="relative">
+          {/* PDF Viewer */}
+          <div className="w-full mb-4 overflow-x-auto" data-pdf-container>
+            <div className="flex justify-center min-w-0">
               <PDFViewer
                 pdfUrl={activePdf.pdf_url}
                 currentPage={currentPage}
@@ -280,21 +276,29 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
                 onLoadError={onDocumentLoadError}
               />
             </div>
+          </div>
 
-            {/* Next Button */}
+          {/* Navigation Controls - Below PDF */}
+          <div className="flex justify-center items-center gap-3">
+            <button
+              onClick={goToPreviousPage}
+              className="flex items-center justify-center w-8 h-8 bg-white border border-gray-300 rounded-full shadow-md hover:bg-gray-50 hover:border-themeTeal transition-all duration-200"
+              title="Previous Page"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-700 hover:text-themeTeal" />
+            </button>
+            
+            <span className="text-sm text-gray-500">Page {currentPage} of {numPages || '...'}</span>
+            
             <button
               onClick={goToNextPage}
-              className="flex items-center justify-center w-12 h-12 transition-all duration-200 ml-4"
+              className="flex items-center justify-center w-8 h-8 bg-white border border-gray-300 rounded-full shadow-md hover:bg-gray-50 hover:border-themeTeal transition-all duration-200"
               title="Next Page"
             >
-              <ChevronRight className="w-8 h-8 text-gray-400 hover:text-themeTeal" />
+              <ChevronRight className="w-4 h-4 text-gray-700 hover:text-themeTeal" />
             </button>
           </div>
 
-          {/* Page indicator at bottom */}
-          <div className="text-center mt-4">
-            <span className="text-sm text-gray-500">Page {currentPage} of {numPages || '...'}</span>
-          </div>
         </div>
       )}
 
@@ -302,7 +306,7 @@ export default function SectorOutlookSection({ stockId }: SectorOutlookSectionPr
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="text-center text-gray-500 py-8">
             <FileText className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-            <p>No sector outlook information available.</p>
+            <p>No Sector & Comapany outlook information available.</p>
           </div>
         </div>
       )}

@@ -64,7 +64,7 @@ const MethodologyModal: React.FC<MethodologyModalProps> = ({
     { key: 'score', name: 'Scorecard' },
     { key: 'rationale', name: 'Investment Rationale' },
     { key: 'bench', name: 'Performance Benchmark' },
-    { key: 'outlook', name: 'Sector Outlook' },
+    { key: 'outlook', name: 'Sector & Comapany outlook' },
     { key: 'financials', name: 'Financial Performance' },
     { key: 'holders', name: 'Shareholding' },
     { key: 'news', name: 'News Related to Company' },
