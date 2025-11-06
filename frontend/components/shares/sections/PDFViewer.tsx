@@ -38,11 +38,14 @@ export default function PDFViewer({ pdfUrl, currentPage, onLoadSuccess, onLoadEr
         const container = document.querySelector('[data-pdf-container]');
         if (container) {
           const rect = container.getBoundingClientRect();
-          // Use full container width minus padding (32px on each side = 64px total)
-          setContainerWidth(Math.max(300, rect.width - 64));
+          // Use full container width with minimal padding for maximum size
+          // Ensure PDF fits within container without overflow
+          const availableWidth = rect.width - 32; // 16px padding on each side
+          setContainerWidth(Math.max(400, Math.min(1200, availableWidth)));
         } else {
           // Fallback: use window width minus padding for buttons and margins
-          setContainerWidth(Math.min(1200, Math.max(300, window.innerWidth - 200)));
+          const availableWidth = window.innerWidth - 200; // Account for buttons, margins, and padding
+          setContainerWidth(Math.min(1200, Math.max(400, availableWidth)));
         }
       };
 
@@ -65,7 +68,7 @@ export default function PDFViewer({ pdfUrl, currentPage, onLoadSuccess, onLoadEr
   }
 
   return (
-    <div className="flex justify-center items-center p-4 w-full min-w-0">
+    <div className="flex justify-center items-center p-2 w-full min-w-0">
       <Document
         file={pdfUrl}
         onLoadSuccess={onLoadSuccess}
@@ -81,7 +84,7 @@ export default function PDFViewer({ pdfUrl, currentPage, onLoadSuccess, onLoadEr
             pageNumber={currentPage}
             renderTextLayer={false}
             renderAnnotationLayer={false}
-            className="shadow-lg max-w-full"
+            className="shadow-lg max-w-full h-auto"
             width={containerWidth}
           />
         )}

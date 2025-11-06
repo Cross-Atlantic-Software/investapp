@@ -4,7 +4,7 @@ import { StockSectorOutlookAccordionModel } from '../../Models/StockSectorOutloo
 import { Op } from 'sequelize';
 
 export class StockSectorOutlookManagementController {
-  // Get sector outlook for a specific stock
+  // Get Sector & Comapany outlook for a specific stock
   static async getSectorOutlookByStockId(req: Request, res: Response) {
     try {
       const { stockId } = req.params;
@@ -24,7 +24,7 @@ export class StockSectorOutlookManagementController {
         return res.json({
           success: true,
           data: null,
-          message: 'No sector outlook found for this stock',
+          message: 'No Sector & Comapany outlook found for this stock',
         });
       }
 
@@ -33,16 +33,16 @@ export class StockSectorOutlookManagementController {
         data: sectorOutlook,
       });
     } catch (error) {
-      console.error('Error fetching sector outlook:', error);
+      console.error('Error fetching Sector & Comapany outlook:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch sector outlook',
+        message: 'Failed to fetch Sector & Comapany outlook',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
 
-  // Create or update sector outlook
+  // Create or update Sector & Comapany outlook
   static async createOrUpdateSectorOutlook(req: Request, res: Response) {
     try {
       const { stock_id, description, accordions } = req.body;
@@ -54,7 +54,7 @@ export class StockSectorOutlookManagementController {
         });
       }
 
-      // Find or create sector outlook
+      // Find or create Sector & Comapany outlook
       let sectorOutlook = await StockSectorOutlookModel.findOne({
         where: { stock_id: parseInt(stock_id) },
       });
@@ -103,20 +103,20 @@ export class StockSectorOutlookManagementController {
 
       res.json({
         success: true,
-        message: sectorOutlook.id ? 'Sector outlook updated successfully' : 'Sector outlook created successfully',
+        message: sectorOutlook.id ? 'Sector & Comapany outlook updated successfully' : 'Sector & Comapany outlook created successfully',
         data: updatedSectorOutlook,
       });
     } catch (error) {
-      console.error('Error creating/updating sector outlook:', error);
+      console.error('Error creating/updating Sector & Comapany outlook:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to create/update sector outlook',
+        message: 'Failed to create/update Sector & Comapany outlook',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
 
-  // Delete sector outlook
+  // Delete Sector & Comapany outlook
   static async deleteSectorOutlook(req: Request, res: Response) {
     try {
       const { stockId } = req.params;
@@ -128,7 +128,7 @@ export class StockSectorOutlookManagementController {
       if (!sectorOutlook) {
         return res.status(404).json({
           success: false,
-          message: 'Sector outlook not found',
+          message: 'Sector & Comapany outlook not found',
         });
       }
 
@@ -137,24 +137,24 @@ export class StockSectorOutlookManagementController {
         where: { sector_outlook_id: sectorOutlook.id },
       });
 
-      // Delete sector outlook
+      // Delete Sector & Comapany outlook
       await sectorOutlook.destroy();
 
       res.json({
         success: true,
-        message: 'Sector outlook deleted successfully',
+        message: 'Sector & Comapany outlook deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting sector outlook:', error);
+      console.error('Error deleting Sector & Comapany outlook:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to delete sector outlook',
+        message: 'Failed to delete Sector & Comapany outlook',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
 
-  // Get sector outlook for a specific stock (Public API - uses :id parameter)
+  // Get Sector & Comapany outlook for a specific stock (Public API - uses :id parameter)
   static async getSectorOutlookByStockIdPublic(req: Request, res: Response) {
     try {
       const { id } = req.params;
@@ -173,7 +173,7 @@ export class StockSectorOutlookManagementController {
       if (!sectorOutlook) {
         return res.status(404).json({
           success: false,
-          message: 'Sector outlook not found for this stock',
+          message: 'Sector & Comapany outlook not found for this stock',
         });
       }
 
@@ -182,16 +182,16 @@ export class StockSectorOutlookManagementController {
         data: sectorOutlook,
       });
     } catch (error) {
-      console.error('Error fetching sector outlook:', error);
+      console.error('Error fetching Sector & Comapany outlook:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch sector outlook',
+        message: 'Failed to fetch Sector & Comapany outlook',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   }
 
-  // Get sector outlook statistics
+  // Get Sector & Comapany outlook statistics
   static async getSectorOutlookStats(req: Request, res: Response) {
     try {
       const { stockId } = req.params;
@@ -213,10 +213,10 @@ export class StockSectorOutlookManagementController {
         },
       });
     } catch (error) {
-      console.error('Error fetching sector outlook stats:', error);
+      console.error('Error fetching Sector & Comapany outlook stats:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch sector outlook statistics',
+        message: 'Failed to fetch Sector & Comapany outlook statistics',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }

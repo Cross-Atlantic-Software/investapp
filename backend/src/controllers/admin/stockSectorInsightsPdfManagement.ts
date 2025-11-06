@@ -12,7 +12,7 @@ export class StockSectorInsightsPdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Sector insights PDF not found',
+          message: 'Sector & Comapany insights PDF not found',
         });
       }
 
@@ -21,10 +21,10 @@ export class StockSectorInsightsPdfManagementController {
         data: pdf,
       });
     } catch (error) {
-      console.error('Error fetching sector insights PDF:', error);
+      console.error('Error fetching Sector & Comapany insights PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch sector insights PDF',
+        message: 'Failed to fetch Sector & Comapany insights PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -58,10 +58,10 @@ export class StockSectorInsightsPdfManagementController {
         },
       });
     } catch (error) {
-      console.error('Error fetching sector insights PDFs:', error);
+      console.error('Error fetching sector & company insights PDFs:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch sector insights PDFs',
+        message: 'Failed to fetch sector & company insights PDFs',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -93,10 +93,10 @@ export class StockSectorInsightsPdfManagementController {
         },
       });
     } catch (error) {
-      console.error('Error fetching sector insights PDFs:', error);
+      console.error('Error fetching sector & company insights PDFs:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch sector insights PDFs',
+        message: 'Failed to fetch sector & company insights PDFs',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -155,14 +155,14 @@ export class StockSectorInsightsPdfManagementController {
 
       res.json({
         success: true,
-        message: 'Sector insights PDF created successfully',
+        message: 'Sector & Comapany insights PDF created successfully',
         data: pdf,
       });
     } catch (error) {
-      console.error('Error creating sector insights PDF:', error);
+      console.error('Error creating Sector & Comapany insights PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to create sector insights PDF',
+        message: 'Failed to create Sector & Comapany insights PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -219,14 +219,14 @@ export class StockSectorInsightsPdfManagementController {
 
       res.json({
         success: true,
-        message: `${createdPdfs.length} sector insights PDFs created successfully`,
+        message: `${createdPdfs.length} sector & company insights PDFs created successfully`,
         data: createdPdfs,
       });
     } catch (error) {
-      console.error('Error bulk creating sector insights PDFs:', error);
+      console.error('Error bulk creating sector & company insights PDFs:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to bulk create sector insights PDFs',
+        message: 'Failed to bulk create sector & company insights PDFs',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -242,7 +242,7 @@ export class StockSectorInsightsPdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Sector insights PDF not found',
+          message: 'Sector & Comapany insights PDF not found',
         });
       }
 
@@ -285,14 +285,14 @@ export class StockSectorInsightsPdfManagementController {
 
       res.json({
         success: true,
-        message: 'Sector insights PDF updated successfully',
+        message: 'Sector & Comapany insights PDF updated successfully',
         data: pdf,
       });
     } catch (error) {
-      console.error('Error updating sector insights PDF:', error);
+      console.error('Error updating Sector & Comapany insights PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to update sector insights PDF',
+        message: 'Failed to update Sector & Comapany insights PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -307,7 +307,7 @@ export class StockSectorInsightsPdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Sector insights PDF not found',
+          message: 'Sector & Comapany insights PDF not found',
         });
       }
 
@@ -331,14 +331,14 @@ export class StockSectorInsightsPdfManagementController {
 
       res.json({
         success: true,
-        message: 'Sector insights PDF replaced successfully',
+        message: 'Sector & Comapany insights PDF replaced successfully',
         data: pdf,
       });
     } catch (error) {
-      console.error('Error replacing sector insights PDF:', error);
+      console.error('Error replacing Sector & Comapany insights PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to replace sector insights PDF',
+        message: 'Failed to replace Sector & Comapany insights PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -353,7 +353,7 @@ export class StockSectorInsightsPdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Sector insights PDF not found',
+          message: 'Sector & Comapany insights PDF not found',
         });
       }
 
@@ -367,13 +367,13 @@ export class StockSectorInsightsPdfManagementController {
 
       res.json({
         success: true,
-        message: 'Sector insights PDF deleted successfully',
+        message: 'Sector & Comapany insights PDF deleted successfully',
       });
     } catch (error) {
-      console.error('Error deleting sector insights PDF:', error);
+      console.error('Error deleting Sector & Comapany insights PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to delete sector insights PDF',
+        message: 'Failed to delete Sector & Comapany insights PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -388,7 +388,7 @@ export class StockSectorInsightsPdfManagementController {
       if (!pdf) {
         return res.status(404).json({
           success: false,
-          message: 'Sector insights PDF not found',
+          message: 'Sector & Comapany insights PDF not found',
         });
       }
 
@@ -408,14 +408,14 @@ export class StockSectorInsightsPdfManagementController {
 
       res.json({
         success: true,
-        message: 'Sector insights PDF set as active successfully',
+        message: 'Sector & Comapany insights PDF set as active successfully',
         data: pdf,
       });
     } catch (error) {
-      console.error('Error setting active sector insights PDF:', error);
+      console.error('Error setting active Sector & Comapany insights PDF:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to set active sector insights PDF',
+        message: 'Failed to set active Sector & Comapany insights PDF',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -442,10 +442,10 @@ export class StockSectorInsightsPdfManagementController {
         },
       });
     } catch (error) {
-      console.error('Error fetching sector insights PDF stats:', error);
+      console.error('Error fetching Sector & Comapany insights PDF stats:', error);
       res.status(500).json({
         success: false,
-        message: 'Failed to fetch sector insights PDF statistics',
+        message: 'Failed to fetch Sector & Comapany insights PDF statistics',
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }

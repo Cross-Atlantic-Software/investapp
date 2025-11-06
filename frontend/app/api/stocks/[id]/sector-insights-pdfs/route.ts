@@ -25,7 +25,7 @@ export async function GET(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error fetching sector insights PDF:', error);
-    return NextResponse.json({ success: false, message: 'Failed to fetch sector insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error fetching Sector & Comapany insights PDF:', error);
+    return NextResponse.json({ success: false, message: 'Failed to fetch Sector & Comapany insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

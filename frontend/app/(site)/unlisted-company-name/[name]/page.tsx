@@ -9,7 +9,7 @@ const NAV = [
   { id: "score", label: "Signal Analyzer" },
   { id: "rationale", label: "Investment Rationale" },
   { id: "bench", label: "Competitive Benchmarking" },
-  { id: "outlook", label: "SWOT & Porter Analysis" },
+  { id: "outlook", label: "Sector & Comapany Analysis" },
   { id: "financials", label: "Financial Performance" },
   { id: "holders", label: "Shareholding" },
   { id: "news", label: "Related News" },
@@ -202,7 +202,7 @@ export default function UnlistedCompanyDetails() {
             <Section id="score" title="Signal Analyzer" info={getMethodologyText('score')}><ScorecardSection stockId={parseInt(stockData.id)} /></Section>
             <Section id="rationale" title="Investment Rationale" info={getMethodologyText('rationale')}><InvestmentRationaleSection stockId={parseInt(stockData.id)} /></Section>
             <Section id="bench" title="Competitive Benchmarking" info={getMethodologyText('bench')}><PerformanceBenchmarkSection stockId={parseInt(stockData.id)} /></Section>
-            <Section id="outlook" title="SWOT & Porter Analysis" info={getMethodologyText('outlook')}><SectorOutlookSection stockId={parseInt(stockData.id)} /></Section>
+            <Section id="outlook" title="Sector & Company Analysis" info={getMethodologyText('outlook')}><SectorOutlookSection stockId={parseInt(stockData.id)} /></Section>
             <Section id="financials" title="Financial Performance" info={getMethodologyText('financials')}><FinancialPerformanceSection stockId={stockData.id} /></Section>
             <Section id="holders" title="Shareholding" info={getMethodologyText('holders')}><ShareholdingSection stockId={stockData.id} /></Section>
             <Section id="news" title="Related News" info={getMethodologyText('news')}><NewsSection stockId={parseInt(stockData.id)} /></Section>

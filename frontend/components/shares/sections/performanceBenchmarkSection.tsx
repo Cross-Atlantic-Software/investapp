@@ -68,17 +68,24 @@ export default function PerformanceBenchmarkSection({ stockId }: PerformanceBenc
   };
 
   const goToPreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
+    if (numPages) {
+      if (currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else {
+        // Loop back to last page
+        setCurrentPage(numPages);
+      }
     }
   };
 
   const goToNextPage = () => {
-    if (numPages && currentPage < numPages) {
-      setCurrentPage(currentPage + 1);
-    } else {
-      // Loop back to first page
-      setCurrentPage(1);
+    if (numPages) {
+      if (currentPage < numPages) {
+        setCurrentPage(currentPage + 1);
+      } else {
+        // Loop back to first page
+        setCurrentPage(1);
+      }
     }
   };
 
@@ -111,54 +118,47 @@ export default function PerformanceBenchmarkSection({ stockId }: PerformanceBenc
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 overflow-hidden">
-      {/* PDF Viewer with Side Controls */}
-      <div className="flex justify-center items-center mb-6 gap-4">
-        {/* Previous Button */}
-        <button
-          onClick={goToPreviousPage}
-          disabled={currentPage <= 1}
-          className="flex items-center justify-center w-12 h-12 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-          title="Previous Page"
-        >
-          <ChevronLeft className="w-8 h-8 text-gray-400 hover:text-themeTeal" />
-        </button>
-
-        {/* PDF Viewer Container */}
-        <div className="relative flex-1 max-w-full overflow-hidden" data-pdf-container>
-          <div className="w-full max-w-full overflow-hidden border border-gray-200 rounded-lg bg-gray-50">
-            {activePdf ? (
-              <PDFViewer
-                pdfUrl={activePdf.pdf_url}
-                currentPage={currentPage}
-                onLoadSuccess={onDocumentLoadSuccess}
-                onLoadError={onDocumentLoadError}
-              />
-            ) : (
-              <div className="flex items-center justify-center h-96 w-full bg-gray-100 rounded-lg min-w-[200px]">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4"></div>
-                  <p className="text-gray-500">Loading PDF viewer...</p>
-                </div>
+    <div className="bg-white border border-gray-200 rounded-lg py-6">
+      {/* PDF Viewer */}
+      <div className="w-full mb-4 overflow-x-auto" data-pdf-container>
+        <div className="flex justify-center min-w-0">
+          {activePdf ? (
+            <PDFViewer
+              pdfUrl={activePdf.pdf_url}
+              currentPage={currentPage}
+              onLoadSuccess={onDocumentLoadSuccess}
+              onLoadError={onDocumentLoadError}
+            />
+          ) : (
+            <div className="flex items-center justify-center h-96 w-full bg-gray-100 rounded-lg">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-themeTeal mx-auto mb-4"></div>
+                <p className="text-gray-500">Loading PDF viewer...</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
-
-        {/* Next Button */}
-        <button
-          onClick={goToNextPage}
-          disabled={numPages ? currentPage >= numPages : false}
-          className="flex items-center justify-center w-12 h-12 flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-          title="Next Page"
-        >
-          <ChevronRight className="w-8 h-8 text-gray-400 hover:text-themeTeal" />
-        </button>
       </div>
 
-      {/* Page indicator at bottom */}
-      <div className="text-center mt-4">
+      {/* Navigation Controls - Below PDF */}
+      <div className="flex justify-center items-center gap-3">
+        <button
+          onClick={goToPreviousPage}
+          className="flex items-center justify-center w-8 h-8 bg-white border border-gray-300 rounded-full shadow-md hover:bg-gray-50 hover:border-themeTeal transition-all duration-200"
+          title="Previous Page"
+        >
+          <ChevronLeft className="w-4 h-4 text-gray-700 hover:text-themeTeal" />
+        </button>
+        
         <span className="text-sm text-gray-500">Page {currentPage} of {numPages || '...'}</span>
+        
+        <button
+          onClick={goToNextPage}
+          className="flex items-center justify-center w-8 h-8 bg-white border border-gray-300 rounded-full shadow-md hover:bg-gray-50 hover:border-themeTeal transition-all duration-200"
+          title="Next Page"
+        >
+          <ChevronRight className="w-4 h-4 text-gray-700 hover:text-themeTeal" />
+        </button>
       </div>
     </div>
   );

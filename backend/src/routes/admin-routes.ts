@@ -355,13 +355,13 @@ router.put("/performance-pdfs/:id/replace", uploadMiddleware, StockPerformancePd
 router.delete("/performance-pdfs/:id", StockPerformancePdfManagementController.deletePdf);
 router.get("/stocks/:stockId/performance-pdfs/stats", StockPerformancePdfManagementController.getPdfStats);
 
-// Stock Sector Outlook Management Routes
+// Stock Sector & Comapany outlook Management Routes
 router.get("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.getSectorOutlookByStockId);
 router.post("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.createOrUpdateSectorOutlook);
 router.delete("/stocks/:stockId/sector-outlooks", StockSectorOutlookManagementController.deleteSectorOutlook);
 router.get("/stocks/:stockId/sector-outlooks/stats", StockSectorOutlookManagementController.getSectorOutlookStats);
 
-// Stock Sector Insights PDF Management Routes
+// Stock Sector & Comapany insights PDF Management Routes
 router.get("/stocks/:stockId/sector-insights-pdfs", StockSectorInsightsPdfManagementController.getPdfsByStockId);
 router.get("/sector-insights-pdfs/:id", StockSectorInsightsPdfManagementController.getPdfById);
 router.post("/stocks/:stockId/sector-insights-pdfs", uploadPdf.single('pdf'), StockSectorInsightsPdfManagementController.createPdf);

@@ -145,7 +145,7 @@ async function initializeSequelize() {
   // Initialize Stock Performance PDF model
   initializeStockPerformancePdfModel(sequelize);
   
-  // Initialize Stock Sector Outlook models
+  // Initialize Stock Sector & Comapany outlook models
   initializeStockSectorOutlookModel(sequelize);
   initializeStockSectorOutlookAccordionModel(sequelize);
   initializeStockSectorInsightsPdfModel(sequelize);
@@ -236,7 +236,7 @@ async function initializeSequelize() {
   // Initialize Wishlist model
   initializeWishlistModel(sequelize);
   
-  // Set up associations for Sector Outlook
+  // Set up associations for Sector & Comapany outlook
   StockSectorOutlookModel.hasMany(StockSectorOutlookAccordionModel, {
     foreignKey: 'sector_outlook_id',
     as: 'accordions',

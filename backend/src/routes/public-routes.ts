@@ -46,10 +46,10 @@ router.get("/notable-activities", notableActivityController.getPublicNotableActi
 // Public Stock Price Data Routes (no authentication required)
 router.get("/stocks/:id/price-data", getPriceData);
 
-// Public Sector Outlook Routes (no authentication required)
+// Public Sector & Comapany outlook Routes (no authentication required)
 router.get("/stocks/:id/sector-outlooks", StockSectorOutlookManagementController.getSectorOutlookByStockIdPublic);
 
-// Public Sector Insights PDF Routes (no authentication required)
+// Public Sector & Comapany insights PDF Routes (no authentication required)
 router.get("/stocks/:id/sector-insights-pdfs", StockSectorInsightsPdfManagementController.getPdfsByStockIdPublic);
 
 import { StockShareholdingController } from "../controllers/admin/stockShareholdingController";

@@ -33,7 +33,7 @@ export async function PUT(
       return NextResponse.json(data, { status: response.status });
     }
   } catch (error) {
-    console.error('Error replacing sector insights PDF:', error);
-    return NextResponse.json({ success: false, message: 'Failed to replace sector insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
+    console.error('Error replacing Sector & Comapany insights PDF:', error);
+    return NextResponse.json({ success: false, message: 'Failed to replace Sector & Comapany insights PDF', error: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

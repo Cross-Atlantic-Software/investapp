@@ -63,7 +63,7 @@ const modules = [
   },
   {
     id: 'sector-outlook',
-    title: 'Manage Sector Outlook',
+    title: 'Manage Sector & Comapany Outlook',
     description: 'Configure sector analysis',
     icon: TrendingUp,
     color: 'purple',
@@ -74,8 +74,8 @@ const modules = [
   },
   {
     id: 'sector-insights',
-    title: 'Manage Sector Insights PDFs',
-    description: 'Upload sector insights',
+    title: 'Manage Sector & Company Insights PDFs',
+    description: 'Upload Sector & Comapany insights',
     icon: FileText,
     color: 'emerald',
     bgColor: 'bg-emerald-50',
