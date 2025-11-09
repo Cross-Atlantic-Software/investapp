@@ -86,19 +86,15 @@ export default function PDFViewer({ pdfUrl, currentPage, onLoadSuccess, onLoadEr
         }
       >
         {containerWidth && (
-          <Page
-            pageNumber={currentPage}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-            className="shadow-2xl"
-            width={containerWidth}
-            style={{ 
-              maxWidth: 'none', 
-              width: containerWidth,
-              height: 'auto',
-              display: 'block'
-            }}
-          />
+          <div className="flex justify-center">
+            <Page
+              pageNumber={currentPage}
+              renderTextLayer={false}
+              renderAnnotationLayer={false}
+              className="shadow-2xl"
+              width={containerWidth}
+            />
+          </div>
         )}
       </Document>
     </div>
