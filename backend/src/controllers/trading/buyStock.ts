@@ -57,7 +57,7 @@ export class BuyStockService {
       
       console.log('✅ User found:', user.email);
 
-      // Check wallet balance BEFORE creating buy request
+      // Initialize wallet if it doesn't exist (but don't check balance - allow negative balances)
       try {
         let wallet = await db.UserWallet.findOne({
           where: { user_id: parseInt(userId) }
@@ -66,38 +66,11 @@ export class BuyStockService {
         // Initialize wallet if it doesn't exist
         if (!wallet) {
           await UserWalletController.initializeWallet(parseInt(userId));
-          wallet = await db.UserWallet.findOne({
-            where: { user_id: parseInt(userId) }
-          });
+          console.log(`✅ Wallet initialized for user: ${userId}`);
         }
-
-        if (!wallet) {
-          console.error('❌ Failed to initialize wallet for user:', userId);
-          return (res as any).error("Wallet initialization failed", HttpStatusCode.INTERNAL_SERVER_ERROR);
-        }
-
-        // Check if user has sufficient balance for the transaction
-        // We check the total_amount (without fees/taxes initially, as they're added by admin)
-        // But we should allow pending transactions and check balance only on approval
-        // However, for better UX, let's check if balance is at least equal to total_amount
-        const requiredAmount = parseFloat(totalAmount);
-        const availableBalance = parseFloat(wallet.available_balance.toString());
-
-        if (availableBalance < requiredAmount) {
-          console.error(`❌ Insufficient wallet balance. Available: ₹${availableBalance}, Required: ₹${requiredAmount}`);
-          return (res as any).error(
-            `Insufficient wallet balance. Available: ₹${availableBalance.toFixed(2)}, Required: ₹${requiredAmount.toFixed(2)}. Please deposit money to your wallet first.`,
-            HttpStatusCode.BAD_REQUEST
-          );
-        }
-
-        console.log(`✅ Wallet balance check passed. Available: ₹${availableBalance}, Required: ₹${requiredAmount}`);
       } catch (walletError: any) {
-        console.error('❌ Error checking wallet balance:', walletError);
-        return (res as any).error(
-          walletError.message || "Failed to verify wallet balance",
-          HttpStatusCode.INTERNAL_SERVER_ERROR
-        );
+        console.error('❌ Error initializing wallet:', walletError);
+        // Don't fail the buy request if wallet initialization fails - it will be handled on approval
       }
 
       // Add buy request to the buy_requests table
