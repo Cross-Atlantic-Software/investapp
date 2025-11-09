@@ -33,28 +33,27 @@ export default function PDFViewer({ pdfUrl, currentPage, onLoadSuccess, onLoadEr
         pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.js';
       });
 
-      // Calculate container width based on available space
+      // Calculate container width - use full width of modal container
       const updateWidth = () => {
         const container = document.querySelector('[data-pdf-container]');
         if (container) {
           const rect = container.getBoundingClientRect();
-          // Use full container width with minimal padding for maximum size
-          // Ensure PDF fits within container without overflow
-          const availableWidth = rect.width - 32; // 16px padding on each side
-          setContainerWidth(Math.max(400, Math.min(1200, availableWidth)));
+          // Use full width of container minus padding (p-4 = 16px on each side = 32px total)
+          const availableWidth = rect.width - 32;
+          // Use the full available width for maximum readability
+          setContainerWidth(availableWidth);
         } else {
-          // Fallback: use window width minus padding for buttons and margins
-          const availableWidth = window.innerWidth - 200; // Account for buttons, margins, and padding
-          setContainerWidth(Math.min(1200, Math.max(400, availableWidth)));
+          // Fallback: use 90% of viewport minus padding
+          const availableWidth = (window.innerWidth * 0.9) - 200;
+          setContainerWidth(Math.max(400, availableWidth));
         }
       };
 
-      // Small delay to ensure DOM is ready
       setTimeout(updateWidth, 100);
       window.addEventListener('resize', updateWidth);
       return () => window.removeEventListener('resize', updateWidth);
     }
-  }, []);
+  }, [currentPage]); // Recalculate when page changes
 
   if (!isClient) {
     return (
@@ -68,7 +67,14 @@ export default function PDFViewer({ pdfUrl, currentPage, onLoadSuccess, onLoadEr
   }
 
   return (
-    <div className="flex justify-center items-center p-2 w-full min-w-0">
+    <div 
+      className="flex justify-center items-start w-full h-full min-w-0 min-h-0" 
+      style={{ 
+        width: '100%', 
+        height: '100%',
+        position: 'relative'
+      }}
+    >
       <Document
         file={pdfUrl}
         onLoadSuccess={onLoadSuccess}
@@ -84,8 +90,14 @@ export default function PDFViewer({ pdfUrl, currentPage, onLoadSuccess, onLoadEr
             pageNumber={currentPage}
             renderTextLayer={false}
             renderAnnotationLayer={false}
-            className="shadow-lg max-w-full h-auto"
+            className="shadow-2xl"
             width={containerWidth}
+            style={{ 
+              maxWidth: 'none', 
+              width: containerWidth,
+              height: 'auto',
+              display: 'block'
+            }}
           />
         )}
       </Document>
