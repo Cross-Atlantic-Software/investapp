@@ -1306,7 +1306,7 @@ export default function KnowledgeCentersPage() {
                       }));
                     }}
                     placeholder="Select sector..."
-                    forceAbove={true}
+                    forceAbove={false}
                   />
                 )}
               </div>
@@ -1335,7 +1335,7 @@ export default function KnowledgeCentersPage() {
                     selectedValues={formData.knowledge_subsector_ids}
                     onChange={(values) => setFormData(prev => ({ ...prev, knowledge_subsector_ids: values }))}
                     placeholder={formData.knowledge_sector_ids.length > 0 ? "Select subsectors..." : "Select sector first..."}
-                    forceAbove={true}
+                    forceAbove={false}
                     disabled={formData.knowledge_sector_ids.length === 0}
                   />
                 )}

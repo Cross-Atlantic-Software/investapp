@@ -1402,7 +1402,7 @@ export default function MarketInsightsPage() {
                       }));
                     }}
                     placeholder="Select sector..."
-                    forceAbove={true}
+                    forceAbove={false}
                   />
                 )}
               </div>
@@ -1431,7 +1431,7 @@ export default function MarketInsightsPage() {
                     selectedValues={formData.insight_subsector_ids}
                     onChange={(values) => setFormData(prev => ({ ...prev, insight_subsector_ids: values }))}
                     placeholder={formData.insight_sector_ids.length > 0 ? "Select subsectors..." : "Select sector first..."}
-                    forceAbove={true}
+                    forceAbove={false}
                     disabled={formData.insight_sector_ids.length === 0}
                   />
                 )}
