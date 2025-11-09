@@ -4,6 +4,7 @@ import { HttpStatusCode } from "../../utils/httpStatusCode";
 import { Transaction } from "../../Models/Transaction";
 import { Op } from "sequelize";
 import { UserWalletController } from "../user/userWalletController";
+import { UserPortfolioController } from "./userPortfolioController";
 
 export class TransactionController {
   private transactionModel = db.Transaction;
@@ -208,36 +209,54 @@ export class TransactionController {
       // Deduct net_amount from user's wallet when transaction is approved
       // First check if wallet has enough balance
       try {
-        const wallet = await db.UserWallet.findOne({
+        let wallet = await db.UserWallet.findOne({
           where: { user_id: transaction.user_id }
         });
 
         if (!wallet) {
           // Initialize wallet if it doesn't exist
           await UserWalletController.initializeWallet(transaction.user_id);
+          wallet = await db.UserWallet.findOne({
+            where: { user_id: transaction.user_id }
+          });
         }
 
-        const currentWallet = wallet || await db.UserWallet.findOne({
-          where: { user_id: transaction.user_id }
-        });
-
-        if (!currentWallet || Number(currentWallet.available_balance) < netAmount) {
-          res.status(HttpStatusCode.BAD_REQUEST).json({
+        if (!wallet) {
+          res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
             success: false,
-            message: `Insufficient wallet balance. Available: ₹${currentWallet?.available_balance || 0}, Required: ₹${netAmount}`
+            message: 'Failed to initialize or find user wallet'
           });
           return;
         }
 
-        // Deduct the amount from available balance (permanently)
-        // Use 'withdrawal' type to permanently deduct, but this affects total_withdrawn
-        // Instead, we'll directly update the wallet to deduct from available
-        await currentWallet.update({
-          available_balance: Number(currentWallet.available_balance) - netAmount,
-          last_updated: new Date()
-        });
+        // Reload wallet to ensure we have the latest data
+        await wallet.reload();
+
+        // Allow negative balances - calculate new balance (can go negative)
+        // Get current total_withdrawn value (ensure it's a number, default to 0 if null/undefined)
+        const currentTotalWithdrawn = Number(wallet.total_withdrawn) || 0;
+        const newTotalWithdrawn = currentTotalWithdrawn + netAmount;
+        const currentAvailableBalance = Number(wallet.available_balance) || 0;
+        const newAvailableBalance = currentAvailableBalance - netAmount; // Can be negative
+
+        // Update wallet: deduct from available balance and increment total_withdrawn
+        // Using direct update with explicit values to ensure both fields are updated
+        await db.UserWallet.update(
+          {
+            available_balance: newAvailableBalance,
+            total_withdrawn: newTotalWithdrawn,
+            last_updated: new Date()
+          },
+          {
+            where: { user_id: transaction.user_id }
+          }
+        );
+
+        // Reload wallet to verify the update
+        await wallet.reload();
 
         console.log(`Wallet debited for approved transaction ${id}: ₹${netAmount}`);
+        console.log(`Wallet updated - Available Balance: ₹${wallet.available_balance} (can be negative), Total Withdrawn: ₹${wallet.total_withdrawn}`);
       } catch (walletError: any) {
         console.error('Error updating wallet on transaction approval:', walletError);
         // Revert the transaction status if wallet update fails
@@ -247,6 +266,15 @@ export class TransactionController {
           message: walletError.message || 'Failed to update wallet balance'
         });
         return;
+      }
+
+      // Refresh user portfolio to update total_investment
+      try {
+        await UserPortfolioController.refreshSingleUserPortfolio(transaction.user_id);
+        console.log(`Portfolio refreshed for user ${transaction.user_id} after transaction approval`);
+      } catch (portfolioError: any) {
+        console.error('Error refreshing user portfolio on transaction approval:', portfolioError);
+        // Don't fail the transaction if portfolio refresh fails, but log the error
       }
 
       const updatedTransaction = await this.transactionModel.findByPk(id, {
