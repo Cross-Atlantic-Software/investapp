@@ -67,7 +67,7 @@ export const getStockById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const stock = await db.Product.findByPk(id);
+    const stock = await db.Product.findByPk(id as string);
 
     if (!stock) {
       return res.status(404).json({
@@ -191,7 +191,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
       analysis
     } = req.body;
 
-    const stock = await db.Product.findByPk(id);
+    const stock = await db.Product.findByPk(id as string);
     if (!stock) {
       return res.status(404).json({
         success: false,
@@ -249,7 +249,7 @@ export const deleteStock = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const stock = await db.Product.findByPk(id);
+    const stock = await db.Product.findByPk(id as string);
     if (!stock) {
       return res.status(404).json({
         success: false,

@@ -17,13 +17,6 @@ interface User {
   };
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-    }
-  }
-}
 
 export default function adminMiddleware(req: Request, res: Response, next: NextFunction): void {
   // Extract the token from the request header
