@@ -68,7 +68,7 @@ export class EmailTemplateManagementController {
       await this.ensureDbReady();
       const { id } = req.params;
 
-      const template = await this.emailTemplateModel.findByPk(id as string);
+      const template = await this.emailTemplateModel.findByPk(id);
       if (!template) {
         return (res as any).error("Email template not found", HttpStatusCode.NOT_FOUND);
       }
@@ -129,7 +129,7 @@ export class EmailTemplateManagementController {
       const { type, subject, body } = req.body;
       const adminId = (req.user as any)?.user_id;
 
-      const template = await this.emailTemplateModel.findByPk(id as string);
+      const template = await this.emailTemplateModel.findByPk(id);
       if (!template) {
         return (res as any).error("Email template not found", HttpStatusCode.NOT_FOUND);
       }
@@ -137,7 +137,7 @@ export class EmailTemplateManagementController {
       // Check if type is being changed and if new type already exists
       if (type && type !== template.type) {
         const existingTemplate = await this.emailTemplateModel.findOne({
-          where: { type, id: { [Op.ne]: id as string } }
+          where: { type, id: { [Op.ne]: id } }
         });
 
         if (existingTemplate) {
@@ -171,7 +171,7 @@ export class EmailTemplateManagementController {
       await this.ensureDbReady();
       const { id } = req.params;
 
-      const template = await this.emailTemplateModel.findByPk(id as string);
+      const template = await this.emailTemplateModel.findByPk(id);
       if (!template) {
         return (res as any).error("Email template not found", HttpStatusCode.NOT_FOUND);
       }

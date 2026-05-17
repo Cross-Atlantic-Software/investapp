@@ -51,7 +51,7 @@ export const getUserById = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    const user = await db.CmsUser.findByPk(id as string, {
+    const user = await db.CmsUser.findByPk(id, {
       attributes: { exclude: ['password'] }
     });
 
@@ -206,7 +206,7 @@ export const updateUser = async (req: Request, res: Response) => {
     
     console.log(`🔍 Updating CMS user - Updater ID: ${updaterId}, Updater Role: ${updaterRole}`);
 
-    const user = await db.CmsUser.findByPk(id as string);
+    const user = await db.CmsUser.findByPk(id);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -292,7 +292,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const currentUserRole = (req.user as any)?.role;
     const currentUserId = (req.user as any)?.user_id;
 
-    const user = await db.CmsUser.findByPk(id as string);
+    const user = await db.CmsUser.findByPk(id);
     if (!user) {
       return res.status(404).json({
         success: false,
