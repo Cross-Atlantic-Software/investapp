@@ -16,7 +16,7 @@ export class MarketInsightController {
         insight_theme_id,
         sort_by = "updated_at", 
         sort_order = "DESC" 
-      } = req.query;
+      } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause: any = {};
@@ -89,7 +89,7 @@ export class MarketInsightController {
   // Get featured market insights
   static async getFeaturedMarketInsights(req: Request, res: Response) {
     try {
-      const { limit = 7 } = req.query;
+      const { limit = 7 } = req.query as Record<string, string>;
 
       const insights = await db.MarketInsight.findAll({
         where: { is_featured: true },
@@ -131,7 +131,7 @@ export class MarketInsightController {
   // Get market insight by slug
   static async getMarketInsightBySlug(req: Request, res: Response) {
     try {
-      const { slug } = req.params;
+      const { slug } = req.params as Record<string, string>;
       const insight = await db.MarketInsight.findOne({
         where: { slug },
         include: [
@@ -177,8 +177,8 @@ export class MarketInsightController {
   // Get market insight by ID
   static async getMarketInsightById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const insight = await db.MarketInsight.findByPk(id, {
+      const id = req.params.id as string;
+      const insight = await db.MarketInsight.findByPk(id as string, {
         include: [
           {
             model: db.InsightSector,
@@ -302,7 +302,7 @@ export class MarketInsightController {
 
 
       // Get file URLs from uploaded files
-      const files = (req as any).files as { [fieldname: string]: Express.Multer.File[] } || {};
+      const files = (req as any).files as { [fieldname: string]: any[] } || {};
       const blogImageFile = files.blog_image?.[0];
       const videoFile = files.video_file?.[0];
       
@@ -480,7 +480,7 @@ export class MarketInsightController {
   // Update market insight
   static async updateMarketInsight(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const {
         slug,
         is_featured,
@@ -553,14 +553,14 @@ export class MarketInsightController {
 
 
       // Get file URLs from uploaded files (if new files uploaded)
-      const files = (req as any).files as { [fieldname: string]: Express.Multer.File[] } || {};
+      const files = (req as any).files as { [fieldname: string]: any[] } || {};
       const blogImageFile = files.blog_image?.[0];
       const videoFile = files.video_file?.[0];
       
       const blog_image = (blogImageFile as any)?.location;
       const video_file = (videoFile as any)?.location;
 
-      const marketInsight = await db.MarketInsight.findByPk(id);
+      const marketInsight = await db.MarketInsight.findByPk(id as string);
       if (!marketInsight) {
         return res.status(404).json({
           success: false,
@@ -717,9 +717,9 @@ export class MarketInsightController {
   // Delete market insight
   static async deleteMarketInsight(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const marketInsight = await db.MarketInsight.findByPk(id);
+      const marketInsight = await db.MarketInsight.findByPk(id as string);
       if (!marketInsight) {
         return res.status(404).json({
           success: false,

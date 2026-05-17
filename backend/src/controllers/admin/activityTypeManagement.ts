@@ -13,7 +13,7 @@ export class ActivityTypeManagementController {
   getAllActivityTypes = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { page = 1, limit = 10, search = '', sort_by = 'created_at', sort_order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort_by = 'created_at', sort_order = 'DESC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const order = [[sort_by as string, sort_order as string]] as any;
@@ -52,9 +52,9 @@ export class ActivityTypeManagementController {
   getActivityTypeById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const activityType = await this.activityTypeModel.findByPk(id);
+      const activityType = await this.activityTypeModel.findByPk(id as string);
 
       if (!activityType) {
         return (res as any).error("Activity type not found", HttpStatusCode.NOT_FOUND);
@@ -107,10 +107,10 @@ export class ActivityTypeManagementController {
   updateActivityType = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name } = req.body;
 
-      const activityType = await this.activityTypeModel.findByPk(id);
+      const activityType = await this.activityTypeModel.findByPk(id as string);
       if (!activityType) {
         return (res as any).error("Activity type not found", HttpStatusCode.NOT_FOUND);
       }
@@ -147,9 +147,9 @@ export class ActivityTypeManagementController {
   deleteActivityType = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const activityType = await this.activityTypeModel.findByPk(id);
+      const activityType = await this.activityTypeModel.findByPk(id as string);
       if (!activityType) {
         return (res as any).error("Activity type not found", HttpStatusCode.NOT_FOUND);
       }

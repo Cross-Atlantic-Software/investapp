@@ -96,8 +96,8 @@ export class ValuationRangeController {
       const controller = new ValuationRangeController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
-      const valuationRange = await db.ValuationRange.findByPk(id, {
+      const id = req.params.id as string;
+      const valuationRange = await db.ValuationRange.findByPk(id as string, {
         attributes: ['id', 'name', 'value', 'sort_order', 'created_at', 'updated_at']
       });
 
@@ -195,7 +195,7 @@ export class ValuationRangeController {
       const controller = new ValuationRangeController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, value, sort_order } = req.body;
 
       if (!name || !value) {
@@ -205,7 +205,7 @@ export class ValuationRangeController {
         });
       }
 
-      const valuationRange = await db.ValuationRange.findByPk(id);
+      const valuationRange = await db.ValuationRange.findByPk(id as string);
 
       if (!valuationRange) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
@@ -259,9 +259,9 @@ export class ValuationRangeController {
       const controller = new ValuationRangeController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const valuationRange = await db.ValuationRange.findByPk(id);
+      const valuationRange = await db.ValuationRange.findByPk(id as string);
 
       if (!valuationRange) {
         return res.status(HttpStatusCode.NOT_FOUND).json({

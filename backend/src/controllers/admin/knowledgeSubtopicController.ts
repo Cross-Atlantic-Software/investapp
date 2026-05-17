@@ -6,7 +6,7 @@ export class KnowledgeSubtopicController {
   // Get all knowledge subtopics with pagination and search
   static async getAllKnowledgeSubtopics(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", topic_id, sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", topic_id, sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause: any = {};
@@ -56,8 +56,8 @@ export class KnowledgeSubtopicController {
   // Get knowledge subtopic by ID
   static async getKnowledgeSubtopicById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const knowledgeSubtopic = await db.KnowledgeSubtopic.findByPk(id, {
+      const id = req.params.id as string;
+      const knowledgeSubtopic = await db.KnowledgeSubtopic.findByPk(id as string, {
         include: [
           {
             model: db.KnowledgeTopic,
@@ -155,10 +155,10 @@ export class KnowledgeSubtopicController {
   // Update knowledge subtopic
   static async updateKnowledgeSubtopic(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, knowledge_topic_id, is_active } = req.body;
 
-      const knowledgeSubtopic = await db.KnowledgeSubtopic.findByPk(id);
+      const knowledgeSubtopic = await db.KnowledgeSubtopic.findByPk(id as string);
       if (!knowledgeSubtopic) {
         return res.status(404).json({
           success: false,
@@ -219,9 +219,9 @@ export class KnowledgeSubtopicController {
   // Delete knowledge subtopic
   static async deleteKnowledgeSubtopic(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const knowledgeSubtopic = await db.KnowledgeSubtopic.findByPk(id);
+      const knowledgeSubtopic = await db.KnowledgeSubtopic.findByPk(id as string);
       if (!knowledgeSubtopic) {
         return res.status(404).json({
           success: false,

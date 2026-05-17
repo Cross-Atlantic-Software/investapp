@@ -114,7 +114,7 @@ export function initializeProductModel(sequelize: Sequelize) {
         defaultValue: 'no'
       },
       valuation_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.INTEGER.UNSIGNED,
         allowNull: true,
         references: {
           model: 'valuations',

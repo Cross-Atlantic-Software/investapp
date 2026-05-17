@@ -30,7 +30,7 @@ export class GoogleCallbackService {
       console.log('🔍 Query parameters:', JSON.stringify(req.query, null, 2));
       
       await this.ensureDbReady();
-      const { code } = req.query;
+      const { code } = req.query as Record<string, string>;
 
       if (!code) {
         console.log('❌ Authorization code is missing');

@@ -6,7 +6,7 @@ export class KnowledgeSubsectorController {
   // Get all knowledge subsectors with pagination and search
   static async getAllKnowledgeSubsectors(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", sector_id, sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", sector_id, sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause: any = {};
@@ -56,8 +56,8 @@ export class KnowledgeSubsectorController {
   // Get knowledge subsector by ID
   static async getKnowledgeSubsectorById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const knowledgeSubsector = await db.KnowledgeSubsector.findByPk(id, {
+      const id = req.params.id as string;
+      const knowledgeSubsector = await db.KnowledgeSubsector.findByPk(id as string, {
         include: [
           {
             model: db.KnowledgeSector,
@@ -155,10 +155,10 @@ export class KnowledgeSubsectorController {
   // Update knowledge subsector
   static async updateKnowledgeSubsector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, knowledge_sector_id, is_active } = req.body;
 
-      const knowledgeSubsector = await db.KnowledgeSubsector.findByPk(id);
+      const knowledgeSubsector = await db.KnowledgeSubsector.findByPk(id as string);
       if (!knowledgeSubsector) {
         return res.status(404).json({
           success: false,
@@ -219,9 +219,9 @@ export class KnowledgeSubsectorController {
   // Delete knowledge subsector
   static async deleteKnowledgeSubsector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const knowledgeSubsector = await db.KnowledgeSubsector.findByPk(id);
+      const knowledgeSubsector = await db.KnowledgeSubsector.findByPk(id as string);
       if (!knowledgeSubsector) {
         return res.status(404).json({
           success: false,

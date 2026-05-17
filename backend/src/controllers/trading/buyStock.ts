@@ -25,7 +25,7 @@ export class BuyStockService {
       await this.ensureDbReady();
       
       // Get user from JWT token (set by middleware)
-      const userId = (req.user as any)?.user_id;
+      const userId = ((req as any).user)?.user_id;
       console.log('🔍 User ID from token:', userId, 'Type:', typeof userId);
       
       if (!userId) {
@@ -40,8 +40,8 @@ export class BuyStockService {
       }
 
       // Get user details - try both string and number
-      console.log('🔍 Searching for user with ID:', userId, 'as integer:', parseInt(userId));
-      let user = await this.userModel.findByPk(parseInt(userId));
+      console.log('🔍 Searching for user with ID:', userId, 'as integer:', parseInt(userId as string));
+      let user = await this.userModel.findByPk(parseInt(userId as string));
       if (!user) {
         console.log('🔍 User not found with parseInt, trying with string ID');
         user = await this.userModel.findByPk(userId);
@@ -60,12 +60,12 @@ export class BuyStockService {
       // Initialize wallet if it doesn't exist (but don't check balance - allow negative balances)
       try {
         let wallet = await db.UserWallet.findOne({
-          where: { user_id: parseInt(userId) }
+          where: { user_id: parseInt(userId as string) }
         });
 
         // Initialize wallet if it doesn't exist
         if (!wallet) {
-          await UserWalletController.initializeWallet(parseInt(userId));
+          await UserWalletController.initializeWallet(parseInt(userId as string));
           console.log(`✅ Wallet initialized for user: ${userId}`);
         }
       } catch (walletError: any) {
@@ -90,7 +90,7 @@ export class BuyStockService {
         // Check if user already has a buy request for this stock
         const existingBuyRequest = await BuyRequest.findOne({
           where: {
-            user_id: parseInt(userId),
+            user_id: parseInt(userId as string),
             stock_id: stock.id
           }
         });
@@ -113,7 +113,7 @@ export class BuyStockService {
         } else {
           // Create new buy request record
           buyRequestRecord = await BuyRequest.create({
-            user_id: parseInt(userId),
+            user_id: parseInt(userId as string),
             stock_id: stock.id,
             stock_name: companyName,
             quantity: quantity,
@@ -131,7 +131,7 @@ export class BuyStockService {
           const transactionId = await generateTransactionId();
           
           const transaction = await Transaction.create({
-            user_id: parseInt(userId),
+            user_id: parseInt(userId as string),
             stock_id: stock.id,
             buy_request_id: buyRequestRecord.id,
             transaction_type: 'buy',
@@ -159,7 +159,7 @@ export class BuyStockService {
         
         // Refresh user's portfolio after buy order
         try {
-          await this.refreshUserPortfolio(parseInt(userId));
+          await this.refreshUserPortfolio(parseInt(userId as string));
           console.log('✅ User portfolio refreshed after buy order');
         } catch (portfolioError) {
           console.error('❌ Failed to refresh user portfolio:', portfolioError);

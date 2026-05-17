@@ -71,9 +71,9 @@ export class EmailTemplateManagementController {
   getEmailTemplateById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const template = await this.emailTemplateModel.findByPk(id);
+      const template = await this.emailTemplateModel.findByPk(id as string);
       if (!template) {
         return (res as any).error("Email template not found", HttpStatusCode.NOT_FOUND);
       }
@@ -93,7 +93,7 @@ export class EmailTemplateManagementController {
     try {
       await this.ensureDbReady();
       const { type, subject, body } = req.body;
-      const adminId = (req.user as any)?.user_id;
+      const adminId = ((req as any).user)?.user_id;
 
       if (!type || !subject || !body) {
         return (res as any).error("Type, subject, and body are required", HttpStatusCode.BAD_REQUEST);
@@ -130,11 +130,11 @@ export class EmailTemplateManagementController {
   updateEmailTemplate = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { type, subject, body } = req.body;
-      const adminId = (req.user as any)?.user_id;
+      const adminId = ((req as any).user)?.user_id;
 
-      const template = await this.emailTemplateModel.findByPk(id);
+      const template = await this.emailTemplateModel.findByPk(id as string);
       if (!template) {
         return (res as any).error("Email template not found", HttpStatusCode.NOT_FOUND);
       }
@@ -144,7 +144,7 @@ export class EmailTemplateManagementController {
         const existingTemplate = await this.emailTemplateModel.findOne({
           where: { 
             type, 
-            id: { [Op.ne]: parseInt(id) } 
+            id: { [Op.ne]: parseInt(id as string) } 
           }
         });
 
@@ -177,9 +177,9 @@ export class EmailTemplateManagementController {
   deleteEmailTemplate = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const template = await this.emailTemplateModel.findByPk(id);
+      const template = await this.emailTemplateModel.findByPk(id as string);
       if (!template) {
         return (res as any).error("Email template not found", HttpStatusCode.NOT_FOUND);
       }

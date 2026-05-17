@@ -6,7 +6,7 @@ export class InsightThemeController {
   // Get all insight themes with pagination and search
   static async getAllInsightThemes(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause = {};
@@ -48,8 +48,8 @@ export class InsightThemeController {
   // Get insight theme by ID
   static async getInsightThemeById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const insightTheme = await db.InsightTheme.findByPk(id);
+      const id = req.params.id as string;
+      const insightTheme = await db.InsightTheme.findByPk(id as string);
 
       if (!insightTheme) {
         return res.status(404).json({
@@ -119,10 +119,10 @@ export class InsightThemeController {
   // Update insight theme
   static async updateInsightTheme(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, is_active } = req.body;
 
-      const insightTheme = await db.InsightTheme.findByPk(id);
+      const insightTheme = await db.InsightTheme.findByPk(id as string);
       if (!insightTheme) {
         return res.status(404).json({
           success: false,
@@ -167,9 +167,9 @@ export class InsightThemeController {
   // Delete insight theme
   static async deleteInsightTheme(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const insightTheme = await db.InsightTheme.findByPk(id);
+      const insightTheme = await db.InsightTheme.findByPk(id as string);
       if (!insightTheme) {
         return res.status(404).json({
           success: false,

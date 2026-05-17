@@ -5,7 +5,9 @@
   "main": "app.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node-dev --pretty --respawn ./src/app.ts",
+    "dev": "npm run docker:db && npm run dev:api",
+    "dev:api": "ts-node-dev --pretty --respawn ./src/app.ts",
+    "docker:db": "docker compose -f ../docker-compose.yml up -d db",
     "seed": "ts-node ./src/scripts/seedStocks.ts",
     "migrate:stock-scores": "node scripts/runStockPerformanceMigration.js"
   },

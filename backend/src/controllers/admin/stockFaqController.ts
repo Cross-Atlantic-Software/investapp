@@ -13,8 +13,8 @@ export class StockFaqController {
       const controller = new StockFaqController();
       await controller.ensureDbReady();
       
-      const { stockId } = req.params;
-      const { page = 1, limit = 10, search = '' } = req.query;
+      const stockId = req.params.stockId as string;
+      const { page = 1, limit = 10, search = '' } = req.query as Record<string, string>;
       
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -72,8 +72,8 @@ export class StockFaqController {
       const controller = new StockFaqController();
       await controller.ensureDbReady();
       
-      const { stockId } = req.params;
-      const { page = 1, limit = 10, search = '' } = req.query;
+      const stockId = req.params.stockId as string;
+      const { page = 1, limit = 10, search = '' } = req.query as Record<string, string>;
       
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -131,9 +131,9 @@ export class StockFaqController {
       const controller = new StockFaqController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       
-      const faq = await db.StockFaq.findByPk(id, {
+      const faq = await db.StockFaq.findByPk(id as string, {
         include: [{
           model: db.Product,
           as: 'stock',
@@ -217,10 +217,10 @@ export class StockFaqController {
       const controller = new StockFaqController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { question, answer, display_order, is_active } = req.body;
 
-      const faq = await db.StockFaq.findByPk(id);
+      const faq = await db.StockFaq.findByPk(id as string);
       if (!faq) {
         return res.status(404).json({
           success: false,
@@ -304,9 +304,9 @@ export class StockFaqController {
       const controller = new StockFaqController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const faq = await db.StockFaq.findByPk(id);
+      const faq = await db.StockFaq.findByPk(id as string);
       if (!faq) {
         return res.status(404).json({
           success: false,
@@ -343,7 +343,7 @@ export class StockFaqController {
       const controller = new StockFaqController();
       await controller.ensureDbReady();
       
-      const { page = 1, limit = 10, search = '', stock_id } = req.query;
+      const { page = 1, limit = 10, search = '', stock_id } = req.query as Record<string, string>;
       
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -443,7 +443,7 @@ export class StockFaqController {
       for (const [stockId, deletedOrders] of Object.entries(stockGroups)) {
         // With the new reordering logic, we only need to call it once per stock
         // It will reorder all remaining FAQs numerically starting from 0
-        await StockFaqController.reorderFaqsAfterDeletion(parseInt(stockId), 0);
+        await StockFaqController.reorderFaqsAfterDeletion(parseInt(stockId as string), 0);
       }
 
       res.json({

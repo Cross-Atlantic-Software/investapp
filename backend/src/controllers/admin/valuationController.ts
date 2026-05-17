@@ -61,8 +61,8 @@ export class ValuationController {
       const controller = new ValuationController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
-      const valuation = await db.Valuation.findByPk(id);
+      const id = req.params.id as string;
+      const valuation = await db.Valuation.findByPk(id as string);
 
       if (!valuation) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
@@ -136,7 +136,7 @@ export class ValuationController {
       const controller = new ValuationController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { valuation_name } = req.body;
 
       if (!valuation_name || valuation_name.trim() === '') {
@@ -146,7 +146,7 @@ export class ValuationController {
         });
       }
 
-      const valuation = await db.Valuation.findByPk(id);
+      const valuation = await db.Valuation.findByPk(id as string);
 
       if (!valuation) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
@@ -194,9 +194,9 @@ export class ValuationController {
       const controller = new ValuationController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const valuation = await db.Valuation.findByPk(id);
+      const valuation = await db.Valuation.findByPk(id as string);
 
       if (!valuation) {
         return res.status(HttpStatusCode.NOT_FOUND).json({

@@ -87,8 +87,8 @@ export class SiteUserManagementController {
     try {
       await this.ensureDbReady();
       
-      const { id } = req.params;
-      const user = await this.userModel.findByPk(id, {
+      const id = req.params.id as string;
+      const user = await this.userModel.findByPk(id as string, {
         attributes: [
           'id', 'first_name', 'last_name', 'email', 'phone', 
           'role', 'status', 'auth_provider', 'email_verified', 
@@ -116,10 +116,10 @@ export class SiteUserManagementController {
     try {
       await this.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { first_name, last_name, phone, role, status, email_verified, phone_verified } = req.body;
 
-      const user = await this.userModel.findByPk(id);
+      const user = await this.userModel.findByPk(id as string);
       if (!user) {
         return (res as any).error("Site user not found", HttpStatusCode.NOT_FOUND);
       }
@@ -179,9 +179,9 @@ export class SiteUserManagementController {
     try {
       await this.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const user = await this.userModel.findByPk(id);
+      const user = await this.userModel.findByPk(id as string);
       if (!user) {
         return (res as any).error("Site user not found", HttpStatusCode.NOT_FOUND);
       }
@@ -245,9 +245,9 @@ export class SiteUserManagementController {
     try {
       await this.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const user = await this.userModel.findByPk(id);
+      const user = await this.userModel.findByPk(id as string);
       if (!user) {
         return (res as any).error("Site user not found", HttpStatusCode.NOT_FOUND);
       }
@@ -306,15 +306,15 @@ export class SiteUserManagementController {
     try {
       await this.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const user = await this.userModel.findByPk(id);
+      const user = await this.userModel.findByPk(id as string);
       if (!user) {
         return (res as any).error("Site user not found", HttpStatusCode.NOT_FOUND);
       }
 
       // Delete all related records first
-      await this.deleteUserRelatedRecords(parseInt(id));
+      await this.deleteUserRelatedRecords(parseInt(id as string));
 
       // Then delete the user
       await user.destroy();

@@ -14,7 +14,7 @@ export class ThemeController {
       const controller = new ThemeController();
       await controller.ensureDbReady();
 
-      const { search, page = 1, limit = 10 } = req.query;
+      const { search, page = 1, limit = 10 } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause: any = {};
@@ -60,8 +60,8 @@ export class ThemeController {
       const controller = new ThemeController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
-      const theme = await db.Theme.findByPk(id);
+      const id = req.params.id as string;
+      const theme = await db.Theme.findByPk(id as string);
 
       if (!theme) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
@@ -135,7 +135,7 @@ export class ThemeController {
       const controller = new ThemeController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name } = req.body;
 
       if (!name) {
@@ -145,7 +145,7 @@ export class ThemeController {
         });
       }
 
-      const existingTheme = await db.Theme.findByPk(id);
+      const existingTheme = await db.Theme.findByPk(id as string);
       if (!existingTheme) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
           success: false,
@@ -191,9 +191,9 @@ export class ThemeController {
       const controller = new ThemeController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const theme = await db.Theme.findByPk(id);
+      const theme = await db.Theme.findByPk(id as string);
       if (!theme) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
           success: false,

@@ -13,7 +13,7 @@ export class MethodologyNotesManagementController {
   getAllMethodologyNotes = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { page = 1, limit = 10, search = '', sort_by = 'created_at', sort_order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort_by = 'created_at', sort_order = 'DESC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const order = [[sort_by as string, sort_order as string]] as any;
@@ -56,9 +56,9 @@ export class MethodologyNotesManagementController {
   getMethodologyNoteById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const methodologyNote = await this.methodologyNoteModel.findByPk(id);
+      const methodologyNote = await this.methodologyNoteModel.findByPk(id as string);
 
       if (!methodologyNote) {
         return (res as any).error('Methodology note not found', HttpStatusCode.NOT_FOUND);
@@ -118,11 +118,11 @@ export class MethodologyNotesManagementController {
   updateMethodologyNote = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { section_key, section_name, methodology_text, is_active } = req.body;
       const updated_by = (req as any).user?.id || 1; // Default to admin user ID 1
 
-      const methodologyNote = await this.methodologyNoteModel.findByPk(id);
+      const methodologyNote = await this.methodologyNoteModel.findByPk(id as string);
 
       if (!methodologyNote) {
         return (res as any).error('Methodology note not found', HttpStatusCode.NOT_FOUND);
@@ -164,9 +164,9 @@ export class MethodologyNotesManagementController {
   deleteMethodologyNote = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const methodologyNote = await this.methodologyNoteModel.findByPk(id);
+      const methodologyNote = await this.methodologyNoteModel.findByPk(id as string);
 
       if (!methodologyNote) {
         return (res as any).error('Methodology note not found', HttpStatusCode.NOT_FOUND);

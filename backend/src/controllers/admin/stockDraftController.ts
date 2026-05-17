@@ -7,7 +7,7 @@ const stockDraftModel = new StockDraftModel();
 export const saveDraft = async (req: Request, res: Response) => {
   try {
     const { draftData, currentStep } = req.body;
-    const adminUserId = (req.user as any)?.user_id;
+    const adminUserId = ((req as any).user)?.user_id;
 
     if (!adminUserId) {
       return res.status(401).json({
@@ -81,7 +81,7 @@ export const saveDraft = async (req: Request, res: Response) => {
 // Get user's drafts
 export const getDrafts = async (req: Request, res: Response) => {
   try {
-    const adminUserId = (req.user as any)?.user_id;
+    const adminUserId = ((req as any).user)?.user_id;
 
     if (!adminUserId) {
       return res.status(401).json({
@@ -113,8 +113,8 @@ export const getDrafts = async (req: Request, res: Response) => {
 // Get specific draft by ID
 export const getDraftById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const adminUserId = (req.user as any)?.user_id;
+    const id = req.params.id as string;
+    const adminUserId = ((req as any).user)?.user_id;
 
     if (!adminUserId) {
       return res.status(401).json({
@@ -123,7 +123,7 @@ export const getDraftById = async (req: Request, res: Response) => {
       });
     }
 
-    const draft = await stockDraftModel.getDraftById(parseInt(id));
+    const draft = await stockDraftModel.getDraftById(parseInt(id as string));
     
     if (!draft) {
       return res.status(404).json({
@@ -157,8 +157,8 @@ export const getDraftById = async (req: Request, res: Response) => {
 // Delete draft
 export const deleteDraft = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const adminUserId = (req.user as any)?.user_id;
+    const id = req.params.id as string;
+    const adminUserId = ((req as any).user)?.user_id;
 
     if (!adminUserId) {
       return res.status(401).json({
@@ -168,7 +168,7 @@ export const deleteDraft = async (req: Request, res: Response) => {
     }
 
     // First check if draft exists and belongs to user
-    const draft = await stockDraftModel.getDraftById(parseInt(id));
+    const draft = await stockDraftModel.getDraftById(parseInt(id as string));
     
     if (!draft) {
       return res.status(404).json({
@@ -184,7 +184,7 @@ export const deleteDraft = async (req: Request, res: Response) => {
       });
     }
 
-    const deleted = await stockDraftModel.deleteDraft(parseInt(id));
+    const deleted = await stockDraftModel.deleteDraft(parseInt(id as string));
     
     if (!deleted) {
       return res.status(404).json({

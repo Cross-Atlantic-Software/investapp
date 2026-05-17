@@ -97,9 +97,9 @@ export class KYCManagementController {
     try {
       await this.ensureDbReady();
       
-      const { id } = req.params;
+      const { id } = req.params as Record<string, string>;
 
-      const kycApplication = await this.kycModel.findByPk(id, {
+      const kycApplication = await this.kycModel.findByPk(id as string, {
         include: [
           {
             model: this.userModel,
@@ -136,7 +136,7 @@ export class KYCManagementController {
       await this.ensureDbReady();
       
       // Get user_id from authenticated user (site user)
-      const user_id = parseInt((req.user as any)?.user_id || '0');
+      const user_id = parseInt((req as any).user?.user_id || '0');
       
       if (!user_id) {
         res.status(HttpStatusCode.UNAUTHORIZED).json({
@@ -358,7 +358,7 @@ export class KYCManagementController {
       await this.ensureDbReady();
       
       // Get user_id from authenticated user (site user)
-      const user_id = parseInt((req.user as any)?.user_id || '0');
+      const user_id = parseInt((req as any).user?.user_id || '0');
       
       if (!user_id) {
         res.status(HttpStatusCode.UNAUTHORIZED).json({
@@ -406,7 +406,7 @@ export class KYCManagementController {
       await this.ensureDbReady();
       
       // Get user_id from authenticated user (site user)
-      const user_id = parseInt((req.user as any)?.user_id || '0');
+      const user_id = parseInt((req as any).user?.user_id || '0');
       
       if (!user_id) {
         res.status(HttpStatusCode.UNAUTHORIZED).json({
@@ -452,7 +452,7 @@ export class KYCManagementController {
     try {
       await this.ensureDbReady();
       
-      const { id } = req.params;
+      const { id } = req.params as Record<string, string>;
       const { status } = req.body;
 
       // Validate status
@@ -464,7 +464,7 @@ export class KYCManagementController {
         return;
       }
 
-      const kycApplication = await this.kycModel.findByPk(id);
+      const kycApplication = await this.kycModel.findByPk(id as string);
 
       if (!kycApplication) {
         res.status(HttpStatusCode.NOT_FOUND).json({
@@ -533,9 +533,9 @@ export class KYCManagementController {
     try {
       await this.ensureDbReady();
       
-      const { id } = req.params;
+      const { id } = req.params as Record<string, string>;
 
-      const kycApplication = await this.kycModel.findByPk(id);
+      const kycApplication = await this.kycModel.findByPk(id as string);
 
       if (!kycApplication) {
         res.status(HttpStatusCode.NOT_FOUND).json({

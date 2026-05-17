@@ -7,7 +7,7 @@ export class UserProfileController {
       await db.sequelizePromise;
       
       console.log('🔐 UserProfile: Request received');
-      console.log('🔐 UserProfile: req.user:', req.user);
+      console.log('🔐 UserProfile: req.user:', (req as any).user);
       console.log('🔐 UserProfile: req.user?.user_id:', (req as any).user?.user_id);
       
       const userId = (req as any).user?.user_id;
@@ -63,7 +63,7 @@ export class UserProfileController {
       await db.sequelizePromise;
       
       console.log('🔐 UserProfile Update: Request received');
-      console.log('🔐 UserProfile Update: req.user:', req.user);
+      console.log('🔐 UserProfile Update: req.user:', (req as any).user);
       console.log('🔐 UserProfile Update: req.body:', req.body);
       
       const userId = (req as any).user?.user_id;

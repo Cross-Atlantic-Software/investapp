@@ -8,8 +8,8 @@ import { UserSearchService } from "../../services/userSearchService";
 export const updateLastActive = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // Check if user is authenticated
-    if (req.user && (req.user as any).user_id) {
-      const userId = (req.user as any).user_id;
+    if ((req as any).user?.user_id) {
+      const userId = (req as any).user.user_id;
       
       // Update last active timestamp in the background
       // Don't await this to avoid slowing down the request

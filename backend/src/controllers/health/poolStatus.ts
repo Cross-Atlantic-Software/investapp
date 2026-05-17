@@ -24,7 +24,7 @@ export class PoolStatusService {
   // Pool monitoring control logic
   controlPoolMonitoring = (req: Request, res: Response): void => {
     try {
-      const { action } = req.params;
+      const { action } = req.params as Record<string, string>;
       const { interval } = req.body;
 
       if (action === 'start') {

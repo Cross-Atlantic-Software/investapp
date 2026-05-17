@@ -59,9 +59,9 @@ export class SectorManagementController {
   // Get sector by ID
   static async getSectorById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const sector = await db.Sector.findByPk(id, {
+      const sector = await db.Sector.findByPk(id as string, {
         include: [{
           model: db.Subsector,
           as: 'subsectors',
@@ -147,14 +147,14 @@ export class SectorManagementController {
   // Update sector
   static async updateSector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, is_active } = req.body;
 
       if (!name || name.trim() === '') {
         return (res as any).error('Sector name is required', HttpStatusCode.BAD_REQUEST);
       }
 
-      const sector = await db.Sector.findByPk(id);
+      const sector = await db.Sector.findByPk(id as string);
       if (!sector) {
         return (res as any).error('Sector not found', HttpStatusCode.NOT_FOUND);
       }
@@ -190,8 +190,8 @@ export class SectorManagementController {
   // Delete sector
   static async deleteSector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const sectorIdToDelete = parseInt(id);
+      const id = req.params.id as string;
+      const sectorIdToDelete = parseInt(id as string);
 
       const sector = await db.Sector.findByPk(sectorIdToDelete);
       if (!sector) {
@@ -261,7 +261,7 @@ export class SectorManagementController {
   // Get all subsectors for a sector
   static async getSubsectorsBySectorId(req: Request, res: Response) {
     try {
-      const { sectorId } = req.params;
+      const { sectorId } = req.params as Record<string, string>;
 
       const subsectors = await db.Subsector.findAll({
         where: { 
@@ -290,9 +290,9 @@ export class SectorManagementController {
   // Get subsector by ID
   static async getSubsectorById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const subsector = await db.Subsector.findByPk(id, {
+      const subsector = await db.Subsector.findByPk(id as string, {
         include: [{
           model: db.Sector,
           as: 'sector',
@@ -390,14 +390,14 @@ export class SectorManagementController {
   // Update subsector
   static async updateSubsector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, is_active } = req.body;
 
       if (!name || name.trim() === '') {
         return (res as any).error('Subsector name is required', HttpStatusCode.BAD_REQUEST);
       }
 
-      const subsector = await db.Subsector.findByPk(id);
+      const subsector = await db.Subsector.findByPk(id as string);
       if (!subsector) {
         return (res as any).error('Subsector not found', HttpStatusCode.NOT_FOUND);
       }
@@ -434,9 +434,9 @@ export class SectorManagementController {
   // Delete subsector
   static async deleteSubsector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const subsector = await db.Subsector.findByPk(id);
+      const subsector = await db.Subsector.findByPk(id as string);
       if (!subsector) {
         return (res as any).error('Subsector not found', HttpStatusCode.NOT_FOUND);
       }

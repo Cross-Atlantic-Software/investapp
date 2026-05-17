@@ -6,7 +6,7 @@ export class InsightSubsectorController {
   // Get all insight subsectors with pagination and search
   static async getAllInsightSubsectors(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", sector_id, sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", sector_id, sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause: any = {};
@@ -56,8 +56,8 @@ export class InsightSubsectorController {
   // Get insight subsector by ID
   static async getInsightSubsectorById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const insightSubsector = await db.InsightSubsector.findByPk(id, {
+      const id = req.params.id as string;
+      const insightSubsector = await db.InsightSubsector.findByPk(id as string, {
         include: [
           {
             model: db.InsightSector,
@@ -148,10 +148,10 @@ export class InsightSubsectorController {
   // Update insight subsector
   static async updateInsightSubsector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { insight_sector_id, name, is_active } = req.body;
 
-      const insightSubsector = await db.InsightSubsector.findByPk(id);
+      const insightSubsector = await db.InsightSubsector.findByPk(id as string);
       if (!insightSubsector) {
         return res.status(404).json({
           success: false,
@@ -212,9 +212,9 @@ export class InsightSubsectorController {
   // Delete insight subsector
   static async deleteInsightSubsector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const insightSubsector = await db.InsightSubsector.findByPk(id);
+      const insightSubsector = await db.InsightSubsector.findByPk(id as string);
       if (!insightSubsector) {
         return res.status(404).json({
           success: false,

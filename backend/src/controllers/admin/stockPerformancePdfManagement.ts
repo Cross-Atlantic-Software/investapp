@@ -9,8 +9,8 @@ export class StockPerformancePdfManagementController {
   // Get all performance PDFs for a specific stock
   static async getPdfsByStockId(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
-      const { page = 1, limit = 10, sort_by = 'order_index', sort_order = 'ASC' } = req.query;
+      const stockId = req.params.stockId as string;
+      const { page = 1, limit = 10, sort_by = 'order_index', sort_order = 'ASC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const validSortFields = ['id', 'title', 'order_index', 'created_at', 'updated_at'];
@@ -54,9 +54,9 @@ export class StockPerformancePdfManagementController {
   // Get a specific performance PDF by ID
   static async getPdfById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const pdf = await StockPerformancePdfModel.findByPk(id);
+      const pdf = await StockPerformancePdfModel.findByPk(id as string);
 
       if (!pdf) {
         return res.status(404).json({
@@ -233,10 +233,10 @@ export class StockPerformancePdfManagementController {
   // Update a performance PDF
   static async updatePdf(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { title, description, order_index, is_active } = req.body;
 
-      const pdf = await StockPerformancePdfModel.findByPk(id);
+      const pdf = await StockPerformancePdfModel.findByPk(id as string);
 
       if (!pdf) {
         return res.status(404).json({
@@ -317,9 +317,9 @@ export class StockPerformancePdfManagementController {
   // Delete a performance PDF
   static async deletePdf(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const pdf = await StockPerformancePdfModel.findByPk(id);
+      const pdf = await StockPerformancePdfModel.findByPk(id as string);
 
       if (!pdf) {
         return res.status(404).json({
@@ -357,9 +357,9 @@ export class StockPerformancePdfManagementController {
   // Replace PDF file (keep metadata, update file)
   static async replacePdf(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const pdf = await StockPerformancePdfModel.findByPk(id);
+      const pdf = await StockPerformancePdfModel.findByPk(id as string);
 
       if (!pdf) {
         return res.status(404).json({
@@ -407,7 +407,7 @@ export class StockPerformancePdfManagementController {
   // Get performance PDF statistics
   static async getPdfStats(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
 
       const totalPdfs = await StockPerformancePdfModel.count({
         where: { stock_id: stockId, is_active: true },

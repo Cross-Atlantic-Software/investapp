@@ -91,9 +91,9 @@ export const getAllSubscribers = async (req: Request, res: Response) => {
 
 export const deleteSubscriber = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
-    const subscriber = await Subscriber.findByPk(id);
+    const subscriber = await Subscriber.findByPk(id as string);
     if (!subscriber) {
       return res.status(HttpStatusCode.NOT_FOUND).json({
         success: false,

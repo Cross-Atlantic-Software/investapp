@@ -1,25 +1,17 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-// TypeScript type for the user object attached to the request
 interface User {
   user_id: string;
   role: number;
-  iat:number;
-  exp:number;
-  location?: {
-    type: "Point";
-    coordinates: [number, number];
-  };
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  iat: number;
+  exp: number;
+  location?: { type: "Point"; coordinates: [number, number] };
 }
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-    }
-  }
-}
 
 export default function jwtAuthMiddleware(req: Request, res: Response, next: NextFunction): void {
   // Debug logging
@@ -58,7 +50,7 @@ export default function jwtAuthMiddleware(req: Request, res: Response, next: Nex
     console.log('✅ Token verified successfully for user:', decoded.user_id);
     
     // Attach the decoded user to the request object
-    req.user = decoded;
+    (req as any).user = decoded;
     // Pass control to the next middleware only if the token is valid
     next();  // Continue to the next middleware
   } catch (error: any) {

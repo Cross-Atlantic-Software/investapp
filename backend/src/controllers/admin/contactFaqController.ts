@@ -13,7 +13,7 @@ export class ContactFaqController {
       const controller = new ContactFaqController();
       await controller.ensureDbReady();
       
-      const { page = 1, limit = 10, search = '' } = req.query;
+      const { page = 1, limit = 10, search = '' } = req.query as Record<string, string>;
       
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -65,7 +65,7 @@ export class ContactFaqController {
       const controller = new ContactFaqController();
       await controller.ensureDbReady();
       
-      const { page = 1, limit = 10, search = '' } = req.query;
+      const { page = 1, limit = 10, search = '' } = req.query as Record<string, string>;
       
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -117,9 +117,9 @@ export class ContactFaqController {
       const controller = new ContactFaqController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       
-      const faq = await db.ContactFaq.findByPk(id);
+      const faq = await db.ContactFaq.findByPk(id as string);
 
       if (!faq) {
         return res.status(404).json({
@@ -193,10 +193,10 @@ export class ContactFaqController {
       const controller = new ContactFaqController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { question, answer, display_order, is_active } = req.body;
 
-      const faq = await db.ContactFaq.findByPk(id);
+      const faq = await db.ContactFaq.findByPk(id as string);
       if (!faq) {
         return res.status(404).json({
           success: false,
@@ -278,9 +278,9 @@ export class ContactFaqController {
       const controller = new ContactFaqController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const faq = await db.ContactFaq.findByPk(id);
+      const faq = await db.ContactFaq.findByPk(id as string);
       if (!faq) {
         return res.status(404).json({
           success: false,

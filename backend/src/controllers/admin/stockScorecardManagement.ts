@@ -7,8 +7,8 @@ export class StockScorecardManagementController {
   // Get all scorecards for a specific stock
   static async getScorecardsByStockId(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
-      const { page = 1, limit = 10, sort_by = 'created_at', sort_order = 'DESC' } = req.query;
+      const stockId = req.params.stockId as string;
+      const { page = 1, limit = 10, sort_by = 'created_at', sort_order = 'DESC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const validSortFields = ['id', 'category', 'score_value', 'score_tag', 'created_at', 'updated_at'];
@@ -51,9 +51,9 @@ export class StockScorecardManagementController {
   // Get a specific scorecard by ID
   static async getScorecardById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const scorecard = await StockScorecardModel.findByPk(id);
+      const scorecard = await StockScorecardModel.findByPk(id as string);
 
       if (!scorecard) {
         return res.status(404).json({
@@ -144,10 +144,10 @@ export class StockScorecardManagementController {
   // Update a scorecard
   static async updateScorecard(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { category, score_value, score_tag, analysis } = req.body;
 
-      const scorecard = await StockScorecardModel.findByPk(id);
+      const scorecard = await StockScorecardModel.findByPk(id as string);
 
       if (!scorecard) {
         return res.status(404).json({
@@ -214,9 +214,9 @@ export class StockScorecardManagementController {
   // Delete a scorecard
   static async deleteScorecard(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const scorecard = await StockScorecardModel.findByPk(id);
+      const scorecard = await StockScorecardModel.findByPk(id as string);
 
       if (!scorecard) {
         return res.status(404).json({
@@ -244,7 +244,7 @@ export class StockScorecardManagementController {
   // Get scorecard statistics
   static async getScorecardStats(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
 
       const totalScorecards = await StockScorecardModel.count({
         where: { stock_id: stockId },

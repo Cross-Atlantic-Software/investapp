@@ -6,7 +6,7 @@ export class InsightSectorController {
   // Get all insight sectors with pagination and search
   static async getAllInsightSectors(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause = {};
@@ -55,8 +55,8 @@ export class InsightSectorController {
   // Get insight sector by ID
   static async getInsightSectorById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const insightSector = await db.InsightSector.findByPk(id, {
+      const id = req.params.id as string;
+      const insightSector = await db.InsightSector.findByPk(id as string, {
         include: [
           {
             model: db.InsightSubsector,
@@ -134,10 +134,10 @@ export class InsightSectorController {
   // Update insight sector
   static async updateInsightSector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, is_active } = req.body;
 
-      const insightSector = await db.InsightSector.findByPk(id);
+      const insightSector = await db.InsightSector.findByPk(id as string);
       if (!insightSector) {
         return res.status(404).json({
           success: false,
@@ -182,9 +182,9 @@ export class InsightSectorController {
   // Delete insight sector
   static async deleteInsightSector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const insightSector = await db.InsightSector.findByPk(id);
+      const insightSector = await db.InsightSector.findByPk(id as string);
       if (!insightSector) {
         return res.status(404).json({
           success: false,

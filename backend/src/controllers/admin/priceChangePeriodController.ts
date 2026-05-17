@@ -14,7 +14,7 @@ export class PriceChangePeriodController {
       const controller = new PriceChangePeriodController();
       await controller.ensureDbReady();
 
-      const { search, page = 1, limit = 10 } = req.query;
+      const { search, page = 1, limit = 10 } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause: any = {};
@@ -60,8 +60,8 @@ export class PriceChangePeriodController {
       const controller = new PriceChangePeriodController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
-      const period = await db.PriceChangePeriod.findByPk(id);
+      const id = req.params.id as string;
+      const period = await db.PriceChangePeriod.findByPk(id as string);
 
       if (!period) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
@@ -135,7 +135,7 @@ export class PriceChangePeriodController {
       const controller = new PriceChangePeriodController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { period } = req.body;
 
       if (!period) {
@@ -145,7 +145,7 @@ export class PriceChangePeriodController {
         });
       }
 
-      const existingPeriod = await db.PriceChangePeriod.findByPk(id);
+      const existingPeriod = await db.PriceChangePeriod.findByPk(id as string);
       if (!existingPeriod) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
           success: false,
@@ -191,9 +191,9 @@ export class PriceChangePeriodController {
       const controller = new PriceChangePeriodController();
       await controller.ensureDbReady();
 
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const period = await db.PriceChangePeriod.findByPk(id);
+      const period = await db.PriceChangePeriod.findByPk(id as string);
       if (!period) {
         return res.status(HttpStatusCode.NOT_FOUND).json({
           success: false,

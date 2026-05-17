@@ -19,7 +19,7 @@ export class FinancialDataController {
       const controller = new FinancialDataController();
       await controller.ensureDbReady();
       
-      const { category } = req.params;
+      const category = req.params.category as string;
       
       if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
         return res.status(400).json({
@@ -53,7 +53,7 @@ export class FinancialDataController {
       const controller = new FinancialDataController();
       await controller.ensureDbReady();
       
-      const { stockId, category } = req.params;
+      const { stockId, category } = req.params as Record<string, string>;
       
       if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
         return res.status(400).json({
@@ -130,7 +130,7 @@ export class FinancialDataController {
       const controller = new FinancialDataController();
       await controller.ensureDbReady();
       
-      const { stockId, category } = req.params;
+      const { stockId, category } = req.params as Record<string, string>;
       const file = req.file;
 
       if (!file) {
@@ -246,7 +246,7 @@ export class FinancialDataController {
       // This ensures old data is completely removed when uploading new CSV
       const deletedCount = await StockFinancialData.destroy({
         where: { 
-          stock_id: parseInt(stockId),
+          stock_id: parseInt(stockId as string),
           category
         }
       });
@@ -315,7 +315,7 @@ export class FinancialDataController {
         const originalCsvContent = file.buffer.toString('utf-8');
         
         await db.FinancialDataCsv.upsert({
-          stock_id: parseInt(stockId),
+          stock_id: parseInt(stockId as string),
           category,
           original_filename: file.originalname,
           s3_key: `csv/financial-data/stock_${stockId}_${category}_${Date.now()}.csv`,
@@ -368,7 +368,7 @@ export class FinancialDataController {
       const controller = new FinancialDataController();
       await controller.ensureDbReady();
       
-      const { id: stockId, category } = req.params;
+      const { id: stockId, category } = req.params as Record<string, string>;
 
       if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
         return res.status(400).json({
@@ -456,7 +456,7 @@ export class FinancialDataController {
       const controller = new FinancialDataController();
       await controller.ensureDbReady();
       
-      const { stockId, category } = req.params;
+      const { stockId, category } = req.params as Record<string, string>;
 
       if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
         return res.status(400).json({
@@ -468,7 +468,7 @@ export class FinancialDataController {
       // Try to get the stored CSV content from financial_data_csv table first
       const csvFile = await db.FinancialDataCsv.findOne({
         where: {
-          stock_id: parseInt(stockId),
+          stock_id: parseInt(stockId as string),
           category
         }
       });
@@ -568,7 +568,7 @@ export class FinancialDataController {
       const controller = new FinancialDataController();
       await controller.ensureDbReady();
       
-      const { stockId, category } = req.params;
+      const { stockId, category } = req.params as Record<string, string>;
 
       if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
         return res.status(400).json({
@@ -608,7 +608,7 @@ export class FinancialDataController {
       const controller = new FinancialDataController();
       await controller.ensureDbReady();
       
-      const { stockId, category } = req.params;
+      const { stockId, category } = req.params as Record<string, string>;
 
       if (!['income_statement', 'balance_sheet', 'cash_flow'].includes(category)) {
         return res.status(400).json({
@@ -619,7 +619,7 @@ export class FinancialDataController {
 
       const deletedCount = await StockFinancialData.destroy({
         where: {
-          stock_id: parseInt(stockId),
+          stock_id: parseInt(stockId as string),
           category
         }
       });
@@ -647,7 +647,7 @@ export class FinancialDataController {
       try {
         await db.FinancialDataCsv.destroy({
           where: {
-            stock_id: parseInt(stockId),
+            stock_id: parseInt(stockId as string),
             category
           }
         });

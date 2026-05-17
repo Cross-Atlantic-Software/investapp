@@ -5,7 +5,7 @@ import { HttpStatusCode } from '../../utils/httpStatusCode';
 
 // Extend Request interface to include files property from multer
 interface MulterRequest extends Request {
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+  files?: any[] | { [fieldname: string]: any[] };
 }
 
 export class NotableActivityManagementController {
@@ -19,7 +19,7 @@ export class NotableActivityManagementController {
   getAllNotableActivities = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { page = 1, limit = 10, search = '', sort_by = 'id', sort_order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort_by = 'id', sort_order = 'DESC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const order = [[sort_by as string, sort_order as string]] as any;
@@ -92,9 +92,9 @@ export class NotableActivityManagementController {
   getNotableActivityById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const activity = await this.notableActivityModel.findByPk(id);
+      const activity = await this.notableActivityModel.findByPk(id as string);
 
       if (!activity) {
         return (res as any).error("Notable activity not found", HttpStatusCode.NOT_FOUND);
@@ -163,7 +163,7 @@ export class NotableActivityManagementController {
       // Handle icon upload to S3
       let iconUrl: string | undefined = undefined;
       if (req.files) {
-        let file: Express.Multer.File | undefined;
+        let file: any | undefined;
         
         // Handle both array and object formats
         if (Array.isArray(req.files)) {
@@ -200,10 +200,10 @@ export class NotableActivityManagementController {
   updateNotableActivity = async (req: MulterRequest, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { activity_type_ids, description } = req.body;
 
-      const activity = await this.notableActivityModel.findByPk(id);
+      const activity = await this.notableActivityModel.findByPk(id as string);
       if (!activity) {
         return (res as any).error("Notable activity not found", HttpStatusCode.NOT_FOUND);
       }
@@ -221,7 +221,7 @@ export class NotableActivityManagementController {
       // Handle icon upload to S3
       let iconUrl = activity.icon; // Keep existing icon by default
       if (req.files) {
-        let file: Express.Multer.File | undefined;
+        let file: any | undefined;
         
         // Handle both array and object formats
         if (Array.isArray(req.files)) {
@@ -258,9 +258,9 @@ export class NotableActivityManagementController {
   deleteNotableActivity = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const activity = await this.notableActivityModel.findByPk(id);
+      const activity = await this.notableActivityModel.findByPk(id as string);
       if (!activity) {
         return (res as any).error("Notable activity not found", HttpStatusCode.NOT_FOUND);
       }
@@ -300,7 +300,7 @@ export class NotableActivityManagementController {
   getPublicNotableActivities = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { limit = 4 } = req.query;
+      const { limit = 4 } = req.query as Record<string, string>;
 
       const activities = await this.notableActivityModel.findAll({
         order: [['created_at', 'DESC']],

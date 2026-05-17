@@ -6,7 +6,7 @@ export class KnowledgeSectorController {
   // Get all knowledge sectors with pagination and search
   static async getAllKnowledgeSectors(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause = {};
@@ -55,8 +55,8 @@ export class KnowledgeSectorController {
   // Get knowledge sector by ID
   static async getKnowledgeSectorById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const knowledgeSector = await db.KnowledgeSector.findByPk(id, {
+      const id = req.params.id as string;
+      const knowledgeSector = await db.KnowledgeSector.findByPk(id as string, {
         include: [
           {
             model: db.KnowledgeSubsector,
@@ -134,10 +134,10 @@ export class KnowledgeSectorController {
   // Update knowledge sector
   static async updateKnowledgeSector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, is_active } = req.body;
 
-      const knowledgeSector = await db.KnowledgeSector.findByPk(id);
+      const knowledgeSector = await db.KnowledgeSector.findByPk(id as string);
       if (!knowledgeSector) {
         return res.status(404).json({
           success: false,
@@ -182,9 +182,9 @@ export class KnowledgeSectorController {
   // Delete knowledge sector
   static async deleteKnowledgeSector(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const knowledgeSector = await db.KnowledgeSector.findByPk(id);
+      const knowledgeSector = await db.KnowledgeSector.findByPk(id as string);
       if (!knowledgeSector) {
         return res.status(404).json({
           success: false,

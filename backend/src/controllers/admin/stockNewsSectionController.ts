@@ -14,8 +14,8 @@ export class StockNewsSectionController {
       const controller = new StockNewsSectionController();
       await controller.ensureDbReady();
       
-      const { stockId } = req.params;
-      const { page = 1, limit = 10, search = '' } = req.query;
+      const stockId = req.params.stockId as string;
+      const { page = 1, limit = 10, search = '' } = req.query as Record<string, string>;
       
       const offset = (Number(page) - 1) * Number(limit);
       
@@ -71,9 +71,9 @@ export class StockNewsSectionController {
       const controller = new StockNewsSectionController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       
-      const newsSection = await db.StockNewsSection.findByPk(id, {
+      const newsSection = await db.StockNewsSection.findByPk(id as string, {
         include: [{
           model: db.Product,
           as: 'stock',
@@ -155,10 +155,10 @@ export class StockNewsSectionController {
       const controller = new StockNewsSectionController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { title, stock_id, url, banner } = req.body;
 
-      const newsSection = await db.StockNewsSection.findByPk(id);
+      const newsSection = await db.StockNewsSection.findByPk(id as string);
       if (!newsSection) {
         return res.status(404).json({
           success: false,
@@ -206,9 +206,9 @@ export class StockNewsSectionController {
       const controller = new StockNewsSectionController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const newsSection = await db.StockNewsSection.findByPk(id);
+      const newsSection = await db.StockNewsSection.findByPk(id as string);
       if (!newsSection) {
         return res.status(404).json({
           success: false,
@@ -272,7 +272,7 @@ export class StockNewsSectionController {
       const controller = new StockNewsSectionController();
       await controller.ensureDbReady();
       
-      const { page = 1, limit = 20, search = '', stock_id } = req.query;
+      const { page = 1, limit = 20, search = '', stock_id } = req.query as Record<string, string>;
       
       const offset = (Number(page) - 1) * Number(limit);
       

@@ -49,9 +49,9 @@ export const getAllUsers = async (req: Request, res: Response) => {
 // Get CMS user by ID
 export const getUserById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
-    const user = await db.CmsUser.findByPk(id, {
+    const user = await db.CmsUser.findByPk(id as string, {
       attributes: { exclude: ['password'] }
     });
 
@@ -89,8 +89,8 @@ export const createUser = async (req: Request, res: Response) => {
     } = req.body;
 
     // Get the creator's role from the JWT token
-    const creatorRole = (req.user as any)?.role;
-    const creatorId = (req.user as any)?.user_id;
+    const creatorRole = ((req as any).user)?.role;
+    const creatorId = ((req as any).user)?.user_id;
     
     console.log(`🔍 Creating CMS user - Creator ID: ${creatorId}, Creator Role: ${creatorRole}`);
     
@@ -186,7 +186,7 @@ export const createUser = async (req: Request, res: Response) => {
 // Update CMS user
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const {
       first_name,
       last_name,
@@ -201,12 +201,12 @@ export const updateUser = async (req: Request, res: Response) => {
     } = req.body;
 
     // Get the updater's role from the JWT token
-    const updaterRole = (req.user as any)?.role;
-    const updaterId = (req.user as any)?.user_id;
+    const updaterRole = ((req as any).user)?.role;
+    const updaterId = ((req as any).user)?.user_id;
     
     console.log(`🔍 Updating CMS user - Updater ID: ${updaterId}, Updater Role: ${updaterRole}`);
 
-    const user = await db.CmsUser.findByPk(id);
+    const user = await db.CmsUser.findByPk(id as string);
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -286,13 +286,13 @@ export const updateUser = async (req: Request, res: Response) => {
 // Delete CMS user
 export const deleteUser = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
     // Get the current user's role from the JWT token
-    const currentUserRole = (req.user as any)?.role;
-    const currentUserId = (req.user as any)?.user_id;
+    const currentUserRole = ((req as any).user)?.role;
+    const currentUserId = ((req as any).user)?.user_id;
 
-    const user = await db.CmsUser.findByPk(id);
+    const user = await db.CmsUser.findByPk(id as string);
     if (!user) {
       return res.status(404).json({
         success: false,

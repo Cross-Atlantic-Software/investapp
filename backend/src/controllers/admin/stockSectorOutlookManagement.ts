@@ -7,10 +7,10 @@ export class StockSectorOutlookManagementController {
   // Get Sector & Comapany outlook for a specific stock
   static async getSectorOutlookByStockId(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
 
       const sectorOutlook = await StockSectorOutlookModel.findOne({
-        where: { stock_id: parseInt(stockId) },
+        where: { stock_id: parseInt(stockId as string) },
         include: [
           {
             model: StockSectorOutlookAccordionModel,
@@ -119,7 +119,7 @@ export class StockSectorOutlookManagementController {
   // Delete Sector & Comapany outlook
   static async deleteSectorOutlook(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
 
       const sectorOutlook = await StockSectorOutlookModel.findOne({
         where: { stock_id: stockId },
@@ -157,10 +157,10 @@ export class StockSectorOutlookManagementController {
   // Get Sector & Comapany outlook for a specific stock (Public API - uses :id parameter)
   static async getSectorOutlookByStockIdPublic(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
       const sectorOutlook = await StockSectorOutlookModel.findOne({
-        where: { stock_id: parseInt(id) },
+        where: { stock_id: parseInt(id as string) },
         include: [
           {
             model: StockSectorOutlookAccordionModel,
@@ -194,7 +194,7 @@ export class StockSectorOutlookManagementController {
   // Get Sector & Comapany outlook statistics
   static async getSectorOutlookStats(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
 
       const totalAccordions = await StockSectorOutlookAccordionModel.count({
         include: [

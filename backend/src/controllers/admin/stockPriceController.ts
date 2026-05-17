@@ -25,7 +25,7 @@ export const upload = multer({
 // Upload CSV price data for a stock
 export const uploadPriceDataCSV = async (req: Request, res: Response) => {
   try {
-    const { id: stockId } = req.params;
+    const { id: stockId } = req.params as Record<string, string>;
     
     if (!req.file) {
       return res.status(400).json({
@@ -74,7 +74,7 @@ export const uploadPriceDataCSV = async (req: Request, res: Response) => {
     }
 
     // Clear existing price data for this stock
-    await stockPriceDataModel.deleteAllPriceData(parseInt(stockId));
+    await stockPriceDataModel.deleteAllPriceData(parseInt(stockId as string));
 
     // Bulk insert new price data
     const success = await stockPriceDataModel.bulkInsertPriceData(priceDataArray);
@@ -138,7 +138,7 @@ function processCSVRow(row: any, stockId: string): any | null {
     }
 
     return {
-      stock_id: parseInt(stockId),
+      stock_id: parseInt(stockId as string),
       date: date,
       open_price: openPrice,
       high_price: highPrice,
@@ -156,22 +156,22 @@ function processCSVRow(row: any, stockId: string): any | null {
 // Get price data for a stock
 export const getPriceData = async (req: Request, res: Response) => {
   try {
-    const { id: stockId } = req.params;
-    const { limit, offset, startDate, endDate } = req.query;
+    const { id: stockId } = req.params as Record<string, string>;
+    const { limit, offset, startDate, endDate } = req.query as Record<string, string>;
 
     let priceData;
 
     if (startDate && endDate) {
       // Get data by date range
       priceData = await stockPriceDataModel.getPriceDataByDateRange(
-        parseInt(stockId),
+        parseInt(stockId as string),
         new Date(startDate as string),
         new Date(endDate as string)
       );
     } else {
       // Get data with pagination
       priceData = await stockPriceDataModel.getPriceDataByStockId(
-        parseInt(stockId),
+        parseInt(stockId as string),
         limit ? parseInt(limit as string) : undefined,
         offset ? parseInt(offset as string) : undefined
       );
@@ -198,9 +198,9 @@ export const getPriceData = async (req: Request, res: Response) => {
 // Get latest price data for a stock
 export const getLatestPriceData = async (req: Request, res: Response) => {
   try {
-    const { id: stockId } = req.params;
+    const { id: stockId } = req.params as Record<string, string>;
 
-    const latestPriceData = await stockPriceDataModel.getLatestPriceData(parseInt(stockId));
+    const latestPriceData = await stockPriceDataModel.getLatestPriceData(parseInt(stockId as string));
 
     if (!latestPriceData) {
       return res.status(404).json({
@@ -227,9 +227,9 @@ export const getLatestPriceData = async (req: Request, res: Response) => {
 // Delete all price data for a stock
 export const deleteAllPriceData = async (req: Request, res: Response) => {
   try {
-    const { id: stockId } = req.params;
+    const { id: stockId } = req.params as Record<string, string>;
 
-    const success = await stockPriceDataModel.deleteAllPriceData(parseInt(stockId));
+    const success = await stockPriceDataModel.deleteAllPriceData(parseInt(stockId as string));
 
     if (!success) {
       return res.status(500).json({
@@ -255,10 +255,10 @@ export const deleteAllPriceData = async (req: Request, res: Response) => {
 // Check if price data exists for a stock
 export const checkPriceDataExists = async (req: Request, res: Response) => {
   try {
-    const { id: stockId } = req.params;
+    const { id: stockId } = req.params as Record<string, string>;
 
-    const exists = await stockPriceDataModel.hasPriceData(parseInt(stockId));
-    const count = await stockPriceDataModel.getPriceDataCount(parseInt(stockId));
+    const exists = await stockPriceDataModel.hasPriceData(parseInt(stockId as string));
+    const count = await stockPriceDataModel.getPriceDataCount(parseInt(stockId as string));
 
     res.json({
       success: true,
@@ -281,10 +281,10 @@ export const checkPriceDataExists = async (req: Request, res: Response) => {
 // Export price data as CSV
 export const exportPriceDataCSV = async (req: Request, res: Response) => {
   try {
-    const { id: stockId } = req.params;
+    const { id: stockId } = req.params as Record<string, string>;
 
     // Get all price data for the stock
-    const priceData = await stockPriceDataModel.getPriceDataByStockId(parseInt(stockId));
+    const priceData = await stockPriceDataModel.getPriceDataByStockId(parseInt(stockId as string));
     
     if (!priceData || priceData.length === 0) {
       return res.status(404).json({
@@ -324,9 +324,9 @@ export const exportPriceDataCSV = async (req: Request, res: Response) => {
 // Delete all price data for a stock (admin function)
 export const deletePriceDataAdmin = async (req: Request, res: Response) => {
   try {
-    const { id: stockId } = req.params;
+    const { id: stockId } = req.params as Record<string, string>;
 
-    const success = await stockPriceDataModel.deleteAllPriceData(parseInt(stockId));
+    const success = await stockPriceDataModel.deleteAllPriceData(parseInt(stockId as string));
 
     if (!success) {
       return res.status(500).json({

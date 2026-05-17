@@ -13,7 +13,7 @@ export class TaxonomyManagementController {
   getAllTaxonomies = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { page = 1, limit = 10, search = '', sort_by = 'createdAt', sort_order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort_by = 'createdAt', sort_order = 'DESC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const order = [[sort_by as string, sort_order as string]] as any;
@@ -55,9 +55,9 @@ export class TaxonomyManagementController {
   getTaxonomyById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const taxonomy = await this.taxonomyModel.findByPk(id);
+      const taxonomy = await this.taxonomyModel.findByPk(id as string);
 
       if (!taxonomy) {
         return (res as any).error("Taxonomy not found", HttpStatusCode.NOT_FOUND);
@@ -116,10 +116,10 @@ export class TaxonomyManagementController {
   updateTaxonomy = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, color } = req.body;
 
-      const taxonomy = await this.taxonomyModel.findByPk(id);
+      const taxonomy = await this.taxonomyModel.findByPk(id as string);
       if (!taxonomy) {
         return (res as any).error("Taxonomy not found", HttpStatusCode.NOT_FOUND);
       }
@@ -162,9 +162,9 @@ export class TaxonomyManagementController {
   deleteTaxonomy = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const taxonomy = await this.taxonomyModel.findByPk(id);
+      const taxonomy = await this.taxonomyModel.findByPk(id as string);
       if (!taxonomy) {
         return (res as any).error("Taxonomy not found", HttpStatusCode.NOT_FOUND);
       }

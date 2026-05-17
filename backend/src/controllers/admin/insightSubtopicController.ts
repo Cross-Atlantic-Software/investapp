@@ -6,7 +6,7 @@ export class InsightSubtopicController {
   // Get all insight subtopics with pagination and search
   static async getAllInsightSubtopics(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", topic_id, sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", topic_id, sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause: any = {};
@@ -56,8 +56,8 @@ export class InsightSubtopicController {
   // Get insight subtopic by ID
   static async getInsightSubtopicById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const insightSubtopic = await db.InsightSubtopic.findByPk(id, {
+      const id = req.params.id as string;
+      const insightSubtopic = await db.InsightSubtopic.findByPk(id as string, {
         include: [
           {
             model: db.InsightTopic,
@@ -148,10 +148,10 @@ export class InsightSubtopicController {
   // Update insight subtopic
   static async updateInsightSubtopic(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { insight_topic_id, name, is_active } = req.body;
 
-      const insightSubtopic = await db.InsightSubtopic.findByPk(id);
+      const insightSubtopic = await db.InsightSubtopic.findByPk(id as string);
       if (!insightSubtopic) {
         return res.status(404).json({
           success: false,
@@ -212,9 +212,9 @@ export class InsightSubtopicController {
   // Delete insight subtopic
   static async deleteInsightSubtopic(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const insightSubtopic = await db.InsightSubtopic.findByPk(id);
+      const insightSubtopic = await db.InsightSubtopic.findByPk(id as string);
       if (!insightSubtopic) {
         return res.status(404).json({
           success: false,

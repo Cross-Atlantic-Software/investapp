@@ -25,7 +25,7 @@ export class TransactionController {
         transaction_type = '',
         sort_by = 'created_at', 
         sort_order = 'DESC' 
-      } = req.query;
+      } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const order = [[sort_by as string, sort_order as string]] as any;
@@ -99,9 +99,9 @@ export class TransactionController {
   getTransactionById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const transaction = await this.transactionModel.findByPk(id, {
+      const transaction = await this.transactionModel.findByPk(id as string, {
         include: [
           {
             model: db.User,
@@ -153,7 +153,7 @@ export class TransactionController {
   approveTransaction = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const adminUserId = (req as any).user?.user_id; // Logged-in CMS user
 
       if (!adminUserId) {
@@ -164,7 +164,7 @@ export class TransactionController {
         return;
       }
 
-      const transaction = await this.transactionModel.findByPk(id);
+      const transaction = await this.transactionModel.findByPk(id as string);
 
       if (!transaction) {
         res.status(HttpStatusCode.NOT_FOUND).json({
@@ -277,7 +277,7 @@ export class TransactionController {
         // Don't fail the transaction if portfolio refresh fails, but log the error
       }
 
-      const updatedTransaction = await this.transactionModel.findByPk(id, {
+      const updatedTransaction = await this.transactionModel.findByPk(id as string, {
         include: [
           {
             model: db.CmsUser,
@@ -305,7 +305,7 @@ export class TransactionController {
   rejectTransaction = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { rejection_reason } = req.body;
       const adminUserId = (req as any).user?.user_id; // Logged-in CMS user
 
@@ -325,7 +325,7 @@ export class TransactionController {
         return;
       }
 
-      const transaction = await this.transactionModel.findByPk(id);
+      const transaction = await this.transactionModel.findByPk(id as string);
 
       if (!transaction) {
         res.status(HttpStatusCode.NOT_FOUND).json({
@@ -383,7 +383,7 @@ export class TransactionController {
         }
       }
 
-      const updatedTransaction = await this.transactionModel.findByPk(id, {
+      const updatedTransaction = await this.transactionModel.findByPk(id as string, {
         include: [
           {
             model: db.CmsUser,
@@ -411,10 +411,10 @@ export class TransactionController {
   updateTransaction = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { fees, taxes, notes, settlement_date } = req.body;
 
-      const transaction = await this.transactionModel.findByPk(id);
+      const transaction = await this.transactionModel.findByPk(id as string);
 
       if (!transaction) {
         res.status(HttpStatusCode.NOT_FOUND).json({
@@ -456,7 +456,7 @@ export class TransactionController {
       // This handles the case where fees/taxes are added after approval
       if (transaction.status === 'completed' && (fees !== undefined || taxes !== undefined)) {
         try {
-          const updatedTx = await this.transactionModel.findByPk(id);
+          const updatedTx = await this.transactionModel.findByPk(id as string);
           if (updatedTx && updatedTx.net_amount) {
             const oldFees = transaction.fees || 0;
             const oldTaxes = transaction.taxes || 0;
@@ -529,7 +529,7 @@ export class TransactionController {
         }
       }
 
-      const updatedTransaction = await this.transactionModel.findByPk(id);
+      const updatedTransaction = await this.transactionModel.findByPk(id as string);
 
       res.status(HttpStatusCode.OK).json({
         success: true,

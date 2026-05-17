@@ -5,7 +5,7 @@ import { HttpStatusCode } from '../../utils/httpStatusCode';
 
 // Extend Request interface to include files property from multer
 interface MulterRequest extends Request {
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+  files?: any[] | { [fieldname: string]: any[] };
 }
 
 export class BulkDealsManagementController {
@@ -78,9 +78,9 @@ export class BulkDealsManagementController {
   getBulkDealById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const bulkDeal = await this.bulkDealsModel.findByPk(id);
+      const bulkDeal = await this.bulkDealsModel.findByPk(id as string);
 
       if (!bulkDeal) {
         return (res as any).error("Bulk deal not found", HttpStatusCode.NOT_FOUND);
@@ -110,7 +110,7 @@ export class BulkDealsManagementController {
       // Handle icon upload to S3
       let iconUrl: string | undefined = undefined;
       if (req.files) {
-        let file: Express.Multer.File | undefined;
+        let file: any | undefined;
         
         // Handle both array and object formats
         if (Array.isArray(req.files)) {
@@ -148,10 +148,10 @@ export class BulkDealsManagementController {
   updateBulkDeal = async (req: MulterRequest, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { value, label } = req.body;
 
-      const bulkDeal = await this.bulkDealsModel.findByPk(id);
+      const bulkDeal = await this.bulkDealsModel.findByPk(id as string);
       if (!bulkDeal) {
         return (res as any).error("Bulk deal not found", HttpStatusCode.NOT_FOUND);
       }
@@ -159,7 +159,7 @@ export class BulkDealsManagementController {
       // Handle icon upload to S3
       let iconUrl = bulkDeal.icon; // Keep existing icon by default
       if (req.files) {
-        let file: Express.Multer.File | undefined;
+        let file: any | undefined;
         
         // Handle both array and object formats
         if (Array.isArray(req.files)) {
@@ -198,9 +198,9 @@ export class BulkDealsManagementController {
   deleteBulkDeal = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const bulkDeal = await this.bulkDealsModel.findByPk(id);
+      const bulkDeal = await this.bulkDealsModel.findByPk(id as string);
       if (!bulkDeal) {
         return (res as any).error("Bulk deal not found", HttpStatusCode.NOT_FOUND);
       }

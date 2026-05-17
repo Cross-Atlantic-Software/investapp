@@ -110,10 +110,10 @@ export class ShareholderTypeController {
       const controller = new ShareholderTypeController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, is_active } = req.body;
 
-      const shareholderType = await ShareholderType.findByPk(id);
+      const shareholderType = await ShareholderType.findByPk(id as string);
       if (!shareholderType) {
         return res.status(404).json({
           success: false,
@@ -164,9 +164,9 @@ export class ShareholderTypeController {
       const controller = new ShareholderTypeController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const shareholderType = await ShareholderType.findByPk(id);
+      const shareholderType = await ShareholderType.findByPk(id as string);
       if (!shareholderType) {
         return res.status(404).json({
           success: false,
@@ -209,9 +209,9 @@ export class ShareholderTypeController {
       const controller = new ShareholderTypeController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const shareholderType = await ShareholderType.findByPk(id);
+      const shareholderType = await ShareholderType.findByPk(id as string);
       if (!shareholderType) {
         return res.status(404).json({
           success: false,

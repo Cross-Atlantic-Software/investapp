@@ -17,7 +17,7 @@ export class SellStockService {
       await this.ensureDbReady();
       
       // Get user from JWT token (set by middleware)
-      const userId = (req.user as any)?.user_id;
+      const userId = ((req as any).user)?.user_id;
       if (!userId) {
         return (res as any).error("User not authenticated", HttpStatusCode.UNAUTHORIZED);
       }
@@ -30,7 +30,7 @@ export class SellStockService {
       }
 
       // Get user details
-      const user = await this.userModel.findByPk(parseInt(userId));
+      const user = await this.userModel.findByPk(parseInt(userId as string));
       if (!user) {
         return (res as any).error("User not found", HttpStatusCode.NOT_FOUND);
       }

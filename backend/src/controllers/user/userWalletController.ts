@@ -27,13 +27,13 @@ export class UserWalletController {
 
       // Find or create wallet for user
       let wallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId) }
+        where: { user_id: parseInt(userId as string) }
       });
 
       if (!wallet) {
         // Create wallet if it doesn't exist
         wallet = await db.UserWallet.create({
-          user_id: parseInt(userId),
+          user_id: parseInt(userId as string),
           available_balance: 0,
           pending_balance: 0,
           total_deposited: 0,
@@ -83,13 +83,13 @@ export class UserWalletController {
 
       // Find or create wallet
       let wallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId) }
+        where: { user_id: parseInt(userId as string) }
       });
 
       if (!wallet) {
-        wallet = await UserWalletController.initializeWallet(parseInt(userId));
+        wallet = await UserWalletController.initializeWallet(parseInt(userId as string));
         if (!wallet) {
-          wallet = await db.UserWallet.findOne({ where: { user_id: parseInt(userId) } });
+          wallet = await db.UserWallet.findOne({ where: { user_id: parseInt(userId as string) } });
         }
       }
 
@@ -102,14 +102,14 @@ export class UserWalletController {
 
       // Update wallet balance using the deposit type
       await UserWalletController.updateBalance(
-        parseInt(userId),
+        parseInt(userId as string),
         depositAmount,
         'deposit'
       );
 
       // Fetch updated wallet
       const updatedWallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId) }
+        where: { user_id: parseInt(userId as string) }
       });
 
       res.status(HttpStatusCode.OK).json({
@@ -155,7 +155,7 @@ export class UserWalletController {
 
       // Find wallet
       const wallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId) }
+        where: { user_id: parseInt(userId as string) }
       });
 
       if (!wallet) {
@@ -175,14 +175,14 @@ export class UserWalletController {
 
       // Update wallet balance using the withdrawal type
       await UserWalletController.updateBalance(
-        parseInt(userId),
+        parseInt(userId as string),
         withdrawalAmount,
         'withdrawal'
       );
 
       // Fetch updated wallet
       const updatedWallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId) }
+        where: { user_id: parseInt(userId as string) }
       });
 
       res.status(HttpStatusCode.OK).json({

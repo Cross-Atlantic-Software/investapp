@@ -16,7 +16,7 @@ export class KnowledgeCenterController {
         knowledge_theme_id,
         sort_by = "updated_at", 
         sort_order = "DESC" 
-      } = req.query;
+      } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause: any = {};
@@ -89,7 +89,7 @@ export class KnowledgeCenterController {
   // Get featured knowledge centers
   static async getFeaturedKnowledgeCenters(req: Request, res: Response) {
     try {
-      const { limit = 7 } = req.query;
+      const { limit = 7 } = req.query as Record<string, string>;
 
       const knowledgeCenters = await db.KnowledgeCenter.findAll({
         where: { is_featured: true },
@@ -131,7 +131,7 @@ export class KnowledgeCenterController {
   // Get knowledge center by slug
   static async getKnowledgeCenterBySlug(req: Request, res: Response) {
     try {
-      const { slug } = req.params;
+      const { slug } = req.params as Record<string, string>;
       const knowledgeCenter = await db.KnowledgeCenter.findOne({
         where: { slug },
         include: [
@@ -177,8 +177,8 @@ export class KnowledgeCenterController {
   // Get knowledge center by ID
   static async getKnowledgeCenterById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const knowledgeCenter = await db.KnowledgeCenter.findByPk(id, {
+      const id = req.params.id as string;
+      const knowledgeCenter = await db.KnowledgeCenter.findByPk(id as string, {
         include: [
           {
             model: db.KnowledgeSector,
@@ -301,7 +301,7 @@ export class KnowledgeCenterController {
 
 
       // Get file URLs from uploaded files
-      const files = (req as any).files as { [fieldname: string]: Express.Multer.File[] } || {};
+      const files = (req as any).files as { [fieldname: string]: any[] } || {};
       const blogImageFile = files.blog_image?.[0];
       const videoFile = files.video_file?.[0];
       
@@ -467,7 +467,7 @@ export class KnowledgeCenterController {
   // Update knowledge center
   static async updateKnowledgeCenter(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const {
         slug,
         is_featured,
@@ -539,14 +539,14 @@ export class KnowledgeCenterController {
 
 
       // Get file URLs from uploaded files (if new files uploaded)
-      const files = (req as any).files as { [fieldname: string]: Express.Multer.File[] } || {};
+      const files = (req as any).files as { [fieldname: string]: any[] } || {};
       const blogImageFile = files.blog_image?.[0];
       const videoFile = files.video_file?.[0];
       
       const blog_image = (blogImageFile as any)?.location;
       const video_file = (videoFile as any)?.location;
 
-      const knowledgeCenter = await db.KnowledgeCenter.findByPk(id);
+      const knowledgeCenter = await db.KnowledgeCenter.findByPk(id as string);
       if (!knowledgeCenter) {
         return res.status(404).json({
           success: false,
@@ -691,9 +691,9 @@ export class KnowledgeCenterController {
   // Delete knowledge center
   static async deleteKnowledgeCenter(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const knowledgeCenter = await db.KnowledgeCenter.findByPk(id);
+      const knowledgeCenter = await db.KnowledgeCenter.findByPk(id as string);
       if (!knowledgeCenter) {
         return res.status(404).json({
           success: false,

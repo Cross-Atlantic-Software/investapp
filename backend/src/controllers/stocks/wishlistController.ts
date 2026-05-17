@@ -8,7 +8,7 @@ export class WishlistController {
   // Add stock to wishlist
   static async addToWishlist(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
       const userId = (req as any).user?.user_id;
 
       if (!userId) {
@@ -45,7 +45,7 @@ export class WishlistController {
       // Add to wishlist
       const wishlistItem = await Wishlist.create({
         user_id: userId,
-        stock_id: parseInt(stockId),
+        stock_id: parseInt(stockId as string),
       });
 
       return res.status(201).json({
@@ -69,7 +69,7 @@ export class WishlistController {
   // Remove stock from wishlist
   static async removeFromWishlist(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
       const userId = (req as any).user?.user_id;
 
       if (!userId) {
@@ -152,7 +152,7 @@ export class WishlistController {
   // Check if stock is in wishlist
   static async checkWishlistStatus(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
       const userId = (req as any).user?.user_id;
 
       if (!userId) {
@@ -188,7 +188,7 @@ export class WishlistController {
   // Get wishlist for specific user (admin)
   static async getUserWishlistAdmin(req: Request, res: Response) {
     try {
-      const { userId } = req.params;
+      const userId = req.params.userId as string;
 
       const wishlist = await Wishlist.findAll({
         where: {

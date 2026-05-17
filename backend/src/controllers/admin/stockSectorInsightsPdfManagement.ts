@@ -6,9 +6,9 @@ export class StockSectorInsightsPdfManagementController {
   // Get PDF by ID
   static async getPdfById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const pdf = await StockSectorInsightsPdfModel.findByPk(id);
+      const pdf = await StockSectorInsightsPdfModel.findByPk(id as string);
       if (!pdf) {
         return res.status(404).json({
           success: false,
@@ -33,11 +33,11 @@ export class StockSectorInsightsPdfManagementController {
   // Get PDFs for a specific stock (Public API - uses :id parameter)
   static async getPdfsByStockIdPublic(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const { is_active } = req.query;
+      const id = req.params.id as string;
+      const { is_active } = req.query as Record<string, string>;
 
       const whereClause: any = {
-        stock_id: parseInt(id),
+        stock_id: parseInt(id as string),
       };
 
       // Public API should only show active PDFs by default
@@ -70,12 +70,12 @@ export class StockSectorInsightsPdfManagementController {
   // Get PDFs for a specific stock
   static async getPdfsByStockId(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
-      const { sortBy = 'order_index', sortOrder = 'ASC', limit = 10, offset = 0 } = req.query;
+      const stockId = req.params.stockId as string;
+      const { sortBy = 'order_index', sortOrder = 'ASC', limit = 10, offset = 0 } = req.query as Record<string, string>;
 
       const { count, rows: pdfs } = await StockSectorInsightsPdfModel.findAndCountAll({
         where: {
-          stock_id: parseInt(stockId),
+          stock_id: parseInt(stockId as string),
           // Admin should see ALL PDFs (both active and inactive)
         },
         order: [[sortBy as string, sortOrder as string]],
@@ -235,10 +235,10 @@ export class StockSectorInsightsPdfManagementController {
   // Update PDF
   static async updatePdf(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { title, description, order_index, is_active } = req.body;
 
-      const pdf = await StockSectorInsightsPdfModel.findByPk(id);
+      const pdf = await StockSectorInsightsPdfModel.findByPk(id as string);
       if (!pdf) {
         return res.status(404).json({
           success: false,
@@ -301,9 +301,9 @@ export class StockSectorInsightsPdfManagementController {
   // Replace PDF file
   static async replacePdf(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const pdf = await StockSectorInsightsPdfModel.findByPk(id);
+      const pdf = await StockSectorInsightsPdfModel.findByPk(id as string);
       if (!pdf) {
         return res.status(404).json({
           success: false,
@@ -347,9 +347,9 @@ export class StockSectorInsightsPdfManagementController {
   // Delete PDF
   static async deletePdf(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const pdf = await StockSectorInsightsPdfModel.findByPk(id);
+      const pdf = await StockSectorInsightsPdfModel.findByPk(id as string);
       if (!pdf) {
         return res.status(404).json({
           success: false,
@@ -382,9 +382,9 @@ export class StockSectorInsightsPdfManagementController {
   // Set PDF as active
   static async setActivePdf(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const pdf = await StockSectorInsightsPdfModel.findByPk(id);
+      const pdf = await StockSectorInsightsPdfModel.findByPk(id as string);
       if (!pdf) {
         return res.status(404).json({
           success: false,
@@ -424,7 +424,7 @@ export class StockSectorInsightsPdfManagementController {
   // Get PDF statistics
   static async getPdfStats(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
 
       const totalPdfs = await StockSectorInsightsPdfModel.count({
         where: { stock_id: stockId },

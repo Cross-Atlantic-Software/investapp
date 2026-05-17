@@ -5,8 +5,8 @@ import { HttpStatusCode } from '../../utils/httpStatusCode';
 
 // Extend Request interface to include file property from multer
 interface MulterRequest extends Request {
-  file?: Express.Multer.File;
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+  file?: any;
+  files?: any[] | { [fieldname: string]: any[] };
 }
 
 export class HomeInsightController {
@@ -20,7 +20,7 @@ export class HomeInsightController {
   getAllHomeInsights = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { page = 1, limit = 10, search = '', sort_by = 'updated_at', sort_order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort_by = 'updated_at', sort_order = 'DESC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const order = [[sort_by as string, sort_order as string]] as any;
@@ -65,9 +65,9 @@ export class HomeInsightController {
   getHomeInsightById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const homeInsight = await this.homeInsightModel.findByPk(id);
+      const homeInsight = await this.homeInsightModel.findByPk(id as string);
 
       if (!homeInsight) {
         res.status(HttpStatusCode.NOT_FOUND).json({
@@ -144,10 +144,10 @@ export class HomeInsightController {
   updateHomeInsight = async (req: MulterRequest, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { title, existing_file } = req.body;
 
-      const homeInsight = await this.homeInsightModel.findByPk(id);
+      const homeInsight = await this.homeInsightModel.findByPk(id as string);
 
       if (!homeInsight) {
         res.status(HttpStatusCode.NOT_FOUND).json({
@@ -179,7 +179,7 @@ export class HomeInsightController {
 
       await homeInsight.update(updateData);
 
-      const updatedHomeInsight = await this.homeInsightModel.findByPk(id);
+      const updatedHomeInsight = await this.homeInsightModel.findByPk(id as string);
 
       res.status(HttpStatusCode.OK).json({
         success: true,
@@ -199,9 +199,9 @@ export class HomeInsightController {
   deleteHomeInsight = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const homeInsight = await this.homeInsightModel.findByPk(id);
+      const homeInsight = await this.homeInsightModel.findByPk(id as string);
 
       if (!homeInsight) {
         res.status(HttpStatusCode.NOT_FOUND).json({

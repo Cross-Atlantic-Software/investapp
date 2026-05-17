@@ -6,7 +6,7 @@ export class KnowledgeThemeController {
   // Get all knowledge themes with pagination and search
   static async getAllKnowledgeThemes(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause = {};
@@ -48,8 +48,8 @@ export class KnowledgeThemeController {
   // Get knowledge theme by ID
   static async getKnowledgeThemeById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const knowledgeTheme = await db.KnowledgeTheme.findByPk(id);
+      const id = req.params.id as string;
+      const knowledgeTheme = await db.KnowledgeTheme.findByPk(id as string);
 
       if (!knowledgeTheme) {
         return res.status(404).json({
@@ -119,10 +119,10 @@ export class KnowledgeThemeController {
   // Update knowledge theme
   static async updateKnowledgeTheme(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, is_active } = req.body;
 
-      const knowledgeTheme = await db.KnowledgeTheme.findByPk(id);
+      const knowledgeTheme = await db.KnowledgeTheme.findByPk(id as string);
       if (!knowledgeTheme) {
         return res.status(404).json({
           success: false,
@@ -167,9 +167,9 @@ export class KnowledgeThemeController {
   // Delete knowledge theme
   static async deleteKnowledgeTheme(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const knowledgeTheme = await db.KnowledgeTheme.findByPk(id);
+      const knowledgeTheme = await db.KnowledgeTheme.findByPk(id as string);
       if (!knowledgeTheme) {
         return res.status(404).json({
           success: false,

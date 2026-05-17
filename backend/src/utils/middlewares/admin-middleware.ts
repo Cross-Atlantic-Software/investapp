@@ -2,7 +2,6 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { UserRole } from "../Roles";
 
-// TypeScript type for the user object attached to the request
 interface User {
   user_id: string;
   role: number;
@@ -11,18 +10,7 @@ interface User {
   last_name?: string;
   iat: number;
   exp: number;
-  location?: {
-    type: "Point";
-    coordinates: [number, number];
-  };
-}
-
-declare global {
-  namespace Express {
-    interface Request {
-      user?: User;
-    }
-  }
+  location?: { type: "Point"; coordinates: [number, number] };
 }
 
 export default function adminMiddleware(req: Request, res: Response, next: NextFunction): void {
@@ -47,7 +35,7 @@ export default function adminMiddleware(req: Request, res: Response, next: NextF
         res.status(401).json({ message: "Auth Error", status: false });
         return;
     }
-    req.user = decoded;
+    (req as any).user = decoded;
     // Pass control to the next middleware only if the token is valid
     next();  // Continue to the next middleware
   } catch (e) {

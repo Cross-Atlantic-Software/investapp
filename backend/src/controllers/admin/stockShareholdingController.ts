@@ -14,7 +14,7 @@ export class StockShareholdingController {
       const controller = new StockShareholdingController();
       await controller.ensureDbReady();
       
-              const { id } = req.params;
+              const id = req.params.id as string;
 
               const shareholdingData = await StockShareholding.findAll({
                 where: { stock_id: id },
@@ -41,7 +41,7 @@ export class StockShareholdingController {
       const controller = new StockShareholdingController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { holder_name, percentage, shareholder_type_id } = req.body;
 
               // Validate percentage doesn't exceed 100%
@@ -57,7 +57,7 @@ export class StockShareholdingController {
       }
 
       const newShareholding = await StockShareholding.create({
-        stock_id: parseInt(id),
+        stock_id: parseInt(id as string),
         holder_name,
         percentage: parseFloat(percentage),
         shareholder_type_id: shareholder_type_id ? parseInt(shareholder_type_id) : undefined,
@@ -85,10 +85,10 @@ export class StockShareholdingController {
       const controller = new StockShareholdingController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { holder_name, percentage, shareholder_type_id } = req.body;
 
-      const shareholding = await StockShareholding.findByPk(id);
+      const shareholding = await StockShareholding.findByPk(id as string);
       if (!shareholding) {
         return res.status(404).json({
           success: false,
@@ -138,9 +138,9 @@ export class StockShareholdingController {
       const controller = new StockShareholdingController();
       await controller.ensureDbReady();
       
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const shareholding = await StockShareholding.findByPk(id);
+      const shareholding = await StockShareholding.findByPk(id as string);
       if (!shareholding) {
         return res.status(404).json({
           success: false,

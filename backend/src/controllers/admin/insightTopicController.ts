@@ -6,7 +6,7 @@ export class InsightTopicController {
   // Get all insight topics with pagination and search
   static async getAllInsightTopics(req: Request, res: Response) {
     try {
-      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query;
+      const { page = 1, limit = 10, search = "", sort_by = "name", sort_order = "ASC" } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause = {};
@@ -55,8 +55,8 @@ export class InsightTopicController {
   // Get insight topic by ID
   static async getInsightTopicById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const insightTopic = await db.InsightTopic.findByPk(id, {
+      const id = req.params.id as string;
+      const insightTopic = await db.InsightTopic.findByPk(id as string, {
         include: [
           {
             model: db.InsightSubtopic,
@@ -134,10 +134,10 @@ export class InsightTopicController {
   // Update insight topic
   static async updateInsightTopic(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name, is_active } = req.body;
 
-      const insightTopic = await db.InsightTopic.findByPk(id);
+      const insightTopic = await db.InsightTopic.findByPk(id as string);
       if (!insightTopic) {
         return res.status(404).json({
           success: false,
@@ -182,9 +182,9 @@ export class InsightTopicController {
   // Delete insight topic
   static async deleteInsightTopic(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const insightTopic = await db.InsightTopic.findByPk(id);
+      const insightTopic = await db.InsightTopic.findByPk(id as string);
       if (!insightTopic) {
         return res.status(404).json({
           success: false,

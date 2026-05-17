@@ -13,7 +13,7 @@ export class StockMasterManagementController {
   getAllStockMasters = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { page = 1, limit = 10, search = '', sort_by = 'created_at', sort_order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort_by = 'created_at', sort_order = 'DESC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const order = [[sort_by as string, sort_order as string]] as any;
@@ -52,9 +52,9 @@ export class StockMasterManagementController {
   getStockMasterById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const stockMaster = await this.stockMasterModel.findByPk(id);
+      const stockMaster = await this.stockMasterModel.findByPk(id as string);
 
       if (!stockMaster) {
         return (res as any).error("Stock master not found", HttpStatusCode.NOT_FOUND);
@@ -107,10 +107,10 @@ export class StockMasterManagementController {
   updateStockMaster = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { name } = req.body;
 
-      const stockMaster = await this.stockMasterModel.findByPk(id);
+      const stockMaster = await this.stockMasterModel.findByPk(id as string);
       if (!stockMaster) {
         return (res as any).error("Stock master not found", HttpStatusCode.NOT_FOUND);
       }
@@ -147,9 +147,9 @@ export class StockMasterManagementController {
   deleteStockMaster = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const stockMaster = await this.stockMasterModel.findByPk(id);
+      const stockMaster = await this.stockMasterModel.findByPk(id as string);
       if (!stockMaster) {
         return (res as any).error("Stock master not found", HttpStatusCode.NOT_FOUND);
       }

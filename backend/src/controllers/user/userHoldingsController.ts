@@ -116,11 +116,11 @@ export class UserHoldingsController {
         });
       }
 
-      const { page = 1, limit = 50, status = '', transaction_type = '' } = req.query;
+      const { page = 1, limit = 50, status = '', transaction_type = '' } = req.query as Record<string, string>;
       const offset = (Number(page) - 1) * Number(limit);
 
       let whereClause = `WHERE t.user_id = :userId`;
-      const replacements: any = { userId: parseInt(userId) };
+      const replacements: any = { userId: parseInt(userId as string) };
 
       if (status) {
         whereClause += ` AND t.status = :status`;

@@ -4,7 +4,7 @@ import { Op } from "sequelize";
 
 // Extend Request interface to include files property from multer
 interface MulterRequest extends Request {
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+  files?: any[] | { [fieldname: string]: any[] };
 }
 
 // Get all stocks with pagination
@@ -182,9 +182,9 @@ export const getAllStocks = async (req: Request, res: Response) => {
 // Get stock by ID
 export const getStockById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
-    const stock = await db.Product.findByPk(id);
+    const stock = await db.Product.findByPk(id as string);
 
     if (!stock) {
       return res.status(404).json({
@@ -285,7 +285,7 @@ export const getStockById = async (req: Request, res: Response) => {
 // Get stock by company name
 export const getStockByName = async (req: Request, res: Response) => {
   try {
-    const { name } = req.params;
+    const { name } = req.params as Record<string, string>;
 
     const stock = await db.Product.findOne({
       where: {
@@ -445,7 +445,7 @@ export const createStock = async (req: MulterRequest, res: Response) => {
     // Handle logo upload to S3
     let logoUrl: string | undefined = undefined;
     if (req.files) {
-      let file: Express.Multer.File | undefined;
+      let file: any | undefined;
       
       // Handle both array and object formats
       if (Array.isArray(req.files)) {
@@ -510,7 +510,7 @@ export const createStock = async (req: MulterRequest, res: Response) => {
 // Update stock
 export const updateStock = async (req: MulterRequest, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const {
       company_name,
       logo,
@@ -537,7 +537,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
 
     console.log("Update Stock - Valuation received:", valuation);
 
-    const stock = await db.Product.findByPk(id);
+    const stock = await db.Product.findByPk(id as string);
     if (!stock) {
       return res.status(404).json({
         success: false,
@@ -548,7 +548,7 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
     // Handle logo upload to S3
     let logoUrl = stock.logo; // Keep existing logo by default
     if (req.files) {
-      let file: Express.Multer.File | undefined;
+      let file: any | undefined;
       
       // Handle both array and object formats
       if (Array.isArray(req.files)) {
@@ -607,9 +607,9 @@ export const updateStock = async (req: MulterRequest, res: Response) => {
 // Delete stock
 export const deleteStock = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
-    const stock = await db.Product.findByPk(id);
+    const stock = await db.Product.findByPk(id as string);
     if (!stock) {
       return res.status(404).json({
         success: false,

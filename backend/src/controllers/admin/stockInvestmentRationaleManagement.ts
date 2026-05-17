@@ -7,8 +7,8 @@ export class StockInvestmentRationaleManagementController {
   // Get all investment rationales for a specific stock
   static async getRationalesByStockId(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
-      const { page = 1, limit = 10, sort_by = 'order_index', sort_order = 'ASC' } = req.query;
+      const stockId = req.params.stockId as string;
+      const { page = 1, limit = 10, sort_by = 'order_index', sort_order = 'ASC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const validSortFields = ['id', 'type', 'title', 'order_index', 'created_at', 'updated_at'];
@@ -57,9 +57,9 @@ export class StockInvestmentRationaleManagementController {
   // Get a specific investment rationale by ID
   static async getRationaleById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const rationale = await StockInvestmentRationaleModel.findByPk(id);
+      const rationale = await StockInvestmentRationaleModel.findByPk(id as string);
 
       if (!rationale) {
         return res.status(404).json({
@@ -164,10 +164,10 @@ export class StockInvestmentRationaleManagementController {
   // Update an investment rationale
   static async updateRationale(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { type, title, description, order_index } = req.body;
 
-      const rationale = await StockInvestmentRationaleModel.findByPk(id);
+      const rationale = await StockInvestmentRationaleModel.findByPk(id as string);
 
       if (!rationale) {
         return res.status(404).json({
@@ -256,9 +256,9 @@ export class StockInvestmentRationaleManagementController {
   // Delete an investment rationale
   static async deleteRationale(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const rationale = await StockInvestmentRationaleModel.findByPk(id);
+      const rationale = await StockInvestmentRationaleModel.findByPk(id as string);
 
       if (!rationale) {
         return res.status(404).json({
@@ -408,7 +408,7 @@ export class StockInvestmentRationaleManagementController {
   // Get investment rationale statistics
   static async getRationaleStats(req: Request, res: Response) {
     try {
-      const { stockId } = req.params;
+      const stockId = req.params.stockId as string;
 
       const totalRationales = await StockInvestmentRationaleModel.count({
         where: { stock_id: stockId },

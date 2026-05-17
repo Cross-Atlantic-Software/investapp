@@ -5,7 +5,7 @@ import { HttpStatusCode } from '../../utils/httpStatusCode';
 
 // Extend Request interface to include files property from multer
 interface MulterRequest extends Request {
-  files?: Express.Multer.File[] | { [fieldname: string]: Express.Multer.File[] };
+  files?: any[] | { [fieldname: string]: any[] };
 }
 
 export class PrivateMarketNewsManagementController {
@@ -18,7 +18,7 @@ export class PrivateMarketNewsManagementController {
   getAllPrivateMarketNews = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { page = 1, limit = 10, search = '', sort_by = 'id', sort_order = 'DESC' } = req.query;
+      const { page = 1, limit = 10, search = '', sort_by = 'id', sort_order = 'DESC' } = req.query as Record<string, string>;
 
       const offset = (Number(page) - 1) * Number(limit);
       const order = [[sort_by as string, sort_order as string]] as any;
@@ -57,9 +57,9 @@ export class PrivateMarketNewsManagementController {
   getPrivateMarketNewsById = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const news = await this.privateMarketNewsModel.findByPk(id);
+      const news = await this.privateMarketNewsModel.findByPk(id as string);
 
       if (!news) {
         return (res as any).error("Private market news not found", HttpStatusCode.NOT_FOUND);
@@ -98,7 +98,7 @@ export class PrivateMarketNewsManagementController {
       // Handle icon upload to S3
       let iconUrl: string | undefined = undefined;
       if (req.files) {
-        let file: Express.Multer.File | undefined;
+        let file: any | undefined;
         
         // Handle both array and object formats
         if (Array.isArray(req.files)) {
@@ -136,10 +136,10 @@ export class PrivateMarketNewsManagementController {
   updatePrivateMarketNews = async (req: MulterRequest, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { title, url, taxonomy_ids } = req.body;
 
-      const news = await this.privateMarketNewsModel.findByPk(id);
+      const news = await this.privateMarketNewsModel.findByPk(id as string);
       if (!news) {
         return (res as any).error("Private market news not found", HttpStatusCode.NOT_FOUND);
       }
@@ -157,7 +157,7 @@ export class PrivateMarketNewsManagementController {
       // Handle icon upload to S3
       let iconUrl = news.icon; // Keep existing icon by default
       if (req.files) {
-        let file: Express.Multer.File | undefined;
+        let file: any | undefined;
         
         // Handle both array and object formats
         if (Array.isArray(req.files)) {
@@ -195,9 +195,9 @@ export class PrivateMarketNewsManagementController {
   deletePrivateMarketNews = async (req: Request, res: Response): Promise<void> => {
     try {
       await this.ensureDbReady();
-      const { id } = req.params;
+      const id = req.params.id as string;
 
-      const news = await this.privateMarketNewsModel.findByPk(id);
+      const news = await this.privateMarketNewsModel.findByPk(id as string);
       if (!news) {
         return (res as any).error("Private market news not found", HttpStatusCode.NOT_FOUND);
       }

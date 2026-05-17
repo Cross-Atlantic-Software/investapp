@@ -34,8 +34,8 @@ export class StockPerformanceScoreController {
   // Get stock performance score by ID
   static async getStockPerformanceScoreById(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const score = await db.StockPerformanceScore.findByPk(id, {
+      const id = req.params.id as string;
+      const score = await db.StockPerformanceScore.findByPk(id as string, {
         include: [
           {
             model: db.Product,
@@ -149,7 +149,7 @@ export class StockPerformanceScoreController {
   // Update stock performance score
   static async updateStockPerformanceScore(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
       const { score } = req.body;
 
       // Validate score
@@ -169,7 +169,7 @@ export class StockPerformanceScoreController {
       }
 
       // Find the existing score
-      const existingScore = await db.StockPerformanceScore.findByPk(id);
+      const existingScore = await db.StockPerformanceScore.findByPk(id as string);
       if (!existingScore) {
         return res.status(404).json({
           success: false,
@@ -184,7 +184,7 @@ export class StockPerformanceScoreController {
       );
 
       // Fetch the updated score with product information
-      const updatedScore = await db.StockPerformanceScore.findByPk(id, {
+      const updatedScore = await db.StockPerformanceScore.findByPk(id as string, {
         include: [
           {
             model: db.Product,
@@ -211,10 +211,10 @@ export class StockPerformanceScoreController {
   // Delete stock performance score
   static async deleteStockPerformanceScore(req: Request, res: Response) {
     try {
-      const { id } = req.params;
+      const id = req.params.id as string;
 
       // Find the score to get stock_id
-      const score = await db.StockPerformanceScore.findByPk(id);
+      const score = await db.StockPerformanceScore.findByPk(id as string);
       if (!score) {
         return res.status(404).json({
           success: false,

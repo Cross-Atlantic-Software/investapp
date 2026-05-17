@@ -94,9 +94,9 @@ export const getAllEnquiries = async (req: Request, res: Response) => {
 
 export const getEnquiryById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
-    const enquiry = await Enquiry.findByPk(id);
+    const enquiry = await Enquiry.findByPk(id as string);
 
     if (!enquiry) {
       return res.status(HttpStatusCode.NOT_FOUND).json({
@@ -121,7 +121,7 @@ export const getEnquiryById = async (req: Request, res: Response) => {
 
 export const updateEnquiryStatus = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
     const { status } = req.body;
 
     if (!status || !['new', 'read', 'replied', 'closed'].includes(status)) {
@@ -131,7 +131,7 @@ export const updateEnquiryStatus = async (req: Request, res: Response) => {
       });
     }
 
-    const enquiry = await Enquiry.findByPk(id);
+    const enquiry = await Enquiry.findByPk(id as string);
 
     if (!enquiry) {
       return res.status(HttpStatusCode.NOT_FOUND).json({
@@ -158,9 +158,9 @@ export const updateEnquiryStatus = async (req: Request, res: Response) => {
 
 export const deleteEnquiry = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id as string;
 
-    const enquiry = await Enquiry.findByPk(id);
+    const enquiry = await Enquiry.findByPk(id as string);
 
     if (!enquiry) {
       return res.status(HttpStatusCode.NOT_FOUND).json({

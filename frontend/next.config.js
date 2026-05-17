@@ -4,6 +4,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
+        hostname: 'ui-avatars.com',
+        port: '',
+        pathname: '/api/**',
+      },
+      {
+        protocol: 'https',
         hostname: 'my-cross-stock-icons.s3.ap-south-1.amazonaws.com',
         port: '',
         pathname: '/icons/**',

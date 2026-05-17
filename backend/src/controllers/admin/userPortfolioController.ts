@@ -115,7 +115,7 @@ export class UserPortfolioController {
     try {
       await db.sequelizePromise;
       
-      const { userId } = req.params;
+      const userId = req.params.userId as string;
       
       const portfolio = await db.UserPortfolio.findOne({
         where: { user_id: userId },
@@ -217,9 +217,9 @@ export class UserPortfolioController {
     try {
       await db.sequelizePromise;
       
-      const { userId } = req.params;
+      const userId = req.params.userId as string;
       
-      await UserPortfolioController.refreshSingleUserPortfolio(parseInt(userId));
+      await UserPortfolioController.refreshSingleUserPortfolio(parseInt(userId as string));
       
       res.json({
         success: true,
@@ -364,7 +364,7 @@ export class UserPortfolioController {
     try {
       await db.sequelizePromise;
       
-      const { minScore, maxScore } = req.query;
+      const { minScore, maxScore } = req.query as Record<string, string>;
       
       if (!minScore || !maxScore) {
         return res.status(400).json({

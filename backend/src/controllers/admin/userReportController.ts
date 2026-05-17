@@ -4,39 +4,46 @@ import multer from "multer";
 import multerS3 from "multer-s3";
 import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
-// Configure S3 client
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION,
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
-  },
-});
+const isS3Configured = !!(
+  process.env.AWS_REGION &&
+  process.env.AWS_ACCESS_KEY_ID &&
+  process.env.AWS_SECRET_ACCESS_KEY &&
+  process.env.S3_BUCKET
+);
 
-// Configure multer for S3 upload - following the same pattern as logo uploads
+const s3Client = isS3Configured
+  ? new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+      },
+    })
+  : null;
+
 export const upload = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: process.env.S3_BUCKET!,
-    contentType: (req, file, cb) => {
-      cb(null, file.mimetype);
-    },
-    key: (req: Request, file: any, cb: (error: any, key?: string) => void) => {
-      const userId = (req as any).params.userId;
-      const uniqueName = `user-reports/${userId}_${Date.now()}.pdf`;
-      cb(null, uniqueName);
-    },
-  }),
-  fileFilter: (req, file, cb) => {
+  storage: isS3Configured && s3Client
+    ? multerS3({
+        s3: s3Client,
+        bucket: process.env.S3_BUCKET!,
+        contentType: (_req: Request, file: any, cb: (error: any, mime?: string) => void) => {
+          cb(null, file.mimetype);
+        },
+        key: (req: Request, file: any, cb: (error: any, key?: string) => void) => {
+          const userId = (req as any).params.userId;
+          const uniqueName = `user-reports/${userId}_${Date.now()}.pdf`;
+          cb(null, uniqueName);
+        },
+      } as any)
+    : multer.memoryStorage(),
+  fileFilter: (_req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
       cb(null, true);
     } else {
       cb(new Error('Only PDF files are allowed'));
     }
   },
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
+  limits: { fileSize: 10 * 1024 * 1024 },
 });
 
 export class UserReportController {
@@ -55,10 +62,12 @@ export class UserReportController {
         try {
           // Extract S3 key from the URL
           const s3Key = user.report_file.split('/').slice(-2).join('/'); // Get 'user-reports/filename'
-          await s3Client.send(new DeleteObjectCommand({
-            Bucket: process.env.S3_BUCKET!,
-            Key: s3Key,
-          }));
+          if (s3Client) {
+            await s3Client.send(new DeleteObjectCommand({
+              Bucket: process.env.S3_BUCKET!,
+              Key: s3Key,
+            }));
+          }
         } catch (error) {
           console.error('Error deleting existing report:', error);
         }
@@ -137,11 +146,12 @@ export class UserReportController {
         console.log(`🗑️ Deleting from S3 with key: ${s3Key}`);
         console.log(`🗑️ S3 Bucket: ${process.env.S3_BUCKET}`);
         
-        await s3Client.send(new DeleteObjectCommand({
-          Bucket: process.env.S3_BUCKET!,
-          Key: s3Key,
-        }));
-        
+        if (s3Client) {
+          await s3Client.send(new DeleteObjectCommand({
+            Bucket: process.env.S3_BUCKET!,
+            Key: s3Key,
+          }));
+        }
         console.log('✅ Successfully deleted from S3');
       } catch (error) {
         console.error('❌ Error deleting report from S3:', error);
@@ -204,7 +214,7 @@ export class UserReportController {
       await db.sequelizePromise;
       
       console.log('🔐 Backend: Request received');
-      console.log('🔐 Backend: req.user:', req.user);
+      console.log('🔐 Backend: req.user:', (req as any).user);
       console.log('🔐 Backend: req.user?.user_id:', (req as any).user?.user_id);
       
       const userId = (req as any).user?.user_id;
