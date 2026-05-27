@@ -1,0 +1,96 @@
+@import "react-quill-new/dist/quill.snow.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  
+  /* Brand colors */
+  --color-themeTeal: #0B4B62;
+  --color-themeSkyBlue: #0097D1;
+  --color-themeTealLight: #558191;
+  --color-themeTealLighter: #779BA8;
+  --color-themeTealWhite: #F4F9FC;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-inter);
+}
+
+.bg-brandGradient {
+  background-image: linear-gradient(to bottom, #CFE9F2 0%, #F1F7FB 100%);
+}
+
+.bg-brandGradientGreen {
+  background-image: linear-gradient(to bottom, #CBFFDA 0%, #ffffff 100%);
+}
+
+.appContainer {
+  width: 100%;
+  margin-inline: auto;
+
+  /* mobile padding + notched devices */
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+
+  max-width: 100%;
+}
+
+@media (min-width: 640px) {
+  .appContainer {
+    max-width: 640px;
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+@media (min-width: 768px) {
+  .appContainer {
+    max-width: 768px;
+    padding-left: max(2rem, env(safe-area-inset-left));
+    padding-right: max(2rem, env(safe-area-inset-right));
+  }
+}
+@media (min-width: 1024px) {
+  .appContainer { max-width: 1024px; }
+}
+@media (min-width: 1280px) {
+  .appContainer { max-width: 1280px; }
+}
+@media (min-width: 1536px) {
+  .appContainer { max-width: 1400px; }
+}
+
+button{
+  cursor: pointer;
+}
+
+@layer components {
+  .input-theme {
+    @apply w-full px-3 py-2 text-sm border border-themeTealLighter rounded
+           focus:outline-none focus:border-themeTeal transition duration-300
+           text-themeTeal placeholder:text-themeTealLight;
+  }
+  .buttonStyle{
+     @apply px-5 py-2 text-sm bg-themeTeal text-white rounded hover:bg-themeSkyBlue disabled:opacity-50 disabled:cursor-not-allowed transition duration-300;
+  }
+  .buttonStyleRed{
+     @apply px-5 py-2 text-sm bg-rose-700 text-white rounded hover:bg-rose-800 disabled:opacity-50 disabled:cursor-not-allowed transition duration-300;
+  }
+  .buttonStyleLight{
+    @apply px-5 py-2 text-sm bg-themeTealLight text-white rounded hover:bg-themeTealLighter disabled:opacity-50 disabled:cursor-not-allowed transition duration-300
+  }
+  .buttonStyleSkyBlue{
+    @apply px-5 py-2 text-sm bg-themeSkyBlue text-white rounded hover:bg-themeTeal disabled:opacity-50 disabled:cursor-not-allowed transition duration-300
+  }
+}

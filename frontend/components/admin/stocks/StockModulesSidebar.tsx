@@ -1,0 +1,226 @@
+'use client';
+
+import React from 'react';
+import { X, Upload, BarChart3, FileText, TrendingUp, ChevronRight, Newspaper, HelpCircle } from 'lucide-react';
+
+interface Stock {
+  id: number;
+  company_name: string;
+  logo: string;
+}
+
+interface StockModulesSidebarProps {
+  isOpen: boolean;
+  onClose: () => void;
+  stock: Stock | null;
+  onSelectModule: (module: string) => void;
+}
+
+const modules = [
+  {
+    id: 'price-data',
+    title: 'Upload Price Data CSV',
+    description: 'Import historical price data',
+    icon: Upload,
+    color: 'blue',
+    bgColor: 'bg-blue-50',
+    hoverBg: 'hover:bg-blue-100',
+    iconColor: 'text-blue-600',
+    borderColor: 'border-blue-500',
+  },
+  {
+    id: 'scorecards',
+    title: 'Manage Scorecards',
+    description: 'Configure performance metrics',
+    icon: BarChart3,
+    color: 'teal',
+    bgColor: 'bg-teal-50',
+    hoverBg: 'hover:bg-teal-100',
+    iconColor: 'text-teal-600',
+    borderColor: 'border-teal-500',
+  },
+  {
+    id: 'rationales',
+    title: 'Manage Investment Rationales',
+    description: 'Add investment analysis',
+    icon: FileText,
+    color: 'indigo',
+    bgColor: 'bg-indigo-50',
+    hoverBg: 'hover:bg-indigo-100',
+    iconColor: 'text-indigo-600',
+    borderColor: 'border-indigo-500',
+  },
+  {
+    id: 'performance-pdfs',
+    title: 'Manage Competitive Benchmarking PDF',
+    description: 'Upload performance reports',
+    icon: Upload,
+    color: 'orange',
+    bgColor: 'bg-orange-50',
+    hoverBg: 'hover:bg-orange-100',
+    iconColor: 'text-orange-600',
+    borderColor: 'border-orange-500',
+  },
+  {
+    id: 'sector-outlook',
+    title: 'Manage Sector & Comapany Outlook',
+    description: 'Configure sector analysis',
+    icon: TrendingUp,
+    color: 'purple',
+    bgColor: 'bg-purple-50',
+    hoverBg: 'hover:bg-purple-100',
+    iconColor: 'text-purple-600',
+    borderColor: 'border-purple-500',
+  },
+  {
+    id: 'sector-insights',
+    title: 'Manage Sector & Company Insights PDFs',
+    description: 'Upload Sector & Comapany insights',
+    icon: FileText,
+    color: 'emerald',
+    bgColor: 'bg-emerald-50',
+    hoverBg: 'hover:bg-emerald-100',
+    iconColor: 'text-emerald-600',
+    borderColor: 'border-emerald-500',
+  },
+  {
+    id: 'financial-data',
+    title: 'Upload Financial Data',
+    description: 'Import financial statements',
+    icon: Upload,
+    color: 'green',
+    bgColor: 'bg-green-50',
+    hoverBg: 'hover:bg-green-100',
+    iconColor: 'text-green-600',
+    borderColor: 'border-green-500',
+  },
+  {
+    id: 'shareholding',
+    title: 'Manage Shareholding',
+    description: 'Configure shareholding distribution',
+    icon: BarChart3,
+    color: 'cyan',
+    bgColor: 'bg-cyan-50',
+    hoverBg: 'hover:bg-cyan-100',
+    iconColor: 'text-cyan-600',
+    borderColor: 'border-cyan-500',
+  },
+    {
+      id: 'news-sections',
+      title: 'Manage News Sections',
+      description: 'Add and manage news articles',
+      icon: Newspaper,
+      color: 'pink',
+      bgColor: 'bg-pink-50',
+      hoverBg: 'hover:bg-pink-100',
+      iconColor: 'text-pink-600',
+      borderColor: 'border-pink-500',
+    },
+    {
+      id: 'faqs',
+      title: 'Manage FAQs',
+      description: 'Add and manage frequently asked questions',
+      icon: HelpCircle,
+      color: 'purple',
+      bgColor: 'bg-purple-50',
+      hoverBg: 'hover:bg-purple-100',
+      iconColor: 'text-purple-600',
+      borderColor: 'border-purple-500',
+    },
+];
+
+const StockModulesSidebar: React.FC<StockModulesSidebarProps> = ({
+  isOpen,
+  onClose,
+  stock,
+  onSelectModule,
+}) => {
+  const [lastSelectedModule, setLastSelectedModule] = React.useState<string | null>(null);
+
+  const handleModuleClick = (moduleId: string) => {
+    setLastSelectedModule(moduleId);
+    onSelectModule(moduleId);
+    
+    // Clear selection after a short delay for visual feedback
+    setTimeout(() => setLastSelectedModule(null), 1000);
+  };
+
+  if (!isOpen || !stock) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/30 backdrop-blur-md z-40 transition-opacity duration-300 m-0"
+        onClick={onClose}
+      />
+
+      {/* Sidebar */}
+      <div className="fixed left-0 top-0 h-screen w-96 bg-white shadow-2xl z-50 transform transition-transform duration-300 ease-out flex flex-col m-0">
+        {/* Header */}
+        <div className="h-16 bg-themeTeal px-6 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded bg-themeTealWhite backdrop-blur-sm flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 text-themeTeal" />
+            </div>
+            <div>
+              <h2 className="text-base font-semibold text-themeTealWhite">Stock Modules</h2>
+              <p className="text-xs text-themeTealLighter" style={{ fontSize: '10px' }}>{stock.company_name}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-white/20 rounded transition duration-200"
+          >
+            <X className="w-5 h-5 text-themeTealWhite" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 space-y-2">
+            {modules.map((module) => {
+              const Icon = module.icon;
+              return (
+                <button
+                  key={module.id}
+                  onClick={() => handleModuleClick(module.id)}
+                  className={`w-full p-4 rounded ${module.bgColor} ${module.hoverBg} border-2 border-transparent hover:border-${module.color}-200 transition-all duration-200 group ${
+                    lastSelectedModule === module.id ? 'ring-2 ring-green-400 ring-opacity-50 bg-green-50' : ''
+                  }`}
+                >
+                  <div className="flex items-center gap-4">
+                    {/* Icon */}
+                    <div className={`flex-shrink-0 w-12 h-12 rounded bg-white flex items-center justify-center group-hover:scale-110 transition-transform duration-200`}>
+                      <Icon className={`w-6 h-6 ${module.iconColor}`} />
+                    </div>
+
+                    {/* Content */}
+                    <div className="flex-1 text-left">
+                      <div className="flex items-end justify-between">
+                        <h3 className="text-xs font-semibold text-themeTeal group-hover:text-themeSkyBlue transition duration-300">
+                          {module.title}
+                        </h3>
+                        <div className="flex items-center gap-2">
+                          {lastSelectedModule === module.id && (
+                            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          )}
+                          <ChevronRight className={`w-4 h-4 ${module.iconColor} opacity-0 group-hover:opacity-100 transition-opacity duration-200`} />
+                        </div>
+                      </div>
+                      <p className="text-xs text-themeTealLight mt-1" style={{ fontSize: '10px' }}>
+                        {module.description}
+                      </p>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
+export default StockModulesSidebar;

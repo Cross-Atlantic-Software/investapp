@@ -1,0 +1,745 @@
+import { Request, Response } from "express";
+import { db } from "../../utils/database";
+import { Op } from "sequelize";
+
+// Extend Request interface to include files property from multer
+interface MulterRequest extends Request {
+  files?: any[] | { [fieldname: string]: any[] };
+}
+
+// Get all stocks with pagination
+export const getAllStocks = async (req: Request, res: Response) => {
+  try {
+    // Wait for database initialization
+    await db.sequelizePromise;
+    
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const offset = (page - 1) * limit;
+    const search = req.query.search as string || "";
+    const sortBy = req.query.sort_by as string || 'createdAt';
+    const sortOrder = req.query.sort_order as string || 'DESC';
+
+    let whereClause: any = {};
+    
+    // Add search functionality - search only by company name
+    if (search) {
+      whereClause = {
+        company_name: { [Op.like]: `%${search}%` }
+      };
+    }
+
+    // Validate sort fields to prevent SQL injection
+    const allowedSortFields = ['id', 'company_name', 'price_change', 'demand', 'homeDisplay', 'bannerDisplay', 'valuation_id', 'price_per_share', 'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 'price_change_period_id', 'stock_performance_score_id', 'createdAt', 'updatedAt'];
+    const validSortBy = allowedSortFields.includes(sortBy) ? sortBy : 'createdAt';
+    const validSortOrder = ['ASC', 'DESC'].includes(sortOrder.toUpperCase()) ? sortOrder.toUpperCase() : 'DESC';
+
+    const { count, rows: stocks } = await db.Product.findAndCountAll({
+      where: whereClause,
+      limit,
+      offset,
+      order: [[validSortBy, validSortOrder]],
+      attributes: [
+        'id', 'company_name', 'logo', 'price_change', 'teaser', 
+        'short_description', 'analysis', 'demand', 'homeDisplay', 
+        'bannerDisplay', 'valuation_id', 'valuation', 'price_per_share', 
+        'percentage_change', 'founded', 'sector_ids', 'subsector_ids', 
+        'theme_ids', 'headquarters', 'min_units', 'lot_size', 'stock_master_ids', 
+        'price_change_period_id', 'stock_performance_score_id', 'createdAt', 'updatedAt'
+      ],
+      include: [
+        {
+          model: db.StockPerformanceScore,
+          as: 'performanceScore',
+          attributes: ['id', 'score'],
+          required: false
+        }
+      ]
+    });
+
+    // Fetch stock master names for each stock
+    const stocksWithMasters = await Promise.all(
+      stocks.map(async (stock: any) => {
+        let stockMasterIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).stock_master_ids || '[]');
+          
+          // Ensure it's an array
+          if (Array.isArray(parsed)) {
+            stockMasterIds = parsed;
+          } else if (typeof parsed === 'number') {
+            stockMasterIds = [parsed];
+          } else if (typeof parsed === 'string' && parsed.includes(',')) {
+            stockMasterIds = parsed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+          } else {
+            stockMasterIds = [];
+          }
+        } catch (error) {
+          console.error('Error parsing stock_master_ids:', (stock as any).stock_master_ids, error);
+          stockMasterIds = [];
+        }
+        
+        const stockMasters = await db.StockMaster.findAll({
+          where: { id: { [Op.in]: stockMasterIds } },
+          attributes: ['id', 'name'],
+        });
+
+        // Fetch sector names
+        let sectorIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).sector_ids || '[]');
+          if (Array.isArray(parsed)) {
+            sectorIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+          sectorIds = [];
+        }
+        
+        const sectors = await db.Sector.findAll({
+          where: { id: { [Op.in]: sectorIds } },
+          attributes: ['id', 'name'],
+        });
+
+        // Fetch subsector names
+        let subsectorIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+          if (Array.isArray(parsed)) {
+            subsectorIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+          subsectorIds = [];
+        }
+        
+        const subsectors = await db.Subsector.findAll({
+          where: { id: { [Op.in]: subsectorIds } },
+          attributes: ['id', 'name', 'sector_id'],
+        });
+
+        // Fetch price change period name
+        let priceChangePeriod = null;
+        if (stock.price_change_period_id) {
+          const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+          priceChangePeriod = period ? period.period : 'Period not found';
+        } else {
+          priceChangePeriod = 'No period assigned';
+        }
+
+        // Fetch theme names
+        let themeIds = [];
+        try {
+          const parsed = JSON.parse((stock as any).theme_ids || '[]');
+          if (Array.isArray(parsed)) {
+            themeIds = parsed;
+          }
+        } catch (error) {
+          console.error('Error parsing theme_ids:', (stock as any).theme_ids, error);
+          themeIds = [];
+        }
+        
+        const themes = await db.Theme.findAll({
+          where: { id: { [Op.in]: themeIds } },
+          attributes: ['id', 'name'],
+        });
+
+        return {
+          ...stock.toJSON(),
+          stock_masters: stockMasters,
+          sectors: sectors,
+          subsectors: subsectors,
+          themes: themes,
+          price_change_period: priceChangePeriod
+        };
+      })
+    );
+
+    const totalPages = Math.ceil(count / limit);
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        stocks: stocksWithMasters,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalStocks: count,
+          hasNextPage: page < totalPages,
+          hasPrevPage: page > 1
+        }
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching stocks:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+// Get stock by ID
+export const getStockById = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+
+    const stock = await db.Product.findByPk(id as string);
+
+    if (!stock) {
+      return res.status(404).json({
+        success: false,
+        message: "Stock not found"
+      });
+    }
+
+    // Fetch stock master names
+    let stockMasterIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).stock_master_ids || '[]');
+      
+      // Ensure it's an array
+      if (Array.isArray(parsed)) {
+        stockMasterIds = parsed;
+      } else if (typeof parsed === 'number') {
+        stockMasterIds = [parsed];
+      } else if (typeof parsed === 'string' && parsed.includes(',')) {
+        stockMasterIds = parsed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+      } else {
+        stockMasterIds = [];
+      }
+    } catch (error) {
+      console.error('Error parsing stock_master_ids:', (stock as any).stock_master_ids, error);
+      stockMasterIds = [];
+    }
+    
+    const stockMasters = await db.StockMaster.findAll({
+      where: { id: { [Op.in]: stockMasterIds } },
+      attributes: ['id', 'name'],
+    });
+
+    // Fetch sector names
+    let sectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).sector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        sectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+      sectorIds = [];
+    }
+    
+    const sectors = await db.Sector.findAll({
+      where: { id: { [Op.in]: sectorIds } },
+      attributes: ['id', 'name'],
+    });
+
+    // Fetch subsector names
+    let subsectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        subsectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+      subsectorIds = [];
+    }
+    
+    const subsectors = await db.Subsector.findAll({
+      where: { id: { [Op.in]: subsectorIds } },
+      attributes: ['id', 'name', 'sector_id'],
+    });
+
+    // Fetch price change period name
+    let priceChangePeriod = null;
+    if (stock.price_change_period_id) {
+      const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+      priceChangePeriod = period ? period.period : 'Period not found';
+    } else {
+      priceChangePeriod = 'No period assigned';
+    }
+
+    const stockWithMasters = {
+      ...stock.toJSON(),
+      stock_masters: stockMasters,
+      sectors: sectors,
+      subsectors: subsectors,
+      price_change_period: priceChangePeriod
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: stockWithMasters
+    });
+  } catch (error) {
+    console.error("Error fetching stock:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+// Get stock by company name
+export const getStockByName = async (req: Request, res: Response) => {
+  try {
+    const { name } = req.params as Record<string, string>;
+
+    const stock = await db.Product.findOne({
+      where: {
+        company_name: name
+      }
+    });
+
+    if (!stock) {
+      return res.status(404).json({
+        success: false,
+        message: "Stock not found"
+      });
+    }
+
+    // Fetch stock master names
+    let stockMasterIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).stock_master_ids || '[]');
+      
+      // Ensure it's an array
+      if (Array.isArray(parsed)) {
+        stockMasterIds = parsed;
+      } else if (typeof parsed === 'number') {
+        stockMasterIds = [parsed];
+      } else if (typeof parsed === 'string' && parsed.includes(',')) {
+        stockMasterIds = parsed.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+      } else {
+        stockMasterIds = [];
+      }
+    } catch (error) {
+      console.error('Error parsing stock_master_ids:', (stock as any).stock_master_ids, error);
+      stockMasterIds = [];
+    }
+    
+    const stockMasters = await db.StockMaster.findAll({
+      where: { id: { [Op.in]: stockMasterIds } },
+      attributes: ['id', 'name'],
+    });
+
+    // Fetch sector names
+    let sectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).sector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        sectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing sector_ids:', (stock as any).sector_ids, error);
+      sectorIds = [];
+    }
+    
+    const sectors = await db.Sector.findAll({
+      where: { id: { [Op.in]: sectorIds } },
+      attributes: ['id', 'name'],
+    });
+
+    // Fetch subsector names
+    let subsectorIds = [];
+    try {
+      const parsed = JSON.parse((stock as any).subsector_ids || '[]');
+      if (Array.isArray(parsed)) {
+        subsectorIds = parsed;
+      }
+    } catch (error) {
+      console.error('Error parsing subsector_ids:', (stock as any).subsector_ids, error);
+      subsectorIds = [];
+    }
+    
+    const subsectors = await db.Subsector.findAll({
+      where: { id: { [Op.in]: subsectorIds } },
+      attributes: ['id', 'name', 'sector_id'],
+    });
+
+    // Fetch price change period name
+    let priceChangePeriod = null;
+    if (stock.price_change_period_id) {
+      const period = await db.PriceChangePeriod.findByPk(stock.price_change_period_id);
+      priceChangePeriod = period ? period.period : 'Period not found';
+    } else {
+      priceChangePeriod = 'No period assigned';
+    }
+
+    const stockWithMasters = {
+      ...stock.toJSON(),
+      stock_masters: stockMasters,
+      sectors: sectors,
+      subsectors: subsectors,
+      price_change_period: priceChangePeriod
+    };
+
+    return res.status(200).json({
+      success: true,
+      data: stockWithMasters
+    });
+  } catch (error) {
+    console.error("Error fetching stock by name:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+// Create new stock
+export const createStock = async (req: MulterRequest, res: Response) => {
+  try {
+    // Debug: Log the request body and files
+    console.log("Request body:", req.body);
+    console.log("Request files:", req.files);
+    
+    // Clean up the request body by trimming field names and values
+    const cleanedBody: any = {};
+    Object.keys(req.body).forEach(key => {
+      const cleanKey = key.trim().replace(/[:]/g, ''); // Remove spaces and colons
+      cleanedBody[cleanKey] = req.body[key];
+    });
+    
+    const {
+      company_name,
+      logo,
+      price_change,
+      teaser,
+      short_description,
+      analysis,
+      demand,
+      homeDisplay,
+      bannerDisplay,
+      valuation,
+      price_per_share,
+      percentage_change,
+      founded,
+      sector_ids,
+      subsector_ids,
+      theme_ids,
+      headquarters,
+      min_units,
+      lot_size,
+      stock_master_ids,
+      price_change_period_id,
+    } = cleanedBody;
+
+    console.log("Valuation received:", valuation);
+
+    // Validate required fields
+    if (!company_name) {
+      return res.status(400).json({
+        success: false,
+        message: "Company name is required",
+        debug: {
+          originalBody: req.body,
+          cleanedBody: cleanedBody,
+          receivedFiles: req.files
+        }
+      });
+    }
+
+    // Handle logo upload to S3
+    let logoUrl: string | undefined = undefined;
+    if (req.files) {
+      let file: any | undefined;
+      
+      // Handle both array and object formats
+      if (Array.isArray(req.files)) {
+        file = req.files[0];
+      } else {
+        // Get the first file from any field
+        const fileArrays = Object.values(req.files);
+        file = fileArrays.length > 0 ? fileArrays[0][0] : undefined;
+      }
+      
+      if (file) {
+        const s3File = file as any;
+        logoUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
+      }
+    }
+
+    // Create new stock
+    const newStock = await db.Product.create({
+      company_name,
+      logo: logoUrl || logo,
+      price_change,
+      teaser,
+      short_description,
+      analysis,
+      demand: demand || 'Low Demand',
+      homeDisplay: homeDisplay || 'no',
+      bannerDisplay: bannerDisplay || 'no',
+      valuation: valuation || '',
+      price_per_share: price_per_share || 0,
+      percentage_change: percentage_change || price_change || 0,
+      founded: founded || new Date().getFullYear(),
+      sector_ids: sector_ids || '[]',
+      subsector_ids: subsector_ids || '[]',
+      theme_ids: theme_ids || '[]',
+      headquarters: headquarters || 'N/A',
+      min_units: min_units || 1,
+      lot_size: lot_size || 1,
+      stock_master_ids: stock_master_ids || '[]',
+      price_change_period_id: price_change_period_id || null
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Stock created successfully",
+      data: newStock
+    });
+  } catch (error) {
+    console.error("Error creating stock:", error);
+    console.error("Error details:", {
+      message: (error as Error).message,
+      stack: (error as Error).stack,
+      name: (error as Error).name
+    });
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+      error: process.env.NODE_ENV === 'development' ? (error as Error).message : undefined
+    });
+  }
+};
+
+// Update stock
+export const updateStock = async (req: MulterRequest, res: Response) => {
+  try {
+    const id = req.params.id as string;
+    const {
+      company_name,
+      logo,
+      price_change,
+      teaser,
+      short_description,
+      analysis,
+      demand,
+      homeDisplay,
+      bannerDisplay,
+      valuation,
+      price_per_share,
+      percentage_change,
+      founded,
+      sector_ids,
+      subsector_ids,
+      theme_ids,
+      headquarters,
+      min_units,
+      lot_size,
+      stock_master_ids,
+      price_change_period_id,
+    } = req.body;
+
+    console.log("Update Stock - Valuation received:", valuation);
+
+    const stock = await db.Product.findByPk(id as string);
+    if (!stock) {
+      return res.status(404).json({
+        success: false,
+        message: "Stock not found"
+      });
+    }
+
+    // Handle logo upload to S3
+    let logoUrl = stock.logo; // Keep existing logo by default
+    if (req.files) {
+      let file: any | undefined;
+      
+      // Handle both array and object formats
+      if (Array.isArray(req.files)) {
+        file = req.files[0];
+      } else {
+        // Get the first file from any field
+        const fileArrays = Object.values(req.files);
+        file = fileArrays.length > 0 ? fileArrays[0][0] : undefined;
+      }
+      
+      if (file) {
+        const s3File = file as any;
+        logoUrl = s3File.location || `https://${process.env.S3_BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3File.key}`;
+      }
+    }
+
+    // Update stock
+    await stock.update({
+      company_name: company_name !== undefined ? company_name : stock.company_name,
+      logo: logoUrl,
+      price_change: price_change !== undefined ? price_change : stock.price_change,
+      teaser: teaser !== undefined ? teaser : stock.teaser,
+      short_description: short_description !== undefined ? short_description : stock.short_description,
+      analysis: analysis !== undefined ? analysis : stock.analysis,
+      demand: demand !== undefined ? demand : stock.demand,
+      homeDisplay: homeDisplay !== undefined ? homeDisplay : stock.homeDisplay,
+      bannerDisplay: bannerDisplay !== undefined ? bannerDisplay : stock.bannerDisplay,
+      valuation: valuation !== undefined ? valuation : stock.valuation,
+      price_per_share: price_per_share !== undefined ? price_per_share : stock.price_per_share,
+      percentage_change: percentage_change !== undefined ? percentage_change : stock.percentage_change,
+      founded: founded !== undefined ? founded : stock.founded,
+      sector_ids: sector_ids !== undefined ? sector_ids : stock.sector_ids,
+      subsector_ids: subsector_ids !== undefined ? subsector_ids : stock.subsector_ids,
+      theme_ids: theme_ids !== undefined ? theme_ids : stock.theme_ids,
+      headquarters: headquarters !== undefined ? headquarters : stock.headquarters,
+      min_units: min_units !== undefined ? min_units : stock.min_units,
+      lot_size: lot_size !== undefined ? lot_size : stock.lot_size,
+      stock_master_ids: stock_master_ids !== undefined ? stock_master_ids : stock.stock_master_ids,
+      price_change_period_id: price_change_period_id !== undefined ? price_change_period_id : stock.price_change_period_id
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Stock updated successfully",
+      data: stock
+    });
+  } catch (error) {
+    console.error("Error updating stock:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+// Delete stock
+export const deleteStock = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id as string;
+
+    const stock = await db.Product.findByPk(id as string);
+    if (!stock) {
+      return res.status(404).json({
+        success: false,
+        message: "Stock not found"
+      });
+    }
+
+    await stock.destroy();
+
+    return res.status(200).json({
+      success: true,
+      message: "Stock deleted successfully"
+    });
+  } catch (error) {
+    console.error("Error deleting stock:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+// Get stock statistics
+export const getStockStats = async (req: Request, res: Response) => {
+  try {
+    const totalStocks = await db.Product.count();
+    
+    // Calculate weekly percentage changes (7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const totalStocks7DaysAgo = await db.Product.count({
+      where: {
+        createdAt: {
+          [Op.lte]: sevenDaysAgo
+        }
+      }
+    });
+
+    // Calculate percentage change (growth in last 7 days)
+    const totalStocksChange = totalStocks7DaysAgo > 0 ? 
+      ((totalStocks - totalStocks7DaysAgo) / totalStocks7DaysAgo * 100) : 
+      (totalStocks > 0 ? 100 : 0);
+    
+    // Count stocks by company
+    const stocksByCompany = await db.Product.findAll({
+      attributes: [
+        'company_name',
+        [db.sequelize.fn('COUNT', db.sequelize.col('id')), 'count']
+      ],
+      where: {
+        company_name: {
+          [Op.ne]: null as any
+        }
+      },
+      group: ['company_name'],
+      order: [[db.sequelize.literal('count'), 'DESC']],
+      limit: 10,
+      raw: true
+    });
+
+    // Get recent stocks
+    const recentStocks = await db.Product.findAll({
+      limit: 5,
+      order: [['createdAt', 'DESC']]
+    });
+
+    // Calculate average price (if numeric)
+    const priceStats = await db.Product.findAll({
+      attributes: [
+        [db.sequelize.fn('AVG', db.sequelize.cast(db.sequelize.col('price_per_share'), 'DECIMAL')), 'avgPrice'],
+        [db.sequelize.fn('MIN', db.sequelize.cast(db.sequelize.col('price_per_share'), 'DECIMAL')), 'minPrice'],
+        [db.sequelize.fn('MAX', db.sequelize.cast(db.sequelize.col('price_per_share'), 'DECIMAL')), 'maxPrice']
+      ],
+      where: {
+        price_per_share: {
+          [Op.ne]: null as any
+        }
+      },
+      raw: true
+    });
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalStocks,
+        stocksByCompany,
+        recentStocks,
+        priceStats: priceStats[0] || { avgPrice: 0, minPrice: 0, maxPrice: 0 },
+        totalStocksChange: Math.round(totalStocksChange * 100) / 100
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching stock stats:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};
+
+// Bulk operations
+export const bulkDeleteStocks = async (req: Request, res: Response) => {
+  try {
+    const { stockIds } = req.body;
+
+    if (!stockIds || !Array.isArray(stockIds) || stockIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Stock IDs array is required"
+      });
+    }
+
+    const deletedCount = await db.Product.destroy({
+      where: {
+        id: {
+          [Op.in]: stockIds
+        }
+      }
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: `${deletedCount} stocks deleted successfully`
+    });
+  } catch (error) {
+    console.error("Error bulk deleting stocks:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error"
+    });
+  }
+};

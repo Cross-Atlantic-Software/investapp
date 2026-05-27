@@ -1,0 +1,686 @@
+"use client";
+
+import { Info, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { NotificationContainer, NotificationData } from "@/components/admin/shared/Notification";
+import { useAuth } from "@/lib/contexts/AuthContext";
+
+type TradeTabsProps = {
+  company: string;            // e.g. "Pine Labs"
+  priceINR: number;           // e.g. 350.92
+  minUnits?: number;          // e.g. 300
+  lotSize?: number;           // e.g. 300
+  onBuySubmit?: (p: { quantity: number; investINR: number }) => void;
+  onSellSubmit?: (p: { quantity: number; sellingPriceINR: number; message?: string }) => void;
+};
+
+export default function TradeTabs({
+  company,
+  priceINR,
+  minUnits = 0,
+  lotSize = 0,
+  onBuySubmit,
+  // onSellSubmit,
+}: TradeTabsProps) {
+  const { isAuthenticated } = useAuth();
+  const router = useRouter();
+  const [tab, setTab] = useState<"buy" | "sell">("buy");
+
+  // BUY state
+  const [qty, setQty] = useState<number>(0);
+  const [invest, setInvest] = useState<number>(0);
+  const investFromQty = useMemo(() => round2(qty * priceINR), [qty, priceINR]);
+
+  useEffect(() => {
+    setInvest(investFromQty);
+  }, [investFromQty]);
+
+  // SELL state
+  const [sellQty, setSellQty] = useState<number>(0);
+  const [sellPrice, setSellPrice] = useState<number>(0);
+  const [sellMsg, setSellMsg] = useState("");
+  
+  // Loading state for buy/sell operations
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  
+  // Notification state
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  
+  // KYC popup state
+  const [showKYCPopup, setShowKYCPopup] = useState<boolean>(false);
+
+  // Check if user's KYC is verified
+  const checkKYCStatus = async () => {
+    try {
+      const sessionToken = sessionStorage.getItem('auth_token');
+      const localToken = localStorage.getItem('auth_token');
+      const token = sessionToken || localToken;
+      
+      console.log('Checking KYC status with token:', token ? 'Present' : 'Missing');
+      
+      const response = await fetch('/api/kyc/status', {
+        method: 'GET',
+        headers: {
+          'token': token || '',
+        },
+      });
+
+      console.log('KYC status response:', response.status, response.statusText);
+      const data = await response.json();
+      console.log('KYC status data:', data);
+      
+      if (data.success && data.data?.status === 'verified') {
+        console.log('KYC is verified');
+        return true;
+      }
+      console.log('KYC is not verified, status:', data.data?.status);
+      return false;
+    } catch (error) {
+      console.error('Error checking KYC status:', error);
+      return false;
+    }
+  };
+
+  // Notification helper functions
+  const addNotification = (notification: Omit<NotificationData, 'id'>) => {
+    const id = Date.now().toString();
+    setNotifications(prev => [...prev, { ...notification, id }]);
+  };
+
+  const removeNotification = (id: string) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  // KYC popup handlers
+  const handleCompleteKYC = () => {
+    setShowKYCPopup(false);
+    router.push('/kyc-process/step-1');
+  };
+
+  const handleCloseKYCPopup = () => {
+    setShowKYCPopup(false);
+  };
+
+  // Validation for quantity based on minUnits and lotSize
+  const validateQuantity = (quantity: number) => {
+    if (quantity <= 0) return false;
+    if (minUnits > 0 && quantity < minUnits) return false;
+    if (lotSize > 0 && quantity % lotSize !== 0) return false;
+    return true;
+  };
+
+  const getQuantityError = (quantity: number) => {
+    if (quantity <= 0) return
+    if (minUnits > 0 && quantity < minUnits) return `Minimum quantity is ${minUnits} units`;
+    if (lotSize > 0 && quantity % lotSize !== 0) return `Quantity must be in multiples of ${lotSize}`;
+    return null;
+  };
+
+  // Handle buy button click with authentication and KYC check
+  const handleBuyClick = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    console.log('Buy button clicked');
+    
+    if (!isAuthenticated) {
+      console.log('User not authenticated, redirecting to login');
+      // Store the current page URL to return after registration/login
+      const currentUrl = window.location.pathname + window.location.search;
+      sessionStorage.setItem('returnAfterAuth', currentUrl);
+      sessionStorage.setItem('authFlow', 'stock-buy');
+      router.push('/login');
+      return;
+    }
+    
+    console.log('User is authenticated, checking KYC status...');
+    
+    // Check KYC status
+    const isKYCVerified = await checkKYCStatus();
+    console.log('KYC verification result:', isKYCVerified);
+    
+    if (!isKYCVerified) {
+      console.log('KYC not verified, showing popup');
+      // Store the current page URL to return after KYC completion
+      const currentUrl = window.location.pathname + window.location.search;
+      sessionStorage.setItem('returnAfterKYC', currentUrl);
+      sessionStorage.setItem('kycFlow', 'stock-buy');
+      setShowKYCPopup(true);
+      return;
+    }
+    
+    console.log('KYC verified, proceeding with buy order...');
+    if (!validateQuantity(qty)) {
+      const error = getQuantityError(qty);
+      addNotification({
+        type: 'error',
+        title: error || 'Invalid quantity',
+        duration: 6000
+      });
+      return;
+    }
+    
+    // Prevent multiple clicks
+    if (isLoading) {
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Get token from sessionStorage or localStorage
+      const sessionToken = sessionStorage.getItem('auth_token');
+      const localToken = localStorage.getItem('auth_token');
+      const token = sessionToken || localToken;
+      
+      const response = await fetch('/api/trading/buy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'token': token || '',
+        },
+        body: JSON.stringify({
+          companyName: company,
+          quantity: qty,
+          price: priceINR,
+          totalAmount: investFromQty
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.status) {
+        // Call the original callback
+        onBuySubmit?.({ quantity: qty, investINR: investFromQty });
+        
+        // Show success notification with email confirmation
+        addNotification({
+          type: 'success',
+          title: 'Buy order placed successfully!',
+          duration: 8000
+        });
+        
+        // Reset form fields after successful order
+        setQty(0);
+        setInvest(0);
+      } else {
+        addNotification({
+          type: 'error',
+          title: 'Failed to place buy order',
+          duration: 6000
+        });
+        
+        // Reset form fields after failed order
+        setQty(0);
+        setInvest(0);
+      }
+    } catch (error) {
+      console.error('Error placing buy order:', error);
+      addNotification({
+        type: 'error',
+        title: 'Failed to place buy order',
+        duration: 6000
+      });
+      
+      // Reset form fields after error
+      setQty(0);
+      setInvest(0);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Handle sell button click with authentication check
+  // const handleSellClick = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+    
+  //   if (!isAuthenticated()) {
+  //     router.push('/login');
+  //     return;
+  //   }
+    
+  //   try {
+  //     // Get token from localStorage or sessionStorage
+  //     const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+      
+  //     const response = await fetch('/api/trading/sell', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'token': token || '',
+  //       },
+  //       body: JSON.stringify({
+  //         companyName: company,
+  //         quantity: sellQty,
+  //         sellingPrice: sellPrice,
+  //         totalAmount: sellQty * sellPrice,
+  //         message: sellMsg.trim() || undefined
+  //       })
+  //     });
+
+  //     const data = await response.json();
+      
+  //     if (data.status) {
+  //       // Call the original callback
+  //       onSellSubmit?.({
+  //         quantity: sellQty,
+  //         sellingPriceINR: sellPrice,
+  //         message: sellMsg.trim() || undefined,
+  //       });
+  //       alert('Sell order placed successfully! Check your email for confirmation.');
+  //     } else {
+  //       alert('Failed to place sell order: ' + data.message);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error placing sell order:', error);
+  //     alert('Failed to place sell order. Please try again.');
+  //   }
+  // };
+
+  return (
+    <>
+      <div className="rounded bg-themeTealWhite">
+        {/* Tabs */}
+        <div className="flex items-center gap-6 border-b border-themeTealLighter px-4 sm:px-5">
+          <TabButton
+            active={tab === "buy"}
+            activeColor="emerald"
+            onClick={() => setTab("buy")}
+            label="Buy"
+          />
+          {/* <TabButton
+            active={tab === "sell"}
+            activeColor="red"
+            onClick={() => setTab("sell")}
+            label="Sell"
+          /> */}
+        </div>
+
+        {/* BUY */}
+        {tab === "buy" && (
+          <form
+            className="p-4 sm:p-6 space-y-5"
+            onSubmit={handleBuyClick}
+          >
+            <HeaderRow company={company} priceINR={priceINR} />
+
+            <MetaRow
+              minUnits={minUnits}
+              lotSize={lotSize}
+            />
+
+            <div className="h-px bg-themeTealLighter" />
+
+            <Field
+              label="Quantity"
+              input={
+                <NumberInput
+                  value={qty}
+                  onChange={(v) => setQty(sanitizeInt(v))}
+                  placeholder="0"
+                />
+              }
+              hint={getQuantityError(qty) || ""}
+              error={getQuantityError(qty)}
+            />
+
+            <Field
+              label="Invest"
+              input={
+                <CurrencyInput
+                  value={invest}
+                  readOnly
+                  prefix="₹"
+                  ariaLabel="Invest amount"
+                />
+              }
+              hint="Auto-calculated from quantity × price"
+            />
+
+            <button
+              type="submit"
+              disabled={isLoading || !validateQuantity(qty)}
+              className={`w-full rounded-md px-4 py-3 text-white font-semibold transition duration-500 ${
+                isLoading || !validateQuantity(qty)
+                  ? 'bg-gray-500 cursor-not-allowed' 
+                  : 'bg-emerald-700 cursor-pointer hover:bg-emerald-800'
+              }`}
+            >
+              {isLoading ? 'Processing...' : 'Invest Now'}
+            </button>
+          </form>
+        )}
+
+        {/* SELL */}
+        {tab === "sell" && (
+          <form
+            className="p-4 sm:p-6 space-y-5"
+            // onSubmit={handleSellClick}
+          >
+            <SellHeaderRow company={company} />
+
+            <Field
+              label="Quantity*"
+              input={
+                <NumberInput
+                  value={sellQty}
+                  onChange={(v) => setSellQty(sanitizeInt(v))}
+                  placeholder="0"
+                  required
+                />
+              }
+            />
+
+            <Field
+              label="Selling Price*"
+              input={
+                <CurrencyInput
+                  value={sellPrice}
+                  onChange={(v) => setSellPrice(sanitizeFloat(v))}
+                  prefix="₹"
+                  placeholder="0"
+                  required
+                />
+              }
+            />
+
+            <Field
+              label="Message*"
+              input={
+                <textarea
+                  required
+                  value={sellMsg}
+                  onChange={(e) => setSellMsg(e.target.value)}
+                  className="w-full min-h-28 rounded border border-themeTealLighter bg-white px-3 py-2 outline-none"
+                  placeholder="Add any details for the buyer"
+                />
+              }
+            />
+
+            <button
+              type="submit"
+              className="w-full rounded-md bg-red-600 px-4 py-3 text-white font-semibold cursor-pointer hover:bg-red-700 transition duration-500"
+            >
+              Sell
+            </button>
+          </form>
+        )}
+      </div>
+      
+      {/* Notification Container */}
+      <NotificationContainer
+        notifications={notifications}
+        onRemove={removeNotification}
+      />
+      
+      {/* KYC Popup Modal */}
+      {showKYCPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-themeTeal">KYC Required</h3>
+              <button
+                onClick={handleCloseKYCPopup}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-700">
+                Your KYC is pending. Please complete your KYC to proceed with the investment.
+              </p>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={handleCloseKYCPopup}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCompleteKYC}
+                className="flex-1 px-4 py-2 text-sm font-medium text-white bg-themeTeal rounded-md hover:bg-themeSkyBlue transition-colors"
+              >
+                Complete KYC
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+/* ---------- subcomponents ---------- */
+
+function TabButton({
+  label,
+  active,
+  activeColor,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  activeColor: "emerald" | "red";
+  onClick: () => void;
+}) {
+  return (
+    <button
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={[
+        "relative px-2 py-3 text-lg font-semibold cursor-pointer",
+        active
+        ? activeColor === "emerald" ? "text-emerald-600" : "text-red-600"
+        : activeColor === "emerald" ? "text-themeTeal" : "text-themeTeal",
+      ].join(" ")}
+    >
+      {label}
+      {active && (
+        <span
+          className={`absolute inset-x-0 -bottom-[1px] h-0.5 ${
+            activeColor === "emerald" ? "bg-emerald-600" : "bg-red-600"
+          }`}
+        />
+      )}
+    </button>
+  );
+}
+
+function HeaderRow({ company, priceINR }: { company: string; priceINR: number }) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <h3 className="text-xl font-semibold text-themeTeal">{company}</h3>
+      <div className="text-xl font-semibold text-themeTeal">₹ {formatINR(priceINR)}</div>
+    </div>
+  );
+}
+function SellHeaderRow({ company }: { company: string }) {
+  return <h3 className="text-xl font-semibold text-themeTeal">Sell {company}</h3>;
+}
+
+/* === UPDATED: MetaRow with Info popover === */
+
+function MetaRow({
+  minUnits,
+  lotSize,
+}: {
+  minUnits: number;
+  lotSize: number;
+}) {
+  return (
+    <dl className="space-y-3 text-sm">
+      <RowWithInfo 
+        label="Min. Units" 
+        value={String(minUnits)} 
+        info={minUnits > 0 ? `You must buy at least ${minUnits} units of this stock.` : "No minimum unit requirement."}
+      />
+      <RowWithInfo 
+        label="Lot Size" 
+        value={String(lotSize)} 
+        info={lotSize > 0 ? `Quantity must be in multiples of ${lotSize}. For example: ${lotSize}, ${lotSize * 2}, ${lotSize * 3}, etc.` : "No lot size restrictions."}
+      />
+    </dl>
+  );
+}
+
+function RowWithInfo({
+  label,
+  value,
+  info,
+}: {
+  label: string;
+  value: string;
+  info?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (!boxRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const onEsc = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, []);
+
+  return (
+    <div ref={boxRef} className="relative flex items-center justify-between">
+      <dt className="flex items-center gap-2 text-themeTealLight">
+        {label}
+        {info && (
+          <button
+            type="button"
+            aria-label={`Info about ${label}`}
+            aria-expanded={open}
+            onClick={() => setOpen((v) => !v)}
+            className="rounded-full p-0.5 text-sky-600 hover:bg-sky-50 cursor-pointer"
+          >
+            <Info className="h-4 w-4" />
+          </button>
+        )}
+      </dt>
+
+      <dd className="font-medium text-sm text-themeTealLight">{value}</dd>
+
+      {open && info && (
+        <div
+          role="dialog"
+          className="absolute left-0 top-full z-20 mt-2 w-72 rounded-md border border-themeTealLighter bg-white p-3 text-sm text-themeTeal shadow-lg"
+        >
+          {info}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Field({
+  label,
+  input,
+  hint,
+  error,
+}: {
+  label: string;
+  input: React.ReactNode;
+  hint?: string;
+  error?: string | null;
+}) {
+  return (
+    <label className="block">
+      <div className="mb-1 text-themeTealLight text-base">{label}</div>
+      {input}
+      {error ? (
+        <div className="mt-1 text-xs text-red-600">{error}</div>
+      ) : hint ? (
+        <div className="mt-1 text-xs text-themeTealLight">{hint}</div>
+      ) : null}
+    </label>
+  );
+}
+
+function NumberInput({
+  value,
+  onChange,
+  placeholder,
+  required,
+}: {
+  value: number;
+  onChange: (v: string) => void;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      required={required}
+      className="w-full rounded-md border border-themeTealLighter bg-white px-3 py-2 outline-none"
+    />
+  );
+}
+
+function CurrencyInput({
+  value,
+  onChange,
+  prefix = "₹",
+  placeholder,
+  readOnly,
+  ariaLabel,
+  required,
+}: {
+  value: number;
+  onChange?: (v: string) => void;
+  prefix?: string;
+  placeholder?: string;
+  readOnly?: boolean;
+  ariaLabel?: string;
+  required?: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-2 rounded-md border border-themeTealLighter bg-white px-3 py-2">
+      <span className="text-themeTealLight">{prefix}</span>
+      <input
+        type="text"
+        inputMode="decimal"
+        pattern="[0-9]*[.]?[0-9]*"
+        aria-label={ariaLabel}
+        value={value || ""}
+        onChange={onChange ? (e) => onChange(e.target.value) : undefined}
+        placeholder={placeholder}
+        readOnly={readOnly}
+        required={required}
+        className="w-full outline-none bg-transparent"
+      />
+    </div>
+  );
+}
+
+/* ---------- utils ---------- */
+function sanitizeInt(v: string) {
+  const n = parseInt(v.replace(/[^\d]/g, ""), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+function sanitizeFloat(v: string) {
+  const n = parseFloat(v.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(n) ? n : 0;
+}
+function round2(n: number) {
+  return Math.round(n * 100) / 100;
+}
+function formatINR(n: number) {
+  return new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+}

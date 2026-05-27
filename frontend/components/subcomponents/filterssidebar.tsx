@@ -1,0 +1,445 @@
+"use client";
+
+import { ChevronRight, PanelLeftOpen, PanelLeftClose } from "lucide-react";
+import { useId, useState, useEffect, useMemo } from "react";
+import { Button } from "../ui";
+
+// Types
+interface FilterOption {
+  id: string | number;
+  name: string;
+  value: string;
+}
+
+interface FilterItemProps {
+  title: string;
+  options: FilterOption[];
+  selectedValues: string[];
+  onSelectionChange: (values: string[]) => void;
+  isRadio?: boolean;
+}
+
+interface FilterSidebarProps {
+  onApplyFilters?: (filters: FilterState) => void;
+  onClearFilters?: () => void;
+  stockData?: Array<{
+    sector_ids?: string;
+    subsector_ids?: string;
+    theme_ids?: string;
+  }>; // Stock data to filter options based on actual data
+}
+
+export interface FilterState {
+  valuation: string[];
+  filingStatusAttractiveness: string[];
+  sectors: string[];
+  subsectors: string[];
+  themes: string[];
+}
+
+// Filter Item Component
+const FilterItem = ({ title, options, selectedValues, onSelectionChange, isRadio = false }: FilterItemProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const panelId = useId();
+
+  const handleSelectionChange = (value: string) => {
+    if (isRadio) {
+      // For radio buttons, only one selection allowed
+      onSelectionChange([value]);
+    } else {
+      // For checkboxes, multiple selections allowed
+      const newValues = selectedValues.includes(value)
+        ? selectedValues.filter(v => v !== value)
+        : [...selectedValues, value];
+      onSelectionChange(newValues);
+    }
+  };
+
+  return (
+    <div className="py-3 mx-4 border-b border-themeTealLighter last:border-0 text-themeTeal">
+      <button
+        type="button"
+        className="w-full flex justify-between items-center cursor-pointer hover:bg-themeTealLighter/20 rounded-md px-2 py-2 transition-colors duration-200 group"
+        aria-expanded={isOpen}
+        aria-controls={panelId}
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className="font-medium text-themeTeal group-hover:text-themeTealDark transition-colors duration-200">{title}</span>
+        <ChevronRight className={`transition-transform duration-300 text-themeTealLighter group-hover:text-themeTeal ${isOpen ? "rotate-90" : ""}`} />
+      </button>
+
+      <div
+        id={panelId}
+        hidden={!isOpen}
+        className="overflow-hidden transition-all duration-500 ease-in-out"
+        style={{ height: isOpen ? "auto" : 0, opacity: isOpen ? 1 : 0 }}
+        aria-hidden={!isOpen}
+      >
+        {isOpen && (
+          <ul className="py-2 pl-1">
+            {options.length === 0 ? (
+              <li className="py-2 text-sm text-gray-500 italic">No options available</li>
+            ) : (
+              options.map((option) => (
+                <li key={option.id} className="py-1">
+                  <label className="flex items-center cursor-pointer w-full group hover:bg-themeTealLighter/30 rounded-md px-2 py-2 transition-colors duration-200">
+                    <div className="relative flex items-center">
+                      <input
+                        type={isRadio ? "radio" : "checkbox"}
+                        name={isRadio ? title : undefined}
+                        checked={selectedValues.includes(option.value)}
+                        onChange={() => handleSelectionChange(option.value)}
+                        className="sr-only"
+                      />
+                      <div className={`
+                        w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200
+                        ${isRadio ? 'rounded-full' : 'rounded-sm'}
+                        ${selectedValues.includes(option.value) 
+                          ? 'bg-themeTeal border-themeTeal' 
+                          : 'border-themeTealLighter group-hover:border-themeTeal'
+                        }
+                      `}>
+                        {selectedValues.includes(option.value) && (
+                          <>
+                            {isRadio ? (
+                              <div className="w-2 h-2 bg-white rounded-full"></div>
+                            ) : (
+                              <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <span className="ml-3 text-sm text-themeTeal group-hover:text-themeTealDark transition-colors duration-200">
+                      {option.name}
+                    </span>
+                  </label>
+                </li>
+              ))
+            )}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// Main Filter Sidebar Component
+export default function Filters({ onApplyFilters, onClearFilters, stockData = [] }: FilterSidebarProps) {
+  const [collapsed, setCollapsed] = useState(false);
+  const bodyId = useId();
+
+  // State for filter selections
+  const [selectedFilters, setSelectedFilters] = useState<FilterState>({
+    valuation: [],
+    filingStatusAttractiveness: [],
+    sectors: [],
+    subsectors: [],
+    themes: [],
+  });
+
+  // State for dynamic data
+  const [sectors, setSectors] = useState<FilterOption[]>([]);
+  const [subsectors, setSubsectors] = useState<FilterOption[]>([]);
+  const [themes, setThemes] = useState<FilterOption[]>([]);
+  const [valuationRanges, setValuationRanges] = useState<FilterOption[]>([]);
+  const [filingStatusAttractivenessOptions, setFilingStatusAttractivenessOptions] = useState<FilterOption[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch sectors and subsectors
+  useEffect(() => {
+    const fetchFilterData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch available filter options based on existing stocks
+        const availableOptionsResponse = await fetch('/api/filter-options');
+        const availableOptionsData = await availableOptionsResponse.json();
+        
+        const availableOptions = availableOptionsData.success && availableOptionsData.data 
+          ? availableOptionsData.data 
+          : {
+              valuations: [],
+              sectors: [],
+              subsectors: [],
+              themes: [],
+              stockMasters: []
+            };
+        
+        console.log('✅ Available filter options from stocks:', availableOptions);
+
+        // Get admin token for authentication
+        const token = sessionStorage.getItem('adminToken') || '';
+        console.log('🔑 Admin Token:', token ? 'Found' : 'Not Found');
+        
+        const headers = {
+          'Content-Type': 'application/json',
+          ...(token && { 'token': token })
+        };
+        
+        console.log('📤 Request Headers:', headers);
+
+        // Fetch sectors
+        const sectorsResponse = await fetch('/api/admin/sectors/select', { headers });
+        const sectorsData = await sectorsResponse.json();
+        
+        if (sectorsData.success && sectorsData.data?.sectors) {
+          const sectorOptions = sectorsData.data.sectors
+            .filter((sector: { id: number; name: string }) => 
+              availableOptions.sectors.includes(sector.id)
+            )
+            .map((sector: { id: number; name: string }) => ({
+              id: sector.id,
+              name: sector.name,
+              value: sector.id.toString()
+            }));
+          console.log('✅ Filtered sectors:', sectorOptions);
+          setSectors(sectorOptions);
+        }
+
+        // Fetch subsectors
+        const subsectorsResponse = await fetch('/api/admin/subsectors', { headers });
+        const subsectorsData = await subsectorsResponse.json();
+        
+        if (subsectorsData.success && subsectorsData.data?.subsectors) {
+          const subsectorOptions = subsectorsData.data.subsectors
+            .filter((subsector: { id: number; name: string }) => 
+              availableOptions.subsectors.includes(subsector.id)
+            )
+            .map((subsector: { id: number; name: string }) => ({
+              id: subsector.id,
+              name: subsector.name,
+              value: subsector.id.toString()
+            }));
+          console.log('✅ Filtered subsectors:', subsectorOptions);
+          setSubsectors(subsectorOptions);
+        }
+
+        // Fetch themes
+        const themesResponse = await fetch('/api/themes/select', { headers });
+        const themesData = await themesResponse.json();
+        
+        if (themesData.success && themesData.data?.themes) {
+          const themeOptions = themesData.data.themes
+            .filter((theme: { id: number; name: string }) => 
+              availableOptions.themes.includes(theme.id)
+            )
+            .map((theme: { id: number; name: string }) => ({
+              id: theme.id,
+              name: theme.name,
+              value: theme.id.toString()
+            }));
+          console.log('✅ Filtered themes:', themeOptions);
+          setThemes(themeOptions);
+        }
+
+        // Fetch valuation ranges
+        const valuationRangesResponse = await fetch('/api/admin/valuation-ranges/filters', { headers });
+        const valuationRangesData = await valuationRangesResponse.json();
+        
+        if (valuationRangesData.success && valuationRangesData.data?.valuationRanges) {
+          const valuationRangeOptions = valuationRangesData.data.valuationRanges
+            .filter((range: { id: string; name: string; value: string }) => 
+              availableOptions.valuations.includes(range.value)
+            )
+            .map((range: { id: string; name: string; value: string }) => ({
+              id: range.id,
+              name: range.name,
+              value: range.value
+            }));
+          console.log('✅ Filtered valuation ranges:', valuationRangeOptions);
+          setValuationRanges(valuationRangeOptions);
+        }
+
+        // Fetch stock tags from stock masters table (public API - no auth required)
+        console.log('🔍 Fetching stock tags from public API...');
+        const stockTagsResponse = await fetch('/api/stock-tags');
+        console.log('📡 API Response Status:', stockTagsResponse.status);
+        
+        const stockTagsData = await stockTagsResponse.json();
+        console.log('📊 API Response Data:', stockTagsData);
+        
+        if (stockTagsData.success && stockTagsData.data?.stockTags) {
+          const stockTags = stockTagsData.data.stockTags;
+          console.log('✅ Stock Tags from API:', stockTags);
+          
+          // Filter to only include stock masters that are actually used by stocks
+          const stockMasterOptions = stockTags
+            .filter((tag: any) => availableOptions.stockMasters.includes(tag.id))
+            .map((tag: any) => ({
+              id: tag.id,
+              name: tag.name,
+              value: tag.id.toString() // Use the actual ID as the value for filtering
+            }));
+          
+          console.log('🎯 Filtered stock masters:', stockMasterOptions);
+          setFilingStatusAttractivenessOptions(stockMasterOptions);
+        } else {
+          console.log('❌ API failed or returned empty data');
+          console.log('API Success:', stockTagsData.success);
+          console.log('API Data:', stockTagsData.data);
+          console.log('Stock Tags:', stockTagsData.data?.stockTags);
+          
+          // Set empty array if API fails - no fake data
+          setFilingStatusAttractivenessOptions([]);
+        }
+      } catch (error) {
+        console.error('Error fetching filter data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilterData();
+  }, []);
+
+  // Filter options are now filtered at fetch time based on available stocks
+
+  // Handle selection changes
+  const handleSelectionChange = (filterKey: keyof FilterState, values: string[]) => {
+    setSelectedFilters(prev => ({
+      ...prev,
+      [filterKey]: values
+    }));
+  };
+
+  // Handle apply filters
+  const handleApplyFilters = () => {
+    if (onApplyFilters) {
+      onApplyFilters(selectedFilters);
+    }
+  };
+
+  // Handle clear filters
+  const handleClearFilters = () => {
+    setSelectedFilters({
+      valuation: [],
+      filingStatusAttractiveness: [],
+      sectors: [],
+      subsectors: [],
+      themes: [],
+    });
+    if (onClearFilters) {
+      onClearFilters();
+    }
+  };
+
+  return (
+      <aside
+        className={[
+          "rounded-lg bg-themeTealWhite shadow-sm border border-themeTealLighter overflow-hidden transition-[width] duration-300",
+          "w-full",
+          collapsed ? "lg:w-16" : "lg:w-[clamp(260px,28vw,300px)]",
+        ].join(" ")}
+      >
+      {/* header */}
+      <div className="justify-between items-center p-4 hidden md:flex bg-themeTealWhite">
+        <h3 className={collapsed ? "sr-only" : "text-lg font-semibold text-themeTeal"} id={`${bodyId}-label`}>
+          Filters
+        </h3>
+        <button
+          type="button"
+          onClick={() => setCollapsed(v => !v)}
+          aria-label={collapsed ? "Expand filters" : "Collapse filters"}
+          aria-controls={bodyId}
+          aria-expanded={!collapsed}
+          className="p-1.5 rounded-md hover:bg-themeTealLighter/30 transition-colors duration-200 cursor-pointer"
+        >
+          {collapsed ? <PanelLeftOpen className="h-5 w-5 stroke-themeTeal" /> : <PanelLeftClose className="h-5 w-5 stroke-themeTeal" />}
+        </button>
+      </div>
+
+      <div className="hidden md:block bg-themeTealLighter h-px" />
+
+      {/* collapsible body that the header button controls */}
+      <div id={bodyId} aria-labelledby={`${bodyId}-label`} hidden={collapsed}>
+        {loading ? (
+          <div className="p-6 text-center">
+            <div className="inline-flex items-center text-themeTeal">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-themeTeal mr-2"></div>
+              Loading filters...
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Commented filters for future use */}
+            {/* { title: "Investment Solutions", items: ["Option 1", "Option 2", "Option 3"] } */}
+            {/* { title: "Availability Status", items: ["Available", "Unavailable"] } */}
+            {/* { title: "Share Class", items: ["Class A", "Class B"] } */}
+            {/* { title: "Investment Size", items: ["$1M - $5M", "$5M - $10M"] } */}
+            {/* { title: "Themes", items: ["Growth", "Sustainability"] } */}
+            {/* { title: "VC Investors", items: ["Investor 1", "Investor 2"] } */}
+
+            {/* Active Filters - Valuation first */}
+            {valuationRanges.length > 0 && (
+              <FilterItem
+                title="Valuation"
+                options={valuationRanges}
+                selectedValues={selectedFilters.valuation}
+                onSelectionChange={(values) => handleSelectionChange('valuation', values)}
+                isRadio={true}
+              />
+            )}
+
+            {/* Filing Status & Attractiveness Filter */}
+            <FilterItem
+              title="Filing Status & Attractiveness"
+              options={filingStatusAttractivenessOptions}
+              selectedValues={selectedFilters.filingStatusAttractiveness}
+              onSelectionChange={(values) => handleSelectionChange('filingStatusAttractiveness', values)}
+              isRadio={true}
+            />
+
+            {sectors.length > 0 && (
+              <FilterItem
+                title="Primary Industry"
+                options={sectors}
+                selectedValues={selectedFilters.sectors}
+                onSelectionChange={(values) => handleSelectionChange('sectors', values)}
+              />
+            )}
+
+            {subsectors.length > 0 && (
+              <FilterItem
+                title="Sub-Sectors"
+                options={subsectors}
+                selectedValues={selectedFilters.subsectors}
+                onSelectionChange={(values) => handleSelectionChange('subsectors', values)}
+              />
+            )}
+
+            {themes.length > 0 && (
+              <FilterItem
+                title="Themes"
+                options={themes}
+                selectedValues={selectedFilters.themes}
+                onSelectionChange={(values) => handleSelectionChange('themes', values)}
+              />
+            )}
+          </>
+        )}
+
+        <div className="flex justify-between items-center p-4 bg-themeTealWhite border-t border-themeTealLighter">
+          <Button 
+            text="Clear All" 
+            color="themeTeal" 
+            variant="outline" 
+            size="sm" 
+            onClick={handleClearFilters}
+            className="hover:shadow-md transition-shadow duration-200"
+          />
+          <Button 
+            text="Filter Result" 
+            color="themeTeal" 
+            variant="solid" 
+            size="sm" 
+            onClick={handleApplyFilters}
+            className="hover:shadow-md transition-shadow duration-200"
+          />
+        </div>
+      </div>
+    </aside>
+  );
+}

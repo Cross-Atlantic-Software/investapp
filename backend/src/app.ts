@@ -1,0 +1,60 @@
+import express from 'express';
+import routes from "./routes";
+import migrationRoutes from "./routes/migration-routes";
+import publicRoutes from "./routes/public-routes";
+import cors from "cors";
+import dotenv from "dotenv";
+import morgan from "morgan"; // 📌 Added morgan
+import './utils/database'; // Import database to ensure initialization
+// import { poolMonitor } from './utils/pooling'; // Pool monitoring disabled
+
+import apiResponse from './utils/apiResponse';
+const corsOptions = {
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:3000',
+    'https://investapp.click',
+    'https://www.investapp.click',
+    'https://altstock.in',
+    'https://www.altstock.in',
+    'http://localhost:3001', 
+    'http://127.0.0.1:3000', 
+    'http://65.2.169.56:3000',
+    'http://65.2.169.56'
+  ], // Allow specific origins
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Allowed HTTP methods
+  credentials: true, // Allow cookies and credentials
+  allowedHeaders: ['Content-Type', 'Authorization', 'token'], // Allow specific headers
+  optionsSuccessStatus: 200 // For legacy browser support
+};
+
+const app = express();
+const port = 8888;
+
+// Trust proxy for nginx reverse proxy
+app.set('trust proxy', 1);
+
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Add support for form data
+dotenv.config();
+app.use(apiResponse);
+app.use(morgan("dev"));
+// 📌 Use morgan for logging HTTP requests
+
+
+app.use('/backend/api', routes);
+app.use('/backend/api/migration', migrationRoutes);
+app.use('/backend/api/public', publicRoutes);
+app.get('/', (req, res) => {
+  res.send('Welcome to you');
+});
+
+app.listen(port, () => {
+  console.log(`🚀 Server started at http://localhost:${port}`);
+  console.log(`📊 Health check available at http://localhost:${port}/backend/api/health/health`);
+  
+  // Pool monitoring disabled - not required for this application
+  // setTimeout(() => {
+  //   poolMonitor.startMonitoring(30000);
+  // }, 5000);
+});

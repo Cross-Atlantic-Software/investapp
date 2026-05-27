@@ -1,0 +1,295 @@
+import { Request, Response } from "express";
+import { db } from "../../utils/database";
+import { HttpStatusCode } from "../../utils/httpStatusCode";
+import { UserWallet } from "../../Models/UserWallet";
+
+export class UserWalletController {
+  private walletModel = db.UserWallet;
+
+  private async ensureDbReady() {
+    await db.sequelizePromise;
+  }
+
+  // Get current user's wallet
+  static async getUserWallet(req: Request, res: Response) {
+    try {
+      await db.sequelizePromise;
+      
+      // Get user ID from JWT token
+      const userId = (req as any).user?.user_id;
+      
+      if (!userId) {
+        return res.status(HttpStatusCode.UNAUTHORIZED).json({
+          success: false,
+          message: 'User not authenticated'
+        });
+      }
+
+      // Find or create wallet for user
+      let wallet = await db.UserWallet.findOne({
+        where: { user_id: parseInt(userId as string) }
+      });
+
+      if (!wallet) {
+        // Create wallet if it doesn't exist
+        wallet = await db.UserWallet.create({
+          user_id: parseInt(userId as string),
+          available_balance: 0,
+          pending_balance: 0,
+          total_deposited: 0,
+          total_withdrawn: 0
+        });
+      }
+
+      res.json({
+        success: true,
+        data: wallet
+      });
+    } catch (error) {
+      console.error('Error fetching user wallet:', error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: 'Failed to fetch user wallet'
+      });
+    }
+  }
+
+  // Deposit money to user's wallet
+  static async depositToWallet(req: Request, res: Response) {
+    try {
+      await db.sequelizePromise;
+      
+      // Get user ID from JWT token
+      const userId = (req as any).user?.user_id;
+      
+      if (!userId) {
+        return res.status(HttpStatusCode.UNAUTHORIZED).json({
+          success: false,
+          message: 'User not authenticated'
+        });
+      }
+
+      const { amount } = req.body;
+
+      // Validate amount
+      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+        return res.status(HttpStatusCode.BAD_REQUEST).json({
+          success: false,
+          message: 'Invalid deposit amount. Amount must be a positive number.'
+        });
+      }
+
+      const depositAmount = Number(amount);
+
+      // Find or create wallet
+      let wallet = await db.UserWallet.findOne({
+        where: { user_id: parseInt(userId as string) }
+      });
+
+      if (!wallet) {
+        wallet = await UserWalletController.initializeWallet(parseInt(userId as string));
+        if (!wallet) {
+          wallet = await db.UserWallet.findOne({ where: { user_id: parseInt(userId as string) } });
+        }
+      }
+
+      if (!wallet) {
+        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+          success: false,
+          message: 'Failed to initialize wallet'
+        });
+      }
+
+      // Update wallet balance using the deposit type
+      await UserWalletController.updateBalance(
+        parseInt(userId as string),
+        depositAmount,
+        'deposit'
+      );
+
+      // Fetch updated wallet
+      const updatedWallet = await db.UserWallet.findOne({
+        where: { user_id: parseInt(userId as string) }
+      });
+
+      res.status(HttpStatusCode.OK).json({
+        success: true,
+        message: `Successfully deposited ₹${depositAmount.toFixed(2)} to wallet`,
+        data: updatedWallet
+      });
+    } catch (error: any) {
+      console.error('Error depositing to wallet:', error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to deposit to wallet'
+      });
+    }
+  }
+
+  // Withdraw money from user's wallet
+  static async withdrawFromWallet(req: Request, res: Response) {
+    try {
+      await db.sequelizePromise;
+      
+      // Get user ID from JWT token
+      const userId = (req as any).user?.user_id;
+      
+      if (!userId) {
+        return res.status(HttpStatusCode.UNAUTHORIZED).json({
+          success: false,
+          message: 'User not authenticated'
+        });
+      }
+
+      const { amount } = req.body;
+
+      // Validate amount
+      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+        return res.status(HttpStatusCode.BAD_REQUEST).json({
+          success: false,
+          message: 'Invalid withdrawal amount. Amount must be a positive number.'
+        });
+      }
+
+      const withdrawalAmount = Number(amount);
+
+      // Find wallet
+      const wallet = await db.UserWallet.findOne({
+        where: { user_id: parseInt(userId as string) }
+      });
+
+      if (!wallet) {
+        return res.status(HttpStatusCode.NOT_FOUND).json({
+          success: false,
+          message: 'Wallet not found'
+        });
+      }
+
+      // Check if user has sufficient balance
+      if (Number(wallet.available_balance) < withdrawalAmount) {
+        return res.status(HttpStatusCode.BAD_REQUEST).json({
+          success: false,
+          message: `Insufficient balance. Available: ₹${wallet.available_balance}, Requested: ₹${withdrawalAmount}`
+        });
+      }
+
+      // Update wallet balance using the withdrawal type
+      await UserWalletController.updateBalance(
+        parseInt(userId as string),
+        withdrawalAmount,
+        'withdrawal'
+      );
+
+      // Fetch updated wallet
+      const updatedWallet = await db.UserWallet.findOne({
+        where: { user_id: parseInt(userId as string) }
+      });
+
+      res.status(HttpStatusCode.OK).json({
+        success: true,
+        message: `Successfully withdrew ₹${withdrawalAmount.toFixed(2)} from wallet`,
+        data: updatedWallet
+      });
+    } catch (error: any) {
+      console.error('Error withdrawing from wallet:', error);
+      res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: error.message || 'Failed to withdraw from wallet'
+      });
+    }
+  }
+
+  // Initialize wallet for user (called when user first signs up or makes first transaction)
+  static async initializeWallet(userId: number) {
+    try {
+      await db.sequelizePromise;
+      
+      const existingWallet = await db.UserWallet.findOne({
+        where: { user_id: userId }
+      });
+
+      if (!existingWallet) {
+        await db.UserWallet.create({
+          user_id: userId,
+          available_balance: 0,
+          pending_balance: 0,
+          total_deposited: 0,
+          total_withdrawn: 0
+        });
+        console.log(`✅ Wallet initialized for user ${userId}`);
+      }
+
+      return existingWallet || await db.UserWallet.findOne({ where: { user_id: userId } });
+    } catch (error) {
+      console.error('Error initializing wallet:', error);
+      throw error;
+    }
+  }
+
+  // Update wallet balance (internal method, called by other services)
+  static async updateBalance(
+    userId: number, 
+    amount: number, 
+    type: 'deposit' | 'withdrawal' | 'transaction' | 'settlement',
+    transactionId?: number
+  ) {
+    try {
+      await db.sequelizePromise;
+      
+      const wallet = await db.UserWallet.findOne({
+        where: { user_id: userId }
+      });
+
+      if (!wallet) {
+        // Initialize wallet if it doesn't exist
+        await UserWalletController.initializeWallet(userId);
+        return await db.UserWallet.findOne({ where: { user_id: userId } });
+      }
+
+      const updateData: any = {
+        last_updated: new Date()
+      };
+
+      switch (type) {
+        case 'deposit':
+          updateData.available_balance = Number(wallet.available_balance) + Number(amount);
+          updateData.total_deposited = Number(wallet.total_deposited) + Number(amount);
+          break;
+        
+        case 'withdrawal':
+          if (Number(wallet.available_balance) < Number(amount)) {
+            throw new Error('Insufficient balance');
+          }
+          updateData.available_balance = Number(wallet.available_balance) - Number(amount);
+          updateData.total_withdrawn = Number(wallet.total_withdrawn) + Number(amount);
+          break;
+        
+        case 'transaction':
+          // Move from available to pending when transaction is created
+          if (Number(wallet.available_balance) < Number(amount)) {
+            throw new Error('Insufficient balance for transaction');
+          }
+          updateData.available_balance = Number(wallet.available_balance) - Number(amount);
+          updateData.pending_balance = Number(wallet.pending_balance) + Number(amount);
+          break;
+        
+        case 'settlement':
+          // Move from pending back to available when transaction is rejected or canceled
+          if (Number(wallet.pending_balance) < Number(amount)) {
+            throw new Error('Invalid settlement amount');
+          }
+          updateData.pending_balance = Number(wallet.pending_balance) - Number(amount);
+          updateData.available_balance = Number(wallet.available_balance) + Number(amount);
+          break;
+      }
+
+      await wallet.update(updateData);
+      
+      return await db.UserWallet.findOne({ where: { user_id: userId } });
+    } catch (error) {
+      console.error('Error updating wallet balance:', error);
+      throw error;
+    }
+  }
+}
+
