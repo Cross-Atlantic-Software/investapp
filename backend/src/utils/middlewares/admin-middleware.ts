@@ -14,18 +14,30 @@ interface User {
 }
 
 export default function adminMiddleware(req: Request, res: Response, next: NextFunction): void {
-  // Extract the token from the request header
-  const token = req.header("token");
+  // Extract the token (support both the "token" header and "Authorization: Bearer <token>")
+  let token = req.header("token");
+  if (!token) {
+    const authHeader = req.header("Authorization");
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    }
+  }
   // If no token is provided, send an authentication error and terminate the request
   if (!token) {
     res.status(401).json({ message: "Auth Error", status: false });
     return;
   }
 
+  // Fail closed: never fall back to a hard-coded secret.
+  const tokenSecret = process.env.TOKEN_SECRET;
+  if (!tokenSecret) {
+    res.status(500).json({ message: "Server misconfigured: TOKEN_SECRET is missing", status: false });
+    return;
+  }
+
   try {
     // Verify the token and decode it
-    const tokenSecret = process.env.TOKEN_SECRET || "fnknwdfnnnfsdklnfslkfsdkfnslkfnksnfnsllsfkfsnfnklsnflnleoiw";
-    const decoded = jwt.verify(token, tokenSecret) as User 
+    const decoded = jwt.verify(token, tokenSecret) as User
     // Attach the decoded user to the request object
     // Allow all CMS users to access admin panel (Admin, SuperAdmin, Blogger, SiteManager)
     if(decoded.role !== UserRole.Admin && 

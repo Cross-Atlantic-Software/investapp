@@ -12,6 +12,5 @@
         "password": "root",
         "database": "investapp",
         "dialect": "mysql"
-    },
-    "secret": "fnknwdfnnnfsdklnfslkfsdkfnslkfnksnfnsllsfkfsnfnklsnflnleoiw"
+    }
 }

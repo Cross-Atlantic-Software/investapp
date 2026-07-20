@@ -5,6 +5,7 @@ import db, { sequelizePromise } from "../../utils/database";
 import { HttpStatusCode } from "../../utils/httpStatusCode";
 import sendMail from "../../utils";
 import { EmailTemplateService } from "../../utils/emailTemplateService";
+import { UserRole } from "../../utils/Roles";
 
 export class RegisterService {
   private model = db.User;
@@ -30,7 +31,19 @@ export class RegisterService {
       }
 
       // Create new user
-      const newUser = await this.model.create(req.body);
+      // SECURITY: do NOT pass req.body to create() — Joi runs with allowUnknown:true, so a
+      // raw body could mass-assign privileged fields (role, status, email_verified) and let an
+      // anonymous user self-provision an admin account. Whitelist safe fields and force the
+      // role to a regular site user.
+      const { password, first_name, last_name, phone } = req.body;
+      const newUser = await this.model.create({
+        email,
+        password,
+        first_name,
+        last_name,
+        phone,
+        role: UserRole.RetailInvestor,
+      } as any);
       const emailToken = randomstring.generate({
         length: 6,
         charset: "numeric", // only numbers

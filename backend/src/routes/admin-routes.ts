@@ -132,25 +132,12 @@ const transactionController = new TransactionController();
 // CMS User Authentication (no middleware required)
 router.post("/login", cmsLogin);        // CMS users login
 
-// Apply admin middleware to all other routes (except new features for testing)
-router.use((req, res, next) => {
-  // Skip authentication for new feature routes during testing
-  if (req.path.includes('/private-market-news') || req.path.includes('/notable-activities') || 
-      req.path.includes('/taxonomies') || req.path.includes('/activity-types') || 
-      req.path.includes('/bulk-deals') || req.path.includes('/stock-masters') ||
-      req.path.includes('/price-change-periods') ||
-      req.path.includes('/valuations') || req.path.includes('/valuation-ranges') ||
-      req.path.includes('/valuation-mapping') ||
-      req.path.includes('/scorecards') || req.path.includes('/investment-rationales') ||
-      req.path.includes('/performance-pdfs') || req.path.includes('/sector-outlooks') ||
-      req.path.includes('/sector-insights-pdfs') || req.path.includes('/methodology-notes') ||
-      req.path.includes('/news-sections') || req.path.includes('/faqs') ||
-      req.path.includes('/sectors') || req.path.includes('/subsectors') ||
-      req.path.includes('/contact-faqs')) {
-    return next();
-  }
-  return adminMiddleware(req, res, next);
-});
+// SECURITY: require admin authentication for ALL routes below.
+// (The /login route registered above is intentionally exempt.)
+// A previous path-substring "testing" bypass left destructive CMS create/update/delete
+// endpoints (sectors, stock-masters, bulk-deals, valuations, scorecards, faqs, news, etc.)
+// reachable without any authentication. Never gate auth on req.path substrings.
+router.use(adminMiddleware);
 
 // Apply last active update middleware to all authenticated routes
 router.use(updateLastActive);

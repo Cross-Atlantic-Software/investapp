@@ -9,8 +9,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing image URL' }, { status: 400 });
     }
 
-    // Validate that it's an S3 URL
-    if (!imageUrl.includes('s3.amazonaws.com') && !imageUrl.includes('s3.ap-south-1.amazonaws.com')) {
+    // SECURITY: parse the URL and allow only https S3 hosts. A substring check such as
+    // includes('s3.amazonaws.com') is bypassable (e.g. http://evil/?x=s3.amazonaws.com or
+    // http://169.254.169.254/#s3.amazonaws.com) and enables SSRF to internal hosts.
+    let parsed: URL;
+    try {
+      parsed = new URL(imageUrl);
+    } catch {
+      return NextResponse.json({ error: 'Invalid image URL' }, { status: 400 });
+    }
+    const host = parsed.hostname.toLowerCase();
+    const isAllowedHost = host === 's3.amazonaws.com' || host.endsWith('.amazonaws.com');
+    if (parsed.protocol !== 'https:' || !isAllowedHost) {
       return NextResponse.json({ error: 'Invalid image URL' }, { status: 400 });
     }
 

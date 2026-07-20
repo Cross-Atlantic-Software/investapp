@@ -1,7 +1,13 @@
 import express from "express";
 import { db, sequelizePromise } from "../utils/database";
+import adminMiddleware from "../utils/middlewares/admin-middleware";
 
 const router = express.Router();
+
+// SECURITY: every endpoint in this router executes raw DDL/DML (CREATE/ALTER/DROP/INSERT)
+// against the database. It was previously mounted unauthenticated at both
+// /backend/api/migration and /backend/api/migrations. Require admin auth for all of it.
+router.use(adminMiddleware);
 
 // Run migration to create stock_price_data table
 router.post("/create-stock-price-data-table", async (req, res) => {

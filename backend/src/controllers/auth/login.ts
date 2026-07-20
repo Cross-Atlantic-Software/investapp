@@ -45,10 +45,14 @@ export class LoginService {
       }
       const token = jwt.sign(payload, tokenSecret, { expiresIn: "365d" });
 
+      // SECURITY: never return the password hash (or other sensitive columns) to the client.
+      const userResponse = { ...user.toJSON() } as any;
+      delete userResponse.password;
+
       res.json({
         status: true,
         message: "User logged in successfully",
-        data: user,
+        data: userResponse,
         token,
       });
     } catch (error: any) {

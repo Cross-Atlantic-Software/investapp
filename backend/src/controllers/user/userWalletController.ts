@@ -69,6 +69,15 @@ export class UserWalletController {
         });
       }
 
+      // SECURITY: this endpoint credited a client-supplied amount directly to the wallet with
+      // no payment gateway, proof of payment, or approval — i.e. any authenticated user could
+      // mint unlimited balance ("money printer") and cash it out via withdraw. Disabled until a
+      // verified payment provider (server-verified amount + signature/webhook) is integrated.
+      return res.status(403).json({
+        success: false,
+        message: 'Deposits are temporarily unavailable. Funds must be added through a verified payment provider.'
+      });
+
       const { amount } = req.body;
 
       // Validate amount
@@ -140,6 +149,14 @@ export class UserWalletController {
           message: 'User not authenticated'
         });
       }
+
+      // SECURITY: withdrawals pay out wallet balance that, given the disabled deposit path,
+      // could only have originated from an untrusted source. Disabled until payouts run through
+      // an admin-approved, gateway-backed flow.
+      return res.status(403).json({
+        success: false,
+        message: 'Withdrawals are temporarily unavailable. Please contact support.'
+      });
 
       const { amount } = req.body;
 
