@@ -77,55 +77,6 @@ export class UserWalletController {
         success: false,
         message: 'Deposits are temporarily unavailable. Funds must be added through a verified payment provider.'
       });
-
-      const { amount } = req.body;
-
-      // Validate amount
-      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-        return res.status(HttpStatusCode.BAD_REQUEST).json({
-          success: false,
-          message: 'Invalid deposit amount. Amount must be a positive number.'
-        });
-      }
-
-      const depositAmount = Number(amount);
-
-      // Find or create wallet
-      let wallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId as string) }
-      });
-
-      if (!wallet) {
-        wallet = await UserWalletController.initializeWallet(parseInt(userId as string));
-        if (!wallet) {
-          wallet = await db.UserWallet.findOne({ where: { user_id: parseInt(userId as string) } });
-        }
-      }
-
-      if (!wallet) {
-        return res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
-          success: false,
-          message: 'Failed to initialize wallet'
-        });
-      }
-
-      // Update wallet balance using the deposit type
-      await UserWalletController.updateBalance(
-        parseInt(userId as string),
-        depositAmount,
-        'deposit'
-      );
-
-      // Fetch updated wallet
-      const updatedWallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId as string) }
-      });
-
-      res.status(HttpStatusCode.OK).json({
-        success: true,
-        message: `Successfully deposited ₹${depositAmount.toFixed(2)} to wallet`,
-        data: updatedWallet
-      });
     } catch (error: any) {
       console.error('Error depositing to wallet:', error);
       res.status(HttpStatusCode.INTERNAL_SERVER_ERROR).json({
@@ -156,56 +107,6 @@ export class UserWalletController {
       return res.status(403).json({
         success: false,
         message: 'Withdrawals are temporarily unavailable. Please contact support.'
-      });
-
-      const { amount } = req.body;
-
-      // Validate amount
-      if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-        return res.status(HttpStatusCode.BAD_REQUEST).json({
-          success: false,
-          message: 'Invalid withdrawal amount. Amount must be a positive number.'
-        });
-      }
-
-      const withdrawalAmount = Number(amount);
-
-      // Find wallet
-      const wallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId as string) }
-      });
-
-      if (!wallet) {
-        return res.status(HttpStatusCode.NOT_FOUND).json({
-          success: false,
-          message: 'Wallet not found'
-        });
-      }
-
-      // Check if user has sufficient balance
-      if (Number(wallet.available_balance) < withdrawalAmount) {
-        return res.status(HttpStatusCode.BAD_REQUEST).json({
-          success: false,
-          message: `Insufficient balance. Available: ₹${wallet.available_balance}, Requested: ₹${withdrawalAmount}`
-        });
-      }
-
-      // Update wallet balance using the withdrawal type
-      await UserWalletController.updateBalance(
-        parseInt(userId as string),
-        withdrawalAmount,
-        'withdrawal'
-      );
-
-      // Fetch updated wallet
-      const updatedWallet = await db.UserWallet.findOne({
-        where: { user_id: parseInt(userId as string) }
-      });
-
-      res.status(HttpStatusCode.OK).json({
-        success: true,
-        message: `Successfully withdrew ₹${withdrawalAmount.toFixed(2)} from wallet`,
-        data: updatedWallet
       });
     } catch (error: any) {
       console.error('Error withdrawing from wallet:', error);
