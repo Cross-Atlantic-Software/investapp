@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import mysql from "mysql2/promise";
+import mysql2 from "mysql2";
 import dotenv from "dotenv";
 import config from "./config.json";
 
@@ -88,6 +89,7 @@ export function createSequelizeWithPool(): Sequelize {
     host: dbConfig.host,
     port: dbConfig.port,
     dialect: "mysql",
+    dialectModule: mysql2,
     logging: poolConfig.logging ? console.log : false,
     pool: {
       min: poolConfig.min,

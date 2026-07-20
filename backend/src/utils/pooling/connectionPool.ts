@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import * as mysql from "mysql2/promise";
+import mysql2 from "mysql2";
 
 // Connection Pool Configuration
 export interface PoolConfig {
@@ -77,6 +78,7 @@ export function createSequelizeWithPool(dbConfig: DatabaseConfig): Sequelize {
     host: dbConfig.host,
     port: dbConfig.port,
     dialect: "mysql",
+    dialectModule: mysql2,
     logging: false, // Disable Sequelize query logging
     pool: {
       min: poolConfig.min,
